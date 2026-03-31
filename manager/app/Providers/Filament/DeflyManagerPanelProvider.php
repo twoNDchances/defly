@@ -26,10 +26,10 @@ class DeflyManagerPanelProvider extends PanelProvider
         return $panel
             ->default()
             ->id('defly-manager')
-            ->path(config("customization.backend.urls.gui_prefix"))
+            ->path(config('customization.backend.urls.gui_prefix'))
             ->login()
             ->colors([
-                'primary' => config("customization.gui.theme_color"),
+                'primary' => config('customization.gui.theme_color'),
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
@@ -55,11 +55,15 @@ class DeflyManagerPanelProvider extends PanelProvider
             ->authMiddleware([
                 Authenticate::class,
             ])
+            ->favicon(asset('logo/favicon.png'))
+            ->sidebarCollapsibleOnDesktop()
+            ->discoverClusters(app_path('Filament/Clusters'), 'App\\Filament\\Clusters')
+            ->profile()
             ->plugins([
                 FilamentLanguageSwitcherPlugin::make()
-                ->locales(['vi', 'en'])
-                ->rememberLocale()
-                ->showOnAuthPages(),
+                    ->locales(['vi', 'en'])
+                    ->rememberLocale()
+                    ->showOnAuthPages(),
             ]);
     }
 }

@@ -1,7 +1,6 @@
 <?php
 
 return [
-
     /*
     |--------------------------------------------------------------------------
     | Application Name
@@ -65,15 +64,14 @@ return [
     |
     */
 
-    'timezone' => (function()
-    {
-        $default = "Asia/Ho_Chi_Minh";
-        $timezone = env("TIMEZONE", $default);
+    'timezone' => (function () {
+        $default = 'Asia/Ho_Chi_Minh';
+        $timezone = env('TIMEZONE', $default);
         $all_timezones = DateTimeZone::listIdentifiers();
-        if (!in_array($timezone, $all_timezones))
-        {
+        if (! in_array($timezone, $all_timezones)) {
             return $default;
         }
+
         return $timezone;
     })(),
 
@@ -132,5 +130,4 @@ return [
         'driver' => env('APP_MAINTENANCE_DRIVER', 'file'),
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
-
 ];

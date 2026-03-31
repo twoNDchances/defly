@@ -17,6 +17,11 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            $table->string('verification_token')->nullable();
+            $table->boolean('is_verified')->default(false);
+            $table->boolean('is_root')->default(false);
+            $table->boolean('is_activated')->default(true);
+            $table->foreignUuid('created_by')->nullable()->index()->constrained('users')->nullOnDelete();
             $table->rememberToken();
             $table->timestamps();
         });

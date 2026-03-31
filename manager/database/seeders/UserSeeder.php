@@ -14,22 +14,19 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        $configurationPath = "customization.backend.default_credentials";
+        $configurationPath = 'customization.backend.default_credentials';
 
         $name = config("$configurationPath.user_name");
         $email = config("$configurationPath.user_email");
         $password = config("$configurationPath.user_password");
 
-        if (User::where("email", $email)->first())
-        {
+        if (User::where('email', $email)->first()) {
             return;
         }
 
-        if ($password == "random")
-        {
+        if ($password == 'random') {
             $filePath = base_path('credentials.txt');
-            if (file_exists($filePath))
-            {
+            if (file_exists($filePath)) {
                 unlink($filePath);
             }
             $plainPassword = Str::random(16);
@@ -40,12 +37,16 @@ class UserSeeder extends Seeder
             );
         }
 
-        User::firstOrCreate([
-            "email" => $email,
-        ],
-        [
-            "name" => $name,
-            "password" => Hash::make($plainPassword),
+        $user = User::create([
+            'email' => $email,
+            'name' => $name,
+            'is_root' => true,
+            'is_verified' => true,
+            'password' => Hash::make($plainPassword),
+        ]);
+        $user->markEmailAsVerified();
+        $user->update([
+            'created_by' => $user->id,
         ]);
     }
 }

@@ -1,7 +1,6 @@
 <?php
 
 return [
-
     /*
     |--------------------------------------------------------------------------
     | Broadcasting
@@ -15,7 +14,6 @@ return [
     */
 
     'broadcasting' => [
-
         // 'echo' => [
         //     'broadcaster' => 'pusher',
         //     'key' => env('VITE_PUSHER_APP_KEY'),
@@ -28,7 +26,6 @@ return [
         //     'encrypted' => true,
         //     'forceTLS' => env('VITE_PUSHER_SCHEME', 'https') === 'https',
         // ],
-
     ],
 
     /*
@@ -116,5 +113,4 @@ return [
     */
 
     'system_route_prefix' => 'filament',
-
 ];

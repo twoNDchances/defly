@@ -1,6 +1,9 @@
 <?php
 
+use App\Providers\AppServiceProvider;
+use App\Providers\Filament\DeflyManagerPanelProvider;
+
 return [
-    App\Providers\AppServiceProvider::class,
-    App\Providers\Filament\DeflyManagerPanelProvider::class,
+    AppServiceProvider::class,
+    DeflyManagerPanelProvider::class,
 ];
