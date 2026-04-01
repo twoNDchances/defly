@@ -3,17 +3,12 @@
 namespace App\Filament\Clusters\AccessControl\Resources\Permissions\Pages;
 
 use App\Filament\Clusters\AccessControl\Resources\Permissions\PermissionResource;
-use Filament\Actions\DeleteAction;
+use App\Traits\Filament\Pages\EditPage;
 use Filament\Resources\Pages\EditRecord;
 
 class EditPermission extends EditRecord
 {
-    protected static string $resource = PermissionResource::class;
+    use EditPage;
 
-    protected function getHeaderActions(): array
-    {
-        return [
-            DeleteAction::make(),
-        ];
-    }
+    protected static string $resource = PermissionResource::class;
 }

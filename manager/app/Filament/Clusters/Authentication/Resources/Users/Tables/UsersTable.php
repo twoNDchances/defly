@@ -5,64 +5,45 @@ namespace App\Filament\Clusters\Authentication\Resources\Users\Tables;
 use App\Models\User;
 use App\Services\Identification;
 use App\Services\Security;
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\EditAction;
-use Filament\Tables\Columns\IconColumn;
-use Filament\Tables\Columns\TextColumn;
+use App\Traits\Filament\Buttons\UserButton;
+use App\Traits\Filament\Columns\UserColumn;
 use Filament\Tables\Table;
 
 class UsersTable
 {
+    use UserButton;
+    use UserColumn;
+
     public static function configure(Table $table): Table
     {
         return $table
             ->columns([
-                TextColumn::make('id')
-                    ->label('ID')
-                    ->searchable(),
-                TextColumn::make('name')
-                    ->searchable(),
-                TextColumn::make('email')
-                    ->label('Email address')
-                    ->searchable(),
-                TextColumn::make('email_verified_at')
-                    ->dateTime()
-                    ->sortable(),
-                IconColumn::make('is_verified')
-                    ->boolean(),
-                IconColumn::make('is_root')
-                    ->boolean(),
-                IconColumn::make('is_activated')
-                    ->boolean(),
-                TextColumn::make('created_by')
-                    ->searchable(),
-                TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                self::email(),
+                self::isVerified(),
+                self::isRoot(),
+                self::isActivated(),
+                self::permissions(),
+                self::policies(),
+                self::createdBy(),
+                self::createdAt(),
+                self::updatedAt(),
             ])
             ->query(function () {
                 $users = User::where('email', '!=', Identification::getEmail());
                 if (Identification::isRoot()) {
                     return $users;
                 }
+
                 return Security::viewAnyOther($users->where('is_root', false));
             })
             ->filters([
                 //
             ])
             ->recordActions([
-                EditAction::make(),
+                self::buttonGroup(),
             ])
             ->toolbarActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                ]),
+                self::bulkButtonGroup(false, [self::deleteBulkButton()]),
             ]);
     }
 }

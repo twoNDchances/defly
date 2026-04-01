@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Models\User;
-use Illuminate\Database\Eloquent\Model;
 
 class Security
 {
@@ -24,12 +23,13 @@ class Security
         'delete' => 'Delete',
     ];
 
-    public static function generatePermissionList()
+    public static function generatePermissionList($groupByModel = false)
     {
         $policiesPath = app_path('Policies');
         $files = glob("$policiesPath/*.php");
 
         $permissions = [];
+        $groupedActions = [];
 
         foreach ($files as $file) {
             $className = 'App\\Policies\\'.basename($file, '.php');
@@ -51,6 +51,11 @@ class Security
                     continue;
                 }
 
+                if ($groupByModel) {
+                    $groupedActions[$model][$method] = self::$actions[$method];
+                    continue;
+                }
+
                 $permissions[] = [
                     'name' => "$model:".self::$actions[$method],
                     'applied_for' => $model,
@@ -59,7 +64,7 @@ class Security
             }
         }
 
-        return $permissions;
+        return $groupByModel ? $groupedActions : $permissions;
     }
 
     public static function can($model, $action, ?User $user = null)

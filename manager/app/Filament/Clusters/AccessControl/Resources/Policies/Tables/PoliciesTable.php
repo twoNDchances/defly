@@ -32,7 +32,7 @@ class PoliciesTable
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
-            ->query(fn() => Security::viewAnyOther(Policy::class))
+            ->query(fn () => Security::viewAnyOther(Policy::class))
             ->filters([
                 //
             ])

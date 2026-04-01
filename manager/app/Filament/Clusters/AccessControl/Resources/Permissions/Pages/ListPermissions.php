@@ -3,17 +3,12 @@
 namespace App\Filament\Clusters\AccessControl\Resources\Permissions\Pages;
 
 use App\Filament\Clusters\AccessControl\Resources\Permissions\PermissionResource;
-use Filament\Actions\CreateAction;
+use App\Traits\Filament\Pages\ListPage;
 use Filament\Resources\Pages\ListRecords;
 
 class ListPermissions extends ListRecords
 {
-    protected static string $resource = PermissionResource::class;
+    use ListPage;
 
-    protected function getHeaderActions(): array
-    {
-        return [
-            CreateAction::make(),
-        ];
-    }
+    protected static string $resource = PermissionResource::class;
 }

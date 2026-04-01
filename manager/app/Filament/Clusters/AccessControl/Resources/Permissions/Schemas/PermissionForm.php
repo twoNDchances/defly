@@ -2,27 +2,35 @@
 
 namespace App\Filament\Clusters\AccessControl\Resources\Permissions\Schemas;
 
-use Filament\Forms\Components\Textarea;
-use Filament\Forms\Components\TextInput;
+use App\Traits\Filament\Fields\PermissionField;
+use Filament\Schemas\Components;
 use Filament\Schemas\Schema;
 
 class PermissionForm
 {
+    use PermissionField;
+
     public static function configure(Schema $schema): Schema
     {
-        return $schema
-            ->components([
-                TextInput::make('name')
-                    ->required(),
-                Textarea::make('description')
-                    ->default(null)
-                    ->columnSpanFull(),
-                TextInput::make('applied_for')
-                    ->required(),
-                TextInput::make('action')
-                    ->required(),
-                TextInput::make('created_by')
-                    ->default(null),
-            ]);
+        return $schema->components(self::main());
+    }
+
+    public static function main()
+    {
+        return [
+            Components\Grid::make(3)
+                ->columnSpanFull()
+                ->schema([
+                    Components\Section::make(__('forms.permission.sections.a.title'))
+                        ->columnSpan(2)
+                        ->columns(2)
+                        ->schema([
+                            self::name()->columnSpanFull(),
+                            self::appliedFor(),
+                            self::action(),
+                            self::description()->columnSpanFull(),
+                        ]),
+                ]),
+        ];
     }
 }

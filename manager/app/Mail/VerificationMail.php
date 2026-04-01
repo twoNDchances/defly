@@ -25,7 +25,7 @@ class VerificationMail extends Mailable implements ShouldQueue
      */
     public function __construct($name, $email, $token)
     {
-        $this->name  = $name;
+        $this->name = $name;
         $this->email = $email;
         $this->token = $token;
     }
@@ -48,7 +48,7 @@ class VerificationMail extends Mailable implements ShouldQueue
         return new Content(
             view: 'mails.verification',
             with: [
-                'name'  => $this->name,
+                'name' => $this->name,
                 'email' => $this->email,
                 'token' => $this->token,
             ],

@@ -7,6 +7,6 @@ use App\Traits\Observers\Before;
 
 class PolicyObserver
 {
-    use Before;
     use After;
+    use Before;
 }

@@ -3,17 +3,12 @@
 namespace App\Filament\Clusters\Authentication\Resources\Users\Pages;
 
 use App\Filament\Clusters\Authentication\Resources\Users\UserResource;
-use Filament\Actions\CreateAction;
+use App\Traits\Filament\Pages\ListPage;
 use Filament\Resources\Pages\ListRecords;
 
 class ListUsers extends ListRecords
 {
-    protected static string $resource = UserResource::class;
+    use ListPage;
 
-    protected function getHeaderActions(): array
-    {
-        return [
-            CreateAction::make(),
-        ];
-    }
+    protected static string $resource = UserResource::class;
 }

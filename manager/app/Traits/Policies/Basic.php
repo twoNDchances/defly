@@ -16,10 +16,10 @@ trait Basic
     public function checkAccess(User $user, $model, $action): bool
     {
         $permission = Security::can($this->getModel(), $action, $user);
-        if (!$this->accessOther($user))
-        {
+        if (! $this->accessOther($user)) {
             return $permission && $user->id == $model->created_by;
         }
+
         return $permission;
     }
 

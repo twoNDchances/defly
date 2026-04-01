@@ -20,4 +20,9 @@ class AccessControlCluster extends Cluster
     {
         return __('navigations.clusters.access_control');
     }
+
+    public static function getClusterBreadcrumb(): string
+    {
+        return __('navigations.clusters.access_control');
+    }
 }

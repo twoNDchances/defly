@@ -8,8 +8,7 @@ Route::get('/', function () {
 });
 
 Route::name('defly_manager.')
-->prefix(config('customization.backend.urls.gui_prefix'))
-->group(function ()
-{
-    Route::get('verify/{email}/{token}', [UserController::class, 'verify'])->name('verification_mail');
-});
+    ->prefix(config('customization.backend.urls.gui_prefix'))
+    ->group(function () {
+        Route::get('verify/{email}/{token}', [UserController::class, 'verify'])->name('verification_mail');
+    });

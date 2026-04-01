@@ -10,8 +10,7 @@ class UserController extends Controller
     public function verify($email, $token)
     {
         $user = User::where('email', $email)->where('verification_token', $token)->first();
-        if (!$user)
-        {
+        if (! $user) {
             abort(404);
         }
         $user->markEmailAsVerified();
@@ -20,6 +19,7 @@ class UserController extends Controller
             'is_verified' => true,
         ]);
         Auth::login($user, true);
+
         return response()->redirectTo(route('filament.defly-manager.pages.dashboard'));
     }
 }

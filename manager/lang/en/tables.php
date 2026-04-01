@@ -1,0 +1,25 @@
+<?php
+
+return [
+    'commons' => [
+        'created_by' => 'Created by',
+        'created_at' => 'Created at',
+        'updated_at' => 'Updated at',
+    ],
+    'columns' => [
+        'user' => [
+            'name' => 'Name',
+            'email' => 'Email',
+            'is_verified' => 'Is verified',
+            'is_root' => 'Is root',
+            'is_activated' => 'Is activated',
+            'permissions' => 'Permissions',
+            'policies' => 'Policies',
+        ],
+        'permission' => [
+            'name' => 'Name',
+            'applied_for' => 'Scope',
+            'action' => 'Action',
+        ],
+    ],
+];

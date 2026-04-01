@@ -16,10 +16,13 @@ class UserPolicy
 
     public function checkRoot(User $user, $model, $action): bool
     {
-        if (!$user->is_root && $model->is_root)
-        {
+        if (! $user->is_root && $model->is_root) {
             return false;
         }
+        if ($user == $model) {
+            return false;
+        }
+
         return $this->checkAccess($user, $model, $action);
     }
 
