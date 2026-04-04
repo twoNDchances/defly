@@ -24,4 +24,14 @@ trait PermissionColumn
         return self::textColumn('action', __('tables.columns.permission.action'))
             ->getStateUsing(fn ($record) => Security::generatePermissionList(true)[$record->applied_for][$record->action]);
     }
+
+    public static function users()
+    {
+        return self::relationshipColumn('users.email', __('tables.columns.permission.users'));
+    }
+
+    public static function policies()
+    {
+        return self::relationshipColumn('policies.name', __('tables.columns.permission.policies'));
+    }
 }

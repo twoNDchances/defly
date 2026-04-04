@@ -8,8 +8,7 @@ use App\Traits\Policies\Relationship;
 
 class PermissionPolicy
 {
-    use Basic;
-    use Relationship;
+    use Basic, Relationship;
 
     public function getModel()
     {

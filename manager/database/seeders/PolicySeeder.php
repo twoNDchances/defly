@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Label;
 use App\Models\Permission;
 use App\Models\Policy;
 use App\Models\User;
@@ -28,5 +29,7 @@ class PolicySeeder extends Seeder
             ['created_by' => $user->id],
         );
         $policy->permissions()->sync($allPermissionIds);
+        $label = Label::where('name', config('customization.backend.default_label'))->first();
+        $label->policies()->sync($policy->id);
     }
 }

@@ -15,8 +15,7 @@ use Illuminate\Support\Str;
 
 class UserObserver
 {
-    use After;
-    use Before;
+    use After, Before;
 
     public function creating(User $user): void
     {

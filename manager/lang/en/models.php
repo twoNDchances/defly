@@ -1,6 +1,11 @@
 <?php
 
 return [
+    'commons' => [
+        'created_by' => 'Created by',
+        'created_at' => 'Created at',
+        'updated_at' => 'Updated at',
+    ],
     'permission' => [
         'name' => 'Permission',
         'fields' => [
@@ -8,9 +13,6 @@ return [
             'description' => 'Description',
             'applied_for' => 'Applied for',
             'action' => 'Action',
-            'created_by' => 'Created by',
-            'created_at' => 'Created at',
-            'updated_at' => 'Updated at',
         ],
     ],
     'policy' => [
@@ -18,9 +20,6 @@ return [
         'fields' => [
             'name' => 'Name',
             'description' => 'Description',
-            'created_by' => 'Created by',
-            'created_at' => 'Created at',
-            'updated_at' => 'Updated at',
         ],
     ],
     'user' => [
@@ -33,9 +32,14 @@ return [
             'is_verified' => 'Is verified',
             'is_root' => 'Is root',
             'is_activated' => 'Is activated',
-            'created_by' => 'Created by',
-            'created_at' => 'Created at',
-            'updated_at' => 'Updated at',
+        ],
+    ],
+    'label' => [
+        'name' => 'Label',
+        'fields' => [
+            'name' => 'Name',
+            'color' => 'Color',
+            'description' => 'Description',
         ],
     ],
 ];

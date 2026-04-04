@@ -46,7 +46,7 @@ trait Column
 
     public static function labels()
     {
-        return self::relationshipColumn('labels.name', 'Labels')
+        return self::relationshipColumn('labels.name', __('tables.commons.labels'))
             ->color(fn ($state, $record) => Color::hex($record->labels()->pluck('color', 'name')->toArray()[$state]))
             ->bulleted(false)
             ->badge();

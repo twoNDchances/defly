@@ -10,26 +10,14 @@ use Filament\Tables\Table;
 
 class UsersTable
 {
-    use UserButton;
-    use UserColumn;
+    use UserButton, UserColumn;
 
     public static function configure(Table $table): Table
     {
         return $table
-            ->columns([
-                self::email(),
-                self::isVerified(),
-                self::isRoot(),
-                self::isActivated(),
-                self::permissions(),
-                self::policies(),
-                self::canManageFromOther(),
-                self::createdBy(),
-                self::createdAt(),
-                self::updatedAt(),
-            ])
+            ->columns(self::columns())
             ->query(function () {
-                $users = User::query()->manage()->where('email', '!=', Identification::getEmail());
+                $users = User::where('email', '!=', Identification::getEmail());
                 if (Identification::isRoot()) {
                     return $users;
                 }
@@ -43,7 +31,23 @@ class UsersTable
                 self::buttonGroup(),
             ])
             ->toolbarActions([
-                self::bulkButtonGroup(false, [self::deleteBulkButton()]),
+                self::bulkButtonGroup(false, [self::deleteMultiUserButton()]),
             ]);
+    }
+
+    public static function columns()
+    {
+        return [
+            self::email(),
+            self::isVerified(),
+            self::isRoot(),
+            self::isActivated(),
+            self::permissions(),
+            self::policies(),
+            self::labels(),
+            self::createdBy(),
+            self::createdAt(),
+            self::updatedAt(),
+        ];
     }
 }

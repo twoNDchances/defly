@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Observers\PermissionObserver;
+use App\Traits\Models\Labellable;
 use App\Traits\Models\Owner;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
@@ -13,8 +14,7 @@ use Illuminate\Database\Eloquent\Model;
 #[ObservedBy(PermissionObserver::class)]
 class Permission extends Model
 {
-    use HasUuids;
-    use Owner;
+    use HasUuids, Labellable, Owner;
 
     public function casts()
     {

@@ -2,7 +2,6 @@
 
 namespace App\Filament\Clusters\AccessControl\Resources\Policies\Tables;
 
-use App\Models\Policy;
 use App\Traits\Filament\Specifics\Policy\PolicyButton;
 use App\Traits\Filament\Specifics\Policy\PolicyColumn;
 use Filament\Tables\Table;
@@ -16,7 +15,6 @@ class PoliciesTable
     {
         return $table
             ->columns(self::columns())
-            ->query(Policy::query()->manage())
             ->filters([
                 //
             ])
@@ -34,7 +32,7 @@ class PoliciesTable
             self::name(),
             self::users(),
             self::permissions(),
-            self::canManageFromOther(),
+            self::labels(),
             self::createdBy(),
             self::createdAt(),
             self::updatedAt(),

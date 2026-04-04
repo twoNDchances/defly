@@ -3,6 +3,7 @@
 return [
     'groups' => [
         'security' => 'Bảo mật',
+        'utilities' => 'Tiện ích',
     ],
     'clusters' => [
         'authentication' => 'Xác thực',

@@ -4,28 +4,21 @@ namespace App\Filament\Clusters\Authentication\Resources\Users\RelationManagers;
 
 use App\Filament\Clusters\AccessControl\Resources\Policies\Schemas\PolicyForm;
 use App\Filament\Clusters\AccessControl\Resources\Policies\Tables\PoliciesTable;
-use App\Traits\Filament\Generals\Components\Button;
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\DetachAction;
-use Filament\Actions\DetachBulkAction;
-use Filament\Actions\EditAction;
+use App\Traits\Filament\Specifics\Policy\PolicyButton;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
 
 class PoliciesRelationManager extends RelationManager
 {
-    use Button;
+    use PolicyButton;
 
     protected static string $relationship = 'policies';
 
-    protected static ?string $label = 'Chính sách';
-
     public function form(Schema $schema): Schema
     {
-        return PolicyForm::configure($schema);
+        return $schema->schema(PolicyForm::fields());
     }
 
     public function table(Table $table): Table
@@ -41,15 +34,20 @@ class PoliciesRelationManager extends RelationManager
                 self::attachButton(),
             ])
             ->recordActions([
-                EditAction::make(),
-                DetachAction::make(),
-                DeleteAction::make(),
+                self::buttonGroup(delete: false, more: [self::detachButton()]),
             ])
             ->toolbarActions([
-                BulkActionGroup::make([
-                    DetachBulkAction::make(),
-                    DeleteBulkAction::make(),
-                ]),
+                self::bulkButtonGroup(false, [self::detachBulkButton()]),
             ]);
+    }
+
+    public static function getTitle(Model $ownerRecord, string $pageClass): string
+    {
+        return __('models.policy.name');
+    }
+
+    public static function getRecordLabel(): ?string
+    {
+        return __('models.policy.name');
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Traits\Filament\Generals\Components;
 
+use App\Filament\Resources\Labels\Schemas\LabelForm;
 use Filament\Forms\Components;
 
 trait Field
@@ -77,5 +78,17 @@ trait Field
         return Components\CodeEditor::make($name)
             ->language($language)
             ->label($label);
+    }
+
+    public static function labels()
+    {
+        return self::select(
+            'labels',
+            __('forms.commons.labels.label')
+        )
+            ->helperText(__('forms.commons.labels.description'))
+            ->multiple()
+            ->relationship('labels', 'name')
+            ->createOptionForm(LabelForm::forms());
     }
 }

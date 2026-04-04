@@ -3,6 +3,7 @@
 return [
     'groups' => [
         'security' => 'Security',
+        'utilities' => 'Utilities',
     ],
     'clusters' => [
         'authentication' => 'Authentication',

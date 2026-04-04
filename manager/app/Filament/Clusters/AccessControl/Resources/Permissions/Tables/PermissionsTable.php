@@ -2,7 +2,6 @@
 
 namespace App\Filament\Clusters\AccessControl\Resources\Permissions\Tables;
 
-use App\Models\Permission;
 use App\Traits\Filament\Specifics\Permission\PermissionButton;
 use App\Traits\Filament\Specifics\Permission\PermissionColumn;
 use Filament\Tables\Table;
@@ -15,16 +14,7 @@ class PermissionsTable
     public static function configure(Table $table): Table
     {
         return $table
-            ->columns([
-                self::name(),
-                self::appliedFor(),
-                self::action(),
-                self::canManageFromOther(),
-                self::createdBy(),
-                self::createdAt(),
-                self::updatedAt(),
-            ])
-            ->query(Permission::query()->manage())
+            ->columns(self::columns())
             ->filters([
                 //
             ])
@@ -34,5 +24,20 @@ class PermissionsTable
             ->toolbarActions([
                 self::bulkButtonGroup(),
             ]);
+    }
+
+    public static function columns()
+    {
+        return [
+            self::name(),
+            self::appliedFor(),
+            self::action(),
+            self::users(),
+            self::policies(),
+            self::labels(),
+            self::createdBy(),
+            self::createdAt(),
+            self::updatedAt(),
+        ];
     }
 }

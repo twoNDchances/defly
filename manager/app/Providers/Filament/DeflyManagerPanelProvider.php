@@ -59,6 +59,10 @@ class DeflyManagerPanelProvider extends PanelProvider
             ->sidebarCollapsibleOnDesktop()
             ->discoverClusters(app_path('Filament/Clusters'), 'App\\Filament\\Clusters')
             ->profile()
+            ->navigationGroups([
+                __('navigations.groups.utilities'),
+                __('navigations.groups.security'),
+            ])
             ->plugins([
                 FilamentLanguageSwitcherPlugin::make()
                     ->locales(['vi', 'en'])

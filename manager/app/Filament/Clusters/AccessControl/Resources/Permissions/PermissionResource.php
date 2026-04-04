@@ -6,6 +6,8 @@ use App\Filament\Clusters\AccessControl\AccessControlCluster;
 use App\Filament\Clusters\AccessControl\Resources\Permissions\Pages\CreatePermission;
 use App\Filament\Clusters\AccessControl\Resources\Permissions\Pages\EditPermission;
 use App\Filament\Clusters\AccessControl\Resources\Permissions\Pages\ListPermissions;
+use App\Filament\Clusters\AccessControl\Resources\Permissions\RelationManagers\PoliciesRelationManager;
+use App\Filament\Clusters\AccessControl\Resources\Permissions\RelationManagers\UsersRelationManager;
 use App\Filament\Clusters\AccessControl\Resources\Permissions\Schemas\PermissionForm;
 use App\Filament\Clusters\AccessControl\Resources\Permissions\Tables\PermissionsTable;
 use App\Models\Permission;
@@ -38,7 +40,8 @@ class PermissionResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            UsersRelationManager::class,
+            PoliciesRelationManager::class,
         ];
     }
 

@@ -12,7 +12,12 @@ class PermissionForm
 
     public static function configure(Schema $schema): Schema
     {
-        return $schema->components([
+        return $schema->components(self::fields());
+    }
+
+    public static function fields()
+    {
+        return [
             Components\Grid::make(3)
                 ->columnSpanFull()
                 ->schema([
@@ -25,7 +30,13 @@ class PermissionForm
                             self::action(),
                             self::description()->columnSpanFull(),
                         ]),
+                    Components\Section::make(__('forms.commons.sections.labels.title'))
+                        ->columnSpan(1)
+                        ->columns(1)
+                        ->schema([
+                            self::labels(),
+                        ]),
                 ]),
-        ]);
+        ];
     }
 }

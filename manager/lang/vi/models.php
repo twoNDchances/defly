@@ -1,6 +1,11 @@
 <?php
 
 return [
+    'commons' => [
+        'created_by' => 'Tạo bởi',
+        'created_at' => 'Tạo lúc',
+        'updated_at' => 'Cập nhật lúc',
+    ],
     'permission' => [
         'name' => 'Quyền',
         'fields' => [
@@ -8,9 +13,6 @@ return [
             'description' => 'Mô tả',
             'applied_for' => 'Áp dụng cho',
             'action' => 'Hành động',
-            'created_by' => 'Tạo bởi',
-            'created_at' => 'Tạo lúc',
-            'updated_at' => 'Cập nhật lúc',
         ],
     ],
     'policy' => [
@@ -18,9 +20,6 @@ return [
         'fields' => [
             'name' => 'Tên',
             'description' => 'Mô tả',
-            'created_by' => 'Tạo bởi',
-            'created_at' => 'Tạo lúc',
-            'updated_at' => 'Cập nhật lúc',
         ],
     ],
     'user' => [
@@ -33,9 +32,14 @@ return [
             'is_verified' => 'Được xác minh',
             'is_root' => 'Toàn quyền',
             'is_activated' => 'Được kích hoạt',
-            'created_by' => 'Tạo bởi',
-            'created_at' => 'Tạo lúc',
-            'updated_at' => 'Cập nhật lúc',
+        ],
+    ],
+    'label' => [
+        'name' => 'Nhãn',
+        'fields' => [
+            'name' => 'Tên',
+            'color' => 'Màu sắc',
+            'description' => 'Mô tả',
         ],
     ],
 ];

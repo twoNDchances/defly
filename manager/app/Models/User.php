@@ -3,8 +3,8 @@
 namespace App\Models;
 
 use App\Observers\UserObserver;
+use App\Traits\Models\Labellable;
 use App\Traits\Models\Owner;
-use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
@@ -18,12 +18,7 @@ use Illuminate\Notifications\Notifiable;
 #[ObservedBy(UserObserver::class)]
 class User extends Authenticatable
 {
-    /** @use HasFactory<UserFactory> */
-    use HasFactory;
-
-    use HasUuids;
-    use Notifiable;
-    use Owner;
+    use HasFactory, HasUuids, Labellable, Notifiable, Owner;
 
     /**
      * Get the attributes that should be cast.

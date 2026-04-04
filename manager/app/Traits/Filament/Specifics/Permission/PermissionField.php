@@ -8,7 +8,6 @@ use App\Traits\Filament\Generals\Components\Field;
 trait PermissionField
 {
     use Field;
-    use PermissionButton;
 
     public static function name()
     {
@@ -49,7 +48,11 @@ trait PermissionField
 
     public static function description()
     {
-        return self::textArea('description', __('models.permission.fields.description'), __('forms.permission.text_examples.description'))
+        return self::textArea(
+            'description',
+            __('models.permission.fields.description'),
+            __('forms.permission.text_examples.description'),
+        )
             ->helperText(__('forms.permission.descriptions.description'));
     }
 }

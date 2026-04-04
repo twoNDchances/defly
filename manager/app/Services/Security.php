@@ -20,9 +20,6 @@ class Security
         'update' => 'Update',
         'deleteAny' => 'Multi-delete',
         'delete' => 'Delete',
-        'attach' => 'Attach',
-        'detach' => 'Detach',
-        'detachAny' => 'Multi-detach',
     ];
 
     public static function generatePermissionList($groupByModel = false)

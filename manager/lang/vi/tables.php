@@ -2,6 +2,7 @@
 
 return [
     'commons' => [
+        'labels' => 'Nhãn',
         'created_by' => 'Tạo bởi',
         'created_at' => 'Tạo lúc',
         'updated_at' => 'Cập nhật lúc',
@@ -20,11 +21,18 @@ return [
             'name' => 'Tên',
             'applied_for' => 'Phạm vi',
             'action' => 'Hành động',
+            'users' => 'Áp dụng người dùng',
+            'policies' => 'Thuộc chính sách',
         ],
         'policy' => [
             'name' => 'Tên',
             'users' => 'Người dùng được áp dụng',
             'permissions' => 'Quyền đang sử dụng',
+        ],
+        'label' => [
+            'name' => 'Tên',
+            'color' => 'Màu sắc',
+            'preview' => 'Xem trước',
         ],
     ],
 ];

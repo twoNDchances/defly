@@ -8,8 +8,7 @@ use App\Traits\Policies\Relationship;
 
 class PolicyPolicy
 {
-    use Basic;
-    use Relationship;
+    use Basic, Relationship;
 
     public function getModel()
     {

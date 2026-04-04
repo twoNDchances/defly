@@ -7,6 +7,5 @@ use App\Traits\Observers\Before;
 
 class PermissionObserver
 {
-    use After;
-    use Before;
+    use After, Before;
 }

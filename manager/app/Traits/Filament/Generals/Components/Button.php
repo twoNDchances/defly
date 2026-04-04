@@ -2,8 +2,9 @@
 
 namespace App\Traits\Filament\Generals\Components;
 
-use App\Services\Identification;
 use Filament\Actions;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\DetachBulkAction;
 use Filament\Support\Enums\Width;
 use Filament\Support\Icons\Heroicon;
 
@@ -18,8 +19,7 @@ trait Button
     {
         return Actions\AttachAction::make()->icon(fn () => Heroicon::OutlinedLink)
             ->preloadRecordSelect()
-            ->multiple()
-            ->recordSelectOptionsQuery(fn ($query) => $query->manage());
+            ->multiple();
     }
 
     public static function viewButton()
@@ -81,34 +81,12 @@ trait Button
 
     public static function deleteBulkButton()
     {
-        return self::bulkButton(
-            'delete_bulk_button',
-            __('actions.commons.delete_bulk'),
-            Heroicon::OutlinedTrash,
-            function ($records) {
-                $userId = Identification::getId();
+        return DeleteBulkAction::make()->chunkSelectedRecords(100);
+    }
 
-                foreach ($records as $record) {
-
-                    if (Identification::isRoot()) {
-                        $record->delete();
-
-                        continue;
-                    }
-
-                    $isOwner = $record->created_by == $userId;
-                    $canManage = $record->can_manage_from_others;
-
-                    if (! $isOwner && ! $canManage) {
-                        continue;
-                    }
-                    $record->delete();
-                }
-            },
-        )
-            ->deselectRecordsAfterCompletion()
-            ->requiresConfirmation()
-            ->color('danger');
+    public static function detachBulkButton()
+    {
+        return DetachBulkAction::make()->chunkSelectedRecords(100);
     }
 
     public static function bulkButtonGroup($delete = true, $more = [])

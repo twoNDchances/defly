@@ -26,6 +26,7 @@ return [
             'user_email' => env('USER_EMAIL', 'root@defly.2ndproject.site'),
             'user_password' => env('USER_PASSWORD', 'random'),
         ],
+        'default_label' => 'default-resources',
         'urls' => [
             'api_prefix' => Str::slug(Str::lower(env('API_PREFIX', 'api'))),
             'gui_prefix' => Str::slug(Str::lower(env('GUI_PREFIX', 'defly-manager'))),

@@ -1,6 +1,17 @@
 <?php
 
 return [
+    'commons' => [
+        'labels' => [
+            'label' => 'Nhãn',
+            'description' => 'Bạn cũng có thể phân loại dữ liệu cho loại tài nguyên này',
+        ],
+        'sections' => [
+            'labels' => [
+                'title' => 'Gán nhãn tài nguyên',
+            ],
+        ],
+    ],
     'user' => [
         'text_examples' => [
             'name' => 'Nguyen Van A',
@@ -14,8 +25,6 @@ return [
             'is_verified' => 'Tắt nếu bạn muốn người dùng phải xác minh bằng địa chỉ email trước khi đăng nhập, bật sẽ đặt đã xác minh',
             'is_root' => 'Bật nếu bạn muốn người dùng này có thể toàn quyền trong hệ thống',
             'is_activated' => 'Tắt nếu bạn muốn người dùng này không thể dùng hệ thống tạm thời',
-            'policies' => 'Bạn có thể gán nhiều chính sách cho người dùng này',
-            'permissions' => 'Bạn có thể gán nhiều quyền cho người dùng này',
         ],
         'buttons' => [
             'generate_password' => 'Tạo mật khẩu',
@@ -36,15 +45,10 @@ return [
             'applied_for' => 'Phạm vi quyền áp dụng',
             'action' => 'Hành động được cho phép trong phạm vi đã chọn',
             'description' => 'Bạn có thể giải thích rõ hơn nếu quyền phức tạp',
-            'users' => 'Bạn có thể gán nhiều người dùng cho quyền này',
-            'policies' => 'Bạn có thể gán nhiều chính sách cho quyền này',
         ],
         'sections' => [
             'a' => [
                 'title' => 'Định nghĩa quyền',
-            ],
-            'b' => [
-                'title' => 'Kiểm soát bảo mật',
             ],
         ],
     ],
@@ -56,15 +60,26 @@ return [
         'descriptions' => [
             'name' => 'Tên duy nhất theo kiểu kebab đại diện cho chính sách này',
             'description' => 'Bạn có thể giải thích rõ hơn nếu chính sách phức tạp',
-            'users' => 'Bạn có thể gán nhiều người dùng cho chính sách này',
-            'permissions' => 'Bạn có thể gán nhiều quyền cho chính sách này',
         ],
         'sections' => [
             'a' => [
                 'title' => 'Định nghĩa chính sách',
             ],
-            'b' => [
-                'title' => 'Kiểm soát bảo mật',
+        ],
+    ],
+    'label' => [
+        'text_examples' => [
+            'name' => 'nhan-tai-nguyen',
+            'description' => 'Một số mô tả về nhãn này',
+        ],
+        'descriptions' => [
+            'name' => 'Tên duy nhất theo kiểu kebab đại diện cho nhãn này',
+            'color' => 'Mã màu cho nhãn này để dễ phân biệt hơn',
+            'description' => 'Bạn có thể giải thích rõ hơn nếu nhãn phức tạp',
+        ],
+        'sections' => [
+            'a' => [
+                'title' => 'Định nghĩa nhãn',
             ],
         ],
     ],

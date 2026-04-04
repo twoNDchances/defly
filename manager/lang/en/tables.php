@@ -2,6 +2,7 @@
 
 return [
     'commons' => [
+        'labels' => 'Labels',
         'created_by' => 'Created by',
         'created_at' => 'Created at',
         'updated_at' => 'Updated at',
@@ -20,11 +21,18 @@ return [
             'name' => 'Name',
             'applied_for' => 'Scope',
             'action' => 'Action',
+            'users' => 'Users',
+            'policies' => 'Policies',
         ],
         'policy' => [
             'name' => 'Name',
             'users' => 'Users',
             'permissions' => 'Permissions',
+        ],
+        'label' => [
+            'name' => 'Name',
+            'color' => 'Color',
+            'preview' => 'Preview',
         ],
     ],
 ];

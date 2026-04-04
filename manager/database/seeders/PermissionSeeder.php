@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Label;
 use App\Models\Permission;
 use App\Models\User;
 use App\Services\Security;
@@ -16,10 +17,14 @@ class PermissionSeeder extends Seeder
     {
         $email = config('customization.backend.default_credentials.user_email');
         $user = User::where('email', $email)->first();
-        $permissions = Security::generatePermissionList();
-        foreach ($permissions as $permission) {
-            $permission['created_by'] = $user->id;
-            Permission::firstOrCreate(['name' => $permission['name']], $permission);
+        $permissionList = Security::generatePermissionList();
+        $permissionIds = [];
+        foreach ($permissionList as $permissionData) {
+            $permissionData['created_by'] = $user->id;
+            $permission = Permission::firstOrCreate(['name' => $permissionData['name']], $permissionData);
+            $permissionIds[] = $permission->id;
         }
+        $label = Label::where('name', config('customization.backend.default_label'))->first();
+        $label->permissions()->sync($permissionIds);
     }
 }
