@@ -14,13 +14,15 @@ class Security
 
     public static $actions = [
         'all' => 'Full',
-        'accessOther' => 'Access other',
         'viewAny' => 'List',
         'view' => 'View',
         'create' => 'Create',
         'update' => 'Update',
         'deleteAny' => 'Multi-delete',
         'delete' => 'Delete',
+        'attach' => 'Attach',
+        'detach' => 'Detach',
+        'detachAny' => 'Multi-detach',
     ];
 
     public static function generatePermissionList($groupByModel = false)
@@ -53,6 +55,7 @@ class Security
 
                 if ($groupByModel) {
                     $groupedActions[$model][$method] = self::$actions[$method];
+
                     continue;
                 }
 
@@ -78,16 +81,6 @@ class Security
         }
 
         return self::checkPermission($user, $model, $action);
-    }
-
-    public static function viewAnyOther($resource)
-    {
-        $query = $resource::query();
-        if (! self::can($resource, 'accessOther')) {
-            return $query->where('created_by', Identification::getCurrent());
-        }
-
-        return $query;
     }
 
     public static function checkPermission(User $user, $model, $action)

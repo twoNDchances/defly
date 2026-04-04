@@ -3,19 +3,14 @@
 namespace App\Filament\Clusters\AccessControl\Resources\Permissions\Tables;
 
 use App\Models\Permission;
-use App\Services\Security;
-use App\Traits\Filament\Button;
-use App\Traits\Filament\Columns\PermissionColumn;
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\EditAction;
-use Filament\Tables\Columns\TextColumn;
+use App\Traits\Filament\Specifics\Permission\PermissionButton;
+use App\Traits\Filament\Specifics\Permission\PermissionColumn;
 use Filament\Tables\Table;
 
 class PermissionsTable
 {
+    use PermissionButton;
     use PermissionColumn;
-    use Button;
 
     public static function configure(Table $table): Table
     {
@@ -24,11 +19,12 @@ class PermissionsTable
                 self::name(),
                 self::appliedFor(),
                 self::action(),
+                self::canManageFromOther(),
                 self::createdBy(),
                 self::createdAt(),
                 self::updatedAt(),
             ])
-            ->query(fn () => Security::viewAnyOther(Permission::class))
+            ->query(Permission::query()->manage())
             ->filters([
                 //
             ])

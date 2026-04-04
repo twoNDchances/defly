@@ -22,6 +22,7 @@ class Policy extends Model
             'id' => 'string',
             'name' => 'string',
             'description' => 'string',
+            'created_by' => 'string',
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
         ];

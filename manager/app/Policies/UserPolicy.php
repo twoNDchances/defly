@@ -4,10 +4,12 @@ namespace App\Policies;
 
 use App\Models\User;
 use App\Traits\Policies\Basic;
+use App\Traits\Policies\Relationship;
 
 class UserPolicy
 {
     use Basic;
+    use Relationship;
 
     public function getModel()
     {
@@ -39,5 +41,15 @@ class UserPolicy
     public function delete(User $user, $model): bool
     {
         return $this->checkRoot($user, $model, 'delete');
+    }
+
+    public function attach(User $user, $model): bool
+    {
+        return $this->checkRoot($user, $model, 'attach');
+    }
+
+    public function detach(User $user, $model): bool
+    {
+        return $this->checkRoot($user, $model, 'detach');
     }
 }

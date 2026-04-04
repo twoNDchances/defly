@@ -21,5 +21,10 @@ return [
             'applied_for' => 'Scope',
             'action' => 'Action',
         ],
+        'policy' => [
+            'name' => 'Name',
+            'users' => 'Users',
+            'permissions' => 'Permissions',
+        ],
     ],
 ];

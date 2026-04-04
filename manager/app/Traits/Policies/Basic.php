@@ -4,24 +4,10 @@ namespace App\Traits\Policies;
 
 use App\Models\User;
 use App\Services\Security;
-use Illuminate\Database\Eloquent\Model;
 
 trait Basic
 {
-    public function getModel()
-    {
-        return Model::class;
-    }
-
-    public function checkAccess(User $user, $model, $action): bool
-    {
-        $permission = Security::can($this->getModel(), $action, $user);
-        if (! $this->accessOther($user)) {
-            return $permission && $user->id == $model->created_by;
-        }
-
-        return $permission;
-    }
+    use Access;
 
     /**
      * Determine whether the user can use any models.
@@ -29,14 +15,6 @@ trait Basic
     public function all(User $user): bool
     {
         return Security::can($this->getModel(), 'all', $user);
-    }
-
-    /**
-     * Determine whether the user can access to not owned models.
-     */
-    public function accessOther(User $user): bool
-    {
-        return Security::can($this->getModel(), 'accessOther', $user);
     }
 
     /**

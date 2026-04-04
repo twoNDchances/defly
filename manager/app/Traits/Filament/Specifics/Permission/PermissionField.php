@@ -1,13 +1,14 @@
 <?php
 
-namespace App\Traits\Filament\Fields;
+namespace App\Traits\Filament\Specifics\Permission;
 
 use App\Services\Security;
-use App\Traits\Filament\Field;
+use App\Traits\Filament\Generals\Components\Field;
 
 trait PermissionField
 {
     use Field;
+    use PermissionButton;
 
     public static function name()
     {
@@ -20,6 +21,7 @@ trait PermissionField
     public static function appliedFor()
     {
         $models = array_keys(Security::generatePermissionList(true));
+
         return self::select('applied_for', __('models.permission.fields.applied_for'))
             ->helperText(__('forms.permission.descriptions.applied_for'))
             ->options(array_combine($models, $models))
@@ -38,6 +40,7 @@ trait PermissionField
                 if (! $appliedFor) {
                     return [];
                 }
+
                 return Security::generatePermissionList(true)[$appliedFor] ?? [];
             })
             ->searchable()
@@ -47,6 +50,6 @@ trait PermissionField
     public static function description()
     {
         return self::textArea('description', __('models.permission.fields.description'), __('forms.permission.text_examples.description'))
-        ->helperText(__('forms.permission.descriptions.description'));
+            ->helperText(__('forms.permission.descriptions.description'));
     }
 }

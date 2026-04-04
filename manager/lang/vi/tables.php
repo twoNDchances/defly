@@ -21,5 +21,10 @@ return [
             'applied_for' => 'Phạm vi',
             'action' => 'Hành động',
         ],
+        'policy' => [
+            'name' => 'Tên',
+            'users' => 'Người dùng được áp dụng',
+            'permissions' => 'Quyền đang sử dụng',
+        ],
     ],
 ];

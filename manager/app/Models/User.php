@@ -42,6 +42,7 @@ class User extends Authenticatable
             'is_root' => 'boolean',
             'is_activated' => 'boolean',
             'verification_token' => 'string',
+            'created_by' => 'string',
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
         ];

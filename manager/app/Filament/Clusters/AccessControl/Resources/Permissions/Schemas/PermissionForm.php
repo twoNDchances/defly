@@ -2,7 +2,7 @@
 
 namespace App\Filament\Clusters\AccessControl\Resources\Permissions\Schemas;
 
-use App\Traits\Filament\Fields\PermissionField;
+use App\Traits\Filament\Specifics\Permission\PermissionField;
 use Filament\Schemas\Components;
 use Filament\Schemas\Schema;
 
@@ -12,12 +12,7 @@ class PermissionForm
 
     public static function configure(Schema $schema): Schema
     {
-        return $schema->components(self::main());
-    }
-
-    public static function main()
-    {
-        return [
+        return $schema->components([
             Components\Grid::make(3)
                 ->columnSpanFull()
                 ->schema([
@@ -31,6 +26,6 @@ class PermissionForm
                             self::description()->columnSpanFull(),
                         ]),
                 ]),
-        ];
+        ]);
     }
 }

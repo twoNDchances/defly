@@ -24,6 +24,7 @@ class Permission extends Model
             'description' => 'string',
             'applied_for' => 'string',
             'action' => 'string',
+            'created_by' => 'string',
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
         ];

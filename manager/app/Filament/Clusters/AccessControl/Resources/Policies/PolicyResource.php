@@ -19,7 +19,7 @@ class PolicyResource extends Resource
 {
     protected static ?string $model = Policy::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedListBullet;
 
     protected static ?string $cluster = AccessControlCluster::class;
 
@@ -49,5 +49,10 @@ class PolicyResource extends Resource
             'create' => CreatePolicy::route('/create'),
             'edit' => EditPolicy::route('/{record}/edit'),
         ];
+    }
+
+    public static function getModelLabel(): string
+    {
+        return __('models.policy.name');
     }
 }

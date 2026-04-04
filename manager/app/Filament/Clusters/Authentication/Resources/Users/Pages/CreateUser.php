@@ -3,7 +3,7 @@
 namespace App\Filament\Clusters\Authentication\Resources\Users\Pages;
 
 use App\Filament\Clusters\Authentication\Resources\Users\UserResource;
-use App\Traits\Filament\Pages\CreatePage;
+use App\Traits\Filament\Generals\Pages\CreatePage;
 use Filament\Resources\Pages\CreateRecord;
 
 class CreateUser extends CreateRecord

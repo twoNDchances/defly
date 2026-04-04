@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Traits\Filament;
+namespace App\Traits\Filament\Generals\Components;
 
+use App\Services\Identification;
 use Filament\Actions;
 use Filament\Support\Enums\Width;
 use Filament\Support\Icons\Heroicon;
@@ -15,7 +16,10 @@ trait Button
 
     public static function attachButton()
     {
-        return Actions\AttachAction::make()->icon(fn () => Heroicon::OutlinedLink);
+        return Actions\AttachAction::make()->icon(fn () => Heroicon::OutlinedLink)
+            ->preloadRecordSelect()
+            ->multiple()
+            ->recordSelectOptionsQuery(fn ($query) => $query->manage());
     }
 
     public static function viewButton()
@@ -75,6 +79,38 @@ trait Button
             ->action($action);
     }
 
+    public static function deleteBulkButton()
+    {
+        return self::bulkButton(
+            'delete_bulk_button',
+            __('actions.commons.delete_bulk'),
+            Heroicon::OutlinedTrash,
+            function ($records) {
+                $userId = Identification::getId();
+
+                foreach ($records as $record) {
+
+                    if (Identification::isRoot()) {
+                        $record->delete();
+
+                        continue;
+                    }
+
+                    $isOwner = $record->created_by == $userId;
+                    $canManage = $record->can_manage_from_others;
+
+                    if (! $isOwner && ! $canManage) {
+                        continue;
+                    }
+                    $record->delete();
+                }
+            },
+        )
+            ->deselectRecordsAfterCompletion()
+            ->requiresConfirmation()
+            ->color('danger');
+    }
+
     public static function bulkButtonGroup($delete = true, $more = [])
     {
         $bulkActionGroup = [];
@@ -84,7 +120,7 @@ trait Button
             }
         }
         if ($delete) {
-            $bulkActionGroup[] = Actions\DeleteBulkAction::make();
+            $bulkActionGroup[] = self::deleteBulkButton();
         }
 
         return Actions\BulkActionGroup::make($bulkActionGroup);

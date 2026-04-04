@@ -1,17 +1,17 @@
 <?php
 
-namespace App\Traits\Filament\Fields;
+namespace App\Traits\Filament\Specifics\User;
 
+use App\Rules\User\RootField;
 use App\Services\Identification;
-use App\Traits\Filament\Buttons\UserButton as Button;
-use App\Traits\Filament\Field;
+use App\Traits\Filament\Generals\Components\Field;
 use Filament\Resources\Pages\CreateRecord;
 use Filament\Support\Icons\Heroicon;
 
 trait UserField
 {
-    use Button;
     use Field;
+    use UserButton;
 
     public static function name()
     {
@@ -63,11 +63,7 @@ trait UserField
             ->required($condition)
             ->disabled(! $condition)
             ->visible($condition)
-            ->rule(fn () => function ($attribute, $value, $fail) use ($condition) {
-                if (! $condition) {
-                    $fail("The {$attribute} can only be used by authorized users.");
-                }
-            })
+            ->rule(new RootField)
             ->default(false);
     }
 

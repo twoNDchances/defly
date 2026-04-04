@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Traits\Filament\Columns;
+namespace App\Traits\Filament\Specifics\User;
 
 use App\Services\Identification;
-use App\Traits\Filament\Column;
+use App\Traits\Filament\Generals\Components\Column;
 
 trait UserColumn
 {

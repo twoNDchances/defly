@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Traits\Filament;
+namespace App\Traits\Filament\Generals\Components;
 
 use Filament\Forms\Components;
 

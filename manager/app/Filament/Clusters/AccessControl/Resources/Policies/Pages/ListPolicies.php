@@ -3,17 +3,12 @@
 namespace App\Filament\Clusters\AccessControl\Resources\Policies\Pages;
 
 use App\Filament\Clusters\AccessControl\Resources\Policies\PolicyResource;
-use Filament\Actions\CreateAction;
+use App\Traits\Filament\Generals\Pages\ListPage;
 use Filament\Resources\Pages\ListRecords;
 
 class ListPolicies extends ListRecords
 {
-    protected static string $resource = PolicyResource::class;
+    use ListPage;
 
-    protected function getHeaderActions(): array
-    {
-        return [
-            CreateAction::make(),
-        ];
-    }
+    protected static string $resource = PolicyResource::class;
 }

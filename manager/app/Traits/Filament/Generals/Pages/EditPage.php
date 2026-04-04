@@ -1,15 +1,17 @@
 <?php
 
-namespace App\Traits\Filament\Pages;
+namespace App\Traits\Filament\Generals\Pages;
 
-use Filament\Actions\DeleteAction;
+use App\Traits\Filament\Generals\Components\Button;
 
 trait EditPage
 {
+    use Button;
+
     protected function getHeaderActions(): array
     {
         return [
-            DeleteAction::make(),
+            self::deleteButton(),
         ];
     }
 
@@ -21,10 +23,5 @@ trait EditPage
     protected function mutateFormDataBeforeSave(array $data): array
     {
         return $data;
-    }
-
-    protected function getRedirectUrl(): string
-    {
-        return $this->getResource()::getUrl('index');
     }
 }

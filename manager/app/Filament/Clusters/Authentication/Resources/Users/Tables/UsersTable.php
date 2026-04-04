@@ -4,9 +4,8 @@ namespace App\Filament\Clusters\Authentication\Resources\Users\Tables;
 
 use App\Models\User;
 use App\Services\Identification;
-use App\Services\Security;
-use App\Traits\Filament\Buttons\UserButton;
-use App\Traits\Filament\Columns\UserColumn;
+use App\Traits\Filament\Specifics\User\UserButton;
+use App\Traits\Filament\Specifics\User\UserColumn;
 use Filament\Tables\Table;
 
 class UsersTable
@@ -24,17 +23,18 @@ class UsersTable
                 self::isActivated(),
                 self::permissions(),
                 self::policies(),
+                self::canManageFromOther(),
                 self::createdBy(),
                 self::createdAt(),
                 self::updatedAt(),
             ])
             ->query(function () {
-                $users = User::where('email', '!=', Identification::getEmail());
+                $users = User::query()->manage()->where('email', '!=', Identification::getEmail());
                 if (Identification::isRoot()) {
                     return $users;
                 }
 
-                return Security::viewAnyOther($users->where('is_root', false));
+                return $users->where('is_root', false);
             })
             ->filters([
                 //

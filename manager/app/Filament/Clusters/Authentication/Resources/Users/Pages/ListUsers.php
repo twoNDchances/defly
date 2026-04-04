@@ -3,7 +3,7 @@
 namespace App\Filament\Clusters\Authentication\Resources\Users\Pages;
 
 use App\Filament\Clusters\Authentication\Resources\Users\UserResource;
-use App\Traits\Filament\Pages\ListPage;
+use App\Traits\Filament\Generals\Pages\ListPage;
 use Filament\Resources\Pages\ListRecords;
 
 class ListUsers extends ListRecords

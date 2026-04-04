@@ -1,9 +1,11 @@
 <?php
 
-namespace App\Traits\Filament\Buttons;
+namespace App\Traits\Filament\Specifics\User;
 
+use App\Models\User;
 use App\Services\Identification;
-use App\Traits\Filament\Button;
+use App\Services\Security;
+use App\Traits\Filament\Generals\Components\Button;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Str;
 
@@ -33,8 +35,13 @@ trait UserButton
                     if ($record->id == Identification::getId()) {
                         continue;
                     }
-                    if ($record->is_important && ! Identification::isRoot()) {
+                    if ($record->is_root && ! Identification::isRoot()) {
                         continue;
+                    }
+                    if (! Security::checkPermission(Identification::getCurrent(), User::class, 'access_other')) {
+                        if ($record->created_by != Identification::getId()) {
+                            continue;
+                        }
                     }
                     $record->delete();
                     $count++;
