@@ -3,11 +3,14 @@
 namespace App\Models;
 
 use App\Observers\UserObserver;
+use App\Services\Identification;
 use App\Traits\Models\Labellable;
 use App\Traits\Models\Owner;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -41,6 +44,18 @@ class User extends Authenticatable
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
         ];
+    }
+
+    #[Scope]
+    protected function excludeCurrent(Builder $query): void
+    {
+        $query->whereNot('id', Identification::getId());
+    }
+
+    #[Scope]
+    protected function excludeRoot(Builder $query): void
+    {
+        $query->where('is_root', false);
     }
 
     public function getUsers()

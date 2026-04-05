@@ -41,9 +41,8 @@ trait UserButton
     {
         return self::detachBulkButton()
             ->action(function ($records, $livewire) {
-                $currentUserId = Identification::getId();
                 foreach ($records as $record) {
-                    if ($record->id == $currentUserId) {
+                    if ($record->id == Identification::getId()) {
                         continue;
                     }
                     if ($record->is_root && ! Identification::isRoot()) {

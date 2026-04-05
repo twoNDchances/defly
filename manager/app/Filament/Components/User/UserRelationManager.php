@@ -1,31 +1,29 @@
 <?php
 
-namespace App\Filament\Clusters\AccessControl\Resources\Policies\RelationManagers;
+namespace App\Filament\Components\User;
 
-use App\Filament\Clusters\AccessControl\Resources\Permissions\Schemas\PermissionForm;
-use App\Filament\Clusters\AccessControl\Resources\Permissions\Tables\PermissionsTable;
-use App\Traits\Filament\Specifics\Permission\PermissionButton;
+use App\Traits\Filament\Specifics\User\UserButton;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
 
-class PermissionsRelationManager extends RelationManager
+class UserRelationManager extends RelationManager
 {
-    use PermissionButton;
+    use UserButton;
 
-    protected static string $relationship = 'permissions';
+    protected static string $relationship = 'users';
 
     public function form(Schema $schema): Schema
     {
-        return $schema->components(PermissionForm::fields());
+        return $schema->components(UserForm::build());
     }
 
     public function table(Table $table): Table
     {
         return $table
-            ->recordTitleAttribute('name')
-            ->columns(PermissionsTable::columns())
+            ->recordTitleAttribute('email')
+            ->columns(UserTable::build())
             ->filters([
                 //
             ])
@@ -37,17 +35,17 @@ class PermissionsRelationManager extends RelationManager
                 self::buttonGroup(delete: false, more: [self::detachButton()]),
             ])
             ->toolbarActions([
-                self::bulkButtonGroup(false, [self::detachBulkButton()]),
+                self::bulkButtonGroup(false, [self::detachMultiUserButton()]),
             ]);
     }
 
     public static function getTitle(Model $ownerRecord, string $pageClass): string
     {
-        return __('models.permission.name');
+        return __('models.user.name');
     }
 
     public static function getRecordLabel(): ?string
     {
-        return __('models.permission.name');
+        return __('models.user.name');
     }
 }

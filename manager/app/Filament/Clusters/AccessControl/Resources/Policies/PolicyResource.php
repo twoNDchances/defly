@@ -6,10 +6,10 @@ use App\Filament\Clusters\AccessControl\AccessControlCluster;
 use App\Filament\Clusters\AccessControl\Resources\Policies\Pages\CreatePolicy;
 use App\Filament\Clusters\AccessControl\Resources\Policies\Pages\EditPolicy;
 use App\Filament\Clusters\AccessControl\Resources\Policies\Pages\ListPolicies;
-use App\Filament\Clusters\AccessControl\Resources\Policies\RelationManagers\PermissionsRelationManager;
-use App\Filament\Clusters\AccessControl\Resources\Policies\RelationManagers\UsersRelationManager;
 use App\Filament\Clusters\AccessControl\Resources\Policies\Schemas\PolicyForm;
 use App\Filament\Clusters\AccessControl\Resources\Policies\Tables\PoliciesTable;
+use App\Filament\Components\Permission\PermissionRelationManager;
+use App\Filament\Components\User\UserRelationManager;
 use App\Models\Policy;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -40,8 +40,8 @@ class PolicyResource extends Resource
     public static function getRelations(): array
     {
         return [
-            UsersRelationManager::class,
-            PermissionsRelationManager::class,
+            UserRelationManager::class,
+            PermissionRelationManager::class,
         ];
     }
 

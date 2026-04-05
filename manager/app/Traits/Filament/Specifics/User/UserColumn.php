@@ -8,6 +8,7 @@ use App\Traits\Filament\Generals\Components\Column;
 trait UserColumn
 {
     use Column;
+    use UserButton;
 
     public static function email()
     {

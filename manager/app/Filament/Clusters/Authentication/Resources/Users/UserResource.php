@@ -6,10 +6,10 @@ use App\Filament\Clusters\Authentication\AuthenticationCluster;
 use App\Filament\Clusters\Authentication\Resources\Users\Pages\CreateUser;
 use App\Filament\Clusters\Authentication\Resources\Users\Pages\EditUser;
 use App\Filament\Clusters\Authentication\Resources\Users\Pages\ListUsers;
-use App\Filament\Clusters\Authentication\Resources\Users\RelationManagers\PermissionsRelationManager;
-use App\Filament\Clusters\Authentication\Resources\Users\RelationManagers\PoliciesRelationManager;
 use App\Filament\Clusters\Authentication\Resources\Users\Schemas\UserForm;
 use App\Filament\Clusters\Authentication\Resources\Users\Tables\UsersTable;
+use App\Filament\Components\Permission\PermissionRelationManager;
+use App\Filament\Components\Policy\PolicyRelationManager;
 use App\Models\User;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -40,8 +40,8 @@ class UserResource extends Resource
     public static function getRelations(): array
     {
         return [
-            PermissionsRelationManager::class,
-            PoliciesRelationManager::class,
+            PermissionRelationManager::class,
+            PolicyRelationManager::class,
         ];
     }
 

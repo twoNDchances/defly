@@ -2,36 +2,23 @@
 
 namespace App\Filament\Resources\Labels\Tables;
 
-use App\Traits\Filament\Specifics\Label\LabelButton;
-use App\Traits\Filament\Specifics\Label\LabelColumn;
+use App\Filament\Components\Label\LabelTable;
 use Filament\Tables\Table;
 
 class LabelsTable
 {
-    use LabelButton;
-    use LabelColumn;
-
     public static function configure(Table $table): Table
     {
         return $table
-            ->columns(self::columns())
+            ->columns(LabelTable::build())
             ->filters([
                 //
             ])
             ->recordActions([
-                self::buttonGroup(),
+                LabelTable::buttonGroup(),
             ])
             ->toolbarActions([
-                self::bulkButtonGroup(),
+                LabelTable::bulkButtonGroup(),
             ]);
-    }
-
-    public static function columns()
-    {
-        return [
-            self::name(),
-            self::color(),
-            self::preview(),
-        ];
     }
 }

@@ -4,11 +4,10 @@ namespace App\Policies;
 
 use App\Models\User;
 use App\Traits\Policies\Basic;
-use App\Traits\Policies\Relationship;
 
 class UserPolicy
 {
-    use Basic, Relationship;
+    use Basic;
 
     public function getModel()
     {
@@ -20,7 +19,7 @@ class UserPolicy
         if (! $user->is_root && $model->is_root) {
             return false;
         }
-        if ($user == $model) {
+        if ($user->id == $model->id) {
             return false;
         }
 

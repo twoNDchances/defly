@@ -8,6 +8,7 @@ use App\Traits\Filament\Generals\Components\Column;
 trait PermissionColumn
 {
     use Column;
+    use PermissionButton;
 
     public static function name()
     {

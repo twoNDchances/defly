@@ -7,6 +7,7 @@ use App\Traits\Filament\Generals\Components\Column;
 trait PolicyColumn
 {
     use Column;
+    use PolicyButton;
 
     public static function name()
     {

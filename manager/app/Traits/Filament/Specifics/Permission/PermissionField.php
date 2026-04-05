@@ -8,6 +8,7 @@ use App\Traits\Filament\Generals\Components\Field;
 trait PermissionField
 {
     use Field;
+    use PermissionButton;
 
     public static function name()
     {

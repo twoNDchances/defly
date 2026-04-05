@@ -1,31 +1,29 @@
 <?php
 
-namespace App\Filament\Clusters\Authentication\Resources\Users\RelationManagers;
+namespace App\Filament\Components\Policy;
 
-use App\Filament\Clusters\AccessControl\Resources\Permissions\Schemas\PermissionForm;
-use App\Filament\Clusters\AccessControl\Resources\Permissions\Tables\PermissionsTable;
-use App\Traits\Filament\Specifics\Permission\PermissionButton;
+use App\Traits\Filament\Specifics\Policy\PolicyButton;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
 
-class PermissionsRelationManager extends RelationManager
+class PolicyRelationManager extends RelationManager
 {
-    use PermissionButton;
+    use PolicyButton;
 
-    protected static string $relationship = 'permissions';
+    protected static string $relationship = 'policies';
 
     public function form(Schema $schema): Schema
     {
-        return $schema->components(PermissionForm::fields());
+        return $schema->components(PolicyForm::build());
     }
 
     public function table(Table $table): Table
     {
         return $table
             ->recordTitleAttribute('name')
-            ->columns(PermissionsTable::columns())
+            ->columns(PolicyTable::build())
             ->filters([
                 //
             ])
@@ -43,11 +41,11 @@ class PermissionsRelationManager extends RelationManager
 
     public static function getTitle(Model $ownerRecord, string $pageClass): string
     {
-        return __('models.permission.name');
+        return __('models.policy.name');
     }
 
     public static function getRecordLabel(): ?string
     {
-        return __('models.permission.name');
+        return __('models.policy.name');
     }
 }
