@@ -83,4 +83,27 @@ return [
             ],
         ],
     ],
+    'wordlist' => [
+        'text_examples' => [
+            'name' => 'danh-sach-tu',
+            'description' => 'Một số mô tả về danh sách từ này',
+            'word' => 'abc',
+        ],
+        'descriptions' => [
+            'name' => 'Tên duy nhất theo kiểu kebab đại diện cho danh sách từ này',
+            'word_type' => 'Chọn một loại của danh sách từ',
+            'word_file' => 'Đường dẫn đến tệp nội dung của danh sách từ này, sử dụng khi bạn có một tệp chứa số lượng từ lớn. Các từ được nhận dạng bằng cách xuống dòng mới',
+            'word_json' => 'Định dạng dữ liệu JSON của danh sách từ này, sử dụng khi bạn có thể định nghĩa nó ở đây',
+            'description' => 'Bạn có thể giải thích rõ hơn nếu danh sách từ phức tạp',
+            'word' => 'Từ hoặc các chữ cái',
+        ],
+        'sections' => [
+            'a' => [
+                'title' => 'Định nghĩa danh sách từ',
+            ],
+            'b' => [
+                'title' => 'Định nghĩa các từ',
+            ],
+        ],
+    ],
 ];

@@ -34,5 +34,10 @@ return [
             'color' => 'Color',
             'preview' => 'Preview',
         ],
+        'wordlist' => [
+            'name' => 'Name',
+            'word_type' => 'Wordlist type',
+            'word_count' => 'Word count',
+        ],
     ],
 ];

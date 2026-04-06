@@ -2,7 +2,7 @@
 
 namespace App\Traits\Filament\Generals\Components;
 
-use App\Filament\Resources\Labels\Schemas\LabelForm;
+use App\Filament\Components\Label\LabelForm;
 use Filament\Forms\Components;
 
 trait Field
@@ -40,9 +40,8 @@ trait Field
     public static function fileUpload($name, $label = null, $directory = null)
     {
         return Components\FileUpload::make($name)
-            ->visibility('private')
-            ->directory($directory)
-            ->label($label);
+            ->label($label)
+            ->directory($directory);
     }
 
     public static function toggleButtons($name, $label = null, array $colorsAndOptions = ['colors' => [], 'options' => []])
@@ -69,8 +68,7 @@ trait Field
             ->label($label)
             ->columns(2)
             ->collapsible()
-            ->cloneable()
-            ->collapsed();
+            ->cloneable();
     }
 
     public static function codeEditor($name, $label = null, $language = null)
@@ -89,6 +87,6 @@ trait Field
             ->helperText(__('forms.commons.labels.description'))
             ->multiple()
             ->relationship('labels', 'name')
-            ->createOptionForm(LabelForm::forms());
+            ->createOptionForm(LabelForm::build());
     }
 }

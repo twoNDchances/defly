@@ -35,7 +35,7 @@ trait LabelField
     {
         return self::textArea(
             'description',
-            __('models.label.fields.description'),
+            __('models.commons.description'),
             __('forms.label.text_examples.description'),
         )
             ->helperText(__('forms.label.descriptions.description'));

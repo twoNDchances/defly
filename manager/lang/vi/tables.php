@@ -34,5 +34,10 @@ return [
             'color' => 'Màu sắc',
             'preview' => 'Xem trước',
         ],
+        'wordlist' => [
+            'name' => 'Tên',
+            'word_type' => 'Loại danh sách',
+            'word_count' => 'Số từ',
+        ],
     ],
 ];

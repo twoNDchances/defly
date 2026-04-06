@@ -8,6 +8,14 @@ use Illuminate\Database\Eloquent\Model;
 trait Before
 {
     /**
+     * Handle the Model "saving" event.
+     */
+    public function saving(Model $model): void
+    {
+        //
+    }
+
+    /**
      * Handle the Model "creating" event.
      */
     public function creating(Model $model): void

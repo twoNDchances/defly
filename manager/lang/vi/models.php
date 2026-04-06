@@ -2,6 +2,7 @@
 
 return [
     'commons' => [
+        'description' => 'Mô tả',
         'created_by' => 'Tạo bởi',
         'created_at' => 'Tạo lúc',
         'updated_at' => 'Cập nhật lúc',
@@ -10,7 +11,6 @@ return [
         'name' => 'Quyền',
         'fields' => [
             'name' => 'Tên',
-            'description' => 'Mô tả',
             'applied_for' => 'Áp dụng cho',
             'action' => 'Hành động',
         ],
@@ -19,7 +19,6 @@ return [
         'name' => 'Chính sách',
         'fields' => [
             'name' => 'Tên',
-            'description' => 'Mô tả',
         ],
     ],
     'user' => [
@@ -39,7 +38,19 @@ return [
         'fields' => [
             'name' => 'Tên',
             'color' => 'Màu sắc',
-            'description' => 'Mô tả',
+        ],
+    ],
+    'wordlist' => [
+        'name' => 'Danh sách từ',
+        'fields' => [
+            'name' => 'Tên',
+            'word_type' => 'Loại',
+            'word_file' => 'Dữ liệu tệp',
+            'word_json' => 'Dữ liệu JSON',
+            'word_count' => 'Số từ',
+        ],
+        'extras' => [
+            'word' => 'Từ',
         ],
     ],
 ];

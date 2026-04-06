@@ -7,6 +7,14 @@ use Illuminate\Database\Eloquent\Model;
 trait After
 {
     /**
+     * Handle the Model "saved" event.
+     */
+    public function saved(Model $model): void
+    {
+        //
+    }
+
+    /**
      * Handle the Model "created" event.
      */
     public function created(Model $model): void

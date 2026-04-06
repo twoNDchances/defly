@@ -2,6 +2,7 @@
 
 return [
     'commons' => [
+        'description' => 'Description',
         'created_by' => 'Created by',
         'created_at' => 'Created at',
         'updated_at' => 'Updated at',
@@ -10,7 +11,6 @@ return [
         'name' => 'Permission',
         'fields' => [
             'name' => 'Name',
-            'description' => 'Description',
             'applied_for' => 'Applied for',
             'action' => 'Action',
         ],
@@ -19,7 +19,6 @@ return [
         'name' => 'Policy',
         'fields' => [
             'name' => 'Name',
-            'description' => 'Description',
         ],
     ],
     'user' => [
@@ -39,7 +38,19 @@ return [
         'fields' => [
             'name' => 'Name',
             'color' => 'Color',
-            'description' => 'Description',
+        ],
+    ],
+    'wordlist' => [
+        'name' => 'Wordlist',
+        'fields' => [
+            'name' => 'Name',
+            'word_type' => 'Type',
+            'word_file' => 'File format',
+            'word_json' => 'JSON format',
+            'word_count' => 'Word count',
+        ],
+        'extras' => [
+            'word' => 'Word',
         ],
     ],
 ];

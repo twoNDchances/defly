@@ -83,4 +83,27 @@ return [
             ],
         ],
     ],
+    'wordlist' => [
+        'text_examples' => [
+            'name' => 'wordlist',
+            'description' => 'Some description about this wordlist',
+            'word' => 'abc',
+        ],
+        'descriptions' => [
+            'name' => 'A unique kebab-style name represents this wordlist',
+            'word_type' => 'Select a type of this wordlist',
+            'word_file' => 'A path to content file of this wordlist, use this when you have a file with a large number of words. The words are identified by moving to a new line',
+            'word_json' => 'A JSON data format of this wordlist, use it when you can define it here',
+            'description' => 'You can explain in more detail if this wordlist is complex',
+            'word' => 'Word or letters',
+        ],
+        'sections' => [
+            'a' => [
+                'title' => 'Wordlist definition',
+            ],
+            'b' => [
+                'title' => 'Word definitions',
+            ],
+        ],
+    ],
 ];

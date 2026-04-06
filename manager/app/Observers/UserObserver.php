@@ -8,7 +8,6 @@ use App\Services\Identification;
 use App\Traits\Observers\After;
 use App\Traits\Observers\Before;
 use Exception;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
@@ -22,9 +21,6 @@ class UserObserver
         $user->created_by = Identification::getId();
         if (! $user->is_verified) {
             $user->verification_token = Str::uuid();
-        }
-        if ($user->password) {
-            $user->password = Hash::make($user->password);
         }
     }
 

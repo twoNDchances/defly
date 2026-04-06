@@ -26,7 +26,7 @@ trait PolicyField
     {
         return self::textArea(
             'description',
-            __('models.policy.fields.description'),
+            __('models.commons.description'),
             __('forms.policy.text_examples.description'),
         )
             ->helperText(__('forms.policy.descriptions.description'));

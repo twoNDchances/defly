@@ -51,7 +51,7 @@ trait PermissionField
     {
         return self::textArea(
             'description',
-            __('models.permission.fields.description'),
+            __('models.commons.description'),
             __('forms.permission.text_examples.description'),
         )
             ->helperText(__('forms.permission.descriptions.description'));
