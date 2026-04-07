@@ -42,4 +42,9 @@ class Label extends Model
     {
         return $this->morphedByMany(Policy::class, 'resource', 'labels_resources', 'label', 'resource_id');
     }
+
+    public function wordlists()
+    {
+        return $this->morphedByMany(Wordlist::class, 'resource', 'labels_resources', 'label', 'resource_id');
+    }
 }

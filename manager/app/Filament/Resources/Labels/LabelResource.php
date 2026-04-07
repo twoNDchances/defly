@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Labels;
 use App\Filament\Components\Permission\PermissionRelationManager;
 use App\Filament\Components\Policy\PolicyRelationManager;
 use App\Filament\Components\User\UserRelationManager;
+use App\Filament\Components\Wordlist\WordlistRelationManager;
 use App\Filament\Resources\Labels\Pages\CreateLabel;
 use App\Filament\Resources\Labels\Pages\EditLabel;
 use App\Filament\Resources\Labels\Pages\ListLabels;
@@ -42,6 +43,7 @@ class LabelResource extends Resource
             UserRelationManager::class,
             PolicyRelationManager::class,
             PermissionRelationManager::class,
+            WordlistRelationManager::class,
         ];
     }
 

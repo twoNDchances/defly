@@ -1,19 +1,20 @@
 <?php
 
-namespace App\Filament\Components\Wordlist;
+namespace App\Filament\Components\Engine;
 
-use App\Traits\Filament\Specifics\Wordlist\WordlistColumn;
+use App\Traits\Filament\Specifics\Engine\EngineColumn;
 
-class WordlistTable
+class EngineTable
 {
-    use WordlistColumn;
+    use EngineColumn;
 
     public static function build()
     {
         return [
             self::name(),
+            self::inputDatatype(),
             self::type(),
-            self::wordCount(),
+            self::outputDatatype(),
             self::labels(),
             self::createdBy(),
             self::createdAt(),

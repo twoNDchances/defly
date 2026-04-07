@@ -36,8 +36,14 @@ return [
         ],
         'wordlist' => [
             'name' => 'Name',
-            'word_type' => 'Wordlist type',
+            'type' => 'Wordlist type',
             'word_count' => 'Word count',
+        ],
+        'engine' => [
+            'name' => 'Name',
+            'input_datatype' => 'Datatype before',
+            'type' => 'Transformer type',
+            'output_datatype' => 'Datatype after',
         ],
     ],
 ];

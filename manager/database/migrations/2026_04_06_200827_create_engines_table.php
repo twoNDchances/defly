@@ -11,13 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('wordlists', function (Blueprint $table) {
+        Schema::create('engines', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->string('name')->unique()->index();
-            $table->enum('type', ['file', 'json']);
-            $table->longText('word_file')->nullable();
-            $table->longText('word_json')->nullable();
-            $table->integer('word_count')->nullable();
+            $table->enum('input_datatype', ['array', 'number', 'string']);
+            $table->string('type');
+            $table->json('configurations')->nullable();
+            $table->enum('output_datatype', ['array', 'number', 'string']);
             $table->longText('description')->nullable();
             $table->foreignUuid('created_by')->nullable()->index()->constrained('users')->nullOnDelete();
             $table->timestamps();
@@ -29,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('wordlists');
+        Schema::dropIfExists('engines');
     }
 };

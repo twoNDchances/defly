@@ -2,7 +2,7 @@
 
 namespace App\Enums\Wordlist;
 
-enum WordType: string
+enum Type: string
 {
     case File = 'file';
     case Json = 'json';

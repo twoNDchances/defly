@@ -8,15 +8,19 @@ trait WordlistColumn
 {
     use Column;
     use WordlistButton;
+    use WordlistData;
 
     public static function name()
     {
         return self::textColumn('name', __('tables.columns.wordlist.name'));
     }
 
-    public static function wordType()
+    public static function type()
     {
-        return self::textColumn('word_type', __('tables.columns.wordlist.word_type'));
+        return self::textColumn('type', __('tables.columns.wordlist.type'))
+            ->formatStateUsing(fn ($state) => self::typeOptionsAndColors()['options'][$state->value])
+            ->color(fn ($state) => self::typeOptionsAndColors()['colors'][$state->value])
+            ->badge();
     }
 
     public static function wordCount()

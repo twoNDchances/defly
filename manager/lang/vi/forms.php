@@ -91,7 +91,7 @@ return [
         ],
         'descriptions' => [
             'name' => 'Tên duy nhất theo kiểu kebab đại diện cho danh sách từ này',
-            'word_type' => 'Chọn một loại của danh sách từ',
+            'type' => 'Chọn một loại của danh sách từ',
             'word_file' => 'Đường dẫn đến tệp nội dung của danh sách từ này, sử dụng khi bạn có một tệp chứa số lượng từ lớn. Các từ được nhận dạng bằng cách xuống dòng mới',
             'word_json' => 'Định dạng dữ liệu JSON của danh sách từ này, sử dụng khi bạn có thể định nghĩa nó ở đây',
             'description' => 'Bạn có thể giải thích rõ hơn nếu danh sách từ phức tạp',
@@ -103,6 +103,67 @@ return [
             ],
             'b' => [
                 'title' => 'Định nghĩa các từ',
+            ],
+        ],
+    ],
+    'engine' => [
+        'text_examples' => [
+            'name' => 'dong-co-chuyen-doi',
+            'description' => 'Một số mô tả về động cơ này',
+        ],
+        'descriptions' => [
+            'name' => 'Tên duy nhất theo kiểu kebab đại diện cho động cơ này',
+            'input_datatype' => 'Kiểu dữ liệu đầu vào cần chuyển đổi',
+            'type' => 'Chọn một loại động cơ phù hợp cho kiểu dữ liệu đầu vào',
+            'configurations' => 'Tùy loại động cơ bạn chọn sẽ yêu cầu cấu hình tùy chỉnh cho động cơ đó',
+            'output_datatype' => 'Kiểu dữ liệu đầu ra được chuyển đổi',
+            'description' => 'Bạn có thể giải thích rõ hơn nếu động cơ phức tạp',
+        ],
+        'sections' => [
+            'a' => [
+                'title' => 'Định nghĩa động cơ',
+                'fieldsets' => [
+                    'a' => [
+                        'title' => 'Bộ chuyển đổi',
+                    ],
+                    'b' => [
+                        'title' => 'Các cấu hình',
+                    ],
+                ],
+            ],
+        ],
+        'extras' => [
+            'datatype' => [
+                'array' => 'Kiểu mảng của dữ liệu chuỗi',
+                'number' => 'Kiểu dữ liệu số, bao gồm số nguyên và số thập phân',
+                'string' => 'Kiểu dữ liệu chuỗi',
+            ],
+            'type' => [
+                'indexOf' => 'Lấy vị trí của mảng ([...][index])',
+                'merge' => 'Kết hợp tất cả phần tử lại với nhau, ngăn cách bằng ký tự ("abc,def")',
+                'addition' => 'Cộng thêm (+)',
+                'subtraction' => 'Trừ đi (-)',
+                'multiplication' => 'Nhân lên (*)',
+                'division' => 'Chia ra (/)',
+                'powerOf' => 'Mũ (^)',
+                'remainder' => 'Chia lấy dư (%)',
+                'toString' => 'Đổi sang kiểu dữ liệu chuỗi ("1")',
+                'lower' => 'Tất cả viết thường ("abc def")',
+                'upper' => 'Tất cả viết hoa ("ABC DEF")',
+                'capitalize' => 'Viết hoa chữ đầu ("Abc Def")',
+                'trim' => 'Xóa khoảng trắng 2 bên ("abc def")',
+                'trimLeft' => 'Xóa khoảng trắng bên trái ("abc def ")',
+                'trimRight' => 'Xóa khoảng trắng bên phải (" abc def")',
+                'removeWhitespace' => 'Xóa tất cả khoảng trắng ("abcdef")',
+                'length' => 'Lấy độ dài chuỗi (7)',
+                'hash' => 'Lấy giá trị băm ("e80b50...")',
+                'split' => 'Tách chuỗi ra nhiều phần tử, tìm theo ký tự chỉ định (["a", "b", "c", ...])',
+                'configurations' => [
+                    'position' => 'Một vị trí cụ thể trong mảng',
+                    'digit' => 'Một con số cụ thể để thực hiện toán tử',
+                    'hash_method' => 'Một hàm băm để thực hiện băm giá trị đầu vào',
+                    'separator' => 'Bạn có thể chọn một hoặc nhiều ký tự',
+                ],
             ],
         ],
     ],

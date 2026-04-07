@@ -36,8 +36,14 @@ return [
         ],
         'wordlist' => [
             'name' => 'Tên',
-            'word_type' => 'Loại danh sách',
+            'type' => 'Loại danh sách',
             'word_count' => 'Số từ',
+        ],
+        'engine' => [
+            'name' => 'Tên',
+            'input_datatype' => 'Kiểu dữ liệu trước',
+            'type' => 'Loại bộ chuyển đổi',
+            'output_datatype' => 'Kiểu dữ liệu sau',
         ],
     ],
 ];

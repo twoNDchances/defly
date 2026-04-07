@@ -2,13 +2,14 @@
 
 namespace App\Traits\Filament\Specifics\Wordlist;
 
-use App\Enums\Wordlist\WordType;
+use App\Enums\Wordlist\Type;
 use App\Traits\Filament\Generals\Components\Field;
 
 trait WordlistField
 {
     use Field;
     use WordlistButton;
+    use WordlistData;
 
     public static function name()
     {
@@ -23,17 +24,17 @@ trait WordlistField
             ->required();
     }
 
-    public static function wordType()
+    public static function type()
     {
-        return self::toggleButtons('word_type', 'Type', WordlistData::wordTypeOptionsAndColors())
-            ->default(WordType::File->value)
+        return self::toggleButtons('type', __('models.wordlist.fields.type'), self::typeOptionsAndColors())
+            ->default(Type::File->value)
             ->reactive()
             ->required();
     }
 
     public static function wordFile()
     {
-        $condition = fn ($get) => $get('word_type') == WordType::File->value;
+        $condition = fn ($get) => $get('type') == Type::File->value;
 
         return self::fileUpload(
             'word_file',
@@ -50,7 +51,7 @@ trait WordlistField
 
     public static function wordJson()
     {
-        $condition = fn ($get) => $get('word_type') == WordType::Json->value;
+        $condition = fn ($get) => $get('type') == Type::Json->value;
 
         return self::repeater(
             'word_json',

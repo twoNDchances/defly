@@ -60,6 +60,7 @@ class DeflyManagerPanelProvider extends PanelProvider
             ->discoverClusters(app_path('Filament/Clusters'), 'App\\Filament\\Clusters')
             ->profile()
             ->navigationGroups([
+                __('navigations.groups.management'),
                 __('navigations.groups.utilities'),
                 __('navigations.groups.security'),
             ])

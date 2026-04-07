@@ -21,7 +21,7 @@ class WordlistForm
                         ->columns(2)
                         ->schema([
                             self::name(),
-                            self::wordType(),
+                            self::type(),
                             self::description()->columnSpanFull(),
                         ]),
                     Grid::make(1)

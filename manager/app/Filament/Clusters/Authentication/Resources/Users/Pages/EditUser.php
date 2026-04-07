@@ -16,6 +16,6 @@ class EditUser extends EditRecord
 
     protected function mutateFormDataBeforeSave(array $data): array
     {
-        return self::saveForm($data);
+        return self::editForm($data);
     }
 }

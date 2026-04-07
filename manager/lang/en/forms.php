@@ -91,7 +91,7 @@ return [
         ],
         'descriptions' => [
             'name' => 'A unique kebab-style name represents this wordlist',
-            'word_type' => 'Select a type of this wordlist',
+            'type' => 'Select a type of this wordlist',
             'word_file' => 'A path to content file of this wordlist, use this when you have a file with a large number of words. The words are identified by moving to a new line',
             'word_json' => 'A JSON data format of this wordlist, use it when you can define it here',
             'description' => 'You can explain in more detail if this wordlist is complex',
@@ -103,6 +103,67 @@ return [
             ],
             'b' => [
                 'title' => 'Word definitions',
+            ],
+        ],
+    ],
+    'engine' => [
+        'text_examples' => [
+            'name' => 'transformer-engine',
+            'description' => 'Some description about this engine',
+        ],
+        'descriptions' => [
+            'name' => 'A unique kebab-style name represents this engine',
+            'input_datatype' => 'Input datatype to be converted',
+            'type' => 'Select an engine type that is suitable for the input datatype',
+            'configurations' => 'Depending on the type of engine you selected, it will require custom configurations',
+            'output_datatype' => 'Output datatype is converted',
+            'description' => 'You can explain in more detail if this engine is complex',
+        ],
+        'sections' => [
+            'a' => [
+                'title' => 'Engine definition',
+                'fieldsets' => [
+                    'a' => [
+                        'title' => 'Transformer',
+                    ],
+                    'b' => [
+                        'title' => 'Configurations',
+                    ],
+                ],
+            ],
+        ],
+        'extras' => [
+            'datatype' => [
+                'array' => 'Array of string data',
+                'number' => 'Number data, include integer & float',
+                'string' => 'String data',
+            ],
+            'type' => [
+                'indexOf' => 'Get the position of the array ([...][index])',
+                'merge' => 'Combine all elements together, separated by the character ("abc,def").',
+                'addition' => 'Addition (+)',
+                'subtraction' => 'Subtraction (-)',
+                'multiplication' => 'Multiplication (*)',
+                'division' => 'Division (/)',
+                'powerOf' => 'Power of (^)',
+                'remainder' => 'Remainder (%)',
+                'toString' => 'Convert to string datatype ("1")',
+                'lower' => 'All lowercase ("abc def")',
+                'upper' => 'All uppercase ("ABC DEF")',
+                'capitalize' => 'Capitalize the first letter ("Abc Def")',
+                'trim' => 'Remove the spaces on both sides ("abc def")',
+                'trimLeft' => 'Remove the space to the left ("abc def ")',
+                'trimRight' => 'Remove the space to the right (" abc def")',
+                'removeWhitespace' => 'Remove all spaces ("abcdef")',
+                'length' => 'Get the string length (7)',
+                'hash' => 'Get hash value ("e80b50...")',
+                'split' => 'Split the string into multiple elements and search by specified character (["a", "b", "c", ...])',
+                'configurations' => [
+                    'position' => 'A specific position in the array',
+                    'digit' => 'A specific number to perform the operation',
+                    'hash_method' => 'A hash method to perform hashing of the input value',
+                    'separator' => 'You can select one or more characters',
+                ],
             ],
         ],
     ],
