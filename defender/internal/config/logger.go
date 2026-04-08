@@ -17,7 +17,7 @@ type Logger struct {
 	Path     string
 }
 
-func (l Logger) Boot(app *fiber.App) *os.File {
+func (l Logger) Boot(server *fiber.App) *os.File {
 	config := logger.Config{
 		Format:     l.Format,
 		TimeZone:   l.Timezone,
@@ -29,11 +29,11 @@ func (l Logger) Boot(app *fiber.App) *os.File {
 		},
 		Stream: os.Stdout,
 	}
-	app.Use(logger.New(config))
+	server.Use(logger.New(config))
 	if l.File {
 		file, _ := utilities.CreateFileIfNotExists(l.Path)
 		config.Stream = file
-		app.Use(logger.New(config))
+		server.Use(logger.New(config))
 		return file
 	}
 	return nil
