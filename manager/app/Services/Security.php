@@ -22,6 +22,15 @@ class Security
         'delete' => 'Delete',
     ];
 
+    public static $excludeActionsByModel = [
+        'Pattern' => [
+            'create',
+            'update',
+            'deleteAny',
+            'delete',
+        ],
+    ];
+
     public static function generatePermissionList($groupByModel = false)
     {
         $policiesPath = app_path('Policies');
@@ -47,6 +56,10 @@ class Security
 
             foreach ($methods as $method) {
                 if (! isset(self::$actions[$method])) {
+                    continue;
+                }
+
+                if (isset(self::$excludeActionsByModel[$model]) && in_array($method, self::$excludeActionsByModel[$model])) {
                     continue;
                 }
 

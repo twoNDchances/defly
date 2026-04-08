@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Enums\Engine;
+namespace App\Enums;
 
 enum Datatype: string
 {

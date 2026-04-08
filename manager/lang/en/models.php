@@ -6,6 +6,28 @@ return [
         'created_by' => 'Created by',
         'created_at' => 'Created at',
         'updated_at' => 'Updated at',
+        'phase' => [
+            '1' => '1. Full request',
+            '2' => '2. Request headers',
+            '3' => '3. Request body',
+            '4' => '4. Response headers',
+            '5' => '5. Response body',
+            '6' => '6. Full response',
+        ],
+        'type' => [
+            'getter' => 'Getter',
+            'full' => 'Full',
+            'header' => 'Header',
+            'meta' => 'Meta',
+            'query' => 'Query',
+            'body' => 'Body',
+            'file' => 'File',
+        ],
+        'datatype' => [
+            'array' => 'Array',
+            'number' => 'Number',
+            'string' => 'String',
+        ],
     ],
     'permission' => [
         'name' => 'Permission',
@@ -67,11 +89,6 @@ return [
             'output_datatype' => 'Output datatype',
         ],
         'extras' => [
-            'datatype' => [
-                'array' => 'Array',
-                'number' => 'Number',
-                'string' => 'String',
-            ],
             'type' => [
                 'indexOf' => 'Index of',
                 'merge' => 'Merge',
@@ -99,6 +116,15 @@ return [
                     'separator' => 'Separator',
                 ],
             ],
+        ],
+    ],
+    'pattern' => [
+        'name' => 'Pattern',
+        'fields' => [
+            'name' => 'Name',
+            'phase' => 'Phase',
+            'type' => 'Type',
+            'datatype' => 'Datatype',
         ],
     ],
 ];

@@ -45,5 +45,12 @@ return [
             'type' => 'Transformer type',
             'output_datatype' => 'Datatype after',
         ],
+        'pattern' => [
+            'name' => 'Name',
+            'phase' => 'Execution phase',
+            'type' => 'Scope type',
+            'datatype' => 'Datatype',
+            'targets' => 'Targets',
+        ],
     ],
 ];

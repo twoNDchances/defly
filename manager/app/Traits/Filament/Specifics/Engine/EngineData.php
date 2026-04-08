@@ -2,34 +2,21 @@
 
 namespace App\Traits\Filament\Specifics\Engine;
 
-use App\Enums\Engine\Datatype;
+use App\Enums\Datatype;
 use App\Enums\Engine\Type;
+use App\Traits\Filament\Specifics\GeneralData;
 
 trait EngineData
 {
-    public static function datatypeOptionsAndColors()
-    {
-        return [
-            'options' => [
-                Datatype::Array->value => __('models.engine.extras.datatype.array'),
-                Datatype::Number->value => __('models.engine.extras.datatype.number'),
-                Datatype::String->value => __('models.engine.extras.datatype.string'),
-            ],
-            'colors' => [
-                Datatype::Array->value => 'warning',
-                Datatype::Number->value => 'success',
-                Datatype::String->value => 'info',
-            ],
-        ];
-    }
+    use GeneralData;
 
     public static function datatypeDescriptions()
     {
         return [
             null => __('forms.engine.descriptions.input_datatype'),
-            Datatype::Array->value => __('forms.engine.extras.datatype.array'),
-            Datatype::Number->value => __('forms.engine.extras.datatype.number'),
-            Datatype::String->value => __('forms.engine.extras.datatype.string'),
+            Datatype::Array->value => __('forms.commons.datatype.array'),
+            Datatype::Number->value => __('forms.commons.datatype.number'),
+            Datatype::String->value => __('forms.commons.datatype.string'),
         ];
     }
 

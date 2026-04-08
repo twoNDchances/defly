@@ -2,7 +2,7 @@
 
 namespace App\Traits\Filament\Specifics\Engine;
 
-use App\Enums\Engine\Datatype;
+use App\Enums\Datatype;
 use App\Enums\Engine\Hash;
 use App\Enums\Engine\Type;
 use App\Traits\Filament\Generals\Components\Field;

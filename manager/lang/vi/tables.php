@@ -45,5 +45,12 @@ return [
             'type' => 'Loại bộ chuyển đổi',
             'output_datatype' => 'Kiểu dữ liệu sau',
         ],
+        'pattern' => [
+            'name' => 'Tên',
+            'phase' => 'Giai đoạn thực thi',
+            'type' => 'Loại phạm vi',
+            'datatype' => 'Kiểu dữ liệu',
+            'targets' => 'Các mục tiêu',
+        ],
     ],
 ];

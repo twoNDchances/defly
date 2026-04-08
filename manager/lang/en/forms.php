@@ -11,6 +11,11 @@ return [
                 'title' => 'Resource labeling',
             ],
         ],
+        'datatype' => [
+            'array' => 'Array of string data',
+            'number' => 'Number data, include integer & float',
+            'string' => 'String data',
+        ],
     ],
     'user' => [
         'text_examples' => [
@@ -133,11 +138,6 @@ return [
             ],
         ],
         'extras' => [
-            'datatype' => [
-                'array' => 'Array of string data',
-                'number' => 'Number data, include integer & float',
-                'string' => 'String data',
-            ],
             'type' => [
                 'indexOf' => 'Get the position of the array ([...][index])',
                 'merge' => 'Combine all elements together, separated by the character ("abc,def").',
@@ -164,6 +164,23 @@ return [
                     'hash_method' => 'A hash method to perform hashing of the input value',
                     'separator' => 'You can select one or more characters',
                 ],
+            ],
+        ],
+    ],
+    'pattern' => [
+        'descriptions' => [
+            'name' => 'The pattern name is used to determine the type of data to be retrieved',
+            'phase' => 'The phase where data is available for retrieval.',
+            'type' => 'The type of scope in which the data appears',
+            'datatype' => 'The data type that the pattern retrieved will return.',
+            'description' => 'Pattern description',
+        ],
+        'sections' => [
+            'a' => [
+                'title' => 'Pattern definition',
+            ],
+            'b' => [
+                'title' => 'Implementation targets'
             ],
         ],
     ],

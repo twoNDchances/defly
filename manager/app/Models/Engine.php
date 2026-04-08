@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Enums\Engine\Datatype;
+use App\Enums\Datatype;
 use App\Observers\EngineObserver;
 use App\Traits\Models\Labellable;
 use App\Traits\Models\Owner;

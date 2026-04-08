@@ -10,6 +10,7 @@ use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
+use Filament\Support\Colors\Color;
 use Filament\Widgets\AccountWidget;
 use Filament\Widgets\FilamentInfoWidget;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
@@ -30,6 +31,14 @@ class DeflyManagerPanelProvider extends PanelProvider
             ->login()
             ->colors([
                 'primary' => config('customization.gui.theme_color'),
+                'cyan'    => Color::Cyan,
+                'orange'  => Color::Orange,
+                'pink'    => Color::Pink,
+                'purple'  => Color::Purple,
+                'rose'    => Color::Rose,
+                'slate'   => Color::Slate,
+                'sky'     => Color::Sky,
+                'teal'    => Color::Teal,
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')

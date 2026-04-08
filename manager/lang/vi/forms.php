@@ -11,6 +11,11 @@ return [
                 'title' => 'Gán nhãn tài nguyên',
             ],
         ],
+        'datatype' => [
+            'array' => 'Kiểu mảng của dữ liệu chuỗi',
+            'number' => 'Kiểu dữ liệu số, bao gồm số nguyên và số thập phân',
+            'string' => 'Kiểu dữ liệu chuỗi',
+        ],
     ],
     'user' => [
         'text_examples' => [
@@ -133,11 +138,6 @@ return [
             ],
         ],
         'extras' => [
-            'datatype' => [
-                'array' => 'Kiểu mảng của dữ liệu chuỗi',
-                'number' => 'Kiểu dữ liệu số, bao gồm số nguyên và số thập phân',
-                'string' => 'Kiểu dữ liệu chuỗi',
-            ],
             'type' => [
                 'indexOf' => 'Lấy vị trí của mảng ([...][index])',
                 'merge' => 'Kết hợp tất cả phần tử lại với nhau, ngăn cách bằng ký tự ("abc,def")',
@@ -164,6 +164,23 @@ return [
                     'hash_method' => 'Một hàm băm để thực hiện băm giá trị đầu vào',
                     'separator' => 'Bạn có thể chọn một hoặc nhiều ký tự',
                 ],
+            ],
+        ],
+    ],
+    'pattern' => [
+        'descriptions' => [
+            'name' => 'Tên của các mẫu dùng để xác định loại dữ liệu sẽ lấy',
+            'phase' => 'Giai đoạn mà dữ liệu có thể lấy được',
+            'type' => 'Loại phạm vi mà dữ liệu xuất hiện',
+            'datatype' => 'Kiểu dữ liệu mà mẫu lấy được sẽ trả về',
+            'description' => 'Mô tả mẫu',
+        ],
+        'sections' => [
+            'a' => [
+                'title' => 'Định nghĩa mẫu',
+            ],
+            'b' => [
+                'title' => 'Các mục tiêu triển khai'
             ],
         ],
     ],

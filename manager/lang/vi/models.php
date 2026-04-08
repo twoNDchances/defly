@@ -6,6 +6,28 @@ return [
         'created_by' => 'Tạo bởi',
         'created_at' => 'Tạo lúc',
         'updated_at' => 'Cập nhật lúc',
+        'phase' => [
+            '1' => '1. Tất cả ở yêu cầu',
+            '2' => '2. Các tiêu đề ở yêu cầu',
+            '3' => '3. Nội dung yêu cầu',
+            '4' => '4. Các tiêu đề ở phản hồi',
+            '5' => '5. Nội dung phản hồi',
+            '6' => '6. Tất cả ở phản hồi',
+        ],
+        'type' => [
+            'getter' => 'Bộ lấy',
+            'full' => 'Tất cả',
+            'header' => 'Tiêu đề',
+            'meta' => 'Siêu dữ liệu',
+            'query' => 'Tham số',
+            'body' => 'Nội dung',
+            'file' => 'Tệp',
+        ],
+        'datatype' => [
+            'array' => 'Mảng',
+            'number' => 'Số',
+            'string' => 'Chuỗi',
+        ],
     ],
     'permission' => [
         'name' => 'Quyền',
@@ -67,11 +89,6 @@ return [
             'output_datatype' => 'Kiểu dữ liệu đầu ra',
         ],
         'extras' => [
-            'datatype' => [
-                'array' => 'Mảng',
-                'number' => 'Số',
-                'string' => 'Chuỗi',
-            ],
             'type' => [
                 'indexOf' => 'Tại vị trí',
                 'merge' => 'Hợp nhất',
@@ -99,6 +116,15 @@ return [
                     'separator' => 'Bộ phân tách',
                 ],
             ],
+        ],
+    ],
+    'pattern' => [
+        'name' => 'Mẫu',
+        'fields' => [
+            'name' => 'Tên',
+            'phase' => 'Giai đoạn',
+            'type' => 'Loại',
+            'datatype' => 'Kiểu dữ liệu',
         ],
     ],
 ];

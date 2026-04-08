@@ -19,6 +19,7 @@ class DatabaseSeeder extends Seeder
             LabelSeeder::class,
             PermissionSeeder::class,
             PolicySeeder::class,
+            PatternSeeder::class,
         ]);
     }
 }
