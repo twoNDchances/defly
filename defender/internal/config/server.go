@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/gofiber/fiber/v3"
+	"github.com/gofiber/fiber/v3/middleware/recover"
 )
 
 type Server struct {
@@ -11,21 +12,28 @@ type Server struct {
 	EnableHttps bool
 	Certificate string
 	Key         string
+	Logger      Logger
 }
 
-func (s Server) Boot() {
-	app := fiber.New()
-	var err error
+func (s Server) Boot() error {
+	server := fiber.New()
+
+	server.Use(recover.New())
+
+	file := s.Logger.Boot(server)
+	if file != nil {
+		defer file.Close()
+	}
+
 	address := fmt.Sprintf(":%s", s.Port)
+	listenConfig := fiber.ListenConfig{
+		DisableStartupMessage: true,
+	}
+
 	if s.EnableHttps {
-		err = app.Listen(address, fiber.ListenConfig{
-			CertFile:    s.Certificate,
-			CertKeyFile: s.Key,
-		})
-	} else {
-		err = app.Listen(address)
+		listenConfig.CertFile = s.Certificate
+		listenConfig.CertKeyFile = s.Key
 	}
-	if err != nil {
-		panic(err)
-	}
+
+	return server.Listen(address, listenConfig)
 }
