@@ -1,0 +1,10 @@
+author: https://github.com/twoNDchances
+
+name:
+  project: Defly
+  application: Defender
+
+version:
+  application: 1.0.0
+  go: 1.26.1
+  fiber: 3.1.0
