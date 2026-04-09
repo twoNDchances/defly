@@ -34,6 +34,11 @@ var (
 			WithDefault("9948").
 			Required()
 
+	ProxySeverityInfo = ferrite.String("PROXY_SEVERITY_INFO", "Assign a score to the severity level of the Info").
+				WithConstraint("Validate in range", severityScore).
+				WithDefault("1").
+				Required()
+
 	ProxySeverityNotice = ferrite.String("PROXY_SEVERITY_NOTICE", "Assign a score to the severity level of the Notice").
 				WithConstraint("Validate in range", severityScore).
 				WithDefault("2").
@@ -74,7 +79,7 @@ var (
 				WithDefault("5").
 				Required()
 
-	ProxyBackendUrls = ferrite.URL("PROXY_BACKEND_URLS", "Backend URL").
+	ProxyBackendUrls = ferrite.URL("PROXY_BACKEND_URL", "Backend URL").
 				WithDefault("http://localhost").
 				Required()
 )

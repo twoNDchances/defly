@@ -12,7 +12,7 @@ var (
 			Required()
 
 	ServerHTTPSEnable = ferrite.Bool("SERVER_HTTPS_ENABLE", "Enable/Disable HTTPS for Defly Defender Server").
-				WithDefault(false).
+				WithDefault(true).
 				Required()
 
 	ServerHTTPSCert = ferrite.String("SERVER_HTTPS_CERT", "Path to TLS certificate file").

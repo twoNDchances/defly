@@ -1,39 +1,43 @@
 package config
 
 import (
+	"defly-defender/internal/utilities"
 	"fmt"
+	"log"
 
 	"github.com/gofiber/fiber/v3"
-	"github.com/gofiber/fiber/v3/middleware/recover"
 )
 
 type Server struct {
-	Port        string
-	EnableHttps bool
-	Certificate string
-	Key         string
-	Logger      Logger
+	Address  Address
+	Absorber Absorber
+	Tls      Tls
+	Logger   Logger
+	Locker   Locker
 }
 
 func (s Server) Boot() error {
 	server := fiber.New()
 
-	server.Use(recover.New())
+	s.Absorber.Recover(server)
 
 	file := s.Logger.Boot(server)
 	if file != nil {
 		defer file.Close()
 	}
 
-	address := fmt.Sprintf(":%s", s.Port)
+	s.Locker.Lock(server)
+
 	listenConfig := fiber.ListenConfig{
 		DisableStartupMessage: true,
 	}
 
-	if s.EnableHttps {
-		listenConfig.CertFile = s.Certificate
-		listenConfig.CertKeyFile = s.Key
+	scheme := "http"
+	s.Tls.Encrypt(&listenConfig)
+	if s.Tls.Enable {
+		scheme = "https"
 	}
 
-	return server.Listen(address, listenConfig)
+	log.Println(utilities.Infof("Defender server is running at %s://0.0.0.0:%s", scheme, s.Address.Port))
+	return server.Listen(fmt.Sprintf(":%s", s.Address.Port), listenConfig)
 }

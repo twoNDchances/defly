@@ -3,19 +3,24 @@ package bootstrap
 import (
 	"defly-defender/internal/config"
 	"defly-defender/internal/environments"
+	"defly-defender/internal/utilities"
 )
 
 func NewServer() {
 	logger := NewLogger()
 	logger.From = "SERVER"
 	server := config.Server{
-		Port:        environments.ServerPort.Value(),
-		EnableHttps: environments.ServerHTTPSEnable.Value(),
-		Certificate: environments.ServerHTTPSCert.Value(),
-		Key:         environments.ServerHTTPSKey.Value(),
-		Logger:      logger,
+		Address: config.Address{
+			Port: environments.ServerPort.Value(),
+		},
+		Tls: config.Tls{
+			Enable:      environments.ServerHTTPSEnable.Value(),
+			Certificate: environments.ServerHTTPSCert.Value(),
+			Key:         environments.ServerHTTPSKey.Value(),
+		},
+		Logger: logger,
 	}
 	if err := server.Boot(); err != nil {
-		panic(err)
+		panic(utilities.Danger(err.Error()))
 	}
 }
