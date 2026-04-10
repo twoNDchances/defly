@@ -7,7 +7,6 @@ import (
 
 	"github.com/gofiber/fiber/v3"
 	reverse "github.com/gofiber/fiber/v3/middleware/proxy"
-	"github.com/valyala/fasthttp"
 )
 
 type Severity struct {
@@ -46,11 +45,6 @@ func (p Proxy) Boot() error {
 	}
 
 	p.Locker.Lock(proxy)
-
-	reverse.WithClient(&fasthttp.Client{
-		NoDefaultUserAgentHeader: true,
-		DisablePathNormalizing:   true,
-	})
 
 	proxy.Use(reverse.Balancer(reverse.Config{
 		Servers: []string{

@@ -40,7 +40,7 @@ var (
 				Required()
 
 	ProxyLoggerFilePath = ferrite.String("PROXY_LOGGER_FILE_PATH", "A path where logs of Defly Defender Proxy stored").
-				WithDefault("resources/logs/server.log").
+				WithDefault("resources/logs/proxy.log").
 				WithConstraint("Auto create log file, continue if success", func(s string) bool {
 			_, err := utilities.CreateFileIfNotExists(s)
 			return err == nil

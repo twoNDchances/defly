@@ -8,7 +8,7 @@ import (
 )
 
 func NewAbout() {
-	if !environments.BannerEnable.Value() {
+	if !environments.AboutBannerEnable.Value() {
 		return
 	}
 

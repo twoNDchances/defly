@@ -79,7 +79,7 @@ var (
 				WithDefault("5").
 				Required()
 
-	ProxyBackendUrls = ferrite.URL("PROXY_BACKEND_URL", "Backend URL").
+	ProxyBackendUrl = ferrite.URL("PROXY_BACKEND_URL", "Backend URL").
 				WithDefault("http://localhost").
 				Required()
 )
