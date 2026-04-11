@@ -7,8 +7,7 @@ use Filament\Support\Colors\Color;
 
 trait LabelColumn
 {
-    use Column;
-    use LabelButton;
+    use Column, LabelButton, LabelData;
 
     public static function name()
     {

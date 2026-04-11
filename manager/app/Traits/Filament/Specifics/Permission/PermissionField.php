@@ -2,13 +2,11 @@
 
 namespace App\Traits\Filament\Specifics\Permission;
 
-use App\Services\Security;
 use App\Traits\Filament\Generals\Components\Field;
 
 trait PermissionField
 {
-    use Field;
-    use PermissionButton;
+    use Field, PermissionButton, PermissionData;
 
     public static function name()
     {
@@ -20,11 +18,9 @@ trait PermissionField
 
     public static function appliedFor()
     {
-        $models = array_keys(Security::generatePermissionList(true));
-
         return self::select('applied_for', __('models.permission.fields.applied_for'))
             ->helperText(__('forms.permission.descriptions.applied_for'))
-            ->options(array_combine($models, $models))
+            ->options(self::permissionModelOptions())
             ->searchable()
             ->required()
             ->reactive()
@@ -41,7 +37,7 @@ trait PermissionField
                     return [];
                 }
 
-                return Security::generatePermissionList(true)[$appliedFor] ?? [];
+                return self::permissionList()[$appliedFor] ?? [];
             })
             ->searchable()
             ->required();

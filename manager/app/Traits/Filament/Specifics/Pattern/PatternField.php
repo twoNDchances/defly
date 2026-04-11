@@ -7,8 +7,7 @@ use App\Traits\Filament\Generals\Components\Field;
 
 trait PatternField
 {
-    use Field;
-    use PatternData;
+    use Field, PatternButton, PatternData;
 
     public static function name()
     {

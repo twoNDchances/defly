@@ -6,9 +6,7 @@ use App\Traits\Filament\Generals\Components\Column;
 
 trait WordlistColumn
 {
-    use Column;
-    use WordlistButton;
-    use WordlistData;
+    use Column, WordlistButton, WordlistData;
 
     public static function name()
     {

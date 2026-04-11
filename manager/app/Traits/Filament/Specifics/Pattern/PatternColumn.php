@@ -6,9 +6,7 @@ use App\Traits\Filament\Generals\Components\Column;
 
 trait PatternColumn
 {
-    use Column;
-    use PatternButton;
-    use PatternData;
+    use Column, PatternButton, PatternData;
 
     public static function name()
     {

@@ -9,10 +9,8 @@ use App\Traits\Filament\Generals\Components\Field;
 
 trait EngineField
 {
-    use EngineButton;
-    use EngineData;
-    use Field;
-
+    use Field, EngineButton, EngineData;
+    
     public static function name()
     {
         return self::textInput(

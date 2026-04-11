@@ -6,9 +6,7 @@ use App\Traits\Filament\Generals\Components\Column;
 
 trait EngineColumn
 {
-    use Column;
-    use EngineButton;
-    use EngineData;
+    use Column, EngineButton, EngineData;
 
     public static function name()
     {

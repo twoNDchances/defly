@@ -10,8 +10,7 @@ use Filament\Support\Icons\Heroicon;
 
 trait UserField
 {
-    use Field;
-    use UserButton;
+    use Field, UserButton, UserData;
 
     public static function name()
     {

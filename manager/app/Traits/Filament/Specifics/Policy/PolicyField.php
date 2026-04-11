@@ -6,8 +6,7 @@ use App\Traits\Filament\Generals\Components\Field;
 
 trait PolicyField
 {
-    use Field;
-    use PolicyButton;
+    use Field, PolicyButton, PolicyData;
 
     public static function name()
     {

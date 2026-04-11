@@ -7,9 +7,7 @@ use App\Traits\Filament\Generals\Components\Field;
 
 trait WordlistField
 {
-    use Field;
-    use WordlistButton;
-    use WordlistData;
+    use Field, WordlistButton, WordlistData;
 
     public static function name()
     {

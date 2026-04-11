@@ -6,7 +6,7 @@ use App\Traits\Filament\Generals\Components\Field;
 
 trait LabelField
 {
-    use Field;
+    use Field, LabelButton, LabelData;
 
     public static function name()
     {

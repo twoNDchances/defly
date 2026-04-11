@@ -32,4 +32,9 @@ class Wordlist extends Model
             'updated_at' => 'datetime',
         ];
     }
+
+    public function targets()
+    {
+        return $this->hasMany(Target::class, 'wordlist');
+    }
 }
