@@ -125,6 +125,18 @@ return [
             'phase' => 'Phase',
             'type' => 'Type',
             'datatype' => 'Datatype',
+            'targets' => 'Targets',
+        ],
+    ],
+    'target' => [
+        'name' => 'Target',
+        'fields' => [
+            'name' => 'Name',
+            'phase' => 'Phase',
+            'type' => 'Type',
+            'datatype' => 'Datatype',
+            'pattern' => 'Pattern',
+            'wordlist' => 'Wordlist',
         ],
     ],
 ];

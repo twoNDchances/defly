@@ -69,4 +69,39 @@ trait GeneralData
             ],
         ];
     }
+
+    public static function phaseDescriptions()
+    {
+        return [
+            Phase::One->value => __('forms.commons.phase.1'),
+            Phase::Two->value => __('forms.commons.phase.2'),
+            Phase::Three->value => __('forms.commons.phase.3'),
+            Phase::Four->value => __('forms.commons.phase.4'),
+            Phase::Five->value => __('forms.commons.phase.5'),
+            Phase::Six->value => __('forms.commons.phase.6'),
+        ];
+    }
+
+    public static function typeDescriptions()
+    {
+        return [
+            Type::Getter->value => __('forms.commons.type.getter'),
+            Type::Full->value => __('forms.commons.type.full'),
+            Type::Header->value => __('forms.commons.type.header'),
+            Type::Meta->value => __('forms.commons.type.meta'),
+            Type::Query->value => __('forms.commons.type.query'),
+            Type::Body->value => __('forms.commons.type.body'),
+            Type::File->value => __('forms.commons.type.file'),
+        ];
+    }
+
+    public static function datatypeDescriptions()
+    {
+        return [
+            null => __('forms.engine.descriptions.input_datatype'),
+            Datatype::Array->value => __('forms.commons.datatype.array'),
+            Datatype::Number->value => __('forms.commons.datatype.number'),
+            Datatype::String->value => __('forms.commons.datatype.string'),
+        ];
+    }
 }

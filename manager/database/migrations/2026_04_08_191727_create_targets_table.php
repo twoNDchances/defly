@@ -18,8 +18,8 @@ return new class extends Migration
             $table->enum('type', ['getter', 'full', 'header', 'meta', 'query', 'body', 'file']);
             $table->enum('datatype', ['array', 'number', 'string']);
             $table->longText('description')->nullable();
-            $table->foreignUuid('pattern')->nullable()->index()->constrained('patterns')->nullOnDelete();
-            $table->foreignUuid('wordlist')->nullable()->index()->constrained('wordlists')->nullOnDelete();
+            $table->foreignUuid('pattern_id')->nullable()->index()->constrained('patterns')->nullOnDelete();
+            $table->foreignUuid('wordlist_id')->nullable()->index()->constrained('wordlists')->nullOnDelete();
             $table->foreignUuid('created_by')->nullable()->index()->constrained('users')->nullOnDelete();
             $table->timestamps();
         });

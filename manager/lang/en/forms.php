@@ -16,6 +16,23 @@ return [
             'number' => 'Number data, include integer & float',
             'string' => 'String data',
         ],
+        'phase' => [
+            '1' => 'Related to everything related to the request',
+            '2' => 'Related to everything in the headers of the request',
+            '3' => 'Releted to everything in the body of the request',
+            '4' => 'Related to everything in the headers of the response',
+            '5' => 'Related to everything in the body of the response',
+            '6' => 'Related to everything in the response',
+        ],
+        'type' => [
+            'getter' => 'Search by key and retrieve the value of a variable within a request or response lifecycle, where this variable is accessible at all phases',
+            'full' => 'Build a complete data of request or response',
+            'header' => 'Find and retrieve the key or value related to the headers of the request or response',
+            'meta' => 'Find and retrieve values related to the metadata of the request or response',
+            'query' => 'Find and retrieve the key or value associated with the URL parameter of the request',
+            'body' => 'Find and retrieve the key or value related to the body of the request or response',
+            'file' => 'Find and retrieve the key or value related to the file of the request or response',
+        ],
     ],
     'user' => [
         'text_examples' => [
@@ -140,7 +157,7 @@ return [
         'extras' => [
             'type' => [
                 'indexOf' => 'Get the position of the array ([...][index])',
-                'merge' => 'Combine all elements together, separated by the character ("abc,def").',
+                'merge' => 'Combine all elements together, separated by the character ("abc,def")',
                 'addition' => 'Addition (+)',
                 'subtraction' => 'Subtraction (-)',
                 'multiplication' => 'Multiplication (*)',
@@ -170,9 +187,10 @@ return [
     'pattern' => [
         'descriptions' => [
             'name' => 'The pattern name is used to determine the type of data to be retrieved',
-            'phase' => 'The phase where data is available for retrieval.',
+            'phase' => 'The phase where data is available for retrieval',
             'type' => 'The type of scope in which the data appears',
-            'datatype' => 'The data type that the pattern retrieved will return.',
+            'datatype' => 'The data type that the pattern retrieved will return',
+            'targets' => 'Choose one or more targets that should use this pattern',
             'description' => 'Pattern description',
         ],
         'sections' => [
@@ -180,7 +198,30 @@ return [
                 'title' => 'Pattern definition',
             ],
             'b' => [
-                'title' => 'Implementation targets'
+                'title' => 'Implementation targets',
+            ],
+        ],
+    ],
+    'target' => [
+        'text_examples' => [
+            'name' => 'investigation-objective',
+            'description' => 'Some description about this target',
+        ],
+        'descriptions' => [
+            'name' => 'A unique kebab-style name represents this target',
+            'phase' => 'The phase where data is available for retrieval',
+            'type' => 'The type of scope in which the data appears',
+            'datatype' => 'The data type that the target retrieved will return',
+            'description' => 'You can explain in more detail if this target is complex',
+            'pattern' => 'Select an existing pattern to drive target type and datatype',
+            'wordlist' => 'Select a wordlist when target datatype is array and no pattern is chosen',
+        ],
+        'steps' => [
+            'a' => [
+                'title' => 'Target preparation',
+            ],
+            'b' => [
+                'title' => 'Target definition',
             ],
         ],
     ],

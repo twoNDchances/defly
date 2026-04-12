@@ -52,5 +52,13 @@ return [
             'datatype' => 'Datatype',
             'targets' => 'Targets',
         ],
+        'target' => [
+            'name' => 'Name',
+            'phase' => 'Execution phase',
+            'type' => 'Scope type',
+            'datatype' => 'Datatype',
+            'pattern' => 'Pattern',
+            'wordlist' => 'Wordlist',
+        ],
     ],
 ];

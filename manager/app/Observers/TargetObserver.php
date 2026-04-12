@@ -7,5 +7,5 @@ use App\Traits\Observers\Before;
 
 class TargetObserver
 {
-    use Before, After;
+    use After, Before;
 }

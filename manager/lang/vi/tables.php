@@ -52,5 +52,13 @@ return [
             'datatype' => 'Kiểu dữ liệu',
             'targets' => 'Các mục tiêu',
         ],
+        'target' => [
+            'name' => 'Tên',
+            'phase' => 'Giai đoạn thực thi',
+            'type' => 'Loại phạm vi',
+            'datatype' => 'Kiểu dữ liệu',
+            'pattern' => 'Mẫu',
+            'wordlist' => 'Danh sách từ',
+        ],
     ],
 ];

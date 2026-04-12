@@ -12,7 +12,7 @@ trait PatternField
     public static function name()
     {
         return self::textInput('name', __('models.pattern.fields.name'))
-        ->helperText(__('forms.pattern.descriptions.name'));
+            ->helperText(__('forms.pattern.descriptions.name'));
     }
 
     public static function phase()
@@ -22,7 +22,7 @@ trait PatternField
             __('models.pattern.fields.phase'),
             self::phaseOptionsAndColors(),
         )
-        ->helperText(__('forms.pattern.descriptions.phase'));
+            ->helperText(__('forms.pattern.descriptions.phase'));
     }
 
     public static function type()
@@ -31,6 +31,7 @@ trait PatternField
         $typeColors = self::typeOptionsAndColors()['colors'];
         $getter = Type::Getter->value;
         unset($typeOptions[$getter], $typeColors[$getter]);
+
         return self::toggleButtons(
             'type',
             __('models.pattern.fields.type'),
@@ -39,7 +40,7 @@ trait PatternField
                 'colors' => $typeColors,
             ],
         )
-        ->helperText(__('forms.pattern.descriptions.type'));
+            ->helperText(__('forms.pattern.descriptions.type'));
     }
 
     public static function datatype()
@@ -49,7 +50,7 @@ trait PatternField
             __('models.pattern.fields.datatype'),
             self::datatypeOptionsAndColors(),
         )
-        ->helperText(__('forms.pattern.descriptions.datatype'));
+            ->helperText(__('forms.pattern.descriptions.datatype'));
     }
 
     public static function description()
@@ -58,13 +59,14 @@ trait PatternField
             'description',
             __('models.commons.description'),
         )
-        ->helperText(__('forms.pattern.descriptions.description'));
+            ->helperText(__('forms.pattern.descriptions.description'));
     }
 
     public static function targets()
     {
-        return self::select('targets', __(''))
-        ->multiple()
-        ->relationship('targets', 'name');
+        return self::select('targets', __('models.pattern.fields.targets'))
+            ->helperText(__('forms.pattern.descriptions.targets'))
+            ->multiple()
+            ->relationship('targets', 'name');
     }
 }

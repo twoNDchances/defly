@@ -11,6 +11,8 @@ class AuthenticationCluster extends Cluster
 {
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedUserCircle;
 
+    protected static ?int $navigationSort = 1;
+
     public static function getNavigationGroup(): string|UnitEnum|null
     {
         return __('navigations.groups.security');

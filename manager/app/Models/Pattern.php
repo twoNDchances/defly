@@ -29,6 +29,6 @@ class Pattern extends Model
 
     public function targets()
     {
-        return $this->hasMany(Target::class, 'pattern');
+        return $this->hasMany(Target::class, 'pattern_id');
     }
 }

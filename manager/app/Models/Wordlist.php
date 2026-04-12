@@ -35,6 +35,6 @@ class Wordlist extends Model
 
     public function targets()
     {
-        return $this->hasMany(Target::class, 'wordlist');
+        return $this->hasMany(Target::class, 'wordlist_id');
     }
 }

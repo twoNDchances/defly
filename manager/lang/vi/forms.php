@@ -16,6 +16,23 @@ return [
             'number' => 'Kiểu dữ liệu số, bao gồm số nguyên và số thập phân',
             'string' => 'Kiểu dữ liệu chuỗi',
         ],
+        'phase' => [
+            '1' => 'Liên quan đến mọi thứ của yêu cầu',
+            '2' => 'Liên quan đến mọi thứ của phần tiêu đề trong yêu cầu',
+            '3' => 'Liên quan đến mọi thứ của phần nội dung trong yêu cầu',
+            '4' => 'Liên quan đến mọi thứ của phần tiêu đề trong phản hồi',
+            '5' => 'Liên quan đến mọi thứ của phần nội dung trong phản hồi',
+            '6' => 'Liên quan đến mọi thứ của phản hồi',
+        ],
+        'type' => [
+            'getter' => 'Tìm theo khóa và lấy giá trị của một biến trong một vòng đời của yêu cầu hoặc phản hồi, biến này có truy cập ở mọi giai đoạn',
+            'full' => 'Xây dựng dữ liệu đầy đủ của yêu cầu hoặc phản hồi',
+            'header' => 'Tìm và lấy khóa hoặc giá trị liên quan đến tiêu đề của yêu cầu hoặc phản hồi',
+            'meta' => 'Tìm và lấy giá trị liên quan đến siêu dữ liệu của yêu cầu hoặc phản hồi',
+            'query' => 'Tìm và lấy khóa hoặc giá trị liên quan đến tham số URL của yêu cầu',
+            'body' => 'Tìm và lấy khóa hoặc giá trị liên quan đến nội dung của yêu cầu hoặc phản hồi',
+            'file' => 'Tìm và lấy khóa hoặc giá trị liên quan đến tệp của yêu cầu hoặc phản hồi',
+        ],
     ],
     'user' => [
         'text_examples' => [
@@ -173,6 +190,7 @@ return [
             'phase' => 'Giai đoạn mà dữ liệu có thể lấy được',
             'type' => 'Loại phạm vi mà dữ liệu xuất hiện',
             'datatype' => 'Kiểu dữ liệu mà mẫu lấy được sẽ trả về',
+            'targets' => 'Chọn một hoặc nhiều mục tiêu áp dụng mẫu này',
             'description' => 'Mô tả mẫu',
         ],
         'sections' => [
@@ -180,7 +198,30 @@ return [
                 'title' => 'Định nghĩa mẫu',
             ],
             'b' => [
-                'title' => 'Các mục tiêu triển khai'
+                'title' => 'Các mục tiêu triển khai',
+            ],
+        ],
+    ],
+    'target' => [
+        'text_examples' => [
+            'name' => 'muc-tieu-dieu-tra',
+            'description' => 'Một số mô tả về mục tiêu này',
+        ],
+        'descriptions' => [
+            'name' => 'Tên duy nhất theo kiểu kebab đại diện cho mục tiêu này',
+            'phase' => 'Giai đoạn mà dữ liệu có thể lấy được',
+            'type' => 'Loại phạm vi mà dữ liệu xuất hiện',
+            'datatype' => 'Kiểu dữ liệu mục tiêu này trả về',
+            'description' => 'Bạn có thể giải thích rõ hơn nếu mục tiêu phức tạp',
+            'pattern' => 'Chọn một mẫu có sẵn để định nghĩa mục tiêu',
+            'wordlist' => 'Chọn một danh sách từ để định nghĩa mục tiêu cho kiểu dữ liệu mảng',
+        ],
+        'steps' => [
+            'a' => [
+                'title' => 'Chuẩn bị mục tiêu',
+            ],
+            'b' => [
+                'title' => 'Định nghĩa mục tiêu',
             ],
         ],
     ],

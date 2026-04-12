@@ -14,26 +14,26 @@ class PatternForm
     {
         return [
             Grid::make(3)
-            ->columnSpanFull()
-            ->schema([
-                Section::make(__('forms.pattern.sections.a.title'))
-                ->columnSpan(2)
-                ->columns(2)
+                ->columnSpanFull()
                 ->schema([
-                    self::phase(),
-                    self::type(),
-                    self::name(),
-                    self::datatype(),
-                    self::description()->columnSpanFull(),
-                ]),
+                    Section::make(__('forms.pattern.sections.a.title'))
+                        ->columnSpan(2)
+                        ->columns(2)
+                        ->schema([
+                            self::phase(),
+                            self::type(),
+                            self::name(),
+                            self::datatype(),
+                            self::description()->columnSpanFull(),
+                        ]),
 
-                Section::make(__('forms.pattern.sections.b.title'))
-                ->columnSpan(1)
-                ->columns(1)
-                ->schema([
-                    self::targets(),
+                    Section::make(__('forms.pattern.sections.b.title'))
+                        ->columnSpan(1)
+                        ->columns(1)
+                        ->schema([
+                            self::targets(),
+                        ]),
                 ]),
-            ]),
         ];
     }
 }

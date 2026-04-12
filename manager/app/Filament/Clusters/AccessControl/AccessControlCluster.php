@@ -11,6 +11,8 @@ class AccessControlCluster extends Cluster
 {
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedLockClosed;
 
+    protected static ?int $navigationSort = 2;
+
     public static function getNavigationGroup(): string|UnitEnum|null
     {
         return __('navigations.groups.security');

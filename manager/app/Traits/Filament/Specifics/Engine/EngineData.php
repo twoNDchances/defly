@@ -10,16 +10,6 @@ trait EngineData
 {
     use GeneralData;
 
-    public static function datatypeDescriptions()
-    {
-        return [
-            null => __('forms.engine.descriptions.input_datatype'),
-            Datatype::Array->value => __('forms.commons.datatype.array'),
-            Datatype::Number->value => __('forms.commons.datatype.number'),
-            Datatype::String->value => __('forms.commons.datatype.string'),
-        ];
-    }
-
     public static function typeDescriptionsPerDatatypes()
     {
         return [

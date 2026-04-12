@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 
-#[Fillable(['name', 'phase', 'type', 'datatype', 'description', 'pattern', 'wordlist', 'created_by'])]
+#[Fillable(['name', 'phase', 'type', 'datatype', 'description', 'pattern_id', 'wordlist_id', 'created_by'])]
 #[ObservedBy(TargetObserver::class)]
 class Target extends Model
 {
@@ -28,8 +28,8 @@ class Target extends Model
             'type' => Type::class,
             'datatype' => Datatype::class,
             'description' => 'string',
-            'pattern' => 'string',
-            'wordlist' => 'string',
+            'pattern_id' => 'string',
+            'wordlist_id' => 'string',
             'created_by' => 'string',
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
@@ -38,11 +38,11 @@ class Target extends Model
 
     public function pattern()
     {
-        return $this->belongsTo(Pattern::class, 'pattern');
+        return $this->belongsTo(Pattern::class, 'pattern_id');
     }
 
     public function wordlist()
     {
-        return $this->belongsTo(Wordlist::class, 'wordlist');
+        return $this->belongsTo(Wordlist::class, 'wordlist_id');
     }
 }

@@ -125,6 +125,18 @@ return [
             'phase' => 'Giai đoạn',
             'type' => 'Loại',
             'datatype' => 'Kiểu dữ liệu',
+            'targets' => 'Mục tiêu',
+        ],
+    ],
+    'target' => [
+        'name' => 'Mục tiêu',
+        'fields' => [
+            'name' => 'Tên',
+            'phase' => 'Giai đoạn',
+            'type' => 'Loại',
+            'datatype' => 'Kiểu dữ liệu',
+            'pattern' => 'Mẫu',
+            'wordlist' => 'Danh sách từ',
         ],
     ],
 ];
