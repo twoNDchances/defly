@@ -15,10 +15,10 @@ class EnginesTable
                 //
             ])
             ->recordActions([
-                EngineTable::buttonGroup(),
+                EngineTable::buttonGroup(more: [EngineTable::cloneButton()]),
             ])
             ->toolbarActions([
-                EngineTable::bulkButtonGroup(),
+                EngineTable::bulkButtonGroup(false, [EngineTable::deleteUnlockedBulkButton()]),
             ]);
     }
 }

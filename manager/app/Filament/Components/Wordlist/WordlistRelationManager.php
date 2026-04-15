@@ -2,12 +2,15 @@
 
 namespace App\Filament\Components\Wordlist;
 
+use App\Models\Wordlist;
 use App\Traits\Filament\Specifics\Wordlist\WordlistButton;
 use App\Traits\Filament\Specifics\Wordlist\WordlistData;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Collection;
 
 class WordlistRelationManager extends RelationManager
 {
@@ -30,13 +33,29 @@ class WordlistRelationManager extends RelationManager
             ])
             ->headerActions([
                 self::createButton(),
-                self::attachButton(),
+                self::attachButton()->after(function (array $data): void {
+                    $recordIds = Arr::wrap($data['recordId'] ?? []);
+
+                    if ($recordIds !== []) {
+                        Wordlist::query()->whereKey($recordIds)->update(['locked' => true]);
+                    }
+                }),
             ])
             ->recordActions([
-                self::buttonGroup(delete: false, more: [self::detachButton()]),
+                self::buttonGroup(delete: false, more: [
+                    self::detachButton()->after(function (Wordlist $record): void {
+                        $record->update(['locked' => $record->targets()->exists() || $record->labels()->exists()]);
+                    }),
+                ]),
             ])
             ->toolbarActions([
-                self::bulkButtonGroup(false, [self::detachBulkButton()]),
+                self::bulkButtonGroup(false, [
+                    self::detachBulkButton()->after(function (Collection $records): void {
+                        $records->each(function (Wordlist $record): void {
+                            $record->update(['locked' => $record->targets()->exists() || $record->labels()->exists()]);
+                        });
+                    }),
+                ]),
             ]);
     }
 

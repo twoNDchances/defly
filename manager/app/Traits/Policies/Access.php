@@ -16,6 +16,10 @@ trait Access
 
     public function checkAccess(User $user, $model, $action): bool
     {
+        if (in_array($action, ['update', 'delete'], true) && data_get($model, 'locked') === true) {
+            return false;
+        }
+
         if (Identification::isRoot()) {
             return true;
         }

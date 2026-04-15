@@ -37,11 +37,19 @@ class TargetObserver
         }
 
         if ($oldWordlistId) {
-            Wordlist::whereKey($oldWordlistId)->update(['locked' => false]);
+            $oldWordlist = Wordlist::query()->find($oldWordlistId);
+
+            if ($oldWordlist) {
+                $oldWordlist->update(['locked' => $oldWordlist->targets()->exists() || $oldWordlist->labels()->exists()]);
+            }
         }
 
         if ($newWordlistId) {
-            Wordlist::whereKey($newWordlistId)->update(['locked' => true]);
+            $newWordlist = Wordlist::query()->find($newWordlistId);
+
+            if ($newWordlist) {
+                $newWordlist->update(['locked' => $newWordlist->targets()->exists() || $newWordlist->labels()->exists()]);
+            }
         }
     }
 }

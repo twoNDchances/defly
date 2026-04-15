@@ -15,10 +15,10 @@ class WordlistsTable
                 //
             ])
             ->recordActions([
-                WordlistTable::buttonGroup(),
+                WordlistTable::buttonGroup(more: [WordlistTable::cloneButton()]),
             ])
             ->toolbarActions([
-                WordlistTable::bulkButtonGroup(),
+                WordlistTable::bulkButtonGroup(false, [WordlistTable::deleteUnlockedBulkButton()]),
             ]);
     }
 }
