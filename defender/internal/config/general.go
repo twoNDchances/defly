@@ -1,10 +1,7 @@
 package config
 
 import (
-	"defly-defender/internal/globals"
-
-	"github.com/gofiber/fiber/v3"
-	"github.com/gofiber/fiber/v3/middleware/recover"
+	"github.com/gin-gonic/gin"
 )
 
 type Address struct {
@@ -13,17 +10,15 @@ type Address struct {
 
 type Absorber struct{}
 
-func (a Absorber) Recover(application *fiber.App) {
-	application.Use(recover.New())
+func (a Absorber) Recover(application *gin.Engine) {
+	application.Use(gin.Recovery())
 }
 
 type Locker struct{}
 
-func (l Locker) Lock(application *fiber.App) {
-	application.Use(func(c fiber.Ctx) error {
-		globals.Pauser.RLock()
-		defer globals.Pauser.RUnlock()
-		return c.Next()
+func (l Locker) Lock(application *gin.Engine) {
+	application.Use(func(ctx *gin.Context) {
+		ctx.Next()
 	})
 }
 
@@ -33,9 +28,9 @@ type Tls struct {
 	Key         string
 }
 
-func (t Tls) Encrypt(listenConfig *fiber.ListenConfig) {
+func (t Tls) Listen(application *gin.Engine, address string) error {
 	if t.Enable {
-		listenConfig.CertFile = t.Certificate
-		listenConfig.CertKeyFile = t.Key
+		return application.RunTLS(address, t.Certificate, t.Key)
 	}
+	return application.Run(address)
 }

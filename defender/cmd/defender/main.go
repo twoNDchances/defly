@@ -10,6 +10,7 @@ import (
 	"syscall"
 
 	"github.com/dogmatiq/ferrite"
+	"github.com/gin-gonic/gin"
 )
 
 func createApplication(ctx context.Context, applicationBooter func()) {
@@ -24,6 +25,7 @@ func createApplication(ctx context.Context, applicationBooter func()) {
 }
 
 func main() {
+	gin.SetMode(gin.ReleaseMode)
 	log.Println(utilities.Info("Validating..."))
 	ferrite.Init()
 

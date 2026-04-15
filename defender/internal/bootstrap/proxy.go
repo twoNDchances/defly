@@ -7,14 +7,17 @@ import (
 )
 
 func NewProxy() {
-	logger := NewLogger()
-	logger.From = "PROXY"
-
 	proxy := config.Proxy{
 		Address: config.Address{
 			Port: environments.ProxyPort.Value(),
 		},
-		Logger: logger,
+		Logger: config.Logger{
+			From:     "PROXY",
+			Format:   environments.ProxyLoggerFormat.Value(),
+			Timezone: environments.ProxyLoggerTimezone.Value(),
+			File:     environments.ProxyLoggerFileEnable.Value(),
+			Path:     environments.ProxyLoggerFilePath.Value(),
+		},
 		Severity: config.Severity{
 			Info:      utilities.StringToInteger(environments.ProxySeverityInfo.Value()),
 			Notice:    utilities.StringToInteger(environments.ProxySeverityNotice.Value()),

@@ -7,8 +7,6 @@ import (
 )
 
 func NewServer() {
-	logger := NewLogger()
-	logger.From = "SERVER"
 	server := config.Server{
 		Address: config.Address{
 			Port: environments.ServerPort.Value(),
@@ -18,7 +16,13 @@ func NewServer() {
 			Certificate: environments.ServerHTTPSCert.Value(),
 			Key:         environments.ServerHTTPSKey.Value(),
 		},
-		Logger: logger,
+		Logger: config.Logger{
+			From:     "SERVER",
+			Format:   environments.ServerLoggerFormat.Value(),
+			Timezone: environments.ServerLoggerTimezone.Value(),
+			File:     environments.ServerLoggerFileEnable.Value(),
+			Path:     environments.ServerLoggerFilePath.Value(),
+		},
 	}
 	if err := server.Boot(); err != nil {
 		panic(utilities.Danger(err.Error()))

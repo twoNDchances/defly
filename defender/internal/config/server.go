@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/gofiber/fiber/v3"
+	"github.com/gin-gonic/gin"
 )
 
 type Server struct {
@@ -17,7 +17,7 @@ type Server struct {
 }
 
 func (s Server) Boot() error {
-	server := fiber.New()
+	server := gin.New()
 
 	s.Absorber.Recover(server)
 
@@ -28,16 +28,11 @@ func (s Server) Boot() error {
 
 	s.Locker.Lock(server)
 
-	listenConfig := fiber.ListenConfig{
-		DisableStartupMessage: true,
-	}
-
 	scheme := "http"
-	s.Tls.Encrypt(&listenConfig)
 	if s.Tls.Enable {
 		scheme = "https"
 	}
 
 	log.Println(utilities.Infof("Defender server is running at %s://0.0.0.0:%s", scheme, s.Address.Port))
-	return server.Listen(fmt.Sprintf(":%s", s.Address.Port), listenConfig)
+	return s.Tls.Listen(server, fmt.Sprintf(":%s", s.Address.Port))
 }

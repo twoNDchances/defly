@@ -4,9 +4,11 @@ import (
 	"defly-defender/internal/utilities"
 	"fmt"
 	"log"
+	"net/http"
+	"net/http/httputil"
+	"net/url"
 
-	"github.com/gofiber/fiber/v3"
-	reverse "github.com/gofiber/fiber/v3/middleware/proxy"
+	"github.com/gin-gonic/gin"
 )
 
 type Severity struct {
@@ -35,7 +37,7 @@ type Proxy struct {
 }
 
 func (p Proxy) Boot() error {
-	proxy := fiber.New()
+	proxy := gin.New()
 
 	p.Absorber.Recover(proxy)
 
@@ -46,22 +48,27 @@ func (p Proxy) Boot() error {
 
 	p.Locker.Lock(proxy)
 
-	proxy.Use(reverse.Balancer(reverse.Config{
-		Servers: []string{
-			p.BackendUrl,
-		},
-		ModifyRequest: func(c fiber.Ctx) error {
-			return nil
-		},
-		ModifyResponse: func(c fiber.Ctx) error {
-			return nil
-		},
-	}))
-
-	listenConfig := fiber.ListenConfig{
-		DisableStartupMessage: true,
+	target, err := url.Parse(p.BackendUrl)
+	if err != nil {
+		return err
 	}
 
+	reverseProxy := &httputil.ReverseProxy{
+		Rewrite: func(request *httputil.ProxyRequest) {
+			request.SetURL(target)
+			request.SetXForwarded()
+		},
+		ErrorHandler: func(writer http.ResponseWriter, request *http.Request, err error) {
+			http.Error(writer, err.Error(), http.StatusBadGateway)
+		},
+	}
+
+	proxyHandler := func(ctx *gin.Context) {
+		reverseProxy.ServeHTTP(ctx.Writer, ctx.Request)
+		ctx.Abort()
+	}
+	proxy.Any("/*proxyPath", proxyHandler)
+
 	log.Println(utilities.Infof("Defender proxy is running at http://0.0.0.0:%s", p.Address.Port))
-	return proxy.Listen(fmt.Sprintf(":%s", p.Address.Port), listenConfig)
+	return proxy.Run(fmt.Sprintf(":%s", p.Address.Port))
 }

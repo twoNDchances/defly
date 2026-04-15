@@ -15,12 +15,12 @@ type Name struct {
 type Version struct {
 	Application string `mapstructure:"application"`
 	Go          string `mapstructure:"go"`
-	Fiber       string `mapstructure:"fiber"`
+	Gin         string `mapstructure:"gin"`
 }
 
 type About struct {
-	Author string `mapstructure:"author"`
-	Name `mapstructure:"name"`
+	Author  string `mapstructure:"author"`
+	Name    `mapstructure:"name"`
 	Version `mapstructure:"version"`
 }
 
@@ -33,7 +33,7 @@ func (a About) PrintDetail() {
 	fmt.Println(utilities.Successf(`
 Version: %s
 Go     : %s
-Fiber  : %s
+Gin    : %s
 Author : %s
-`, a.Version.Application, a.Version.Go, a.Version.Fiber, a.Author))
+`, a.Version.Application, a.Version.Go, a.Version.Gin, a.Author))
 }
