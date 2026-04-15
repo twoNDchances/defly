@@ -40,6 +40,7 @@ trait TargetField
 
     public static function setPattern()
     {
+        $condition = fn ($get) => $get('type') == Type::Getter->value;
         return self::select('pattern', __('models.target.fields.pattern'))
             ->helperText(__('forms.target.descriptions.pattern'))
             ->relationship(
@@ -48,8 +49,9 @@ trait TargetField
                 fn ($query, $get) => $query->where('phase', $get('phase'))->where('type', $get('type')),
             )
             ->afterStateUpdated(fn ($state, $set) => $set('datatype', Pattern::find($state)?->datatype))
-            ->disabled(fn ($get) => $get('type') == Type::Getter->value)
+            ->disabled($condition)
             ->required(fn ($get) => $get('type') == Type::Full->value)
+            ->visible(fn ($get) => !$condition($get))
             ->reactive();
     }
 

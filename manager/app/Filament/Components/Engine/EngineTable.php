@@ -16,6 +16,8 @@ class EngineTable
             self::getType(),
             self::getOutputDatatype(),
             self::getLabels(),
+            self::getTargets(),
+            self::getLocked(),
             self::getCreatedBy(),
             self::getCreatedAt(),
             self::getUpdatedAt(),

@@ -3,6 +3,7 @@
 namespace App\Filament\Components\User;
 
 use App\Traits\Filament\Specifics\User\UserButton;
+use App\Traits\Filament\Specifics\User\UserData;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
 use Filament\Tables\Table;
@@ -10,7 +11,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class UserRelationManager extends RelationManager
 {
-    use UserButton;
+    use UserButton, UserData;
 
     protected static string $relationship = 'users';
 

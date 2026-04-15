@@ -21,6 +21,7 @@ return new class extends Migration
             $table->foreignUuid('pattern_id')->nullable()->index()->constrained('patterns')->nullOnDelete();
             $table->foreignUuid('wordlist_id')->nullable()->index()->constrained('wordlists')->nullOnDelete();
             $table->foreignUuid('created_by')->nullable()->index()->constrained('users')->nullOnDelete();
+            $table->boolean('locked')->default(false);
             $table->timestamps();
         });
     }

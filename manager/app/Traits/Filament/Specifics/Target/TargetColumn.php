@@ -46,4 +46,9 @@ trait TargetColumn
     {
         return self::relationshipColumn('wordlist.name', __('models.target.fields.wordlist'));
     }
+
+    public static function getEngines()
+    {
+        return self::relationshipColumn('engines.name', __('tables.target.engines'));
+    }
 }

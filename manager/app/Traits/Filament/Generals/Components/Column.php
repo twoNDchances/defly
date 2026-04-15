@@ -52,6 +52,11 @@ trait Column
             ->badge();
     }
 
+    public static function getLocked()
+    {
+        return self::booleanColumn('locked', __('models.generals.specials.locked'));
+    }
+
     public static function getCreatedBy()
     {
         return self::textColumn('createdBy.email', __('models.generals.bases.created_by'))

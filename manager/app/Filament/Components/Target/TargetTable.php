@@ -18,6 +18,8 @@ class TargetTable
             self::getPattern(),
             self::getWordlist(),
             self::getLabels(),
+            self::getEngines(),
+            self::getLocked(),
             self::getCreatedBy(),
             self::getCreatedAt(),
             self::getUpdatedAt(),

@@ -3,6 +3,7 @@
 namespace App\Filament\Components\Permission;
 
 use App\Traits\Filament\Specifics\Permission\PermissionButton;
+use App\Traits\Filament\Specifics\Permission\PermissionData;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
 use Filament\Tables\Table;
@@ -10,7 +11,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class PermissionRelationManager extends RelationManager
 {
-    use PermissionButton;
+    use PermissionButton, PermissionData;
 
     protected static string $relationship = 'permissions';
 

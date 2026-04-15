@@ -34,4 +34,9 @@ trait EngineColumn
             ->color(fn ($state) => self::datatypeOptionsAndColors()['colors'][$state->value])
             ->badge();
     }
+
+    public static function getTargets()
+    {
+        return self::relationshipColumn('targets.name', __('tables.engine.targets'));
+    }
 }

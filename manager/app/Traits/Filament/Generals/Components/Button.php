@@ -10,9 +10,37 @@ use Filament\Support\Icons\Heroicon;
 
 trait Button
 {
+    protected static function mutateCreateForm(array $data): array
+    {
+        if (method_exists(static::class, 'createForm')) {
+            $data = static::createForm($data);
+        }
+
+        if (method_exists(static::class, 'saveForm')) {
+            $data = static::saveForm($data);
+        }
+
+        return $data;
+    }
+
+    protected static function mutateEditForm(array $data): array
+    {
+        if (method_exists(static::class, 'editForm')) {
+            $data = static::editForm($data);
+        }
+
+        if (method_exists(static::class, 'saveForm')) {
+            $data = static::saveForm($data);
+        }
+
+        return $data;
+    }
+
     public static function createButton()
     {
-        return Actions\CreateAction::make()->icon(fn () => Heroicon::OutlinedPlus);
+        return Actions\CreateAction::make()
+            ->icon(fn () => Heroicon::OutlinedPlus)
+            ->mutateDataUsing(fn (array $data): array => static::mutateCreateForm($data));
     }
 
     public static function attachButton()
@@ -29,7 +57,9 @@ trait Button
 
     public static function editButton()
     {
-        return Actions\EditAction::make()->icon(fn () => Heroicon::OutlinedPencilSquare);
+        return Actions\EditAction::make()
+            ->icon(fn () => Heroicon::OutlinedPencilSquare)
+            ->mutateDataUsing(fn (array $data): array => static::mutateEditForm($data));
     }
 
     public static function detachButton()

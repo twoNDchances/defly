@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 
-#[Fillable(['name', 'input_datatype', 'type', 'configurations', 'output_datatype', 'description', 'created_by'])]
+#[Fillable(['name', 'input_datatype', 'type', 'configurations', 'output_datatype', 'description', 'created_by', 'locked'])]
 #[ObservedBy(EngineObserver::class)]
 class Engine extends Model
 {
@@ -28,8 +28,16 @@ class Engine extends Model
             'output_datatype' => Datatype::class,
             'description' => 'string',
             'created_by' => 'string',
+            'locked' => 'boolean',
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
         ];
+    }
+
+    public function targets()
+    {
+        return $this->belongsToMany(Target::class, 'targets_engines', 'engine', 'target')
+            ->withPivot('order')
+            ->orderByPivot('order');
     }
 }

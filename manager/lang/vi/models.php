@@ -31,6 +31,7 @@ return [
                 'number' => 'Số',
                 'string' => 'Chuỗi',
             ],
+            'locked' => 'Bị khóa',
         ],
     ],
     'permission' => [

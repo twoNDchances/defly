@@ -3,6 +3,7 @@
 namespace App\Filament\Components\Wordlist;
 
 use App\Traits\Filament\Specifics\Wordlist\WordlistButton;
+use App\Traits\Filament\Specifics\Wordlist\WordlistData;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
 use Filament\Tables\Table;
@@ -10,7 +11,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class WordlistRelationManager extends RelationManager
 {
-    use WordlistButton;
+    use WordlistButton, WordlistData;
 
     protected static string $relationship = 'wordlists';
 

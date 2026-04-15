@@ -1,14 +1,6 @@
 <?php
 
 return [
-    'generals' => [
-        'bases' => [
-            'labels' => 'Nhãn',
-            'created_by' => 'Tạo bởi',
-            'created_at' => 'Tạo lúc',
-            'updated_at' => 'Cập nhật lúc',
-        ],
-    ],
     'user' => [
         'groups' => 'Nhóm áp dụng',
         'permissions' => 'Quyền áp dụng',
@@ -25,7 +17,11 @@ return [
         'preview' => 'Xem trước',
     ],
     // 'wordlist' => [],
-    // 'engine' => [],
+    'engine' => [
+        'targets' => 'Mục tiêu sử dụng',
+    ],
     // 'pattern' => [],
-    // 'target' => [],
+    'target' => [
+        'engines' => 'Động cơ sử dụng',
+    ],
 ];

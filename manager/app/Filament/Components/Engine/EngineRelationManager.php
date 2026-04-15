@@ -1,30 +1,30 @@
 <?php
 
-namespace App\Filament\Components\Group;
+namespace App\Filament\Components\Engine;
 
-use App\Traits\Filament\Specifics\Group\GroupButton;
-use App\Traits\Filament\Specifics\Group\GroupData;
+use App\Traits\Filament\Specifics\Engine\EngineButton;
+use App\Traits\Filament\Specifics\Engine\EngineData;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
 
-class GroupRelationManager extends RelationManager
+class EngineRelationManager extends RelationManager
 {
-    use GroupButton, GroupData;
+    use EngineButton, EngineData;
 
-    protected static string $relationship = 'groups';
+    protected static string $relationship = 'engines';
 
     public function form(Schema $schema): Schema
     {
-        return $schema->components(GroupForm::build());
+        return $schema->components(EngineForm::build());
     }
 
     public function table(Table $table): Table
     {
         return $table
             ->recordTitleAttribute('name')
-            ->columns(GroupTable::build())
+            ->columns(EngineTable::build())
             ->filters([
                 //
             ])
@@ -37,16 +37,17 @@ class GroupRelationManager extends RelationManager
             ])
             ->toolbarActions([
                 self::bulkButtonGroup(false, [self::detachBulkButton()]),
-            ]);
+            ])
+            ->reorderable('order');
     }
 
     public static function getTitle(Model $ownerRecord, string $pageClass): string
     {
-        return __('models.group.name');
+        return __('models.engine.name');
     }
 
     public static function getRecordLabel(): ?string
     {
-        return __('models.group.name');
+        return __('models.engine.name');
     }
 }

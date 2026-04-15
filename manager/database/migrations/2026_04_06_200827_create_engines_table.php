@@ -20,6 +20,7 @@ return new class extends Migration
             $table->enum('output_datatype', ['array', 'number', 'string']);
             $table->longText('description')->nullable();
             $table->foreignUuid('created_by')->nullable()->index()->constrained('users')->nullOnDelete();
+            $table->boolean('locked')->default(false);
             $table->timestamps();
         });
     }

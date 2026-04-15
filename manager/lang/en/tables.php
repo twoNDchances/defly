@@ -1,14 +1,6 @@
 <?php
 
 return [
-    'generals' => [
-        'bases' => [
-            'labels' => 'Labels',
-            'created_by' => 'Created by',
-            'created_at' => 'Created at',
-            'updated_at' => 'Updated at',
-        ],
-    ],
     'user' => [
         'groups' => 'Applied groups',
         'permissions' => 'Applied permissions',
@@ -23,5 +15,13 @@ return [
     ],
     'label' => [
         'preview' => 'Preview',
+    ],
+    // 'wordlist' => [],
+    'engine' => [
+        'targets' => 'Mục tiêu sử dụng',
+    ],
+    // 'pattern' => [],
+    'target' => [
+        'engines' => 'Động cơ sử dụng',
     ],
 ];

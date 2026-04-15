@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 
-#[Fillable(['name', 'type', 'word_file', 'word_json', 'word_count', 'description', 'created_by'])]
+#[Fillable(['name', 'type', 'word_file', 'word_json', 'word_count', 'description', 'created_by', 'locked'])]
 #[ObservedBy(WordlistObserver::class)]
 class Wordlist extends Model
 {
@@ -28,6 +28,7 @@ class Wordlist extends Model
             'word_count' => 'integer',
             'description' => 'string',
             'created_by' => 'string',
+            'locked' => 'boolean',
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
         ];
