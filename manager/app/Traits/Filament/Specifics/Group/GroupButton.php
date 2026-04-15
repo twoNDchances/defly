@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Traits\Filament\Specifics\Policy;
+namespace App\Traits\Filament\Specifics\Group;
 
 use App\Traits\Filament\Generals\Components\Button;
 
-trait PolicyButton
+trait GroupButton
 {
     use Button;
 }

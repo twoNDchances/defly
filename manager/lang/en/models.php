@@ -41,8 +41,8 @@ return [
             'action' => 'Action',
         ],
     ],
-    'policy' => [
-        'name' => 'Policy',
+    'group' => [
+        'name' => 'Group',
         'fields' => [
             'name' => 'Name',
         ],

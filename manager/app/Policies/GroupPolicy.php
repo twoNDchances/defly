@@ -2,15 +2,15 @@
 
 namespace App\Policies;
 
-use App\Models\Policy;
+use App\Models\Group;
 use App\Traits\Policies\Basic;
 
-class PolicyPolicy
+class GroupPolicy
 {
     use Basic;
 
     public function getModel()
     {
-        return Policy::class;
+        return Group::class;
     }
 }

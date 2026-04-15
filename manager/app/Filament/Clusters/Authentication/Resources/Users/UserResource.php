@@ -9,7 +9,7 @@ use App\Filament\Clusters\Authentication\Resources\Users\Pages\ListUsers;
 use App\Filament\Clusters\Authentication\Resources\Users\Schemas\UserForm;
 use App\Filament\Clusters\Authentication\Resources\Users\Tables\UsersTable;
 use App\Filament\Components\Permission\PermissionRelationManager;
-use App\Filament\Components\Policy\PolicyRelationManager;
+use App\Filament\Components\Group\GroupRelationManager;
 use App\Models\User;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -43,7 +43,7 @@ class UserResource extends Resource
     {
         return [
             PermissionRelationManager::class,
-            PolicyRelationManager::class,
+            GroupRelationManager::class,
         ];
     }
 

@@ -16,7 +16,7 @@ class UserTable
             self::getIsRoot(),
             self::getIsActivated(),
             self::getPermissions(),
-            self::getPolicies(),
+            self::getGroups(),
             self::getLabels(),
             self::getCreatedBy(),
             self::getCreatedAt(),

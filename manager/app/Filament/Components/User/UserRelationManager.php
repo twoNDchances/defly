@@ -29,7 +29,7 @@ class UserRelationManager extends RelationManager
             ])
             ->headerActions([
                 self::createButton(),
-                self::attachButton(),
+                self::attachButton()->recordSelectOptionsQuery(fn ($query) => $query->excludeCurrent()),
             ])
             ->recordActions([
                 self::buttonGroup(delete: false, more: [self::detachButton()]),

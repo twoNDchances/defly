@@ -18,7 +18,7 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,
             LabelSeeder::class,
             PermissionSeeder::class,
-            PolicySeeder::class,
+            GroupSeeder::class,
             PatternSeeder::class,
         ]);
     }

@@ -39,8 +39,8 @@ trait UserColumn
         return self::relationshipColumn('permissions.name', __('tables.user.permissions'));
     }
 
-    public static function getPolicies()
+    public static function getGroups()
     {
-        return self::relationshipColumn('policies.name', __('tables.user.policies'));
+        return self::relationshipColumn('groups.name', __('tables.user.groups'));
     }
 }

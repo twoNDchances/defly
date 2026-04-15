@@ -79,16 +79,16 @@ return [
             ],
         ],
     ],
-    'policy' => [
+    'group' => [
         'text_examples' => [
-            'name' => 'policy-management',
+            'name' => 'group-management',
         ],
         'descriptions' => [
-            'name' => 'A unique kebab-case name for this policy',
+            'name' => 'A unique kebab-case name for this group',
         ],
         'sections' => [
             'a' => [
-                'title' => 'Policy definition',
+                'title' => 'Group definition',
             ],
         ],
     ],

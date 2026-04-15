@@ -38,9 +38,9 @@ class Label extends Model
         return $this->morphedByMany(Permission::class, 'resource', 'labels_resources', 'label', 'resource_id');
     }
 
-    public function policies()
+    public function groups()
     {
-        return $this->morphedByMany(Policy::class, 'resource', 'labels_resources', 'label', 'resource_id');
+        return $this->morphedByMany(Group::class, 'resource', 'labels_resources', 'label', 'resource_id');
     }
 
     public function wordlists()

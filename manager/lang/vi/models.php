@@ -41,8 +41,8 @@ return [
             'action' => 'Hành động',
         ],
     ],
-    'policy' => [
-        'name' => 'Chính sách',
+    'group' => [
+        'name' => 'Nhóm',
         'fields' => [
             'name' => 'Tên',
         ],

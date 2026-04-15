@@ -11,9 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('users_policies', function (Blueprint $table) {
+        Schema::create('users_groups', function (Blueprint $table) {
             $table->foreignUuid('user')->constrained('users')->cascadeOnDelete();
-            $table->foreignUuid('policy')->constrained('policies')->cascadeOnDelete();
+            $table->foreignUuid('group')->constrained('groups')->cascadeOnDelete();
         });
     }
 
@@ -22,6 +22,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('users_policies');
+        Schema::dropIfExists('users_groups');
     }
 };

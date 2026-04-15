@@ -19,8 +19,7 @@ trait Button
     {
         return Actions\AttachAction::make()->icon(fn () => Heroicon::OutlinedLink)
             ->preloadRecordSelect()
-            ->multiple()
-            ->recordSelectOptionsQuery(fn ($query) => $query->excludeCurrent());
+            ->multiple();
     }
 
     public static function viewButton()

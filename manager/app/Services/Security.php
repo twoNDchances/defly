@@ -8,7 +8,7 @@ class Security
 {
     public static $models = [
         'User',
-        'Policy',
+        'Group',
         'Permission',
     ];
 
@@ -105,7 +105,7 @@ class Security
             return true;
         }
 
-        return $user->policies()
+        return $user->groups()
             ->whereHas('permissions', function ($query) use ($action, $appliedFor) {
                 $query->where('action', $action)
                     ->where('applied_for', $appliedFor);

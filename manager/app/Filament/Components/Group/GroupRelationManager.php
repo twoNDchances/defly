@@ -1,29 +1,29 @@
 <?php
 
-namespace App\Filament\Components\Policy;
+namespace App\Filament\Components\Group;
 
-use App\Traits\Filament\Specifics\Policy\PolicyButton;
+use App\Traits\Filament\Specifics\Group\GroupButton;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
 
-class PolicyRelationManager extends RelationManager
+class GroupRelationManager extends RelationManager
 {
-    use PolicyButton;
+    use GroupButton;
 
-    protected static string $relationship = 'policies';
+    protected static string $relationship = 'groups';
 
     public function form(Schema $schema): Schema
     {
-        return $schema->components(PolicyForm::build());
+        return $schema->components(GroupForm::build());
     }
 
     public function table(Table $table): Table
     {
         return $table
             ->recordTitleAttribute('name')
-            ->columns(PolicyTable::build())
+            ->columns(GroupTable::build())
             ->filters([
                 //
             ])
@@ -41,11 +41,11 @@ class PolicyRelationManager extends RelationManager
 
     public static function getTitle(Model $ownerRecord, string $pageClass): string
     {
-        return __('models.policy.name');
+        return __('models.group.name');
     }
 
     public static function getRecordLabel(): ?string
     {
-        return __('models.policy.name');
+        return __('models.group.name');
     }
 }

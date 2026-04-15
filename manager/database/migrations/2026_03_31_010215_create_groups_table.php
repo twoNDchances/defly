@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('policies', function (Blueprint $table) {
+        Schema::create('groups', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->string('name')->unique()->index();
             $table->longText('description')->nullable();
@@ -25,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('policies');
+        Schema::dropIfExists('groups');
     }
 };

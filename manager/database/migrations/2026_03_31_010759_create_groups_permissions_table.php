@@ -11,8 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('policies_permissions', function (Blueprint $table) {
-            $table->foreignUuid('policy')->constrained('policies')->cascadeOnDelete();
+        Schema::create('groups_permissions', function (Blueprint $table) {
+            $table->foreignUuid('group')->constrained('groups')->cascadeOnDelete();
             $table->foreignUuid('permission')->constrained('permissions')->cascadeOnDelete();
         });
     }
@@ -22,6 +22,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('policies_permissions');
+        Schema::dropIfExists('groups_permissions');
     }
 };

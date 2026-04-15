@@ -1,21 +1,21 @@
 <?php
 
-namespace App\Traits\Filament\Specifics\Policy;
+namespace App\Traits\Filament\Specifics\Group;
 
 use App\Traits\Filament\Generals\Components\Field;
 
-trait PolicyField
+trait GroupField
 {
-    use Field, PolicyButton, PolicyData;
+    use Field, GroupButton, GroupData;
 
     public static function setName()
     {
         return self::textInput(
             'name',
-            __('models.policy.fields.name'),
-            __('forms.policy.text_examples.name'),
+            __('models.group.fields.name'),
+            __('forms.group.text_examples.name'),
         )
-            ->helperText(__('forms.policy.descriptions.name'))
+            ->helperText(__('forms.group.descriptions.name'))
             ->unique(ignoreRecord: true)
             ->alphaDash()
             ->required();

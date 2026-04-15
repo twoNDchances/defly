@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Filament\Clusters\AccessControl\Resources\Policies\Schemas;
+namespace App\Filament\Clusters\AccessControl\Resources\Groups\Schemas;
 
-use App\Filament\Components\Policy\PolicyForm as Form;
+use App\Filament\Components\Group\GroupForm as Form;
 use Filament\Schemas\Schema;
 
-class PolicyForm
+class GroupForm
 {
     public static function configure(Schema $schema): Schema
     {

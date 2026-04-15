@@ -1,16 +1,24 @@
 <?php
 
 return [
+    'generals' => [
+        'bases' => [
+            'labels' => 'Nhãn',
+            'created_by' => 'Tạo bởi',
+            'created_at' => 'Tạo lúc',
+            'updated_at' => 'Cập nhật lúc',
+        ],
+    ],
     'user' => [
-        'policies' => 'Chính sách áp dụng',
+        'groups' => 'Nhóm áp dụng',
         'permissions' => 'Quyền áp dụng',
     ],
     'permission' => [
         'users' => 'Áp dụng người dùng',
-        'policies' => 'Thuộc chính sách',
+        'groups' => 'Thuộc nhóm',
     ],
-    'policy' => [
-        'users' => 'Người dùng được áp dụng',
+    'group' => [
+        'users' => 'Người dùng trong nhóm',
         'permissions' => 'Quyền đang sử dụng',
     ],
     'label' => [

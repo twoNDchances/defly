@@ -1,14 +1,14 @@
 <?php
 
-namespace App\Filament\Components\Policy;
+namespace App\Filament\Components\Group;
 
-use App\Traits\Filament\Specifics\Policy\PolicyField;
+use App\Traits\Filament\Specifics\Group\GroupField;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 
-class PolicyForm
+class GroupForm
 {
-    use PolicyField;
+    use GroupField;
 
     public static function build()
     {
@@ -16,7 +16,7 @@ class PolicyForm
             Grid::make(3)
                 ->columnSpanFull()
                 ->schema([
-                    Section::make(__('forms.policy.sections.a.title'))
+                    Section::make(__('forms.group.sections.a.title'))
                         ->columnSpan(2)
                         ->columns(1)
                         ->schema([

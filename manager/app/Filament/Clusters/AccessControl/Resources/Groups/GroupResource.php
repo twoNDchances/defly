@@ -1,25 +1,25 @@
 <?php
 
-namespace App\Filament\Clusters\AccessControl\Resources\Policies;
+namespace App\Filament\Clusters\AccessControl\Resources\Groups;
 
 use App\Filament\Clusters\AccessControl\AccessControlCluster;
-use App\Filament\Clusters\AccessControl\Resources\Policies\Pages\CreatePolicy;
-use App\Filament\Clusters\AccessControl\Resources\Policies\Pages\EditPolicy;
-use App\Filament\Clusters\AccessControl\Resources\Policies\Pages\ListPolicies;
-use App\Filament\Clusters\AccessControl\Resources\Policies\Schemas\PolicyForm;
-use App\Filament\Clusters\AccessControl\Resources\Policies\Tables\PoliciesTable;
+use App\Filament\Clusters\AccessControl\Resources\Groups\Pages\CreateGroup;
+use App\Filament\Clusters\AccessControl\Resources\Groups\Pages\EditGroup;
+use App\Filament\Clusters\AccessControl\Resources\Groups\Pages\ListGroups;
+use App\Filament\Clusters\AccessControl\Resources\Groups\Schemas\GroupForm;
+use App\Filament\Clusters\AccessControl\Resources\Groups\Tables\GroupsTable;
 use App\Filament\Components\Permission\PermissionRelationManager;
 use App\Filament\Components\User\UserRelationManager;
-use App\Models\Policy;
+use App\Models\Group;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 
-class PolicyResource extends Resource
+class GroupResource extends Resource
 {
-    protected static ?string $model = Policy::class;
+    protected static ?string $model = Group::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedListBullet;
 
@@ -31,12 +31,12 @@ class PolicyResource extends Resource
 
     public static function form(Schema $schema): Schema
     {
-        return PolicyForm::configure($schema);
+        return GroupForm::configure($schema);
     }
 
     public static function table(Table $table): Table
     {
-        return PoliciesTable::configure($table);
+        return GroupsTable::configure($table);
     }
 
     public static function getRelations(): array
@@ -50,14 +50,14 @@ class PolicyResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => ListPolicies::route('/'),
-            'create' => CreatePolicy::route('/create'),
-            'edit' => EditPolicy::route('/{record}/edit'),
+            'index' => ListGroups::route('/'),
+            'create' => CreateGroup::route('/create'),
+            'edit' => EditGroup::route('/{record}/edit'),
         ];
     }
 
     public static function getModelLabel(): string
     {
-        return __('models.policy.name');
+        return __('models.group.name');
     }
 }

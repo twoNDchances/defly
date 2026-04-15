@@ -8,7 +8,7 @@ use App\Filament\Clusters\AccessControl\Resources\Permissions\Pages\EditPermissi
 use App\Filament\Clusters\AccessControl\Resources\Permissions\Pages\ListPermissions;
 use App\Filament\Clusters\AccessControl\Resources\Permissions\Schemas\PermissionForm;
 use App\Filament\Clusters\AccessControl\Resources\Permissions\Tables\PermissionsTable;
-use App\Filament\Components\Policy\PolicyRelationManager;
+use App\Filament\Components\Group\GroupRelationManager;
 use App\Filament\Components\User\UserRelationManager;
 use App\Models\Permission;
 use BackedEnum;
@@ -43,7 +43,7 @@ class PermissionResource extends Resource
     {
         return [
             UserRelationManager::class,
-            PolicyRelationManager::class,
+            GroupRelationManager::class,
         ];
     }
 

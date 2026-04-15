@@ -1,24 +1,24 @@
 <?php
 
-namespace App\Filament\Clusters\AccessControl\Resources\Policies\Tables;
+namespace App\Filament\Clusters\AccessControl\Resources\Groups\Tables;
 
-use App\Filament\Components\Policy\PolicyTable;
+use App\Filament\Components\Group\GroupTable;
 use Filament\Tables\Table;
 
-class PoliciesTable
+class GroupsTable
 {
     public static function configure(Table $table): Table
     {
         return $table
-            ->columns(PolicyTable::build())
+            ->columns(GroupTable::build())
             ->filters([
                 //
             ])
             ->recordActions([
-                PolicyTable::buttonGroup(),
+                GroupTable::buttonGroup(),
             ])
             ->toolbarActions([
-                PolicyTable::bulkButtonGroup(),
+                GroupTable::bulkButtonGroup(),
             ]);
     }
 }

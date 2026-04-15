@@ -10,15 +10,15 @@ return [
         ],
     ],
     'user' => [
-        'policies' => 'Applied policies',
+        'groups' => 'Applied groups',
         'permissions' => 'Applied permissions',
     ],
     'permission' => [
         'users' => 'Applied users',
-        'policies' => 'Belongs to policies',
+        'groups' => 'Belongs to groups',
     ],
-    'policy' => [
-        'users' => 'Users in policy',
+    'group' => [
+        'users' => 'Users in group',
         'permissions' => 'Permission in use',
     ],
     'label' => [

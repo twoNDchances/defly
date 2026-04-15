@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Filament\Components\Policy;
+namespace App\Filament\Components\Group;
 
-use App\Traits\Filament\Specifics\Policy\PolicyColumn;
+use App\Traits\Filament\Specifics\Group\GroupColumn;
 
-class PolicyTable
+class GroupTable
 {
-    use PolicyColumn;
+    use GroupColumn;
 
     public static function build()
     {

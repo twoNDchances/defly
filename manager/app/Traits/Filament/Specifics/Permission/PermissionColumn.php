@@ -29,8 +29,8 @@ trait PermissionColumn
         return self::relationshipColumn('users.email', __('tables.permission.users'));
     }
 
-    public static function getPolicies()
+    public static function getGroups()
     {
-        return self::relationshipColumn('policies.name', __('tables.permission.policies'));
+        return self::relationshipColumn('groups.name', __('tables.permission.groups'));
     }
 }

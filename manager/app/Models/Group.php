@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Observers\PolicyObserver;
+use App\Observers\GroupObserver;
 use App\Traits\Models\Labellable;
 use App\Traits\Models\Owner;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -11,8 +11,8 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 
 #[Fillable(['name', 'description', 'created_by'])]
-#[ObservedBy(PolicyObserver::class)]
-class Policy extends Model
+#[ObservedBy(GroupObserver::class)]
+class Group extends Model
 {
     use HasUuids, Labellable, Owner;
 
@@ -30,11 +30,11 @@ class Policy extends Model
 
     public function users()
     {
-        return $this->belongsToMany(User::class, 'users_policies', 'policy', 'user');
+        return $this->belongsToMany(User::class, 'users_groups', 'group', 'user');
     }
 
     public function permissions()
     {
-        return $this->belongsToMany(Permission::class, 'policies_permissions', 'policy', 'permission');
+        return $this->belongsToMany(Permission::class, 'groups_permissions', 'group', 'permission');
     }
 }

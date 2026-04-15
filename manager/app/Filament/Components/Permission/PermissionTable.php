@@ -15,7 +15,7 @@ class PermissionTable
             self::getAppliedFor(),
             self::getAction(),
             self::getUsers(),
-            self::getPolicies(),
+            self::getGroups(),
             self::getLabels(),
             self::getCreatedBy(),
             self::getCreatedAt(),

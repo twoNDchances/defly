@@ -79,16 +79,16 @@ return [
             ],
         ],
     ],
-    'policy' => [
+    'group' => [
         'text_examples' => [
-            'name' => 'chinh-sach-quan-ly',
+            'name' => 'nhom-quan-ly',
         ],
         'descriptions' => [
-            'name' => 'Tên duy nhất theo kiểu kebab đại diện cho chính sách này',
+            'name' => 'Tên duy nhất theo kiểu kebab đại diện cho nhóm này',
         ],
         'sections' => [
             'a' => [
-                'title' => 'Định nghĩa chính sách',
+                'title' => 'Định nghĩa nhóm',
             ],
         ],
     ],
