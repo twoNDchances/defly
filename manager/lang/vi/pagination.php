@@ -1,3 +1,6 @@
 <?php
 
-return require __DIR__.'/../en/pagination.php';
+return [
+    'previous' => '&laquo; Trước',
+    'next' => 'Tiếp &raquo;',
+];

@@ -8,29 +8,29 @@ trait PermissionColumn
 {
     use Column, PermissionButton, PermissionData;
 
-    public static function name()
+    public static function getName()
     {
-        return self::textColumn('name', __('tables.columns.permission.name'));
+        return self::textColumn('name', __('models.permission.fields.name'));
     }
 
-    public static function appliedFor()
+    public static function getAppliedFor()
     {
-        return self::textColumn('applied_for', __('tables.columns.permission.applied_for'));
+        return self::textColumn('applied_for', __('models.permission.fields.applied_for'));
     }
 
-    public static function action()
+    public static function getAction()
     {
-        return self::textColumn('action', __('tables.columns.permission.action'))
+        return self::textColumn('action', __('models.permission.fields.action'))
             ->getStateUsing(fn ($record) => self::permissionList()[$record->applied_for][$record->action]);
     }
 
-    public static function users()
+    public static function getUsers()
     {
-        return self::relationshipColumn('users.email', __('tables.columns.permission.users'));
+        return self::relationshipColumn('users.email', __('tables.permission.users'));
     }
 
-    public static function policies()
+    public static function getPolicies()
     {
-        return self::relationshipColumn('policies.name', __('tables.columns.permission.policies'));
+        return self::relationshipColumn('policies.name', __('tables.permission.policies'));
     }
 }

@@ -8,7 +8,7 @@ trait LabelField
 {
     use Field, LabelButton, LabelData;
 
-    public static function name()
+    public static function setName()
     {
         return self::textInput(
             'name',
@@ -21,7 +21,7 @@ trait LabelField
             ->required();
     }
 
-    public static function color()
+    public static function setColor()
     {
         return self::colorPicker(
             'color',
@@ -31,13 +31,8 @@ trait LabelField
             ->required();
     }
 
-    public static function description()
+    public static function setDescriptionField()
     {
-        return self::textArea(
-            'description',
-            __('models.commons.description'),
-            __('forms.label.text_examples.description'),
-        )
-            ->helperText(__('forms.label.descriptions.description'));
+        return self::setDescription();
     }
 }

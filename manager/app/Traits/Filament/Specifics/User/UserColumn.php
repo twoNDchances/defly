@@ -9,38 +9,38 @@ trait UserColumn
 {
     use Column, UserButton, UserData;
 
-    public static function email()
+    public static function getEmail()
     {
-        return self::textColumn('email', __('tables.columns.user.email').' & '.__('tables.columns.user.name'))
+        return self::textColumn('email', __('models.user.fields.email'))
             ->description(fn ($record) => $record->name);
     }
 
-    public static function isVerified()
+    public static function getIsVerified()
     {
-        return self::booleanColumn('is_verified', __('tables.columns.user.is_verified'));
+        return self::booleanColumn('is_verified', __('models.user.fields.is_verified'));
     }
 
-    public static function isRoot()
+    public static function getIsRoot()
     {
         $condition = Identification::isRoot();
 
-        return self::booleanColumn('is_root', __('tables.columns.user.is_root'))
+        return self::booleanColumn('is_root', __('models.user.fields.is_root'))
             ->disabled(! $condition)
             ->visible($condition);
     }
 
-    public static function isActivated()
+    public static function getIsActivated()
     {
-        return self::booleanColumn('is_activated', __('tables.columns.user.is_activated'));
+        return self::booleanColumn('is_activated', __('models.user.fields.is_activated'));
     }
 
-    public static function permissions()
+    public static function getPermissions()
     {
-        return self::relationshipColumn('permissions.name', __('tables.columns.user.permissions'));
+        return self::relationshipColumn('permissions.name', __('tables.user.permissions'));
     }
 
-    public static function policies()
+    public static function getPolicies()
     {
-        return self::relationshipColumn('policies.name', __('tables.columns.user.policies'));
+        return self::relationshipColumn('policies.name', __('tables.user.policies'));
     }
 }

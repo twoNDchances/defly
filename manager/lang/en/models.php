@@ -1,32 +1,36 @@
 <?php
 
 return [
-    'commons' => [
-        'description' => 'Description',
-        'created_by' => 'Created by',
-        'created_at' => 'Created at',
-        'updated_at' => 'Updated at',
-        'phase' => [
-            '1' => '1. Full request',
-            '2' => '2. Request headers',
-            '3' => '3. Request body',
-            '4' => '4. Response headers',
-            '5' => '5. Response body',
-            '6' => '6. Full response',
+    'generals' => [
+        'bases' => [
+            'description' => 'Description',
+            'created_by' => 'Created by',
+            'created_at' => 'Created at',
+            'updated_at' => 'Updated at',
         ],
-        'type' => [
-            'getter' => 'Getter',
-            'full' => 'Full',
-            'header' => 'Header',
-            'meta' => 'Meta',
-            'query' => 'Query',
-            'body' => 'Body',
-            'file' => 'File',
-        ],
-        'datatype' => [
-            'array' => 'Array',
-            'number' => 'Number',
-            'string' => 'String',
+        'specials' => [
+            'phase' => [
+                '1' => '1. Full request',
+                '2' => '2. Request headers',
+                '3' => '3. Request body',
+                '4' => '4. Response headers',
+                '5' => '5. Response body',
+                '6' => '6. Full response',
+            ],
+            'type' => [
+                'getter' => 'Getter',
+                'full' => 'Full',
+                'header' => 'Header',
+                'meta' => 'Meta',
+                'query' => 'Query',
+                'body' => 'Body',
+                'file' => 'File',
+            ],
+            'datatype' => [
+                'array' => 'Array',
+                'number' => 'Number',
+                'string' => 'String',
+            ],
         ],
     ],
     'permission' => [
@@ -66,7 +70,7 @@ return [
         'name' => 'Wordlist',
         'fields' => [
             'name' => 'Name',
-            'type' => 'Type',
+            'type' => 'Wordlist type',
             'word_file' => 'File format',
             'word_json' => 'JSON format',
             'word_count' => 'Word count',
@@ -84,7 +88,7 @@ return [
         'fields' => [
             'name' => 'Name',
             'input_datatype' => 'Input datatype',
-            'type' => 'Type',
+            'type' => 'Transformer type',
             'configurations' => 'Configurations',
             'output_datatype' => 'Output datatype',
         ],
@@ -109,12 +113,12 @@ return [
                 'length' => 'Length',
                 'hash' => 'Hash',
                 'split' => 'Split',
-                'configurations' => [
-                    'position' => 'Position',
-                    'digit' => 'Digit',
-                    'hash_method' => 'Hash method',
-                    'separator' => 'Separator',
-                ],
+            ],
+            'configurations' => [
+                'position' => 'Position',
+                'digit' => 'Digit',
+                'hash_method' => 'Hash method',
+                'separator' => 'Separator',
             ],
         ],
     ],
@@ -122,8 +126,8 @@ return [
         'name' => 'Pattern',
         'fields' => [
             'name' => 'Name',
-            'phase' => 'Phase',
-            'type' => 'Type',
+            'phase' => 'Execution phase',
+            'type' => 'Scope type',
             'datatype' => 'Datatype',
             'targets' => 'Targets',
         ],
@@ -132,8 +136,8 @@ return [
         'name' => 'Target',
         'fields' => [
             'name' => 'Name',
-            'phase' => 'Phase',
-            'type' => 'Type',
+            'phase' => 'Execution phase',
+            'type' => 'Scope type',
             'datatype' => 'Datatype',
             'pattern' => 'Pattern',
             'wordlist' => 'Wordlist',

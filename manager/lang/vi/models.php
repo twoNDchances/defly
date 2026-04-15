@@ -1,32 +1,36 @@
 <?php
 
 return [
-    'commons' => [
-        'description' => 'Mô tả',
-        'created_by' => 'Tạo bởi',
-        'created_at' => 'Tạo lúc',
-        'updated_at' => 'Cập nhật lúc',
-        'phase' => [
-            '1' => '1. Tất cả ở yêu cầu',
-            '2' => '2. Các tiêu đề ở yêu cầu',
-            '3' => '3. Nội dung yêu cầu',
-            '4' => '4. Các tiêu đề ở phản hồi',
-            '5' => '5. Nội dung phản hồi',
-            '6' => '6. Tất cả ở phản hồi',
+    'generals' => [
+        'bases' => [
+            'description' => 'Mô tả',
+            'created_by' => 'Tạo bởi',
+            'created_at' => 'Tạo lúc',
+            'updated_at' => 'Cập nhật lúc',
         ],
-        'type' => [
-            'getter' => 'Bộ lấy',
-            'full' => 'Tất cả',
-            'header' => 'Tiêu đề',
-            'meta' => 'Siêu dữ liệu',
-            'query' => 'Tham số',
-            'body' => 'Nội dung',
-            'file' => 'Tệp',
-        ],
-        'datatype' => [
-            'array' => 'Mảng',
-            'number' => 'Số',
-            'string' => 'Chuỗi',
+        'specials' => [
+            'phase' => [
+                '1' => '1. Tất cả ở yêu cầu',
+                '2' => '2. Các tiêu đề ở yêu cầu',
+                '3' => '3. Nội dung yêu cầu',
+                '4' => '4. Các tiêu đề ở phản hồi',
+                '5' => '5. Nội dung phản hồi',
+                '6' => '6. Tất cả ở phản hồi',
+            ],
+            'type' => [
+                'getter' => 'Bộ lấy',
+                'full' => 'Tất cả',
+                'header' => 'Tiêu đề',
+                'meta' => 'Siêu dữ liệu',
+                'query' => 'Tham số',
+                'body' => 'Nội dung',
+                'file' => 'Tệp',
+            ],
+            'datatype' => [
+                'array' => 'Mảng',
+                'number' => 'Số',
+                'string' => 'Chuỗi',
+            ],
         ],
     ],
     'permission' => [
@@ -66,7 +70,7 @@ return [
         'name' => 'Danh sách từ',
         'fields' => [
             'name' => 'Tên',
-            'type' => 'Loại',
+            'type' => 'Loại danh sách',
             'word_file' => 'Dữ liệu tệp',
             'word_json' => 'Dữ liệu JSON',
             'word_count' => 'Số từ',
@@ -84,7 +88,7 @@ return [
         'fields' => [
             'name' => 'Tên',
             'input_datatype' => 'Kiểu dữ liệu đầu vào',
-            'type' => 'Loại',
+            'type' => 'Loại bộ chuyển đổi',
             'configurations' => 'Các cấu hình',
             'output_datatype' => 'Kiểu dữ liệu đầu ra',
         ],
@@ -109,12 +113,12 @@ return [
                 'length' => 'Độ dài',
                 'hash' => 'Băm',
                 'split' => 'Tách',
-                'configurations' => [
-                    'position' => 'Vị trí',
-                    'digit' => 'Số',
-                    'hash_method' => 'Hàm băm',
-                    'separator' => 'Bộ phân tách',
-                ],
+            ],
+            'configurations' => [
+                'position' => 'Vị trí',
+                'digit' => 'Số',
+                'hash_method' => 'Hàm băm',
+                'separator' => 'Bộ phân tách',
             ],
         ],
     ],
@@ -122,18 +126,18 @@ return [
         'name' => 'Mẫu',
         'fields' => [
             'name' => 'Tên',
-            'phase' => 'Giai đoạn',
-            'type' => 'Loại',
+            'phase' => 'Giai đoạn thực thi',
+            'type' => 'Loại phạm vi',
             'datatype' => 'Kiểu dữ liệu',
-            'targets' => 'Mục tiêu',
+            'targets' => 'Các mục tiêu',
         ],
     ],
     'target' => [
         'name' => 'Mục tiêu',
         'fields' => [
             'name' => 'Tên',
-            'phase' => 'Giai đoạn',
-            'type' => 'Loại',
+            'phase' => 'Giai đoạn thực thi',
+            'type' => 'Loại phạm vi',
             'datatype' => 'Kiểu dữ liệu',
             'pattern' => 'Mẫu',
             'wordlist' => 'Danh sách từ',

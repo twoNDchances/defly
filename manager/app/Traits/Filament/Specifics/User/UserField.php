@@ -12,14 +12,14 @@ trait UserField
 {
     use Field, UserButton, UserData;
 
-    public static function name()
+    public static function setName()
     {
         return self::textInput('name', __('models.user.fields.name'), __('forms.user.text_examples.name'))
             ->helperText(__('forms.user.descriptions.name'))
             ->required();
     }
 
-    public static function email()
+    public static function setEmail()
     {
         return self::textInput('email', __('models.user.fields.email'), __('forms.user.text_examples.email'))
             ->prefixIcon(Heroicon::OutlinedAtSymbol)
@@ -29,7 +29,7 @@ trait UserField
             ->email();
     }
 
-    public static function password()
+    public static function setPassword()
     {
         return self::textInput('password', __('models.user.fields.password'), __('forms.user.text_examples.password'))
             ->helperText(__('forms.user.descriptions.password'))
@@ -45,7 +45,7 @@ trait UserField
             ->password();
     }
 
-    public static function isActivated()
+    public static function setIsActivated()
     {
         return self::toggle('is_activated', __('models.user.fields.is_activated'))
             ->helperText(__('forms.user.descriptions.is_activated'))
@@ -53,7 +53,7 @@ trait UserField
             ->default(true);
     }
 
-    public static function isRoot()
+    public static function setIsRoot()
     {
         $condition = Identification::isRoot();
 
@@ -66,7 +66,7 @@ trait UserField
             ->default(false);
     }
 
-    public static function isVerified()
+    public static function setIsVerified()
     {
         $condition = fn ($livewire) => $livewire instanceof CreateRecord;
 

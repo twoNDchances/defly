@@ -11,16 +11,16 @@ class TargetTable
     public static function build()
     {
         return [
-            self::name(),
-            self::phase(),
-            self::type(),
-            self::datatype(),
-            self::pattern(),
-            self::wordlist(),
-            self::labels(),
-            self::createdBy(),
-            self::createdAt(),
-            self::updatedAt(),
+            self::getName(),
+            self::getPhase(),
+            self::getType(),
+            self::getDatatype(),
+            self::getPattern(),
+            self::getWordlist(),
+            self::getLabels(),
+            self::getCreatedBy(),
+            self::getCreatedAt(),
+            self::getUpdatedAt(),
         ];
     }
 }

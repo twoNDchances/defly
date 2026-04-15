@@ -5,24 +5,27 @@ namespace App\Traits\Filament\Specifics\Target;
 use App\Enums\Datatype;
 use App\Enums\Phase;
 use App\Enums\Type;
+use App\Filament\Components\Wordlist\WordlistForm;
 use App\Models\Pattern;
 use App\Traits\Filament\Generals\Components\Field;
+use App\Traits\Validators\TargetValidator;
 
 trait TargetField
 {
-    use Field, TargetButton, TargetData;
+    use Field, TargetButton, TargetData, TargetValidator;
 
-    public static function phase()
+    public static function setPhase()
     {
         return self::toggleButtons('phase', __('models.target.fields.phase'), self::phaseOptionsAndColors())
             ->helperText(fn ($state) => self::phaseDescriptions()[$state])
             ->afterStateUpdated(fn ($set) => [$set('type', Type::Getter->value), $set('pattern', null)])
             ->default(Phase::One->value)
             ->reactive()
-            ->required();
+            ->required()
+            ->rules(self::validatePhase());
     }
 
-    public static function type()
+    public static function setType()
     {
         return self::toggleButtons('type', __('models.target.fields.type'))
             ->helperText(fn ($state) => self::typeDescriptions()[$state])
@@ -31,10 +34,11 @@ trait TargetField
             ->afterStateUpdated(fn ($set) => $set('pattern', null))
             ->default(Type::Getter->value)
             ->reactive()
-            ->required();
+            ->required()
+            ->rules(self::validateType());
     }
 
-    public static function pattern()
+    public static function setPattern()
     {
         return self::select('pattern', __('models.target.fields.pattern'))
             ->helperText(__('forms.target.descriptions.pattern'))
@@ -49,7 +53,7 @@ trait TargetField
             ->reactive();
     }
 
-    public static function name()
+    public static function setName()
     {
         return self::textInput(
             'name',
@@ -62,7 +66,7 @@ trait TargetField
             ->required();
     }
 
-    public static function datatype()
+    public static function setDatatype()
     {
         return self::toggleButtons('datatype', __('models.target.fields.datatype'), self::datatypeOptionsAndColors())
             ->helperText(fn ($state) => self::datatypeDescriptions()[$state])
@@ -72,7 +76,7 @@ trait TargetField
             ->required();
     }
 
-    public static function wordlist()
+    public static function setWordlist()
     {
         $condition = fn ($get) => $get('datatype') == Datatype::Array->value && ! $get('pattern');
 
@@ -81,16 +85,12 @@ trait TargetField
             ->disabled(fn ($get) => ! $condition($get))
             ->relationship('wordlist', 'name')
             ->required($condition)
-            ->visible($condition);
+            ->visible($condition)
+            ->createOptionForm(WordlistForm::build());
     }
 
-    public static function description()
+    public static function setDescriptionField()
     {
-        return self::textArea(
-            'description',
-            __('models.commons.description'),
-            __('forms.target.text_examples.description'),
-        )
-            ->helperText(__('forms.target.descriptions.description'));
+        return self::setDescription();
     }
 }

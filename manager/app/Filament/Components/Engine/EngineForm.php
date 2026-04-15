@@ -21,8 +21,8 @@ class EngineForm
                         ->columnSpan(2)
                         ->columns(4)
                         ->schema([
-                            self::name()->columnSpanFull(),
-                            self::inputDatatype()->columnSpan(1),
+                            self::setName()->columnSpanFull(),
+                            self::setInputDatatype()->columnSpan(1),
                             Grid::make(1)
                                 ->columnSpan(2)
                                 ->schema([
@@ -30,25 +30,25 @@ class EngineForm
                                         ->columnSpanFull()
                                         ->columns(1)
                                         ->schema([
-                                            self::type()->columnSpanFull(),
+                                            self::setType()->columnSpanFull(),
                                             Fieldset::make(__('forms.engine.sections.a.fieldsets.b.title'))
                                                 ->columnSpanFull()
                                                 ->columns(1)
                                                 ->schema([
-                                                    self::position(),
-                                                    self::digit(),
-                                                    self::hashMethod(),
-                                                    self::separator(),
+                                                    self::setPosition(),
+                                                    self::setDigit(),
+                                                    self::setHashMethod(),
+                                                    self::setSeparator(),
                                                 ]),
                                         ]),
                                 ]),
-                            self::outputDatatype()->columnSpan(1),
+                            self::setOutputDatatype()->columnSpan(1),
                         ]),
-                    Section::make(__('forms.commons.sections.labels.title'))
+                    Section::make(__('forms.generals.bases.sections.labels.title'))
                         ->columnSpan(1)
                         ->columns(1)
                         ->schema([
-                            self::labels(),
+                            self::setLabels(),
                         ]),
                 ]),
         ];

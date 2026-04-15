@@ -3,61 +3,71 @@
 namespace App\Traits\Filament\Generals\Components;
 
 use App\Filament\Components\Label\LabelForm;
+use App\Traits\Validators\GeneralValidator;
 use Filament\Forms\Components;
 
 trait Field
 {
-    public static function textInput($name, $label = null, $placeholder = null)
+    use GeneralValidator;
+
+    public static function textInput($name, $label = null, $placeholder = null, $rules = [])
     {
         return Components\TextInput::make($name)
             ->placeholder($placeholder)
             ->maxLength(255)
-            ->label($label);
+            ->label($label)
+            ->rules($rules);
     }
 
-    public static function textArea($name, $label = null, $placeholder = null)
+    public static function textArea($name, $label = null, $placeholder = null, $rules = [])
     {
         return Components\Textarea::make($name)
             ->placeholder($placeholder)
             ->label($label)
-            ->rows(6);
+            ->rows(6)
+            ->rules($rules);
     }
 
-    public static function toggle($name, $label = null)
+    public static function toggle($name, $label = null, $rules = [])
     {
         return Components\Toggle::make($name)
-            ->label($label);
+            ->label($label)
+            ->rules($rules);
     }
 
-    public static function select($name, $label = null)
+    public static function select($name, $label = null, $rules = [])
     {
         return Components\Select::make($name)
             ->label($label)
             ->searchable()
-            ->preload();
+            ->preload()
+            ->rules($rules);
     }
 
-    public static function fileUpload($name, $label = null, $directory = null)
+    public static function fileUpload($name, $label = null, $directory = null, $rules = [])
     {
         return Components\FileUpload::make($name)
             ->label($label)
-            ->directory($directory);
+            ->directory($directory)
+            ->rules($rules);
     }
 
-    public static function toggleButtons($name, $label = null, array $colorsAndOptions = ['colors' => [], 'options' => []])
+    public static function toggleButtons($name, $label = null, $colorsAndOptions = ['colors' => [], 'options' => []], $rules = [])
     {
         return Components\ToggleButtons::make($name)
             ->options($colorsAndOptions['options'])
             ->colors($colorsAndOptions['colors'])
             ->label($label)
-            ->inline();
+            ->inline()
+            ->rules($rules);
     }
 
-    public static function colorPicker($name, $label = null)
+    public static function colorPicker($name, $label = null, $rules = [])
     {
         return Components\ColorPicker::make($name)
             ->default('#000000')
-            ->label($label);
+            ->label($label)
+            ->rules($rules);
     }
 
     public static function repeater($name, $label = null, $key = 'key', $schema = [])
@@ -78,13 +88,24 @@ trait Field
             ->label($label);
     }
 
-    public static function labels()
+    public static function setDescription()
+    {
+        return self::textArea(
+            'description',
+            __('models.generals.bases.description'),
+            __('forms.generals.bases.fields.description.text_examples'),
+        )
+            ->helperText(__('forms.generals.bases.fields.description.descriptions'));
+    }
+
+    public static function setLabels()
     {
         return self::select(
             'labels',
-            __('forms.commons.labels.label')
+            __('models.label.name'),
+            self::validateLabels(),
         )
-            ->helperText(__('forms.commons.labels.description'))
+            ->helperText(__('forms.generals.bases.sections.labels.description'))
             ->multiple()
             ->relationship('labels', 'name')
             ->createOptionForm(LabelForm::build());

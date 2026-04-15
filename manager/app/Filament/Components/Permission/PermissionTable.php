@@ -11,15 +11,15 @@ class PermissionTable
     public static function build()
     {
         return [
-            self::name(),
-            self::appliedFor(),
-            self::action(),
-            self::users(),
-            self::policies(),
-            self::labels(),
-            self::createdBy(),
-            self::createdAt(),
-            self::updatedAt(),
+            self::getName(),
+            self::getAppliedFor(),
+            self::getAction(),
+            self::getUsers(),
+            self::getPolicies(),
+            self::getLabels(),
+            self::getCreatedBy(),
+            self::getCreatedAt(),
+            self::getUpdatedAt(),
         ];
     }
 }

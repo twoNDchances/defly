@@ -44,17 +44,17 @@ trait Column
             ->sortable();
     }
 
-    public static function labels()
+    public static function getLabels()
     {
-        return self::relationshipColumn('labels.name', __('tables.commons.labels'))
+        return self::relationshipColumn('labels.name', __('models.label.name'))
             ->color(fn ($state, $record) => Color::hex($record->labels()->pluck('color', 'name')->toArray()[$state]))
             ->bulleted(false)
             ->badge();
     }
 
-    public static function createdBy()
+    public static function getCreatedBy()
     {
-        return self::textColumn('createdBy.email', __('tables.commons.created_by'))
+        return self::textColumn('createdBy.email', __('models.generals.bases.created_by'))
             ->badge();
     }
 
@@ -64,15 +64,15 @@ trait Column
             ->dateTime();
     }
 
-    public static function createdAt()
+    public static function getCreatedAt()
     {
-        return self::datetimeColumn('created_at', __('tables.commons.created_at'))
+        return self::datetimeColumn('created_at', __('models.generals.bases.created_at'))
             ->toggledHiddenByDefault();
     }
 
-    public static function updatedAt()
+    public static function getUpdatedAt()
     {
-        return self::datetimeColumn('updated_at', __('tables.commons.updated_at'))
+        return self::datetimeColumn('updated_at', __('models.generals.bases.updated_at'))
             ->toggledHiddenByDefault();
     }
 }

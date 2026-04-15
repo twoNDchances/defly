@@ -9,13 +9,13 @@ trait PatternField
 {
     use Field, PatternButton, PatternData;
 
-    public static function name()
+    public static function setName()
     {
         return self::textInput('name', __('models.pattern.fields.name'))
             ->helperText(__('forms.pattern.descriptions.name'));
     }
 
-    public static function phase()
+    public static function setPhase()
     {
         return self::toggleButtons(
             'phase',
@@ -25,7 +25,7 @@ trait PatternField
             ->helperText(__('forms.pattern.descriptions.phase'));
     }
 
-    public static function type()
+    public static function setType()
     {
         $typeOptions = self::typeOptionsAndColors()['options'];
         $typeColors = self::typeOptionsAndColors()['colors'];
@@ -43,7 +43,7 @@ trait PatternField
             ->helperText(__('forms.pattern.descriptions.type'));
     }
 
-    public static function datatype()
+    public static function setDatatype()
     {
         return self::toggleButtons(
             'datatype',
@@ -53,16 +53,12 @@ trait PatternField
             ->helperText(__('forms.pattern.descriptions.datatype'));
     }
 
-    public static function description()
+    public static function setDescriptionField()
     {
-        return self::textArea(
-            'description',
-            __('models.commons.description'),
-        )
-            ->helperText(__('forms.pattern.descriptions.description'));
+        return self::setDescription();
     }
 
-    public static function targets()
+    public static function setTargets()
     {
         return self::select('targets', __('models.pattern.fields.targets'))
             ->helperText(__('forms.pattern.descriptions.targets'))

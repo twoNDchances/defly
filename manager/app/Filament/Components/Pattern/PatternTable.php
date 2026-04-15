@@ -11,12 +11,12 @@ class PatternTable
     public static function build()
     {
         return [
-            self::name(),
-            self::phase(),
-            self::type(),
-            self::datatype(),
-            self::createdAt(),
-            self::updatedAt(),
+            self::getName(),
+            self::getPhase(),
+            self::getType(),
+            self::getDatatype(),
+            self::getCreatedAt(),
+            self::getUpdatedAt(),
         ];
     }
 }

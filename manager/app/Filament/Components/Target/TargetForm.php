@@ -21,33 +21,33 @@ class TargetForm
                     Wizard::make([
                         Step::make(__('forms.target.steps.a.title'))
                             ->schema([
-                                self::phase(),
+                                self::setPhase(),
                                 Grid::make(1)
                                     ->schema([
-                                        self::type(),
-                                        self::pattern(),
+                                        self::setType(),
+                                        self::setPattern(),
                                     ]),
                             ]),
 
                         Step::make(__('forms.target.steps.b.title'))
                             ->schema([
-                                self::name(),
+                                self::setName(),
                                 Grid::make(1)
                                     ->schema([
-                                        self::datatype(),
-                                        self::wordlist(),
+                                        self::setDatatype(),
+                                        self::setWordlist(),
                                     ]),
-                                self::description()->columnSpanFull(),
+                                self::setDescriptionField()->columnSpanFull(),
                             ]),
                     ])
                         ->columnSpan(2)
                         ->columns(2),
 
-                    Section::make(__('forms.commons.sections.labels.title'))
+                    Section::make(__('forms.generals.bases.sections.labels.title'))
                         ->columnSpan(1)
                         ->columns(1)
                         ->schema([
-                            self::labels(),
+                            self::setLabels(),
                         ]),
                 ]),
         ];

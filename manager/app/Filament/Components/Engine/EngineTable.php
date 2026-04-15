@@ -11,14 +11,14 @@ class EngineTable
     public static function build()
     {
         return [
-            self::name(),
-            self::inputDatatype(),
-            self::type(),
-            self::outputDatatype(),
-            self::labels(),
-            self::createdBy(),
-            self::createdAt(),
-            self::updatedAt(),
+            self::getName(),
+            self::getInputDatatype(),
+            self::getType(),
+            self::getOutputDatatype(),
+            self::getLabels(),
+            self::getCreatedBy(),
+            self::getCreatedAt(),
+            self::getUpdatedAt(),
         ];
     }
 }

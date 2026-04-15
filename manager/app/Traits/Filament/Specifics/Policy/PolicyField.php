@@ -8,7 +8,7 @@ trait PolicyField
 {
     use Field, PolicyButton, PolicyData;
 
-    public static function name()
+    public static function setName()
     {
         return self::textInput(
             'name',
@@ -21,13 +21,8 @@ trait PolicyField
             ->required();
     }
 
-    public static function description()
+    public static function setDescriptionField()
     {
-        return self::textArea(
-            'description',
-            __('models.commons.description'),
-            __('forms.policy.text_examples.description'),
-        )
-            ->helperText(__('forms.policy.descriptions.description'));
+        return self::setDescription();
     }
 }

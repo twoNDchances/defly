@@ -11,7 +11,7 @@ trait EngineField
 {
     use EngineButton, EngineData, Field;
 
-    public static function name()
+    public static function setName()
     {
         return self::textInput(
             'name',
@@ -24,7 +24,7 @@ trait EngineField
             ->required();
     }
 
-    public static function inputDatatype()
+    public static function setInputDatatype()
     {
         return self::toggleButtons(
             'input_datatype',
@@ -38,7 +38,7 @@ trait EngineField
             ->reactive();
     }
 
-    public static function type()
+    public static function setType()
     {
         return self::select('type', __('models.engine.fields.type'))
             ->options(fn ($get) => self::typeOptionsPerDatatypes()[$get('input_datatype')])
@@ -73,23 +73,23 @@ trait EngineField
             ->reactive();
     }
 
-    public static function position()
+    public static function setPosition()
     {
         $condition = fn ($get) => in_array($get('type'), [Type::IndexOf->value]);
 
         return self::textInput(
             'position',
-            __('models.engine.extras.type.configurations.position'),
+            __('models.engine.extras.configurations.position'),
             '9947',
         )
-            ->helperText(__('forms.engine.extras.type.configurations.position'))
+            ->helperText(__('forms.engine.extras.configurations.position'))
             ->required($condition)
             ->disabled(fn ($get) => ! $condition($get))
             ->visible($condition)
             ->integer();
     }
 
-    public static function digit()
+    public static function setDigit()
     {
         $condition = fn ($get) => in_array($get('type'), [
             Type::Addition->value,
@@ -102,25 +102,25 @@ trait EngineField
 
         return self::textInput(
             'digit',
-            __('models.engine.extras.type.configurations.digit'),
+            __('models.engine.extras.configurations.digit'),
             '9948',
         )
-            ->helperText(__('forms.engine.extras.type.configurations.digit'))
+            ->helperText(__('forms.engine.extras.configurations.digit'))
             ->required($condition)
             ->disabled(fn ($get) => ! $condition($get))
             ->visible($condition)
             ->numeric();
     }
 
-    public static function hashMethod()
+    public static function setHashMethod()
     {
         $condition = fn ($get) => in_array($get('type'), [Type::Hash->value]);
 
         return self::select(
             'hash_method',
-            __('models.engine.extras.type.configurations.hash_method'),
+            __('models.engine.extras.configurations.hash_method'),
         )
-            ->helperText(__('forms.engine.extras.type.configurations.hash_method'))
+            ->helperText(__('forms.engine.extras.configurations.hash_method'))
             ->required($condition)
             ->disabled(fn ($get) => ! $condition($get))
             ->visible($condition)
@@ -133,22 +133,22 @@ trait EngineField
             ]);
     }
 
-    public static function separator()
+    public static function setSeparator()
     {
         $condition = fn ($get) => in_array($get('type'), [Type::Merge->value, Type::Split->value]);
 
         return self::textInput(
             'separator',
-            __('models.engine.extras.type.configurations.separator'),
+            __('models.engine.extras.configurations.separator'),
             '@',
         )
-            ->helperText(__('forms.engine.extras.type.configurations.separator'))
+            ->helperText(__('forms.engine.extras.configurations.separator'))
             ->required($condition)
             ->disabled(fn ($get) => ! $condition($get))
             ->visible($condition);
     }
 
-    public static function outputDatatype()
+    public static function setOutputDatatype()
     {
         return self::toggleButtons(
             'output_datatype',

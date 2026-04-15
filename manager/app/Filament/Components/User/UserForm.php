@@ -20,18 +20,18 @@ class UserForm
                         ->columnSpan(2)
                         ->columns(6)
                         ->schema([
-                            self::name()->columnSpan(3),
-                            self::email()->columnSpan(3),
-                            self::password()->columnSpanFull(),
-                            self::isActivated()->columnSpan(2),
-                            self::isRoot()->columnSpan(2),
-                            self::isVerified()->columnSpan(2),
+                            self::setName()->columnSpan(3),
+                            self::setEmail()->columnSpan(3),
+                            self::setPassword()->columnSpanFull(),
+                            self::setIsActivated()->columnSpan(2),
+                            self::setIsRoot()->columnSpan(2),
+                            self::setIsVerified()->columnSpan(2),
                         ]),
-                    Section::make(__('forms.commons.sections.labels.title'))
+                    Section::make(__('forms.generals.bases.sections.labels.title'))
                         ->columnSpan(1)
                         ->columns(1)
                         ->schema([
-                            self::labels(),
+                            self::setLabels(),
                         ]),
                 ]),
         ];

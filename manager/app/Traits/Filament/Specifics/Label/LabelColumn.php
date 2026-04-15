@@ -9,19 +9,19 @@ trait LabelColumn
 {
     use Column, LabelButton, LabelData;
 
-    public static function name()
+    public static function getName()
     {
-        return self::textColumn('name', __('tables.columns.label.name'));
+        return self::textColumn('name', __('models.label.fields.name'));
     }
 
-    public static function color()
+    public static function getColor()
     {
-        return self::colorColumn('color', __('tables.columns.label.color'));
+        return self::colorColumn('color', __('models.label.fields.color'));
     }
 
-    public static function preview()
+    public static function getPreview()
     {
-        return self::textColumn('preview', __('tables.columns.label.preview'))
+        return self::textColumn('preview', __('tables.label.preview'))
             ->getStateUsing(fn ($record) => $record->name)
             ->color(fn ($record) => Color::hex($record->color))
             ->badge();

@@ -11,13 +11,13 @@ class PolicyTable
     public static function build()
     {
         return [
-            self::name(),
-            self::users(),
-            self::permissions(),
-            self::labels(),
-            self::createdBy(),
-            self::createdAt(),
-            self::updatedAt(),
+            self::getName(),
+            self::getUsers(),
+            self::getPermissions(),
+            self::getLabels(),
+            self::getCreatedBy(),
+            self::getCreatedAt(),
+            self::getUpdatedAt(),
         ];
     }
 }

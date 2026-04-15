@@ -8,7 +8,7 @@ trait PermissionField
 {
     use Field, PermissionButton, PermissionData;
 
-    public static function name()
+    public static function setName()
     {
         return self::textInput('name', __('models.permission.fields.name'), __('forms.permission.text_examples.name'))
             ->helperText(__('forms.permission.descriptions.name'))
@@ -16,7 +16,7 @@ trait PermissionField
             ->required();
     }
 
-    public static function appliedFor()
+    public static function setAppliedFor()
     {
         return self::select('applied_for', __('models.permission.fields.applied_for'))
             ->helperText(__('forms.permission.descriptions.applied_for'))
@@ -27,7 +27,7 @@ trait PermissionField
             ->afterStateUpdated(fn ($set) => $set('action', null));
     }
 
-    public static function action()
+    public static function setAction()
     {
         return self::select('action', __('models.permission.fields.action'))
             ->helperText(__('forms.permission.descriptions.action'))
@@ -43,13 +43,8 @@ trait PermissionField
             ->required();
     }
 
-    public static function description()
+    public static function setDescriptionField()
     {
-        return self::textArea(
-            'description',
-            __('models.commons.description'),
-            __('forms.permission.text_examples.description'),
-        )
-            ->helperText(__('forms.permission.descriptions.description'));
+        return self::setDescription();
     }
 }

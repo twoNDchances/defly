@@ -8,21 +8,21 @@ trait WordlistColumn
 {
     use Column, WordlistButton, WordlistData;
 
-    public static function name()
+    public static function getName()
     {
-        return self::textColumn('name', __('tables.columns.wordlist.name'));
+        return self::textColumn('name', __('models.wordlist.fields.name'));
     }
 
-    public static function type()
+    public static function getType()
     {
-        return self::textColumn('type', __('tables.columns.wordlist.type'))
+        return self::textColumn('type', __('models.wordlist.fields.type'))
             ->formatStateUsing(fn ($state) => self::typeOptionsAndColors()['options'][$state->value])
             ->color(fn ($state) => self::typeOptionsAndColors()['colors'][$state->value])
             ->badge();
     }
 
-    public static function wordCount()
+    public static function getWordCount()
     {
-        return self::textColumn('word_count', __('tables.columns.wordlist.word_count'));
+        return self::textColumn('word_count', __('models.wordlist.fields.word_count'));
     }
 }

@@ -8,18 +8,18 @@ trait PolicyColumn
 {
     use Column, PolicyButton, PolicyData;
 
-    public static function name()
+    public static function getName()
     {
-        return self::textColumn('name', __('tables.columns.policy.name'));
+        return self::textColumn('name', __('models.policy.fields.name'));
     }
 
-    public static function users()
+    public static function getUsers()
     {
-        return self::relationshipColumn('users.email', __('tables.columns.policy.users'));
+        return self::relationshipColumn('users.email', __('tables.policy.users'));
     }
 
-    public static function permissions()
+    public static function getPermissions()
     {
-        return self::relationshipColumn('permissions.name', __('tables.columns.policy.permissions'));
+        return self::relationshipColumn('permissions.name', __('tables.policy.permissions'));
     }
 }

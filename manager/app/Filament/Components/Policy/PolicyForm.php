@@ -20,14 +20,14 @@ class PolicyForm
                         ->columnSpan(2)
                         ->columns(1)
                         ->schema([
-                            self::name(),
-                            self::description(),
+                            self::setName(),
+                            self::setDescriptionField(),
                         ]),
-                    Section::make(__('forms.commons.sections.labels.title'))
+                    Section::make(__('forms.generals.bases.sections.labels.title'))
                         ->columnSpan(1)
                         ->columns(1)
                         ->schema([
-                            self::labels(),
+                            self::setLabels(),
                         ]),
                 ]),
         ];

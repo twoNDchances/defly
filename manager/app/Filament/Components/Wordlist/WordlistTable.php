@@ -11,13 +11,13 @@ class WordlistTable
     public static function build()
     {
         return [
-            self::name(),
-            self::type(),
-            self::wordCount(),
-            self::labels(),
-            self::createdBy(),
-            self::createdAt(),
-            self::updatedAt(),
+            self::getName(),
+            self::getType(),
+            self::getWordCount(),
+            self::getLabels(),
+            self::getCreatedBy(),
+            self::getCreatedAt(),
+            self::getUpdatedAt(),
         ];
     }
 }

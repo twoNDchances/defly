@@ -15,8 +15,8 @@ trait TargetData
         return [
             Phase::One->value => [
                 'options' => [
-                    Type::Getter->value => __('models.commons.type.getter'),
-                    Type::Full->value => __('models.commons.type.full'),
+                    Type::Getter->value => __('models.generals.specials.type.getter'),
+                    Type::Full->value => __('models.generals.specials.type.full'),
                 ],
                 'colors' => [
                     Type::Getter->value => 'purple',
@@ -25,11 +25,11 @@ trait TargetData
             ],
             Phase::Two->value => [
                 'options' => [
-                    Type::Getter->value => __('models.commons.type.getter'),
-                    Type::Full->value => __('models.commons.type.full'),
-                    Type::Header->value => __('models.commons.type.header'),
-                    Type::Meta->value => __('models.commons.type.meta'),
-                    Type::Query->value => __('models.commons.type.query'),
+                    Type::Getter->value => __('models.generals.specials.type.getter'),
+                    Type::Full->value => __('models.generals.specials.type.full'),
+                    Type::Header->value => __('models.generals.specials.type.header'),
+                    Type::Meta->value => __('models.generals.specials.type.meta'),
+                    Type::Query->value => __('models.generals.specials.type.query'),
                 ],
                 'colors' => [
                     Type::Getter->value => 'purple',
@@ -41,10 +41,10 @@ trait TargetData
             ],
             Phase::Three->value => [
                 'options' => [
-                    Type::Getter->value => __('models.commons.type.getter'),
-                    Type::Full->value => __('models.commons.type.full'),
-                    Type::Body->value => __('models.commons.type.body'),
-                    Type::File->value => __('models.commons.type.file'),
+                    Type::Getter->value => __('models.generals.specials.type.getter'),
+                    Type::Full->value => __('models.generals.specials.type.full'),
+                    Type::Body->value => __('models.generals.specials.type.body'),
+                    Type::File->value => __('models.generals.specials.type.file'),
                 ],
                 'colors' => [
                     Type::Getter->value => 'purple',
@@ -55,10 +55,10 @@ trait TargetData
             ],
             Phase::Four->value => [
                 'options' => [
-                    Type::Getter->value => __('models.commons.type.getter'),
-                    Type::Full->value => __('models.commons.type.full'),
-                    Type::Header->value => __('models.commons.type.header'),
-                    Type::Meta->value => __('models.commons.type.meta'),
+                    Type::Getter->value => __('models.generals.specials.type.getter'),
+                    Type::Full->value => __('models.generals.specials.type.full'),
+                    Type::Header->value => __('models.generals.specials.type.header'),
+                    Type::Meta->value => __('models.generals.specials.type.meta'),
                 ],
                 'colors' => [
                     Type::Getter->value => 'purple',
@@ -69,9 +69,9 @@ trait TargetData
             ],
             Phase::Five->value => [
                 'options' => [
-                    Type::Getter->value => __('models.commons.type.getter'),
-                    Type::Full->value => __('models.commons.type.full'),
-                    Type::Body->value => __('models.commons.type.body'),
+                    Type::Getter->value => __('models.generals.specials.type.getter'),
+                    Type::Full->value => __('models.generals.specials.type.full'),
+                    Type::Body->value => __('models.generals.specials.type.body'),
                 ],
                 'colors' => [
                     Type::Getter->value => 'purple',
@@ -81,8 +81,8 @@ trait TargetData
             ],
             Phase::Six->value => [
                 'options' => [
-                    Type::Getter->value => __('models.commons.type.getter'),
-                    Type::Full->value => __('models.commons.type.full'),
+                    Type::Getter->value => __('models.generals.specials.type.getter'),
+                    Type::Full->value => __('models.generals.specials.type.full'),
                 ],
                 'colors' => [
                     Type::Getter->value => 'purple',

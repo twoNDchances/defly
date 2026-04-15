@@ -20,16 +20,16 @@ class PermissionForm
                         ->columnSpan(2)
                         ->columns(2)
                         ->schema([
-                            self::name()->columnSpanFull(),
-                            self::appliedFor(),
-                            self::action(),
-                            self::description()->columnSpanFull(),
+                            self::setName()->columnSpanFull(),
+                            self::setAppliedFor(),
+                            self::setAction(),
+                            self::setDescriptionField()->columnSpanFull(),
                         ]),
-                    Section::make(__('forms.commons.sections.labels.title'))
+                    Section::make(__('forms.generals.bases.sections.labels.title'))
                         ->columnSpan(1)
                         ->columns(1)
                         ->schema([
-                            self::labels(),
+                            self::setLabels(),
                         ]),
                 ]),
         ];

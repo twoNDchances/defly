@@ -9,7 +9,7 @@ trait WordlistField
 {
     use Field, WordlistButton, WordlistData;
 
-    public static function name()
+    public static function setName()
     {
         return self::textInput(
             'name',
@@ -22,7 +22,7 @@ trait WordlistField
             ->required();
     }
 
-    public static function type()
+    public static function setType()
     {
         return self::toggleButtons('type', __('models.wordlist.fields.type'), self::typeOptionsAndColors())
             ->default(Type::File->value)
@@ -30,7 +30,7 @@ trait WordlistField
             ->required();
     }
 
-    public static function wordFile()
+    public static function setWordFile()
     {
         $condition = fn ($get) => $get('type') == Type::File->value;
 
@@ -47,7 +47,7 @@ trait WordlistField
             ->mimeTypeMap(['text/plain']);
     }
 
-    public static function wordJson()
+    public static function setWordJson()
     {
         $condition = fn ($get) => $get('type') == Type::Json->value;
 
@@ -73,13 +73,8 @@ trait WordlistField
             ->minItems(1);
     }
 
-    public static function description()
+    public static function setDescriptionField()
     {
-        return self::textArea(
-            'description',
-            __('models.commons.description'),
-            __('forms.wordlist.text_examples.description'),
-        )
-            ->helperText(__('forms.wordlist.descriptions.description'));
+        return self::setDescription();
     }
 }

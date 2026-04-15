@@ -11,9 +11,9 @@ class LabelTable
     public static function build()
     {
         return [
-            self::name(),
-            self::color(),
-            self::preview(),
+            self::getName(),
+            self::getColor(),
+            self::getPreview(),
         ];
     }
 }

@@ -20,18 +20,18 @@ class PatternForm
                         ->columnSpan(2)
                         ->columns(2)
                         ->schema([
-                            self::phase(),
-                            self::type(),
-                            self::name(),
-                            self::datatype(),
-                            self::description()->columnSpanFull(),
+                            self::setPhase(),
+                            self::setType(),
+                            self::setName(),
+                            self::setDatatype(),
+                            self::setDescriptionField()->columnSpanFull(),
                         ]),
 
                     Section::make(__('forms.pattern.sections.b.title'))
                         ->columnSpan(1)
                         ->columns(1)
                         ->schema([
-                            self::targets(),
+                            self::setTargets(),
                         ]),
                 ]),
         ];

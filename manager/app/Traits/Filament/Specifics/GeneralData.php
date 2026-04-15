@@ -12,12 +12,12 @@ trait GeneralData
     {
         return [
             'options' => [
-                Phase::One->value => __('models.commons.phase.1'),
-                Phase::Two->value => __('models.commons.phase.2'),
-                Phase::Three->value => __('models.commons.phase.3'),
-                Phase::Four->value => __('models.commons.phase.4'),
-                Phase::Five->value => __('models.commons.phase.5'),
-                Phase::Six->value => __('models.commons.phase.6'),
+                Phase::One->value => __('models.generals.specials.phase.1'),
+                Phase::Two->value => __('models.generals.specials.phase.2'),
+                Phase::Three->value => __('models.generals.specials.phase.3'),
+                Phase::Four->value => __('models.generals.specials.phase.4'),
+                Phase::Five->value => __('models.generals.specials.phase.5'),
+                Phase::Six->value => __('models.generals.specials.phase.6'),
             ],
             'colors' => [
                 Phase::One->value => 'purple',
@@ -34,13 +34,13 @@ trait GeneralData
     {
         return [
             'options' => [
-                Type::Getter->value => __('models.commons.type.getter'),
-                Type::Full->value => __('models.commons.type.full'),
-                Type::Header->value => __('models.commons.type.header'),
-                Type::Meta->value => __('models.commons.type.meta'),
-                Type::Query->value => __('models.commons.type.query'),
-                Type::Body->value => __('models.commons.type.body'),
-                Type::File->value => __('models.commons.type.file'),
+                Type::Getter->value => __('models.generals.specials.type.getter'),
+                Type::Full->value => __('models.generals.specials.type.full'),
+                Type::Header->value => __('models.generals.specials.type.header'),
+                Type::Meta->value => __('models.generals.specials.type.meta'),
+                Type::Query->value => __('models.generals.specials.type.query'),
+                Type::Body->value => __('models.generals.specials.type.body'),
+                Type::File->value => __('models.generals.specials.type.file'),
             ],
             'colors' => [
                 Type::Getter->value => 'purple',
@@ -58,9 +58,9 @@ trait GeneralData
     {
         return [
             'options' => [
-                Datatype::Array->value => __('models.commons.datatype.array'),
-                Datatype::Number->value => __('models.commons.datatype.number'),
-                Datatype::String->value => __('models.commons.datatype.string'),
+                Datatype::Array->value => __('models.generals.specials.datatype.array'),
+                Datatype::Number->value => __('models.generals.specials.datatype.number'),
+                Datatype::String->value => __('models.generals.specials.datatype.string'),
             ],
             'colors' => [
                 Datatype::Array->value => 'warning',
@@ -73,25 +73,25 @@ trait GeneralData
     public static function phaseDescriptions()
     {
         return [
-            Phase::One->value => __('forms.commons.phase.1'),
-            Phase::Two->value => __('forms.commons.phase.2'),
-            Phase::Three->value => __('forms.commons.phase.3'),
-            Phase::Four->value => __('forms.commons.phase.4'),
-            Phase::Five->value => __('forms.commons.phase.5'),
-            Phase::Six->value => __('forms.commons.phase.6'),
+            Phase::One->value => __('forms.generals.specifics.phase.1'),
+            Phase::Two->value => __('forms.generals.specifics.phase.2'),
+            Phase::Three->value => __('forms.generals.specifics.phase.3'),
+            Phase::Four->value => __('forms.generals.specifics.phase.4'),
+            Phase::Five->value => __('forms.generals.specifics.phase.5'),
+            Phase::Six->value => __('forms.generals.specifics.phase.6'),
         ];
     }
 
     public static function typeDescriptions()
     {
         return [
-            Type::Getter->value => __('forms.commons.type.getter'),
-            Type::Full->value => __('forms.commons.type.full'),
-            Type::Header->value => __('forms.commons.type.header'),
-            Type::Meta->value => __('forms.commons.type.meta'),
-            Type::Query->value => __('forms.commons.type.query'),
-            Type::Body->value => __('forms.commons.type.body'),
-            Type::File->value => __('forms.commons.type.file'),
+            Type::Getter->value => __('forms.generals.specifics.type.getter'),
+            Type::Full->value => __('forms.generals.specifics.type.full'),
+            Type::Header->value => __('forms.generals.specifics.type.header'),
+            Type::Meta->value => __('forms.generals.specifics.type.meta'),
+            Type::Query->value => __('forms.generals.specifics.type.query'),
+            Type::Body->value => __('forms.generals.specifics.type.body'),
+            Type::File->value => __('forms.generals.specifics.type.file'),
         ];
     }
 
@@ -99,9 +99,9 @@ trait GeneralData
     {
         return [
             null => __('forms.engine.descriptions.input_datatype'),
-            Datatype::Array->value => __('forms.commons.datatype.array'),
-            Datatype::Number->value => __('forms.commons.datatype.number'),
-            Datatype::String->value => __('forms.commons.datatype.string'),
+            Datatype::Array->value => __('forms.generals.specifics.datatype.array'),
+            Datatype::Number->value => __('forms.generals.specifics.datatype.number'),
+            Datatype::String->value => __('forms.generals.specifics.datatype.string'),
         ];
     }
 }

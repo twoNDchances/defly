@@ -1,37 +1,44 @@
 <?php
 
 return [
-    'commons' => [
-        'labels' => [
-            'label' => 'Nhãn',
-            'description' => 'Bạn cũng có thể phân loại dữ liệu cho loại tài nguyên này',
-        ],
-        'sections' => [
-            'labels' => [
-                'title' => 'Gán nhãn tài nguyên',
+    'generals' => [
+        'bases' => [
+            'fields' => [
+                'description' => [
+                    'text_examples' => 'Một số mô tả về tài nguyên này',
+                    'descriptions' => 'Bạn có thể giải thích rõ hơn nếu tài nguyên này phức tạp',
+                ],
+            ],
+            'sections' => [
+                'labels' => [
+                    'title' => 'Gán nhãn tài nguyên',
+                    'description' => 'Bạn cũng có thể phân loại dữ liệu cho loại tài nguyên này',
+                ],
             ],
         ],
-        'datatype' => [
-            'array' => 'Kiểu mảng của dữ liệu chuỗi',
-            'number' => 'Kiểu dữ liệu số, bao gồm số nguyên và số thập phân',
-            'string' => 'Kiểu dữ liệu chuỗi',
-        ],
-        'phase' => [
-            '1' => 'Liên quan đến mọi thứ của yêu cầu',
-            '2' => 'Liên quan đến mọi thứ của phần tiêu đề trong yêu cầu',
-            '3' => 'Liên quan đến mọi thứ của phần nội dung trong yêu cầu',
-            '4' => 'Liên quan đến mọi thứ của phần tiêu đề trong phản hồi',
-            '5' => 'Liên quan đến mọi thứ của phần nội dung trong phản hồi',
-            '6' => 'Liên quan đến mọi thứ của phản hồi',
-        ],
-        'type' => [
-            'getter' => 'Tìm theo khóa và lấy giá trị của một biến trong một vòng đời của yêu cầu hoặc phản hồi, biến này có truy cập ở mọi giai đoạn',
-            'full' => 'Xây dựng dữ liệu đầy đủ của yêu cầu hoặc phản hồi',
-            'header' => 'Tìm và lấy khóa hoặc giá trị liên quan đến tiêu đề của yêu cầu hoặc phản hồi',
-            'meta' => 'Tìm và lấy giá trị liên quan đến siêu dữ liệu của yêu cầu hoặc phản hồi',
-            'query' => 'Tìm và lấy khóa hoặc giá trị liên quan đến tham số URL của yêu cầu',
-            'body' => 'Tìm và lấy khóa hoặc giá trị liên quan đến nội dung của yêu cầu hoặc phản hồi',
-            'file' => 'Tìm và lấy khóa hoặc giá trị liên quan đến tệp của yêu cầu hoặc phản hồi',
+        'specifics' => [
+            'phase' => [
+                '1' => 'Liên quan đến mọi thứ của yêu cầu',
+                '2' => 'Liên quan đến mọi thứ của phần tiêu đề trong yêu cầu',
+                '3' => 'Liên quan đến mọi thứ của phần nội dung trong yêu cầu',
+                '4' => 'Liên quan đến mọi thứ của phần tiêu đề trong phản hồi',
+                '5' => 'Liên quan đến mọi thứ của phần nội dung trong phản hồi',
+                '6' => 'Liên quan đến mọi thứ của phản hồi',
+            ],
+            'type' => [
+                'getter' => 'Tìm theo khóa và lấy giá trị của một biến trong một vòng đời của yêu cầu hoặc phản hồi, biến này có truy cập ở mọi giai đoạn',
+                'full' => 'Xây dựng dữ liệu đầy đủ của yêu cầu hoặc phản hồi',
+                'header' => 'Tìm và lấy khóa hoặc giá trị liên quan đến tiêu đề của yêu cầu hoặc phản hồi',
+                'meta' => 'Tìm và lấy giá trị liên quan đến siêu dữ liệu của yêu cầu hoặc phản hồi',
+                'query' => 'Tìm và lấy khóa hoặc giá trị liên quan đến tham số URL của yêu cầu',
+                'body' => 'Tìm và lấy khóa hoặc giá trị liên quan đến nội dung của yêu cầu hoặc phản hồi',
+                'file' => 'Tìm và lấy khóa hoặc giá trị liên quan đến tệp của yêu cầu hoặc phản hồi',
+            ],
+            'datatype' => [
+                'array' => 'Kiểu mảng của dữ liệu chuỗi',
+                'number' => 'Kiểu dữ liệu số, bao gồm số nguyên và số thập phân',
+                'string' => 'Kiểu dữ liệu chuỗi',
+            ],
         ],
     ],
     'user' => [
@@ -60,13 +67,11 @@ return [
     'permission' => [
         'text_examples' => [
             'name' => 'Pham vi:Quyen',
-            'description' => 'Một số mô tả về quyền này',
         ],
         'descriptions' => [
             'name' => 'Tên duy nhất đại diện cho quyền này',
             'applied_for' => 'Phạm vi quyền áp dụng',
             'action' => 'Hành động được cho phép trong phạm vi đã chọn',
-            'description' => 'Bạn có thể giải thích rõ hơn nếu quyền phức tạp',
         ],
         'sections' => [
             'a' => [
@@ -77,11 +82,9 @@ return [
     'policy' => [
         'text_examples' => [
             'name' => 'chinh-sach-quan-ly',
-            'description' => 'Một số mô tả về chính sách này',
         ],
         'descriptions' => [
             'name' => 'Tên duy nhất theo kiểu kebab đại diện cho chính sách này',
-            'description' => 'Bạn có thể giải thích rõ hơn nếu chính sách phức tạp',
         ],
         'sections' => [
             'a' => [
@@ -92,12 +95,10 @@ return [
     'label' => [
         'text_examples' => [
             'name' => 'nhan-tai-nguyen',
-            'description' => 'Một số mô tả về nhãn này',
         ],
         'descriptions' => [
             'name' => 'Tên duy nhất theo kiểu kebab đại diện cho nhãn này',
             'color' => 'Mã màu cho nhãn này để dễ phân biệt hơn',
-            'description' => 'Bạn có thể giải thích rõ hơn nếu nhãn phức tạp',
         ],
         'sections' => [
             'a' => [
@@ -108,7 +109,6 @@ return [
     'wordlist' => [
         'text_examples' => [
             'name' => 'danh-sach-tu',
-            'description' => 'Một số mô tả về danh sách từ này',
             'word' => 'abc',
         ],
         'descriptions' => [
@@ -116,7 +116,6 @@ return [
             'type' => 'Chọn một loại của danh sách từ',
             'word_file' => 'Đường dẫn đến tệp nội dung của danh sách từ này, sử dụng khi bạn có một tệp chứa số lượng từ lớn. Các từ được nhận dạng bằng cách xuống dòng mới',
             'word_json' => 'Định dạng dữ liệu JSON của danh sách từ này, sử dụng khi bạn có thể định nghĩa nó ở đây',
-            'description' => 'Bạn có thể giải thích rõ hơn nếu danh sách từ phức tạp',
             'word' => 'Từ hoặc các chữ cái',
         ],
         'sections' => [
@@ -131,7 +130,6 @@ return [
     'engine' => [
         'text_examples' => [
             'name' => 'dong-co-chuyen-doi',
-            'description' => 'Một số mô tả về động cơ này',
         ],
         'descriptions' => [
             'name' => 'Tên duy nhất theo kiểu kebab đại diện cho động cơ này',
@@ -139,7 +137,6 @@ return [
             'type' => 'Chọn một loại động cơ phù hợp cho kiểu dữ liệu đầu vào',
             'configurations' => 'Tùy loại động cơ bạn chọn sẽ yêu cầu cấu hình tùy chỉnh cho động cơ đó',
             'output_datatype' => 'Kiểu dữ liệu đầu ra được chuyển đổi',
-            'description' => 'Bạn có thể giải thích rõ hơn nếu động cơ phức tạp',
         ],
         'sections' => [
             'a' => [
@@ -175,12 +172,12 @@ return [
                 'length' => 'Lấy độ dài chuỗi (7)',
                 'hash' => 'Lấy giá trị băm ("e80b50...")',
                 'split' => 'Tách chuỗi ra nhiều phần tử, tìm theo ký tự chỉ định (["a", "b", "c", ...])',
-                'configurations' => [
-                    'position' => 'Một vị trí cụ thể trong mảng',
-                    'digit' => 'Một con số cụ thể để thực hiện toán tử',
-                    'hash_method' => 'Một hàm băm để thực hiện băm giá trị đầu vào',
-                    'separator' => 'Bạn có thể chọn một hoặc nhiều ký tự',
-                ],
+            ],
+            'configurations' => [
+                'position' => 'Một vị trí cụ thể trong mảng',
+                'digit' => 'Một con số cụ thể để thực hiện toán tử',
+                'hash_method' => 'Một hàm băm để thực hiện băm giá trị đầu vào',
+                'separator' => 'Bạn có thể chọn một hoặc nhiều ký tự',
             ],
         ],
     ],
@@ -205,14 +202,12 @@ return [
     'target' => [
         'text_examples' => [
             'name' => 'muc-tieu-dieu-tra',
-            'description' => 'Một số mô tả về mục tiêu này',
         ],
         'descriptions' => [
             'name' => 'Tên duy nhất theo kiểu kebab đại diện cho mục tiêu này',
             'phase' => 'Giai đoạn mà dữ liệu có thể lấy được',
             'type' => 'Loại phạm vi mà dữ liệu xuất hiện',
             'datatype' => 'Kiểu dữ liệu mục tiêu này trả về',
-            'description' => 'Bạn có thể giải thích rõ hơn nếu mục tiêu phức tạp',
             'pattern' => 'Chọn một mẫu có sẵn để định nghĩa mục tiêu',
             'wordlist' => 'Chọn một danh sách từ để định nghĩa mục tiêu cho kiểu dữ liệu mảng',
         ],

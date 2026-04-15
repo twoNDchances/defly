@@ -16,9 +16,9 @@ class LabelForm
                 ->columnSpanFull()
                 ->columns(2)
                 ->schema([
-                    self::name(),
-                    self::color(),
-                    self::description()->columnSpanFull(),
+                    self::setName(),
+                    self::setColor(),
+                    self::setDescriptionField()->columnSpanFull(),
                 ]),
         ];
     }

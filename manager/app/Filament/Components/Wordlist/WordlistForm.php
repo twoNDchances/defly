@@ -20,9 +20,9 @@ class WordlistForm
                         ->columnSpan(2)
                         ->columns(2)
                         ->schema([
-                            self::name(),
-                            self::type(),
-                            self::description()->columnSpanFull(),
+                            self::setName(),
+                            self::setType(),
+                            self::setDescriptionField()->columnSpanFull(),
                         ]),
                     Grid::make(1)
                         ->columnSpan(1)
@@ -31,14 +31,14 @@ class WordlistForm
                                 ->columnSpanFull()
                                 ->columns(1)
                                 ->schema([
-                                    self::wordFile(),
-                                    self::wordJson(),
+                                    self::setWordFile(),
+                                    self::setWordJson(),
                                 ]),
-                            Section::make(__('forms.commons.sections.labels.title'))
+                            Section::make(__('forms.generals.bases.sections.labels.title'))
                                 ->columnSpan(1)
                                 ->columns(1)
                                 ->schema([
-                                    self::labels(),
+                                    self::setLabels(),
                                 ]),
                         ]),
                 ]),

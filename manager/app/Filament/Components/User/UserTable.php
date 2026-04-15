@@ -11,16 +11,16 @@ class UserTable
     public static function build()
     {
         return [
-            self::email(),
-            self::isVerified(),
-            self::isRoot(),
-            self::isActivated(),
-            self::permissions(),
-            self::policies(),
-            self::labels(),
-            self::createdBy(),
-            self::createdAt(),
-            self::updatedAt(),
+            self::getEmail(),
+            self::getIsVerified(),
+            self::getIsRoot(),
+            self::getIsActivated(),
+            self::getPermissions(),
+            self::getPolicies(),
+            self::getLabels(),
+            self::getCreatedBy(),
+            self::getCreatedAt(),
+            self::getUpdatedAt(),
         ];
     }
 }
