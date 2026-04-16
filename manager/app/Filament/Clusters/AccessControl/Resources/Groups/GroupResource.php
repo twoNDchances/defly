@@ -6,10 +6,10 @@ use App\Filament\Clusters\AccessControl\AccessControlCluster;
 use App\Filament\Clusters\AccessControl\Resources\Groups\Pages\CreateGroup;
 use App\Filament\Clusters\AccessControl\Resources\Groups\Pages\EditGroup;
 use App\Filament\Clusters\AccessControl\Resources\Groups\Pages\ListGroups;
+use App\Filament\Clusters\AccessControl\Resources\Groups\RelationManagers\PermissionsRelationManager;
+use App\Filament\Clusters\AccessControl\Resources\Groups\RelationManagers\UsersRelationManager;
 use App\Filament\Clusters\AccessControl\Resources\Groups\Schemas\GroupForm;
 use App\Filament\Clusters\AccessControl\Resources\Groups\Tables\GroupsTable;
-use App\Filament\Components\Permission\PermissionRelationManager;
-use App\Filament\Components\User\UserRelationManager;
 use App\Models\Group;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -42,8 +42,8 @@ class GroupResource extends Resource
     public static function getRelations(): array
     {
         return [
-            UserRelationManager::class,
-            PermissionRelationManager::class,
+            UsersRelationManager::class,
+            PermissionsRelationManager::class,
         ];
     }
 

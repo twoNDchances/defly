@@ -55,6 +55,9 @@ class User extends Authenticatable
     #[Scope]
     protected function excludeRoot(Builder $query): void
     {
+        if (Identification::isRoot()) {
+            return;
+        }
         $query->where('is_root', false);
     }
 

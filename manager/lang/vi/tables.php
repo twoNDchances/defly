@@ -1,6 +1,13 @@
 <?php
 
 return [
+    'generals' => [
+        'specials' => [
+            'buttons' => [
+                'clone' => 'Nhân bản',
+            ],
+        ],
+    ],
     'user' => [
         'groups' => 'Nhóm áp dụng',
         'permissions' => 'Quyền áp dụng',

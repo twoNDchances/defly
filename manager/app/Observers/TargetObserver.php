@@ -40,7 +40,7 @@ class TargetObserver
             $oldWordlist = Wordlist::query()->find($oldWordlistId);
 
             if ($oldWordlist) {
-                $oldWordlist->update(['locked' => $oldWordlist->targets()->exists() || $oldWordlist->labels()->exists()]);
+                $oldWordlist->update(['locked' => $oldWordlist->targets()->exists()]);
             }
         }
 
@@ -48,7 +48,7 @@ class TargetObserver
             $newWordlist = Wordlist::query()->find($newWordlistId);
 
             if ($newWordlist) {
-                $newWordlist->update(['locked' => $newWordlist->targets()->exists() || $newWordlist->labels()->exists()]);
+                $newWordlist->update(['locked' => $newWordlist->targets()->exists()]);
             }
         }
     }

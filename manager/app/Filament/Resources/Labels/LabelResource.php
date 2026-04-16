@@ -2,13 +2,13 @@
 
 namespace App\Filament\Resources\Labels;
 
-use App\Filament\Components\Permission\PermissionRelationManager;
-use App\Filament\Components\Group\GroupRelationManager;
-use App\Filament\Components\User\UserRelationManager;
-use App\Filament\Components\Wordlist\WordlistRelationManager;
 use App\Filament\Resources\Labels\Pages\CreateLabel;
 use App\Filament\Resources\Labels\Pages\EditLabel;
 use App\Filament\Resources\Labels\Pages\ListLabels;
+use App\Filament\Resources\Labels\RelationManagers\GroupsRelationManager;
+use App\Filament\Resources\Labels\RelationManagers\PermissionsRelationManager;
+use App\Filament\Resources\Labels\RelationManagers\UsersRelationManager;
+use App\Filament\Resources\Labels\RelationManagers\WordlistsRelationManager;
 use App\Filament\Resources\Labels\Schemas\LabelForm;
 use App\Filament\Resources\Labels\Tables\LabelsTable;
 use App\Models\Label;
@@ -42,10 +42,10 @@ class LabelResource extends Resource
     public static function getRelations(): array
     {
         return [
-            UserRelationManager::class,
-            GroupRelationManager::class,
-            PermissionRelationManager::class,
-            WordlistRelationManager::class,
+            UsersRelationManager::class,
+            GroupsRelationManager::class,
+            PermissionsRelationManager::class,
+            WordlistsRelationManager::class,
         ];
     }
 

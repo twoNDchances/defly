@@ -1,7 +1,9 @@
 <?php
 
-namespace App\Filament\Components\Group;
+namespace App\Filament\Resources\Labels\RelationManagers;
 
+use App\Filament\Components\Group\GroupForm;
+use App\Filament\Components\Group\GroupTable;
 use App\Traits\Filament\Specifics\Group\GroupButton;
 use App\Traits\Filament\Specifics\Group\GroupData;
 use Filament\Resources\RelationManagers\RelationManager;
@@ -9,7 +11,7 @@ use Filament\Schemas\Schema;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
 
-class GroupRelationManager extends RelationManager
+class GroupsRelationManager extends RelationManager
 {
     use GroupButton, GroupData;
 

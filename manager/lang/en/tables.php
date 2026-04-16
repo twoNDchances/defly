@@ -1,6 +1,13 @@
 <?php
 
 return [
+    'generals' => [
+        'specials' => [
+            'buttons' => [
+                'clone' => 'Clone',
+            ],
+        ],
+    ],
     'user' => [
         'groups' => 'Applied groups',
         'permissions' => 'Applied permissions',

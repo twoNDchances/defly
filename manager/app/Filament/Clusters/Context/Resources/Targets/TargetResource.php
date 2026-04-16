@@ -6,9 +6,9 @@ use App\Filament\Clusters\Context\ContextCluster;
 use App\Filament\Clusters\Context\Resources\Targets\Pages\CreateTarget;
 use App\Filament\Clusters\Context\Resources\Targets\Pages\EditTarget;
 use App\Filament\Clusters\Context\Resources\Targets\Pages\ListTargets;
+use App\Filament\Clusters\Context\Resources\Targets\RelationManagers\EnginesRelationManager;
 use App\Filament\Clusters\Context\Resources\Targets\Schemas\TargetForm;
 use App\Filament\Clusters\Context\Resources\Targets\Tables\TargetsTable;
-use App\Filament\Components\Engine\EngineRelationManager;
 use App\Models\Target;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -41,7 +41,7 @@ class TargetResource extends Resource
     public static function getRelations(): array
     {
         return [
-            EngineRelationManager::class,
+            EnginesRelationManager::class,
         ];
     }
 

@@ -1,52 +1,54 @@
 <?php
 
-namespace App\Filament\Components\User;
+namespace App\Filament\Clusters\Authentication\Resources\Users\RelationManagers;
 
-use App\Traits\Filament\Specifics\User\UserButton;
-use App\Traits\Filament\Specifics\User\UserData;
+use App\Filament\Components\Group\GroupForm;
+use App\Filament\Components\Group\GroupTable;
+use App\Traits\Filament\Specifics\Group\GroupButton;
+use App\Traits\Filament\Specifics\Group\GroupData;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
 
-class UserRelationManager extends RelationManager
+class GroupsRelationManager extends RelationManager
 {
-    use UserButton, UserData;
+    use GroupButton, GroupData;
 
-    protected static string $relationship = 'users';
+    protected static string $relationship = 'groups';
 
     public function form(Schema $schema): Schema
     {
-        return $schema->components(UserForm::build());
+        return $schema->components(GroupForm::build());
     }
 
     public function table(Table $table): Table
     {
         return $table
-            ->recordTitleAttribute('email')
-            ->columns(UserTable::build())
+            ->recordTitleAttribute('name')
+            ->columns(GroupTable::build())
             ->filters([
                 //
             ])
             ->headerActions([
                 self::createButton(),
-                self::attachButton()->recordSelectOptionsQuery(fn ($query) => $query->excludeCurrent()),
+                self::attachButton(),
             ])
             ->recordActions([
                 self::buttonGroup(delete: false, more: [self::detachButton()]),
             ])
             ->toolbarActions([
-                self::bulkButtonGroup(false, [self::detachMultiUserButton()]),
+                self::bulkButtonGroup(false, [self::detachBulkButton()]),
             ]);
     }
 
     public static function getTitle(Model $ownerRecord, string $pageClass): string
     {
-        return __('models.user.name');
+        return __('models.group.name');
     }
 
     public static function getRecordLabel(): ?string
     {
-        return __('models.user.name');
+        return __('models.group.name');
     }
 }

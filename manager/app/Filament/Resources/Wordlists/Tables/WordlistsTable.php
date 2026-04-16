@@ -15,7 +15,7 @@ class WordlistsTable
                 //
             ])
             ->recordActions([
-                WordlistTable::buttonGroup(more: [WordlistTable::cloneButton()]),
+                WordlistTable::buttonGroup(more: [WordlistTable::cloneWordlistButton()]),
             ])
             ->toolbarActions([
                 WordlistTable::bulkButtonGroup(false, [WordlistTable::deleteUnlockedBulkButton()]),

@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
+use App\Models\Group;
 use App\Models\Label;
 use App\Models\Permission;
-use App\Models\Group;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 

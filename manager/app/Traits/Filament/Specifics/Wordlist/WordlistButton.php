@@ -3,9 +3,7 @@
 namespace App\Traits\Filament\Specifics\Wordlist;
 
 use App\Enums\Wordlist\Type;
-use App\Models\Wordlist;
 use App\Traits\Filament\Generals\Components\Button;
-use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -13,24 +11,18 @@ trait WordlistButton
 {
     use Button;
 
-    public static function cloneButton()
+    public static function cloneWordlistButton()
     {
-        return self::button(
-            'clone_wordlist',
-            'Clone',
-            Heroicon::OutlinedSquare2Stack,
-            function (Wordlist $record): void {
+        return self::cloneButton()
+            ->action(function ($record) {
                 $clone = $record->replicate();
-                $clone->name = self::generateCloneName($record->name);
+                $suffix = Str::random(6);
+                $clone->name = "$record->name-$suffix";
                 $clone->locked = false;
 
-                if ($record->type === Type::File && filled($record->word_file)) {
-                    if (Storage::exists($record->word_file)) {
-                        $extension = pathinfo($record->word_file, PATHINFO_EXTENSION);
-                        $directory = pathinfo($record->word_file, PATHINFO_DIRNAME);
-                        $filename = Str::uuid()->toString() . ($extension ? ".{$extension}" : '');
-                        $directory = $directory === '.' ? '' : trim($directory, '/\\');
-                        $clone->word_file = ($directory === '' ? '' : "{$directory}/") . $filename;
+                if ($record->type === Type::File) {
+                    if (isset($record->word_file) && Storage::exists($record->word_file)) {
+                        $clone->word_file = preg_replace('/(\.[^\.]+)$/', "-{$suffix}$1", $record->word_file);
                         Storage::copy($record->word_file, $clone->word_file);
                     } else {
                         $clone->word_file = null;
@@ -39,36 +31,6 @@ trait WordlistButton
 
                 $clone->save();
                 $clone->labels()->sync($record->labels()->pluck('id')->all());
-                $clone->update(['locked' => $clone->targets()->exists() || $clone->labels()->exists()]);
-            },
-        )
-            ->requiresConfirmation()
-            ->color('gray');
-    }
-
-    public static function deleteUnlockedBulkButton()
-    {
-        return self::deleteBulkButton()
-            ->action(function ($records): void {
-                foreach ($records as $record) {
-                    if ($record->locked === false) {
-                        $record->delete();
-                    }
-                }
             });
-    }
-
-    protected static function generateCloneName(string $name): string
-    {
-        $base = Str::finish($name, '-clone');
-        $candidate = $base;
-        $index = 2;
-
-        while (Wordlist::query()->where('name', $candidate)->exists()) {
-            $candidate = "{$base}-{$index}";
-            $index++;
-        }
-
-        return $candidate;
     }
 }

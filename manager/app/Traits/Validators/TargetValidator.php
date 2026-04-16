@@ -40,7 +40,7 @@ trait TargetValidator
     {
         return [
             $constraint,
-            new KebabNameField(),
+            new KebabNameField,
             Rule::unique('targets', 'name'),
         ];
     }
