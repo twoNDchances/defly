@@ -5,8 +5,10 @@ namespace App\Filament\Resources\Labels;
 use App\Filament\Resources\Labels\Pages\CreateLabel;
 use App\Filament\Resources\Labels\Pages\EditLabel;
 use App\Filament\Resources\Labels\Pages\ListLabels;
+use App\Filament\Resources\Labels\RelationManagers\EnginesRelationManager;
 use App\Filament\Resources\Labels\RelationManagers\GroupsRelationManager;
 use App\Filament\Resources\Labels\RelationManagers\PermissionsRelationManager;
+use App\Filament\Resources\Labels\RelationManagers\TargetsRelationManager;
 use App\Filament\Resources\Labels\RelationManagers\UsersRelationManager;
 use App\Filament\Resources\Labels\RelationManagers\WordlistsRelationManager;
 use App\Filament\Resources\Labels\Schemas\LabelForm;
@@ -46,6 +48,8 @@ class LabelResource extends Resource
             GroupsRelationManager::class,
             PermissionsRelationManager::class,
             WordlistsRelationManager::class,
+            EnginesRelationManager::class,
+            TargetsRelationManager::class,
         ];
     }
 

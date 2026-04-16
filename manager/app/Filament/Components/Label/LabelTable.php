@@ -14,6 +14,15 @@ class LabelTable
             self::getName(),
             self::getColor(),
             self::getPreview(),
+            // self::getUsers(),
+            // self::getGroups(),
+            // self::getPermissions(),
+            // self::getWordlists(),
+            // self::getEngines(),
+            // self::getTarget(),
+            self::getCreatedBy(),
+            self::getCreatedAt(),
+            self::getUpdatedAt(),
         ];
     }
 }

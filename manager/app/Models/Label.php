@@ -47,4 +47,14 @@ class Label extends Model
     {
         return $this->morphedByMany(Wordlist::class, 'resource', 'labels_resources', 'label', 'resource_id');
     }
+
+    public function engines()
+    {
+        return $this->morphedByMany(Engine::class, 'resource', 'labels_resources', 'label', 'resource_id');
+    }
+
+    public function targets()
+    {
+        return $this->morphedByMany(Target::class, 'resource', 'labels_resources', 'label', 'resource_id');
+    }
 }
