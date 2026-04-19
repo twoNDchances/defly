@@ -15,7 +15,7 @@ class Label extends Model
 {
     use HasUuids, Owner;
 
-    public function casts()
+    public function casts(): array
     {
         return [
             'id' => 'string',
@@ -56,5 +56,10 @@ class Label extends Model
     public function targets()
     {
         return $this->morphedByMany(Target::class, 'resource', 'labels_resources', 'label', 'resource_id');
+    }
+
+    public function actions()
+    {
+        return $this->morphedByMany(Action::class, 'resource', 'labels_resources', 'label', 'resource_id');
     }
 }

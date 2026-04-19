@@ -23,7 +23,7 @@ class WordlistResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'name';
 
-    protected static ?int $navigationSort = 1;
+    protected static ?int $navigationSort = 3;
 
     public static function form(Schema $schema): Schema
     {
@@ -53,7 +53,7 @@ class WordlistResource extends Resource
 
     public static function getNavigationGroup(): string|UnitEnum|null
     {
-        return __('navigations.groups.utilities');
+        return __('navigations.groups.management');
     }
 
     public static function getModelLabel(): string

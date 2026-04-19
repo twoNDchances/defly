@@ -83,7 +83,7 @@ trait TargetField
     {
         $condition = fn ($get) => $get('datatype') == Datatype::Array->value && ! $get('pattern');
 
-        return self::select('wordlist', __('models.target.fields.wordlist'))
+        return self::select('wordlist_id', __('models.target.fields.wordlist'))
             ->helperText(__('forms.target.descriptions.wordlist'))
             ->disabled(fn ($get) => ! $condition($get))
             ->relationship('wordlist', 'name')

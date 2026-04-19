@@ -10,5 +10,6 @@ return [
         'authentication' => 'Xác thực',
         'access_control' => 'Kiểm soát truy cập',
         'context' => 'Bối cảnh',
+        'initialization' => 'Khởi tạo',
     ],
 ];

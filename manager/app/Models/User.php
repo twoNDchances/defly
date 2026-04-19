@@ -66,14 +66,39 @@ class User extends Authenticatable
         return $this->hasMany(User::class, $this->getCreatedByField());
     }
 
+    public function getGroups()
+    {
+        return $this->hasMany(Group::class, $this->getCreatedByField());
+    }
+
     public function getPermissions()
     {
         return $this->hasMany(Permission::class, $this->getCreatedByField());
     }
 
-    public function getGroups()
+    public function getLabels()
     {
-        return $this->hasMany(Group::class, $this->getCreatedByField());
+        return $this->hasMany(Label::class, $this->getCreatedByField());
+    }
+
+    public function getWordlists()
+    {
+        return $this->hasMany(Wordlist::class, $this->getCreatedByField());
+    }
+
+    public function getEngines()
+    {
+        return $this->hasMany(Engine::class, $this->getCreatedByField());
+    }
+
+    public function getTargets()
+    {
+        return $this->hasMany(Target::class, $this->getCreatedByField());
+    }
+
+    public function getActions()
+    {
+        return $this->hasMany(Action::class, $this->getCreatedByField());
     }
 
     public function groups()

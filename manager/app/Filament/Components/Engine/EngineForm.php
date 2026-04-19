@@ -26,20 +26,15 @@ class EngineForm
                             Grid::make(1)
                                 ->columnSpan(2)
                                 ->schema([
-                                    Fieldset::make(__('forms.engine.sections.a.fieldsets.a.title'))
+                                    self::setType()->columnSpanFull(),
+                                    Fieldset::make(__('models.engine.fields.configurations'))
                                         ->columnSpanFull()
                                         ->columns(1)
                                         ->schema([
-                                            self::setType()->columnSpanFull(),
-                                            Fieldset::make(__('forms.engine.sections.a.fieldsets.b.title'))
-                                                ->columnSpanFull()
-                                                ->columns(1)
-                                                ->schema([
-                                                    self::setPosition(),
-                                                    self::setDigit(),
-                                                    self::setHashMethod(),
-                                                    self::setSeparator(),
-                                                ]),
+                                            self::setPosition(),
+                                            self::setDigit(),
+                                            self::setHashMethod(),
+                                            self::setSeparator(),
                                         ]),
                                 ]),
                             self::setOutputDatatype()->columnSpan(1),

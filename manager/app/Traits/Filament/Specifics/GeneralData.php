@@ -3,6 +3,7 @@
 namespace App\Traits\Filament\Specifics;
 
 use App\Enums\Datatype;
+use App\Enums\Method;
 use App\Enums\Phase;
 use App\Enums\Type;
 
@@ -70,28 +71,48 @@ trait GeneralData
         ];
     }
 
+    public static function methodOptionsAndColors()
+    {
+        return [
+            'options' => [
+                Method::Get->value => 'GET',
+                Method::Post->value => 'POST',
+                Method::Put->value => 'PUT',
+                Method::Patch->value => 'PATCH',
+                Method::Delete->value => 'DELETE',
+            ],
+            'colors' => [
+                Method::Get->value => 'success',
+                Method::Post->value => 'warning',
+                Method::Put->value => 'info',
+                Method::Patch->value => 'purple',
+                Method::Delete->value => 'danger',
+            ],
+        ];
+    }
+
     public static function phaseDescriptions()
     {
         return [
-            Phase::One->value => __('forms.generals.specifics.phase.1'),
-            Phase::Two->value => __('forms.generals.specifics.phase.2'),
-            Phase::Three->value => __('forms.generals.specifics.phase.3'),
-            Phase::Four->value => __('forms.generals.specifics.phase.4'),
-            Phase::Five->value => __('forms.generals.specifics.phase.5'),
-            Phase::Six->value => __('forms.generals.specifics.phase.6'),
+            Phase::One->value => __('forms.generals.specials.phase.1'),
+            Phase::Two->value => __('forms.generals.specials.phase.2'),
+            Phase::Three->value => __('forms.generals.specials.phase.3'),
+            Phase::Four->value => __('forms.generals.specials.phase.4'),
+            Phase::Five->value => __('forms.generals.specials.phase.5'),
+            Phase::Six->value => __('forms.generals.specials.phase.6'),
         ];
     }
 
     public static function typeDescriptions()
     {
         return [
-            Type::Getter->value => __('forms.generals.specifics.type.getter'),
-            Type::Full->value => __('forms.generals.specifics.type.full'),
-            Type::Header->value => __('forms.generals.specifics.type.header'),
-            Type::Meta->value => __('forms.generals.specifics.type.meta'),
-            Type::Query->value => __('forms.generals.specifics.type.query'),
-            Type::Body->value => __('forms.generals.specifics.type.body'),
-            Type::File->value => __('forms.generals.specifics.type.file'),
+            Type::Getter->value => __('forms.generals.specials.type.getter'),
+            Type::Full->value => __('forms.generals.specials.type.full'),
+            Type::Header->value => __('forms.generals.specials.type.header'),
+            Type::Meta->value => __('forms.generals.specials.type.meta'),
+            Type::Query->value => __('forms.generals.specials.type.query'),
+            Type::Body->value => __('forms.generals.specials.type.body'),
+            Type::File->value => __('forms.generals.specials.type.file'),
         ];
     }
 
@@ -99,9 +120,20 @@ trait GeneralData
     {
         return [
             null => __('forms.engine.descriptions.input_datatype'),
-            Datatype::Array->value => __('forms.generals.specifics.datatype.array'),
-            Datatype::Number->value => __('forms.generals.specifics.datatype.number'),
-            Datatype::String->value => __('forms.generals.specifics.datatype.string'),
+            Datatype::Array->value => __('forms.generals.specials.datatype.array'),
+            Datatype::Number->value => __('forms.generals.specials.datatype.number'),
+            Datatype::String->value => __('forms.generals.specials.datatype.string'),
+        ];
+    }
+
+    public static function methodDescriptions()
+    {
+        return [
+            Method::Get->value => __('forms.generals.specials.method.get'),
+            Method::Post->value => __('forms.generals.specials.method.post'),
+            Method::Put->value => __('forms.generals.specials.method.put'),
+            Method::Patch->value => __('forms.generals.specials.method.patch'),
+            Method::Delete->value => __('forms.generals.specials.method.delete'),
         ];
     }
 }

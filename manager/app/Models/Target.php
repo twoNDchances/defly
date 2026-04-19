@@ -19,7 +19,7 @@ class Target extends Model
 {
     use HasUuids, Labellable, Owner;
 
-    protected function casts()
+    protected function casts(): array
     {
         return [
             'id' => 'string',

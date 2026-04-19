@@ -25,10 +25,10 @@ return [
     ],
     // 'wordlist' => [],
     'engine' => [
-        'targets' => 'Mục tiêu sử dụng',
+        'targets' => 'Targets',
     ],
     // 'pattern' => [],
     'target' => [
-        'engines' => 'Động cơ sử dụng',
+        'engines' => 'Engines',
     ],
 ];

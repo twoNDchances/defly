@@ -16,14 +16,14 @@ return [
                 ],
             ],
         ],
-        'specifics' => [
+        'specials' => [
             'phase' => [
-                '1' => 'Liên quan đến mọi thứ của yêu cầu',
-                '2' => 'Liên quan đến mọi thứ của phần tiêu đề trong yêu cầu',
-                '3' => 'Liên quan đến mọi thứ của phần nội dung trong yêu cầu',
-                '4' => 'Liên quan đến mọi thứ của phần tiêu đề trong phản hồi',
-                '5' => 'Liên quan đến mọi thứ của phần nội dung trong phản hồi',
-                '6' => 'Liên quan đến mọi thứ của phản hồi',
+                1 => 'Liên quan đến mọi thứ của yêu cầu',
+                2 => 'Liên quan đến mọi thứ của phần tiêu đề trong yêu cầu',
+                3 => 'Liên quan đến mọi thứ của phần nội dung trong yêu cầu',
+                4 => 'Liên quan đến mọi thứ của phần tiêu đề trong phản hồi',
+                5 => 'Liên quan đến mọi thứ của phần nội dung trong phản hồi',
+                6 => 'Liên quan đến mọi thứ của phản hồi',
             ],
             'type' => [
                 'getter' => 'Tìm theo khóa và lấy giá trị của một biến trong một vòng đời của yêu cầu hoặc phản hồi, biến này có truy cập ở mọi giai đoạn',
@@ -38,6 +38,13 @@ return [
                 'array' => 'Kiểu mảng của dữ liệu chuỗi',
                 'number' => 'Kiểu dữ liệu số, bao gồm số nguyên và số thập phân',
                 'string' => 'Kiểu dữ liệu chuỗi',
+            ],
+            'method' => [
+                'get' => 'Phương thức GET khi thực hiện yêu cầu HTTP',
+                'post' => 'Phương thức POST khi thực hiện yêu cầu HTTP',
+                'put' => 'Phương thức PUT khi thực hiện yêu cầu HTTP',
+                'patch' => 'Phương thức PATCH khi thực hiện yêu cầu HTTP',
+                'delete' => 'Phương thức DELETE khi thực hiện yêu cầu HTTP',
             ],
         ],
     ],
@@ -135,20 +142,11 @@ return [
             'name' => 'Tên duy nhất theo kiểu kebab đại diện cho động cơ này',
             'input_datatype' => 'Kiểu dữ liệu đầu vào cần chuyển đổi',
             'type' => 'Chọn một loại động cơ phù hợp cho kiểu dữ liệu đầu vào',
-            'configurations' => 'Tùy loại động cơ bạn chọn sẽ yêu cầu cấu hình tùy chỉnh cho động cơ đó',
             'output_datatype' => 'Kiểu dữ liệu đầu ra được chuyển đổi',
         ],
         'sections' => [
             'a' => [
                 'title' => 'Định nghĩa động cơ',
-                'fieldsets' => [
-                    'a' => [
-                        'title' => 'Bộ chuyển đổi',
-                    ],
-                    'b' => [
-                        'title' => 'Các cấu hình',
-                    ],
-                ],
             ],
         ],
         'extras' => [
@@ -217,6 +215,74 @@ return [
             ],
             'b' => [
                 'title' => 'Định nghĩa mục tiêu',
+            ],
+        ],
+    ],
+    'action' => [
+        'text_examples' => [
+            'name' => 'hanh-dong',
+        ],
+        'descriptions' => [
+            'name' => 'Tên duy nhất theo kiểu kebab đại diện cho hành động này',
+            'type' => 'Kiểu hành động sẽ được kích hoạt nếu khớp điều kiện của quy tắc',
+            'wordlist' => 'Chọn một danh sách từ để định nghĩa cấu hình cho các loại hành động cần nhiều tham số',
+        ],
+        'sections' => [
+            'a' => [
+                'title' => 'Định nghĩa hành động',
+            ],
+        ],
+        'extras' => [
+            'type' => [
+                'allow' => 'Dừng các hành động tiếp theo và cho phép yêu cầu hoặc phản hồi được tiếp tục',
+                'deny' => 'Dừng các hành động tiếp theo và từ chối yêu cầu hoặc phản hồi được tiếp tục',
+                'log' => 'Ghi nhật ký chi tiết của yêu cầu hoặc phản hồi',
+                'request' => 'Gửi một yêu cầu HTTP',
+                'report' => 'Gửi một báo cáo về Manager với các chi tiết',
+                'suspect' => 'Vòng đời HTTP bao gồm chiều đi là yêu cầu và chiều về là phản hồi sẽ tăng điểm. Điểm được định nghĩa theo mức độ nghiêm trọng',
+                'setter' => 'Thêm, bớt hoặc thay đổi các biến ảo trong một vòng đời HTTP',
+                'score' => 'Cập nhật lại điểm vi phạm tối đa',
+                'level' => 'Cập nhật lại cấp độ quy tắc được sử dụng',
+            ],
+            'configurations' => [
+                'deny_status' => 'Chọn một trạng thái phản hồi khi từ chối',
+                'deny_content_type' => 'Loại nội dung trả về khi từ chối',
+                'deny_body' => 'Phần nội dung trả về khi từ chối',
+                'log_format' => 'Định dạng mong muốn khi ghi nhật ký',
+                'log_console' => 'Ghi nhật ký theo định dạng ra màn hình console',
+                'log_file' => 'Ghi nhật ký theo định dạng ra tệp',
+                'request_url' => 'Một đường dẫn URL muốn gửi yêu cầu đến',
+                'request_method' => 'Phương thức HTTP để gửi yêu cầu',
+                'request_headers' => 'Thêm hoặc cập nhật các tiêu đề trước khi gửi yêu cầu HTTP',
+                'request_body' => 'Nội dung của yêu cầu HTTP. Nội dung sẽ được chuyển dạng tham số URL nếu phương thức là GET',
+                'suspect_severity' => 'Tăng mức độ nghiêm trọng bằng cách cộng giá trị của mỗi mức',
+                'setter_directive' => 'Chỉ thị cách quản lý các biến ảo',
+                'setter_set' => 'Thêm hoặc cập nhật các biến ảo để giao tiếp giữa các quy tắc',
+                'setter_unset' => 'Hủy các biến ảo để tăng điều kiện kiểm soát',
+                'score_behavior' => 'Bạn có thể quyết định mức điểm vi phạm tăng hay giảm',
+                'score_value' => 'Giá trị cho điểm vi phạm',
+                'level_value' => 'Giá trị cho cấp vi phạm',
+                'level_behavior' => 'Bạn có thể quyết định cấp độ vi phạm tăng hay giảm',
+            ],
+            'deny_content_type' => [
+                'html' => 'Loại nội dung HTML sẽ được trả về khi từ chối',
+                'json' => 'Loại nội dung JSON sẽ được trả về khi từ chối',
+            ],
+            'key' => 'Dùng để định danh nội dung',
+            'value' => 'Dùng để lưu trữ nội dung',
+            'set' => 'Thêm hoặc cập nhật dữ liệu',
+            'unset' => 'Hủy dữ liệu',
+            'score_behavior' => [
+                'override' => 'Sử dụng khi bạn muốn cập nhật chính xác giá trị',
+                '+' => 'Thực hiện toán tử cộng',
+                '-' => 'Thực hiện toán tử trừ',
+                '*' => 'Thực hiện toán tử nhân',
+                '/' => 'Thực hiện toán tử chia',
+            ],
+            'level_behavior' => [
+                'override' => 'Sử dụng khi bạn muốn cập nhật chính xác giá trị',
+                'increase' => 'Thực hiện tăng theo số đơn vị',
+                'decrease' => 'Thực hiện giảm theo số đơn vị',
             ],
         ],
     ],

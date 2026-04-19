@@ -16,14 +16,14 @@ return [
                 ],
             ],
         ],
-        'specifics' => [
+        'specials' => [
             'phase' => [
-                '1' => 'Related to everything in the request',
-                '2' => 'Related to everything in the request headers',
-                '3' => 'Related to everything in the request body',
-                '4' => 'Related to everything in the response headers',
-                '5' => 'Related to everything in the response body',
-                '6' => 'Related to everything in the response',
+                1 => 'Related to everything in the request',
+                2 => 'Related to everything in the request headers',
+                3 => 'Related to everything in the request body',
+                4 => 'Related to everything in the response headers',
+                5 => 'Related to everything in the response body',
+                6 => 'Related to everything in the response',
             ],
             'type' => [
                 'getter' => 'Search by key and retrieve the value of a variable within a request or response lifecycle, where this variable is accessible at all phases',
@@ -38,6 +38,13 @@ return [
                 'array' => 'Array of string data',
                 'number' => 'Number data, including integer and float',
                 'string' => 'String data',
+            ],
+            'method' => [
+                'get' => 'GET method for sending an HTTP request',
+                'post' => 'POST method for sending an HTTP request',
+                'put' => 'PUT method for sending an HTTP request',
+                'patch' => 'PATCH method for sending an HTTP request',
+                'delete' => 'DELETE method for sending an HTTP request',
             ],
         ],
     ],
@@ -135,20 +142,11 @@ return [
             'name' => 'A unique kebab-case name for this engine',
             'input_datatype' => 'Input datatype to be converted',
             'type' => 'Select an engine type suitable for the input datatype',
-            'configurations' => 'Depending on engine type, custom configuration values may be required',
             'output_datatype' => 'Output datatype after conversion',
         ],
         'sections' => [
             'a' => [
                 'title' => 'Engine definition',
-                'fieldsets' => [
-                    'a' => [
-                        'title' => 'Transformer',
-                    ],
-                    'b' => [
-                        'title' => 'Configurations',
-                    ],
-                ],
             ],
         ],
         'extras' => [
@@ -217,6 +215,74 @@ return [
             ],
             'b' => [
                 'title' => 'Target definition',
+            ],
+        ],
+    ],
+    'action' => [
+        'text_examples' => [
+            'name' => 'action',
+        ],
+        'descriptions' => [
+            'name' => 'A unique kebab-case name for this action',
+            'type' => 'Action type that will be triggered when a rule condition is matched',
+            'wordlist' => 'Select a wordlist to define configuration for action types that require multiple parameters',
+        ],
+        'sections' => [
+            'a' => [
+                'title' => 'Action definition',
+            ],
+        ],
+        'extras' => [
+            'type' => [
+                'allow' => 'Stop further actions and allow the request or response to continue',
+                'deny' => 'Stop further actions and deny the request or response',
+                'log' => 'Log detailed information of the request or response',
+                'request' => 'Send an HTTP request',
+                'report' => 'Send a report to Manager with details',
+                'suspect' => 'Increase score in the HTTP lifecycle (request in, response out) based on severity level',
+                'setter' => 'Add, remove, or update transaction variables during an HTTP lifecycle',
+                'score' => 'Update the maximum violation score',
+                'level' => 'Update the active rule level',
+            ],
+            'configurations' => [
+                'deny_status' => 'Choose a response status when denying',
+                'deny_content_type' => 'Response content type when denying',
+                'deny_body' => 'Response body when denying',
+                'log_format' => 'Desired format for log entries',
+                'log_console' => 'Write logs to console output',
+                'log_file' => 'Write logs to file',
+                'request_url' => 'Target URL for sending the request',
+                'request_method' => 'HTTP method used to send the request',
+                'request_headers' => 'Add or update headers before sending the HTTP request',
+                'request_body' => 'HTTP request body. Body will be converted to query parameters if method is GET',
+                'suspect_severity' => 'Increase severity by adding the value of each level',
+                'setter_directive' => 'Directive that controls transaction variable management',
+                'setter_set' => 'Add or update transaction variables for cross-rule communication',
+                'setter_unset' => 'Remove transaction variables to tighten control conditions',
+                'score_behavior' => 'Choose how the violation score should increase or decrease',
+                'score_value' => 'Value used for violation score',
+                'level_behavior' => 'Choose how the violation level should increase or decrease',
+                'level_value' => 'Value used for violation level',
+            ],
+            'deny_content_type' => [
+                'html' => 'Return HTML content type when denying',
+                'json' => 'Return JSON content type when denying',
+            ],
+            'key' => 'Used to identify the content',
+            'value' => 'Used to store the content',
+            'set' => 'Add or update data',
+            'unset' => 'Remove data',
+            'score_behavior' => [
+                'override' => 'Use this when you want to set an exact value',
+                '+' => 'Apply addition operator',
+                '-' => 'Apply subtraction operator',
+                '*' => 'Apply multiplication operator',
+                '/' => 'Apply division operator',
+            ],
+            'level_behavior' => [
+                'override' => 'Use this when you want to set an exact value',
+                'increase' => 'Increase by unit steps',
+                'decrease' => 'Decrease by unit steps',
             ],
         ],
     ],

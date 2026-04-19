@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Clusters\Context;
+namespace App\Filament\Clusters\Initialization;
 
 use BackedEnum;
 use Filament\Clusters\Cluster;
@@ -8,11 +8,11 @@ use Filament\Pages\Enums\SubNavigationPosition;
 use Filament\Support\Icons\Heroicon;
 use UnitEnum;
 
-class ContextCluster extends Cluster
+class InitializationCluster extends Cluster
 {
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedViewfinderCircle;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCursorArrowRipple;
 
-    protected static ?int $navigationSort = 2;
+    protected static ?int $navigationSort = 1;
 
     protected static ?SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
@@ -23,11 +23,11 @@ class ContextCluster extends Cluster
 
     public static function getNavigationLabel(): string
     {
-        return __('navigations.clusters.context');
+        return __('navigations.clusters.initialization');
     }
 
     public static function getClusterBreadcrumb(): string
     {
-        return __('navigations.clusters.context');
+        return __('navigations.clusters.initialization');
     }
 }

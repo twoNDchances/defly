@@ -13,7 +13,7 @@ class Pattern extends Model
 {
     use HasUuids;
 
-    protected function casts()
+    protected function casts(): array
     {
         return [
             'id' => 'string',

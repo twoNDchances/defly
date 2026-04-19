@@ -16,7 +16,7 @@ class Permission extends Model
 {
     use HasUuids, Labellable, Owner;
 
-    public function casts()
+    public function casts(): array
     {
         return [
             'id' => 'string',

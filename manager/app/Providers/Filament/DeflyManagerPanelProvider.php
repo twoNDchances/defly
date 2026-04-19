@@ -7,6 +7,7 @@ use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
+use Filament\Navigation\NavigationGroup;
 use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
@@ -69,9 +70,12 @@ class DeflyManagerPanelProvider extends PanelProvider
             ->discoverClusters(app_path('Filament/Clusters'), 'App\\Filament\\Clusters')
             ->profile()
             ->navigationGroups([
-                __('navigations.groups.management'),
-                __('navigations.groups.utilities'),
-                __('navigations.groups.security'),
+                NavigationGroup::make()
+                    ->label(fn (): string => __('navigations.groups.management')),
+                NavigationGroup::make()
+                    ->label(fn (): string => __('navigations.groups.utilities')),
+                NavigationGroup::make()
+                    ->label(fn (): string => __('navigations.groups.security')),
             ])
             ->plugins([
                 FilamentLanguageSwitcherPlugin::make()

@@ -65,13 +65,29 @@ trait Button
 
     public static function viewButton()
     {
-        return Actions\ViewAction::make()->icon(fn () => Heroicon::OutlinedEye)->modalWidth(Width::SevenExtraLarge);
+        return Actions\ViewAction::make()
+            ->icon(fn () => Heroicon::OutlinedEye)
+            ->mutateRecordDataUsing(function (array $data): array {
+                if (method_exists(static::class, 'loadForm')) {
+                    $data = static::loadForm($data);
+                }
+
+                return $data;
+            })
+            ->modalWidth(Width::SevenExtraLarge);
     }
 
     public static function editButton()
     {
         return Actions\EditAction::make()
             ->icon(fn () => Heroicon::OutlinedPencilSquare)
+            ->mutateRecordDataUsing(function (array $data): array {
+                if (method_exists(static::class, 'loadForm')) {
+                    $data = static::loadForm($data);
+                }
+
+                return $data;
+            })
             ->mutateDataUsing(function ($data) {
                 if (method_exists(static::class, 'editForm')) {
                     $data = static::editForm($data);
