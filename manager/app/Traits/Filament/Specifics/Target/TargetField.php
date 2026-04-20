@@ -51,7 +51,7 @@ trait TargetField
             )
             ->afterStateUpdated(fn ($state, $set) => $set('datatype', Pattern::find($state)?->datatype))
             ->disabled($condition)
-            ->required(fn ($get) => $get('type') == Type::Full->value)
+            ->required(fn ($get) => in_array($get('type'), [Type::Full->value, Type::Meta->value]))
             ->visible(fn ($get) => ! $condition($get))
             ->reactive();
     }

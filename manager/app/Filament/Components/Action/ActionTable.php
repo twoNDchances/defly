@@ -13,7 +13,7 @@ class ActionTable
         return [
             self::getName(),
             self::getType(),
-            self::getLabels(),
+            self::getRules(),
             self::getLabels(),
             self::getLocked(),
             self::getCreatedBy(),

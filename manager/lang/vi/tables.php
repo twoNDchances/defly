@@ -30,5 +30,13 @@ return [
     // 'pattern' => [],
     'target' => [
         'engines' => 'Động cơ sử dụng',
+        'rules' => 'Quy tắc sử dụng',
+    ],
+    'action' => [
+        'rules' => 'Quy tắc sử dụng',
+    ],
+    'rule' => [
+        'actions' => 'Hành động sử dụng',
+        'policies' => 'Chính sách sử dụng',
     ],
 ];

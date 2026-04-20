@@ -38,4 +38,9 @@ class Wordlist extends Model
     {
         return $this->hasMany(Target::class, 'wordlist_id');
     }
+
+    public function rules()
+    {
+        return $this->hasMany(Rule::class, 'wordlist_id');
+    }
 }

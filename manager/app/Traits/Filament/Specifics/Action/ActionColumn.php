@@ -20,4 +20,9 @@ trait ActionColumn
             ->color(fn ($state) => self::typeOptionsAndColors()['colors'][$state->value])
             ->badge();
     }
+
+    public static function getRules()
+    {
+        return self::relationshipColumn('rules.name', __('tables.action.rules'));
+    }
 }

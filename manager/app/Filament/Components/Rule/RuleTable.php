@@ -1,24 +1,23 @@
 <?php
 
-namespace App\Filament\Components\Target;
+namespace App\Filament\Components\Rule;
 
-use App\Traits\Filament\Specifics\Target\TargetColumn;
+use App\Traits\Filament\Specifics\Rule\RuleColumn;
 
-class TargetTable
+class RuleTable
 {
-    use TargetColumn;
+    use RuleColumn;
 
     public static function build()
     {
         return [
             self::getName(),
             self::getPhase(),
-            self::getType(),
-            self::getDatatype(),
-            self::getPattern(),
+            self::getTarget(),
+            self::getComparator(),
             self::getWordlist(),
-            self::getEngines(),
-            self::getRules(),
+            self::getActions(),
+            self::getPolicies(),
             self::getLabels(),
             self::getLocked(),
             self::getCreatedBy(),

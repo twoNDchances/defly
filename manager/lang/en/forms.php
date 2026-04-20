@@ -286,4 +286,51 @@ return [
             ],
         ],
     ],
+    'rule' => [
+        'text_examples' => [
+            'name' => 'rule',
+        ],
+        'descriptions' => [
+            'name' => 'A unique kebab-case name for this rule',
+            'phase' => 'Execution phase where the target data can be obtained',
+            'target' => 'Target selected for comparison',
+            'comparator' => 'Compare the extracted target value with provided values across different datatypes',
+            'is_inversed' => 'Invert the comparison result',
+            'wordlist' => 'Select a wordlist used by the comparator for the value to compare',
+        ],
+        'steps' => [
+            'a' => [
+                'title' => 'Rule preparation',
+            ],
+            'b' => [
+                'title' => 'Rule definition',
+            ],
+        ],
+        'extras' => [
+            'comparator' => [
+                '@similar' => '[(Target){Array} @ (Value){Wordlist}] True if the first target array item equals the first item in the provided wordlist',
+                '@contains' => '[(Target){Array} @ (Value){String}] True if the first target array item equals the provided string value',
+                '@match' => '[(Target){Array} @ (Value){String}] True if the first target array item matches the provided string using a regular expression',
+                '@search' => '[(Target){Array} @ (Value){Wordlist}] True if the first target array item matches the first provided wordlist item using a regular expression',
+                '@equal' => '[(Target){Number} @ (Value){Number}] True if the target number equals the provided number',
+                '@greaterThan' => '[(Target){Number} @ (Value){Number}] True if the target number is greater than the provided number',
+                '@lessThan' => '[(Target){Number} @ (Value){Number}] True if the target number is less than the provided number',
+                '@greaterThanOrEqual' => '[(Target){Number} @ (Value){Number}] True if the target number is greater than or equal to the provided number',
+                '@lessThanOrEqual' => '[(Target){Number} @ (Value){Number}] True if the target number is less than or equal to the provided number',
+                '@inRange' => '[(Target){Number} @ (Value){Number range}] True if the target number is within the range from smaller to larger value',
+                '@mirror' => '[(Target){String} @ (Value){String}] True if the target string equals the provided string',
+                '@startsWith' => '[(Target){String} @ (Value){String}] True if the target string starts with the provided string',
+                '@endsWith' => '[(Target){String} @ (Value){String}] True if the target string ends with the provided string',
+                '@check' => '[(Target){String} @ (Value){Wordlist}] True if the target string equals the first item in the provided wordlist',
+                '@regExp' => '[(Target){String} @ (Value){String}] True if the target string matches the provided string using a regular expression',
+                '@checkRegExp' => '[(Target){String} @ (Value){Wordlist}] True if the target string matches the first item in the provided wordlist using a regular expression',
+            ],
+            'configurations' => [
+                'string_value' => 'String value used to compare with targets whose final datatype is string',
+                'number_value' => 'Numeric value used to compare with targets whose final datatype is number',
+                'number_from_value' => 'Range start number',
+                'number_to_value' => 'Range end number',
+            ],
+        ],
+    ],
 ];

@@ -15,10 +15,10 @@ class ActionsTable
                 //
             ])
             ->recordActions([
-                ActionTable::buttonGroup(more: [ActionTable::cloneButton()])
+                ActionTable::buttonGroup(more: [ActionTable::cloneButton()]),
             ])
             ->toolbarActions([
-                ActionTable::bulkButtonGroup(false, [ActionTable::deleteUnlockedBulkButton()])
+                ActionTable::bulkButtonGroup(false, [ActionTable::deleteUnlockedBulkButton()]),
             ]);
     }
 }

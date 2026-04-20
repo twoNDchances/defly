@@ -31,4 +31,11 @@ class Action extends Model
             'updated_at' => 'datetime',
         ];
     }
+
+    public function rules()
+    {
+        return $this->belongsToMany(Rule::class, 'rules_actions', 'action', 'rule')
+            ->withPivot('order')
+            ->orderByPivot('order');
+    }
 }

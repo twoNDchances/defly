@@ -30,5 +30,13 @@ return [
     // 'pattern' => [],
     'target' => [
         'engines' => 'Engines',
+        'rules' => 'Rules in use',
+    ],
+    'action' => [
+        'rules' => 'Rules in use',
+    ],
+    'rule' => [
+        'actions' => 'Actions in use',
+        'policies' => 'Policies in use',
     ],
 ];

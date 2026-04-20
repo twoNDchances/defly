@@ -2,10 +2,9 @@
 
 namespace App\Models;
 
-use App\Enums\Datatype;
 use App\Enums\Phase;
-use App\Enums\Type;
-use App\Observers\TargetObserver;
+use App\Enums\Rule\Comparator;
+use App\Observers\RuleObserver;
 use App\Traits\Models\Labellable;
 use App\Traits\Models\Owner;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -13,9 +12,9 @@ use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 
-#[Fillable(['name', 'phase', 'type', 'datatype', 'description', 'pattern_id', 'wordlist_id', 'created_by', 'locked'])]
-#[ObservedBy(TargetObserver::class)]
-class Target extends Model
+#[Fillable(['name', 'phase', 'target_id', 'comparator', 'is_inversed', 'configurations', 'wordlist_id', 'description', 'created_by', 'locked'])]
+#[ObservedBy(RuleObserver::class)]
+class Rule extends Model
 {
     use HasUuids, Labellable, Owner;
 
@@ -25,11 +24,12 @@ class Target extends Model
             'id' => 'string',
             'name' => 'string',
             'phase' => Phase::class,
-            'type' => Type::class,
-            'datatype' => Datatype::class,
-            'description' => 'string',
-            'pattern_id' => 'string',
+            'target_id' => 'string',
+            'comparator' => Comparator::class,
+            'is_inversed' => 'boolean',
+            'configurations' => 'array',
             'wordlist_id' => 'string',
+            'description' => 'string',
             'created_by' => 'string',
             'locked' => 'boolean',
             'created_at' => 'datetime',
@@ -37,9 +37,9 @@ class Target extends Model
         ];
     }
 
-    public function pattern()
+    public function target()
     {
-        return $this->belongsTo(Pattern::class, 'pattern_id');
+        return $this->belongsTo(Target::class, 'target_id');
     }
 
     public function wordlist()
@@ -47,15 +47,10 @@ class Target extends Model
         return $this->belongsTo(Wordlist::class, 'wordlist_id');
     }
 
-    public function engines()
+    public function actions()
     {
-        return $this->belongsToMany(Engine::class, 'targets_engines', 'target', 'engine')
+        return $this->belongsToMany(Action::class, 'rules_actions', 'rule', 'action')
             ->withPivot('order')
             ->orderByPivot('order');
-    }
-
-    public function rules()
-    {
-        return $this->hasMany(Rule::class, 'target_id');
     }
 }

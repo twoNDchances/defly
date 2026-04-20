@@ -286,4 +286,51 @@ return [
             ],
         ],
     ],
+    'rule' => [
+        'text_examples' => [
+            'name' => 'quy-tac',
+        ],
+        'descriptions' => [
+            'name' => 'Tên duy nhất theo kiểu kebab đại diện cho quy tắc này',
+            'phase' => 'Giai đoạn mà mục tiêu có thể lấy được',
+            'target' => 'Mục tiêu được chọn để so sánh',
+            'comparator' => 'So sánh giá trị của mục tiêu đã lấy với giá trị được cho theo các kiểu dữ liệu khác nhau',
+            'is_inversed' => 'Nghịch đảo bộ so sánh',
+            'wordlist' => 'Chọn một danh sách từ để bộ so sánh sử dụng cho dữ liệu cần so sánh',
+        ],
+        'steps' => [
+            'a' => [
+                'title' => 'Chuẩn bị quy tắc',
+            ],
+            'b' => [
+                'title' => 'Định nghĩa quy tắc',
+            ],
+        ],
+        'extras' => [
+            'comparator' => [
+                '@similar' => '[(Mục tiêu){Mảng} @ (Giá trị){Danh sách từ}] Đúng nếu phần tử đầu tiên trong mảng của mục tiêu trùng với phần từ đầu tiên trong danh sách từ được cho',
+                '@contains' => '[(Mục tiêu){Mảng} @ (Giá trị){Chuỗi}] Đúng nếu phần tử đầu tiên trong mảng của mục tiêu trùng với giá trị chuỗi được cho',
+                '@match' => '[(Mục tiêu){Mảng} @ (Giá trị){Chuỗi}] Đúng nếu phần tử đầu tiên trong mảng của mục tiêu trùng với giá trị chuỗi được cho bằng cách sử dụng biểu thức chính quy',
+                '@search' => '[(Mục tiêu){Mảng} @ (Giá trị){Danh sách từ}] Đúng nếu phần tử đầu tiên trong mảng của mục tiêu trùng với phần tử đầu tiên trong danh sách từ được cho bằng cách sử dụng biểu thức chính quy',
+                '@equal' => '[(Mục tiêu){Số} @ (Giá trị){Số}] Đúng nếu giá trị số của mục tiêu trùng với giá trị số được cho',
+                '@greaterThan' => '[(Mục tiêu){Số} @ (Giá trị){Số}] Đúng nếu giá trị số của mục tiêu lớn hơn giá trị số được cho',
+                '@lessThan' => '[(Mục tiêu){Số} @ (Giá trị){Số}] Đúng nếu giá trị số của mục tiêu nhỏ hơn giá trị số được cho',
+                '@greaterThanOrEqual' => '[(Mục tiêu){Số} @ (Giá trị){Số}] Đúng nếu giá trị số của mục tiêu lớn hơn hoặc bằng giá trị số được cho',
+                '@lessThanOrEqual' => '[(Mục tiêu){Số} @ (Giá trị){Số}] Đúng nếu giá trị số của mục tiêu nhỏ hơn hoặc bằng giá trị số được cho',
+                '@inRange' => '[(Mục tiêu){Số} @ (Giá trị){Phạm vi số}] Đúng nếu giá trị số của mục tiêu nằm trong phạm vi từ số nhỏ đến số lớn',
+                '@mirror' => '[(Mục tiêu){Chuỗi} @ (Giá trị){Chuỗi}] Đúng nếu giá trị chuỗi của mục tiêu trùng với giá trị chuỗi được cho',
+                '@startsWith' => '[(Mục tiêu){Chuỗi} @ (Giá trị){Chuỗi}] Đúng nếu giá trị chuỗi của mục tiêu bắt đầu giống với giá trị chuỗi được cho',
+                '@endsWith' => '[(Mục tiêu){Chuỗi} @ (Giá trị){Chuỗi}] Đúng nếu giá trị chuỗi của mục tiêu kết thúc giống với giá trị chuỗi được cho',
+                '@check' => '[(Mục tiêu){Chuỗi} @ (Giá trị){Danh sách từ}] Đúng nếu giá trị chuỗi của mục tiêu trùng với phần tử đầu tiên trong danh sách từ được cho',
+                '@regExp' => '[(Mục tiêu){Chuỗi} @ (Giá trị){Chuỗi}] Đúng nếu giá trị chuỗi của mục tiêu trùng với giá trị chuỗi được cho bằng cách sử dụng biểu thức chính quy',
+                '@checkRegExp' => '[(Mục tiêu){Chuỗi} @ (Giá trị){Danh sách từ}] Đúng nếu giá trị chuỗi của mục tiêu trùng với phần tử đầu tiên trong danh sách từ được cho bằng cách sử dụng biểu thức chính quy',
+            ],
+            'configurations' => [
+                'string_value' => 'Giá trị có kiểu dữ liệu chuỗi dùng để so sánh với mục tiêu có kiểu dữ liệu cuối cùng là chuỗi',
+                'number_value' => 'Giá trị có kiểu dữ liệu số dùng để so sánh với mục tiêu có kiểu dữ liệu cuối cùng là số',
+                'number_from_value' => 'Giá trị từ số cụ thể',
+                'number_to_value' => 'Giá trị đến số cụ thể',
+            ],
+        ],
+    ],
 ];

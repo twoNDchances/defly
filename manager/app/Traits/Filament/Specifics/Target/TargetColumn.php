@@ -51,4 +51,9 @@ trait TargetColumn
     {
         return self::relationshipColumn('engines.name', __('tables.target.engines'));
     }
+
+    public static function getRules()
+    {
+        return self::relationshipColumn('rules.name', __('tables.target.rules'));
+    }
 }

@@ -7,6 +7,7 @@ use App\Enums\Type;
 use App\Models\Pattern;
 use App\Models\Target;
 use App\Models\Wordlist;
+use App\Services\ForeignKeyLock;
 use App\Traits\Observers\After;
 use App\Traits\Observers\Before;
 
@@ -29,27 +30,7 @@ class TargetObserver
 
     public function saved(Target $target): void
     {
-        $oldWordlistId = $target->getOriginal('wordlist_id');
-        $newWordlistId = $target->wordlist_id;
-
-        if ($oldWordlistId === $newWordlistId) {
-            return;
-        }
-
-        if ($oldWordlistId) {
-            $oldWordlist = Wordlist::query()->find($oldWordlistId);
-
-            if ($oldWordlist) {
-                $oldWordlist->update(['locked' => $oldWordlist->targets()->exists()]);
-            }
-        }
-
-        if ($newWordlistId) {
-            $newWordlist = Wordlist::query()->find($newWordlistId);
-
-            if ($newWordlist) {
-                $newWordlist->update(['locked' => $newWordlist->targets()->exists()]);
-            }
-        }
+        ForeignKeyLock::syncOnForeignKeyChange($target, 'wordlist_id', Wordlist::class);
+        ForeignKeyLock::syncModel($target);
     }
 }
