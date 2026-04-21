@@ -54,7 +54,7 @@ trait Column
 
     public static function getLocked()
     {
-        return self::booleanColumn('locked', __('models.generals.specials.locked'));
+        return self::booleanColumn('is_locked', __('models.generals.specials.is_locked'));
     }
 
     public static function getCreatedBy()

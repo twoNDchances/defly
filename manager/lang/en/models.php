@@ -31,7 +31,7 @@ return [
                 'number' => 'Number',
                 'string' => 'String',
             ],
-            'locked' => 'Locked',
+            'is_locked' => 'Is locked',
         ],
     ],
     'permission' => [

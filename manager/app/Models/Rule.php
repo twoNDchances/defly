@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 
-#[Fillable(['name', 'phase', 'target_id', 'comparator', 'is_inversed', 'configurations', 'wordlist_id', 'description', 'created_by', 'locked'])]
+#[Fillable(['name', 'phase', 'target_id', 'comparator', 'is_inversed', 'configurations', 'wordlist_id', 'description', 'created_by', 'is_locked'])]
 #[ObservedBy(RuleObserver::class)]
 class Rule extends Model
 {
@@ -31,7 +31,7 @@ class Rule extends Model
             'wordlist_id' => 'string',
             'description' => 'string',
             'created_by' => 'string',
-            'locked' => 'boolean',
+            'is_locked' => 'boolean',
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
         ];

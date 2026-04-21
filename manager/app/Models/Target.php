@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 
-#[Fillable(['name', 'phase', 'type', 'datatype', 'description', 'pattern_id', 'wordlist_id', 'created_by', 'locked'])]
+#[Fillable(['name', 'phase', 'type', 'datatype', 'description', 'pattern_id', 'wordlist_id', 'created_by', 'is_locked'])]
 #[ObservedBy(TargetObserver::class)]
 class Target extends Model
 {
@@ -31,7 +31,7 @@ class Target extends Model
             'pattern_id' => 'string',
             'wordlist_id' => 'string',
             'created_by' => 'string',
-            'locked' => 'boolean',
+            'is_locked' => 'boolean',
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
         ];

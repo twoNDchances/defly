@@ -4,7 +4,6 @@ namespace App\Observers;
 
 use App\Enums\Wordlist\Type;
 use App\Models\Wordlist;
-use App\Services\ForeignKeyLock;
 use App\Traits\Observers\After;
 use App\Traits\Observers\Before;
 use Illuminate\Support\Facades\Storage;
@@ -12,11 +11,6 @@ use Illuminate\Support\Facades\Storage;
 class WordlistObserver
 {
     use After, Before;
-
-    public function saved(Wordlist $wordlist): void
-    {
-        ForeignKeyLock::syncModel($wordlist);
-    }
 
     public function saving(Wordlist $wordlist): void
     {

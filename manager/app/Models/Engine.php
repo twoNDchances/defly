@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 
-#[Fillable(['name', 'input_datatype', 'type', 'configurations', 'output_datatype', 'description', 'created_by', 'locked'])]
+#[Fillable(['name', 'input_datatype', 'type', 'configurations', 'output_datatype', 'description', 'created_by', 'is_locked'])]
 #[ObservedBy(EngineObserver::class)]
 class Engine extends Model
 {
@@ -28,7 +28,7 @@ class Engine extends Model
             'output_datatype' => Datatype::class,
             'description' => 'string',
             'created_by' => 'string',
-            'locked' => 'boolean',
+            'is_locked' => 'boolean',
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
         ];

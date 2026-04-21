@@ -18,7 +18,7 @@ return new class extends Migration
             $table->json('configurations')->nullable();
             $table->longText('description')->nullable();
             $table->foreignUuid('created_by')->nullable()->index()->constrained('users')->nullOnDelete();
-            $table->boolean('locked')->default(false);
+            $table->boolean('is_locked')->default(false);
             $table->timestamps();
         });
     }

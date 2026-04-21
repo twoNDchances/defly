@@ -22,7 +22,7 @@ return new class extends Migration
             $table->foreignUuid('wordlist_id')->nullable()->index()->constrained('wordlists')->nullOnDelete();
             $table->longText('description')->nullable();
             $table->foreignUuid('created_by')->nullable()->index()->constrained('users')->nullOnDelete();
-            $table->boolean('locked')->default(false);
+            $table->boolean('is_locked')->default(false);
             $table->timestamps();
         });
     }

@@ -2,6 +2,7 @@
 
 namespace App\Traits\Filament\Generals\Components;
 
+use App\Services\Lock;
 use Filament\Actions;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\DetachBulkAction;
@@ -46,20 +47,8 @@ trait Button
 
                 $recordIds = is_array($recordIds) ? $recordIds : [$recordIds];
 
-                $records = $table->getRelationship()
-                    ->getRelated()
-                    ->newQuery()
-                    ->whereKey($recordIds)
-                    ->get();
-
-                foreach ($records as $record) {
-                    if (! $record->hasAttribute('locked')) {
-                        continue;
-                    }
-
-                    $record->locked = true;
-                    $record->save();
-                }
+                $relatedModelClass = $table->getRelationship()->getRelated()::class;
+                Lock::syncByRelationship($relatedModelClass, $recordIds);
             });
     }
 
@@ -109,12 +98,11 @@ trait Button
     {
         return self::detachButton()
             ->after(function ($record) {
-                if (! $record->hasAttribute('locked')) {
+                if (! $record) {
                     return;
                 }
 
-                $record->locked = false;
-                $record->save();
+                Lock::syncByRelationship($record::class, $record->getKey());
             });
     }
 
@@ -170,7 +158,7 @@ trait Button
         return self::deleteBulkButton()
             ->action(function ($records) {
                 foreach ($records as $record) {
-                    if ($record->hasAttribute('locked') && $record->locked == false) {
+                    if ($record->hasAttribute('is_locked') && $record->is_locked == false) {
                         $record->delete();
                     }
                 }
@@ -191,6 +179,7 @@ trait Button
             function ($records, $table) {
                 $relationship = $table->getRelationship();
                 $relationshipPivotAccessor = $relationship->getPivotAccessor();
+                $detachedIds = [];
 
                 foreach ($records as $record) {
                     if ($table->allowsDuplicates()) {
@@ -199,13 +188,15 @@ trait Button
                         $relationship->detach($record);
                     }
 
-                    if (! $record->hasAttribute('locked')) {
-                        continue;
-                    }
-
-                    $record->locked = false;
-                    $record->save();
+                    $detachedIds[] = $record->getKey();
                 }
+
+                if (blank($detachedIds)) {
+                    return;
+                }
+
+                $relatedModelClass = $relationship->getRelated()::class;
+                Lock::syncByRelationship($relatedModelClass, $detachedIds);
             }
         )
             ->requiresConfirmation()
@@ -238,8 +229,8 @@ trait Button
                 $clone = $record->replicate();
                 $suffix = Str::random(6);
                 $clone->name = "$record->name-$suffix";
-                if ($clone->hasAttribute('locked')) {
-                    $clone->locked = false;
+                if ($clone->hasAttribute('is_locked')) {
+                    $clone->is_locked = false;
                 }
                 $clone->save();
                 $clone->labels()->sync($record->labels()->pluck('id')->all());

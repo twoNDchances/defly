@@ -18,7 +18,7 @@ trait WordlistButton
                 $clone = $record->replicate();
                 $suffix = Str::random(6);
                 $clone->name = "$record->name-$suffix";
-                $clone->locked = false;
+                $clone->is_locked = false;
 
                 if ($record->type === Type::File) {
                     if (isset($record->word_file) && Storage::exists($record->word_file)) {

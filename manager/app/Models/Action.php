@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 
-#[Fillable(['name', 'type', 'configurations', 'description', 'created_by', 'locked'])]
+#[Fillable(['name', 'type', 'configurations', 'description', 'created_by', 'is_locked'])]
 #[ObservedBy(ActionObserver::class)]
 class Action extends Model
 {
@@ -26,7 +26,7 @@ class Action extends Model
             'configurations' => 'array',
             'description' => 'string',
             'created_by' => 'string',
-            'locked' => 'boolean',
+            'is_locked' => 'boolean',
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
         ];

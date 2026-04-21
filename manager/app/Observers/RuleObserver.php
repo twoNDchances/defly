@@ -4,9 +4,7 @@ namespace App\Observers;
 
 use App\Enums\Rule\Comparator;
 use App\Models\Rule;
-use App\Models\Target;
-use App\Models\Wordlist;
-use App\Services\ForeignKeyLock;
+use App\Services\Lock;
 use App\Traits\Observers\After;
 use App\Traits\Observers\Before;
 
@@ -23,11 +21,11 @@ class RuleObserver
 
     public function saved(Rule $rule): void
     {
-        ForeignKeyLock::syncForForeignKeys($rule, [
-            'target_id' => Target::class,
-            'wordlist_id' => Wordlist::class,
-        ]);
+        Lock::syncByForeignKey($rule);
+    }
 
-        ForeignKeyLock::syncModel($rule);
+    public function deleting(Rule $rule): void
+    {
+        Lock::syncByDeleting($rule);
     }
 }

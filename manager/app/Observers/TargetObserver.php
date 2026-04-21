@@ -6,8 +6,7 @@ use App\Enums\Datatype;
 use App\Enums\Type;
 use App\Models\Pattern;
 use App\Models\Target;
-use App\Models\Wordlist;
-use App\Services\ForeignKeyLock;
+use App\Services\Lock;
 use App\Traits\Observers\After;
 use App\Traits\Observers\Before;
 
@@ -30,7 +29,11 @@ class TargetObserver
 
     public function saved(Target $target): void
     {
-        ForeignKeyLock::syncOnForeignKeyChange($target, 'wordlist_id', Wordlist::class);
-        ForeignKeyLock::syncModel($target);
+        Lock::syncByForeignKey($target);
+    }
+
+    public function deleting(Target $target): void
+    {
+        Lock::syncByDeleting($target);
     }
 }
