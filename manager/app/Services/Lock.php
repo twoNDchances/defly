@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Action;
 use App\Models\Engine;
+use App\Models\Policy;
 use App\Models\Rule;
 use App\Models\Target;
 use App\Models\Wordlist;
@@ -38,16 +39,18 @@ class Lock
         ],
         Target::class => [
             ['type' => 'model', 'model' => Rule::class, 'foreign_key' => 'target_id'],
-            ['type' => 'table', 'table' => 'targets_engines', 'foreign_key' => 'target'],
         ],
         Rule::class => [
-            ['type' => 'table', 'table' => 'rules_actions', 'foreign_key' => 'rule'],
+            ['type' => 'table', 'table' => 'policies_rules', 'foreign_key' => 'rule'],
         ],
         Action::class => [
             ['type' => 'table', 'table' => 'rules_actions', 'foreign_key' => 'action'],
         ],
         Engine::class => [
             ['type' => 'table', 'table' => 'targets_engines', 'foreign_key' => 'engine'],
+        ],
+        Policy::class => [
+            ['type' => 'table', 'table' => 'policies_rules', 'foreign_key' => 'policy'],
         ],
     ];
 
@@ -60,6 +63,10 @@ class Lock
         ],
         Rule::class => [
             ['table' => 'rules_actions', 'self_key' => 'rule', 'related_model' => Action::class, 'related_key' => 'action'],
+            ['table' => 'policies_rules', 'self_key' => 'rule', 'related_model' => Policy::class, 'related_key' => 'policy'],
+        ],
+        Policy::class => [
+            ['table' => 'policies_rules', 'self_key' => 'policy', 'related_model' => Rule::class, 'related_key' => 'rule'],
         ],
     ];
 
@@ -95,7 +102,7 @@ class Lock
 
     public static function syncByDeleting(Model $model): void
     {
-        if (blank($model->getKey()) || ! in_array($model::class, [Target::class, Rule::class], true)) {
+        if (blank($model->getKey()) || ! self::hasDeletingRegistration($model::class)) {
             return;
         }
 
@@ -125,6 +132,15 @@ class Lock
 
             self::syncByRelationship($pivotConfig['related_model'], $relatedIds, $ignore);
         }
+    }
+
+    /**
+     * @param  class-string<Model>  $modelClass
+     */
+    protected static function hasDeletingRegistration(string $modelClass): bool
+    {
+        return (self::FOREIGN_KEY_MAP[$modelClass] ?? []) !== []
+            || (self::PIVOT_MAP[$modelClass] ?? []) !== [];
     }
 
     /**

@@ -13,10 +13,9 @@ class UsersTable
     {
         return $table
             ->columns(UserTable::build())
-            ->query(function () {
-                $query = User::query()->excludeCurrent();
-
-                return Identification::isRoot() ? $query : $query->excludeRoot();
+            ->modifyQueryUsing(fn ($query) => match (Identification::isRoot()) {
+                true => $query->excludeCurrent(),
+                false => $query->excludeCurrent()->excludeRoot(),
             })
             ->filters([
                 //

@@ -333,4 +333,33 @@ return [
             ],
         ],
     ],
+    'policy' => [
+        'text_examples' => [
+            'name' => 'chinh-sach',
+            'level' => '1',
+        ],
+        'descriptions' => [
+            'name' => 'Tên duy nhất theo kiểu kebab đại diện chính sách này',
+            'level' => 'Cập độ vi phạm mà chính sách thuộc về, chính sách sẽ bị bỏ qua nếu giá trị này lớn hơn cấp độ vi phạm được cấu hình trong Defender',
+            'phase' => 'Giai đoạn mà chính sách sẽ được thực thi',
+            'validation_status' => 'Trạng thái sẽ quyết định chính sách có được áp dụng vào Defender hay không',
+            'validation_details' => 'Chi tiết các xác thực dữ liệu, mục đích để bạn nắm được chính sách đang có lỗi gì',
+        ],
+        'tabs' => [
+            'a' => [
+                'title' => 'Định nghĩa chính sách',
+            ],
+            'b' => [
+                'title' => 'Trạng thái chính sách',
+            ],
+        ],
+        'extras' => [
+            'validation_status' => [
+                'pending' => 'Trạng thái đang chờ được xác thực',
+                'validating' => 'Trạng thái đang xác thực, kiểm tra mọi thứ trước khi áp dụng',
+                'failed' => 'Trạng thái xác thực đã thất bại, chưa đủ điều kiện áp dụng',
+                'passed' => 'Trạng thái xác thực đã thành công, đủ điều kiện áp dụng',
+            ],
+        ],
+    ],
 ];

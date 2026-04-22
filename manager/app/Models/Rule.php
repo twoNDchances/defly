@@ -53,4 +53,11 @@ class Rule extends Model
             ->withPivot('order')
             ->orderByPivot('order');
     }
+
+    public function policies()
+    {
+        return $this->belongsToMany(Policy::class, 'policies_rules', 'rule', 'policy')
+            ->withPivot('order')
+            ->orderByPivot('order');
+    }
 }

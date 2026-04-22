@@ -40,6 +40,7 @@ class DeflyManagerPanelProvider extends PanelProvider
                 'slate' => Color::Slate,
                 'sky' => Color::Sky,
                 'teal' => Color::Teal,
+                'secondary' => Color::Gray,
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')

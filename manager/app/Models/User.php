@@ -101,6 +101,16 @@ class User extends Authenticatable
         return $this->hasMany(Action::class, $this->getCreatedByField());
     }
 
+    public function getRules()
+    {
+        return $this->hasMany(Rule::class, $this->getCreatedByField());
+    }
+
+    public function getPolicies()
+    {
+        return $this->hasMany(Policy::class, $this->getCreatedByField());
+    }
+
     public function groups()
     {
         return $this->belongsToMany(Group::class, 'users_groups', 'user', 'group');

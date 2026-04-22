@@ -240,4 +240,22 @@ return [
             ],
         ],
     ],
+    'policy' => [
+        'name' => 'Chính sách',
+        'fields' => [
+            'name' => 'Tên',
+            'level' => 'Cấp độ thực thi',
+            'phase' => 'Giai đoạn thực thi',
+            'validation_status' => 'Trạng thái xác thực',
+            'validation_details' => 'Chi tiết xác thực'
+        ],
+        'extras' => [
+            'validation_status' => [
+                'pending' => 'Đang chờ',
+                'validating' => 'Đang xác thực',
+                'failed' => 'Thất bại',
+                'passed' => 'Thành công'
+            ],
+        ],
+    ],
 ];

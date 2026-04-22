@@ -39,4 +39,12 @@ return [
         'actions' => 'Hành động sử dụng',
         'policies' => 'Chính sách sử dụng',
     ],
+    'policy' => [
+        'rules' => 'Quy tắc sử dụng',
+        'defenders' => 'Defender sử dụng',
+        'buttons' => [
+            'validate_button' => 'Xác minh',
+            'validate_bulk_button' => 'Xác minh các mục đã chọn',
+        ],
+    ],
 ];
