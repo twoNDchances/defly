@@ -32,6 +32,11 @@ func NewProxy() {
 			Level: utilities.StringToInteger(environments.ProxyViolationLevel.Value()),
 		},
 		BackendUrl: environments.ProxyBackendUrl.Value().String(),
+		Trusted: config.Trusted{
+			Enable: environments.ProxyTrustedEnable.Value(),
+			List:   environments.ProxyTrustedList.Value(),
+		},
+		PreserveHost: environments.ProxyPreserveHost.Value(),
 	}
 	if err := proxy.Boot(); err != nil {
 		panic(utilities.Danger(err.Error()))

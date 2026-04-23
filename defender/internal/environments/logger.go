@@ -45,5 +45,5 @@ var (
 			_, err := utilities.CreateFileIfNotExists(s)
 			return err == nil
 		}).
-		Required(ferrite.RelevantIf(ServerLoggerFileEnable))
+		Required(ferrite.RelevantIf(ProxyLoggerFileEnable))
 )

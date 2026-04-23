@@ -1,7 +1,9 @@
 package environments
 
 import (
+	"net"
 	"strconv"
+	"strings"
 
 	"github.com/dogmatiq/ferrite"
 )
@@ -33,6 +35,40 @@ var (
 	ProxyPort = ferrite.NetworkPort("PROXY_PORT", "Port number for Defly Defender Proxy").
 			WithDefault("9948").
 			Required()
+
+	ProxyTrustedEnable = ferrite.Bool("PROXY_TRUSTED_ENABLE", "Enable/Disable trusted proxies").
+				WithDefault(false).
+				Required()
+
+	ProxyTrustedList = ferrite.String("PROXY_TRUSTED_LIST", "Comma-separated list of trusted proxy IPs or CIDRs").
+				WithExample("127.0.0.1,10.0.0.0/8,192.168.1.0/24", "local proxy and private networks").
+				WithConstraint(
+			"Must be a comma-separated list of valid IP addresses or CIDR blocks",
+			func(v string) bool {
+				if strings.TrimSpace(v) == "" {
+					return false
+				}
+				for part := range strings.SplitSeq(v, ",") {
+					part = strings.TrimSpace(part)
+					if part == "" {
+						return false
+					}
+					if ip := net.ParseIP(part); ip != nil {
+						continue
+					}
+					if _, _, err := net.ParseCIDR(part); err == nil {
+						continue
+					}
+					return false
+				}
+				return true
+			},
+		).
+		Required(ferrite.RelevantIf(ProxyTrustedEnable))
+
+	ProxyPreserveHost = ferrite.Bool("PROXY_PRESERVE_HOST", "Preserve original Host header when forwarding request to backend").
+				WithDefault(true).
+				Required()
 
 	ProxySeverityInfo = ferrite.String("PROXY_SEVERITY_INFO", "Assign a score to the severity level of the Info").
 				WithConstraint("Validate in range", severityScore).
@@ -80,6 +116,6 @@ var (
 				Required()
 
 	ProxyBackendUrl = ferrite.URL("PROXY_BACKEND_URL", "Backend URL").
-				WithDefault("http://localhost").
-				Required()
+			WithDefault("http://localhost").
+			Required()
 )
