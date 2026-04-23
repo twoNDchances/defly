@@ -20,6 +20,9 @@ class DatabaseSeeder extends Seeder
             PermissionSeeder::class,
             GroupSeeder::class,
             PatternSeeder::class,
+            ActionSeeder::class,
+            EngineSeeder::class,
+            TargetSeeder::class,
         ]);
     }
 }

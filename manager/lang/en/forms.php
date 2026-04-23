@@ -333,4 +333,33 @@ return [
             ],
         ],
     ],
+    'policy' => [
+        'text_examples' => [
+            'name' => 'policy',
+            'level' => '1',
+        ],
+        'descriptions' => [
+            'name' => 'A unique kebab-case name for this policy',
+            'level' => 'Violation level this policy belongs to. The policy is skipped if this value is higher than the violation level configured in Defender',
+            'phase' => 'Phase where the policy will be executed',
+            'validation_status' => 'Status that decides whether the policy can be applied to Defender',
+            'validation_details' => 'Detailed validation results so you can identify policy errors',
+        ],
+        'tabs' => [
+            'a' => [
+                'title' => 'Policy definition',
+            ],
+            'b' => [
+                'title' => 'Policy status',
+            ],
+        ],
+        'extras' => [
+            'validation_status' => [
+                'pending' => 'Waiting for validation',
+                'validating' => 'Validating all requirements before apply',
+                'failed' => 'Validation failed, not ready to apply',
+                'passed' => 'Validation passed, ready to apply',
+            ],
+        ],
+    ],
 ];

@@ -39,4 +39,12 @@ return [
         'actions' => 'Actions in use',
         'policies' => 'Policies in use',
     ],
+    'policy' => [
+        'rules' => 'Rules in use',
+        'defenders' => 'Defenders in use',
+        'buttons' => [
+            'validate_button' => 'Validate',
+            'validate_bulk_button' => 'Validate selected items',
+        ],
+    ],
 ];

@@ -182,7 +182,6 @@ return [
                 'score_behavior' => 'Behavior',
                 'score_value' => 'Value',
                 'level_behevior' => 'Behavior',
-                'level_behavior' => 'Behavior',
                 'level_value' => 'Value',
             ],
             'key' => 'Key',
@@ -238,6 +237,24 @@ return [
                 'number_value' => 'Number value',
                 'number_from_value' => 'Number from value',
                 'number_to_value' => 'Number to value',
+            ],
+        ],
+    ],
+    'policy' => [
+        'name' => 'Policy',
+        'fields' => [
+            'name' => 'Name',
+            'level' => 'Execution level',
+            'phase' => 'Execution phase',
+            'validation_status' => 'Validation status',
+            'validation_details' => 'Validation details',
+        ],
+        'extras' => [
+            'validation_status' => [
+                'pending' => 'Pending',
+                'validating' => 'Validating',
+                'failed' => 'Failed',
+                'passed' => 'Passed',
             ],
         ],
     ],

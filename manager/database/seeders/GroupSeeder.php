@@ -15,6 +15,10 @@ class GroupSeeder extends Seeder
      */
     public function run(): void
     {
+        if (Group::where('name', 'manager')->exists()) {
+            return;
+        }
+
         $permissions = Permission::get()->all();
         $allPermissionIds = [];
         foreach ($permissions as $permission) {

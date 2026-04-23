@@ -13,6 +13,10 @@ class LabelSeeder extends Seeder
      */
     public function run(): void
     {
+        if (Label::where('name', config('customization.backend.default_label'))->exists()) {
+            return;
+        }
+
         $email = config('customization.backend.default_credentials.user_email');
         $user = User::where('email', $email)->first();
         $label = Label::firstOrCreate(
