@@ -17,8 +17,8 @@ import (
 )
 
 const (
-	defaultCertOutput = "tls.crt"
-	defaultKeyOutput  = "tls.key"
+	defaultCertOutput = "resources/tls/tls.crt"
+	defaultKeyOutput  = "resources/tls/tls.key"
 	defaultHosts      = "localhost,127.0.0.1"
 	defaultValidDays  = 365
 	defaultKeySize    = 2048

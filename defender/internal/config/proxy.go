@@ -84,7 +84,10 @@ func (p Proxy) Boot() error {
 
 	p.Absorber.Recover(proxy)
 
-	file := p.Logger.Boot(proxy)
+	file, err := p.Logger.Boot(proxy)
+	if err != nil {
+		return err
+	}
 	if file != nil {
 		defer file.Close()
 	}

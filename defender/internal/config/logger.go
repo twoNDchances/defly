@@ -113,7 +113,7 @@ func (f loggerFormatter) needsFormValues() bool {
 	return f.features.needsFormValues
 }
 
-func (l Logger) Boot(application *gin.Engine) *os.File {
+func (l Logger) Boot(application *gin.Engine) (*os.File, error) {
 	location := time.Local
 	if l.Timezone != "" {
 		parsedLocation, err := time.LoadLocation(l.Timezone)
@@ -126,10 +126,11 @@ func (l Logger) Boot(application *gin.Engine) *os.File {
 	var file *os.File
 	if l.File {
 		createdFile, err := utilities.CreateFileIfNotExists(l.Path)
-		if err == nil {
-			file = createdFile
-			writers = append(writers, createdFile)
+		if err != nil {
+			return nil, fmt.Errorf("failed to open log file %s: %w", l.Path, err)
 		}
+		file = createdFile
+		writers = append(writers, createdFile)
 	}
 	stream := io.MultiWriter(writers...)
 
@@ -189,7 +190,7 @@ func (l Logger) Boot(application *gin.Engine) *os.File {
 		_, _ = stream.Write([]byte(logLine))
 	})
 
-	return file
+	return file, nil
 }
 
 func (f loggerFormatter) render(ctx *gin.Context, record loggerRecord) string {

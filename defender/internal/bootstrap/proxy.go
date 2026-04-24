@@ -7,17 +7,30 @@ import (
 )
 
 func NewProxy() {
+	proxyTrustedEnable := environments.ProxyTrustedEnable.Value()
+	proxyTrusted := config.Trusted{
+		Enable: proxyTrustedEnable,
+	}
+	if proxyTrustedEnable {
+		proxyTrusted.List = environments.ProxyTrustedList.Value()
+	}
+
+	proxyLoggerFileEnable := environments.ProxyLoggerFileEnable.Value()
+	proxyLogger := config.Logger{
+		From:     "PROXY",
+		Format:   environments.ProxyLoggerFormat.Value(),
+		Timezone: environments.ProxyLoggerTimezone.Value(),
+		File:     proxyLoggerFileEnable,
+	}
+	if proxyLoggerFileEnable {
+		proxyLogger.Path = environments.ProxyLoggerFilePath.Value()
+	}
+
 	proxy := config.Proxy{
 		Address: config.Address{
 			Port: environments.ProxyPort.Value(),
 		},
-		Logger: config.Logger{
-			From:     "PROXY",
-			Format:   environments.ProxyLoggerFormat.Value(),
-			Timezone: environments.ProxyLoggerTimezone.Value(),
-			File:     environments.ProxyLoggerFileEnable.Value(),
-			Path:     environments.ProxyLoggerFilePath.Value(),
-		},
+		Logger: proxyLogger,
 		Severity: config.Severity{
 			Info:      utilities.StringToInteger(environments.ProxySeverityInfo.Value()),
 			Notice:    utilities.StringToInteger(environments.ProxySeverityNotice.Value()),
@@ -31,11 +44,8 @@ func NewProxy() {
 			Score: utilities.StringToInteger(environments.ProxyViolationScore.Value()),
 			Level: utilities.StringToInteger(environments.ProxyViolationLevel.Value()),
 		},
-		BackendUrl: environments.ProxyBackendUrl.Value().String(),
-		Trusted: config.Trusted{
-			Enable: environments.ProxyTrustedEnable.Value(),
-			List:   environments.ProxyTrustedList.Value(),
-		},
+		BackendUrl:   environments.ProxyBackendUrl.Value().String(),
+		Trusted:      proxyTrusted,
 		PreserveHost: environments.ProxyPreserveHost.Value(),
 	}
 	if err := proxy.Boot(); err != nil {

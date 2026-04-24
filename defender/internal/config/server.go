@@ -21,7 +21,10 @@ func (s Server) Boot() error {
 
 	s.Absorber.Recover(server)
 
-	file := s.Logger.Boot(server)
+	file, err := s.Logger.Boot(server)
+	if err != nil {
+		return err
+	}
 	if file != nil {
 		defer file.Close()
 	}

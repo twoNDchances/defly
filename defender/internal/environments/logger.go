@@ -1,10 +1,6 @@
 package environments
 
-import (
-	"defly-defender/internal/utilities"
-
-	"github.com/dogmatiq/ferrite"
-)
+import "github.com/dogmatiq/ferrite"
 
 var (
 	ServerLoggerFormat = ferrite.String("SERVER_LOGGER_FORMAT", "Logging format for Defly Defender Server with custom %tag% template compatible with Fiber logger tags. References: https://docs.gofiber.io/middleware/logger/").
@@ -21,11 +17,7 @@ var (
 
 	ServerLoggerFilePath = ferrite.String("SERVER_LOGGER_FILE_PATH", "A path where logs of Defly Defender Server stored").
 				WithDefault("resources/logs/server.log").
-				WithConstraint("Auto create log file, continue if success", func(s string) bool {
-			_, err := utilities.CreateFileIfNotExists(s)
-			return err == nil
-		}).
-		Required(ferrite.RelevantIf(ServerLoggerFileEnable))
+				Required(ferrite.RelevantIf(ServerLoggerFileEnable))
 
 	ProxyLoggerFormat = ferrite.String("PROXY_LOGGER_FORMAT", "Logging format for Defly Defender Proxy with custom %tag% template compatible with Fiber logger tags. References: https://docs.gofiber.io/middleware/logger/").
 				WithDefault("[%time%] {%from%}: %status% %ip% %method% %path% %bytesSent% %bytesReceived% %error%").
@@ -41,9 +33,5 @@ var (
 
 	ProxyLoggerFilePath = ferrite.String("PROXY_LOGGER_FILE_PATH", "A path where logs of Defly Defender Proxy stored").
 				WithDefault("resources/logs/proxy.log").
-				WithConstraint("Auto create log file, continue if success", func(s string) bool {
-			_, err := utilities.CreateFileIfNotExists(s)
-			return err == nil
-		}).
-		Required(ferrite.RelevantIf(ProxyLoggerFileEnable))
+				Required(ferrite.RelevantIf(ProxyLoggerFileEnable))
 )
