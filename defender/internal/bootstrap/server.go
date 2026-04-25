@@ -18,6 +18,27 @@ func NewServer() error {
 		serverTls.Key = envserver.ServerHTTPSKey.Value()
 	}
 
+	if err := envserver.ValidatePathsAndMethods(); err != nil {
+		return err
+	}
+
+	serverController := config.Controller{
+		Path: config.Path{
+			Prefix:    envserver.ServerPathPrefix.Value(),
+			State:     envserver.ServerPathState.Value(),
+			Policies:  envserver.ServerPathPolicies.Value(),
+			Decisions: envserver.ServerPathDecisions.Value(),
+		},
+		Method: config.Method{
+			Check:     envserver.ServerMethodCheck.Value(),
+			Inspect:   envserver.ServerMethodInspect.Value(),
+			Apply:     envserver.ServerMethodApply.Value(),
+			Revoke:    envserver.ServerMethodRevoke.Value(),
+			Implement: envserver.ServerMethodImplement.Value(),
+			Suspend:   envserver.ServerMethodSuspend.Value(),
+		},
+	}
+
 	serverLoggerFileEnable := envlogger.ServerLoggerFileEnable.Value()
 	serverLogger := config.Logger{
 		From:     from,
@@ -43,9 +64,10 @@ func NewServer() error {
 		Address: config.Address{
 			Port: envserver.ServerPort.Value(),
 		},
-		Tls:    serverTls,
-		Logger: serverLogger,
-		Error:  serverError,
+		Tls:        serverTls,
+		Logger:     serverLogger,
+		Controller: serverController,
+		Error:      serverError,
 	}
 	if err := server.Boot(); err != nil {
 		return err

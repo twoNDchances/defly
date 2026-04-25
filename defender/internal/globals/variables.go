@@ -3,5 +3,5 @@ package globals
 import "sync"
 
 var (
-	Pauser = sync.RWMutex{}
+	Pauser = &sync.RWMutex{}
 )

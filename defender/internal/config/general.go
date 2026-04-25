@@ -29,19 +29,6 @@ func (l Locker) Lock(application *gin.Engine) {
 	})
 }
 
-type Tls struct {
-	Enable      bool
-	Certificate string
-	Key         string
-}
-
-func (t Tls) Listen(application *gin.Engine, address string) error {
-	if t.Enable {
-		return application.RunTLS(address, t.Certificate, t.Key)
-	}
-	return application.Run(address)
-}
-
 type Error struct {
 	From          string
 	Label         string
