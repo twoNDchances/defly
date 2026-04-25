@@ -20,7 +20,7 @@ class TargetTable
             self::getEngines(),
             self::getRules(),
             self::getLabels(),
-            self::getLocked(),
+            self::getIsLocked(),
             self::getCreatedBy(),
             self::getCreatedAt(),
             self::getUpdatedAt(),

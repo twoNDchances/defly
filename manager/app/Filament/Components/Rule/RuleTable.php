@@ -19,7 +19,7 @@ class RuleTable
             self::getActions(),
             self::getPolicies(),
             self::getLabels(),
-            self::getLocked(),
+            self::getIsLocked(),
             self::getCreatedBy(),
             self::getCreatedAt(),
             self::getUpdatedAt(),

@@ -72,4 +72,9 @@ class Label extends Model
     {
         return $this->morphedByMany(Policy::class, 'resource', 'labels_resources', 'label', 'resource_id');
     }
+
+    public function decisions()
+    {
+        return $this->morphedByMany(Decision::class, 'resource', 'labels_resources', 'label', 'resource_id');
+    }
 }

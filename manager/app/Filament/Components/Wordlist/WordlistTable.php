@@ -15,7 +15,7 @@ class WordlistTable
             self::getType(),
             self::getWordCount(),
             self::getLabels(),
-            self::getLocked(),
+            self::getIsLocked(),
             self::getCreatedBy(),
             self::getCreatedAt(),
             self::getUpdatedAt(),

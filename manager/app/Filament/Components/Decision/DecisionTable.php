@@ -1,21 +1,21 @@
 <?php
 
-namespace App\Filament\Components\Policy;
+namespace App\Filament\Components\Decision;
 
-use App\Traits\Filament\Specifics\Policy\PolicyColumn;
+use App\Traits\Filament\Specifics\Decision\DecisionColumn;
 
-class PolicyTable
+class DecisionTable
 {
-    use PolicyColumn;
+    use DecisionColumn;
 
     public static function build()
     {
         return [
             self::getName(),
-            self::getLevel(),
-            self::getPhase(),
-            self::getValidationStatus(),
-            self::getRules(),
+            self::getDirection(),
+            self::getCondition(),
+            self::getScore(),
+            self::getAction(),
             self::getLabels(),
             self::getIsLocked(),
             self::getCreatedBy(),

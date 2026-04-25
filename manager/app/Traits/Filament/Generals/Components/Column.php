@@ -52,7 +52,7 @@ trait Column
             ->badge();
     }
 
-    public static function getLocked()
+    public static function getIsLocked()
     {
         return self::booleanColumn('is_locked', __('models.generals.specials.is_locked'));
     }

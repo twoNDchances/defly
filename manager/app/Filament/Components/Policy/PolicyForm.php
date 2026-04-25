@@ -41,15 +41,11 @@ class PolicyForm
                     ]),
                 ]),
 
-                Grid::make(1)
+                Section::make(__('forms.generals.bases.sections.labels.title'))
                     ->columnSpan(1)
+                    ->columns(1)
                     ->schema([
-                        Section::make(__('forms.generals.bases.sections.labels.title'))
-                            ->columnSpan(1)
-                            ->columns(1)
-                            ->schema([
-                                self::setLabels(),
-                            ]),
+                        self::setLabels(),
                     ]),
             ]),
         ];
