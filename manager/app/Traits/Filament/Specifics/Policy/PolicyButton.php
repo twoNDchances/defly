@@ -23,8 +23,8 @@ trait PolicyButton
                 PolicyValidation::dispatch($record->id);
             },
         )
-        ->authorize('validate')
-        ->color('cyan');
+            ->authorize('validate')
+            ->color('cyan');
     }
 
     public static function validateBulkButton()
@@ -41,8 +41,8 @@ trait PolicyButton
                 }
             }
         )
-        ->authorize('validateAny')
-        ->color('cyan');
+            ->authorize('validateAny')
+            ->color('cyan');
     }
 
     public static function deleteUnlockedBulkButton()

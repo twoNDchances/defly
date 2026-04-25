@@ -783,6 +783,7 @@ class PolicyValidation implements ShouldQueue
                             'word_json item must be object with key "word".',
                             ['wordlist_id' => $wordlist->id, 'index' => $index]
                         );
+
                         continue;
                     }
 
@@ -1155,6 +1156,7 @@ class PolicyValidation implements ShouldQueue
                         'Setter set execution requires value.',
                         ['path' => '$.execution['.$index.'].value']
                     );
+
                     continue;
                 }
 

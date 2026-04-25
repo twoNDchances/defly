@@ -15,7 +15,7 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->string('name')->unique()->index();
             $table->enum('direction', ['request', 'response']);
-            $table->enum('condition', ['<=' , '<', '=', '>=', '>']);
+            $table->enum('condition', ['<=', '<', '=', '>=', '>']);
             $table->float('score');
             $table->enum('action', ['allow', 'deny', 'rewrite_headers', 'rewrite_body', 'redirect', 'cancel', 'rewrite', 'save', 'erase_cookies', 'force_no_cache']);
             $table->json('configurations')->nullable();

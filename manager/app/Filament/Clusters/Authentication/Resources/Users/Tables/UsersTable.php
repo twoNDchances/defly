@@ -3,7 +3,6 @@
 namespace App\Filament\Clusters\Authentication\Resources\Users\Tables;
 
 use App\Filament\Components\User\UserTable;
-use App\Models\User;
 use App\Services\Identification;
 use Filament\Tables\Table;
 
