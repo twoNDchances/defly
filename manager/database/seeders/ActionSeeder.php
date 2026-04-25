@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Enums\Action\Type;
 use App\Models\Action;
 use App\Models\Label;
+use App\Models\User;
 use Illuminate\Database\Seeder;
 
 class ActionSeeder extends Seeder
@@ -19,6 +20,8 @@ class ActionSeeder extends Seeder
         }
 
         $label = Label::where('name', config('customization.backend.default_label'))->first();
+        $email = config('customization.backend.default_credentials.user_email');
+        $user = User::where('email', $email)->first();
 
         $actions = [
             [
@@ -36,6 +39,8 @@ class ActionSeeder extends Seeder
         ];
 
         foreach ($actions as $action) {
+            $action['created_by'] = $user->id;
+
             $record = Action::firstOrCreate(['name' => $action['name']], $action);
 
             if ($label) {

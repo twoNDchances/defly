@@ -6,6 +6,7 @@ use App\Enums\Type;
 use App\Models\Label;
 use App\Models\Pattern;
 use App\Models\Target;
+use App\Models\User;
 use Illuminate\Database\Seeder;
 
 class TargetSeeder extends Seeder
@@ -20,6 +21,8 @@ class TargetSeeder extends Seeder
         }
 
         $label = Label::where('name', config('customization.backend.default_label'))->first();
+        $email = config('customization.backend.default_credentials.user_email');
+        $user = User::where('email', $email)->first();
 
         $patterns = Pattern::query()
             ->whereIn('type', [Type::Full->value, Type::Meta->value])
@@ -35,6 +38,7 @@ class TargetSeeder extends Seeder
                     'description' => "Eng: Target created from pattern '{$pattern->name}'.\nVie: Target được tạo từ pattern '{$pattern->name}'.",
                     'pattern_id' => $pattern->id,
                     'wordlist_id' => null,
+                    'created_by' => $user->id,
                 ],
             );
 

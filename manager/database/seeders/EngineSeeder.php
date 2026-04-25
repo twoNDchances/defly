@@ -6,6 +6,7 @@ use App\Enums\Datatype;
 use App\Enums\Engine\Type;
 use App\Models\Engine;
 use App\Models\Label;
+use App\Models\User;
 use Illuminate\Database\Seeder;
 
 class EngineSeeder extends Seeder
@@ -20,6 +21,8 @@ class EngineSeeder extends Seeder
         }
 
         $label = Label::where('name', config('customization.backend.default_label'))->first();
+        $email = config('customization.backend.default_credentials.user_email');
+        $user = User::where('email', $email)->first();
 
         $engines = [
             [
@@ -97,6 +100,8 @@ class EngineSeeder extends Seeder
         ];
 
         foreach ($engines as $engine) {
+            $engine['created_by'] = $user->id;
+
             $record = Engine::firstOrCreate(['name' => $engine['name']], $engine);
 
             if ($label) {

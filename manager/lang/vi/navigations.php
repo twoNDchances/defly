@@ -9,7 +9,7 @@ return [
     'clusters' => [
         'authentication' => 'Xác thực',
         'access_control' => 'Kiểm soát truy cập',
-        'context' => 'Bối cảnh',
+        'context' => 'Ngữ cảnh',
         'initialization' => 'Khởi tạo',
     ],
 ];
