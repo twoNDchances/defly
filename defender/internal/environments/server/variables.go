@@ -1,4 +1,4 @@
-package environments
+package server
 
 import "github.com/dogmatiq/ferrite"
 
@@ -13,9 +13,11 @@ var (
 
 	ServerHTTPSCert = ferrite.String("SERVER_HTTPS_CERT", "Path to TLS certificate file").
 			WithDefault("resources/tls/tls.crt").
+			WithConstraint("Must be a valid TLS certificate file path", validateTLSFilePath).
 			Required(ferrite.RelevantIf(ServerHTTPSEnable))
 
 	ServerHTTPSKey = ferrite.String("SERVER_HTTPS_KEY", "Path to TLS key file").
 			WithDefault("resources/tls/tls.key").
+			WithConstraint("Must be a valid TLS key file path", validateTLSFilePath).
 			Required(ferrite.RelevantIf(ServerHTTPSEnable))
 )

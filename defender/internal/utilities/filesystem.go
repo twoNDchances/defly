@@ -3,11 +3,51 @@ package utilities
 import (
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 func PathExists(path string) bool {
 	_, err := os.Stat(path)
 	return !os.IsNotExist(err)
+}
+
+func IsCreatableFilePath(path string) bool {
+	path, ok := cleanPath(path)
+	if !ok {
+		return false
+	}
+
+	info, err := os.Stat(path)
+	if err == nil {
+		return !info.IsDir()
+	}
+	if !os.IsNotExist(err) {
+		return false
+	}
+
+	return IsCreatableDirectoryPath(filepath.Dir(path))
+}
+
+func IsCreatableDirectoryPath(path string) bool {
+	path, ok := cleanPath(path)
+	if !ok {
+		return false
+	}
+
+	info, err := os.Stat(path)
+	if err == nil {
+		return info.IsDir()
+	}
+	if !os.IsNotExist(err) {
+		return false
+	}
+
+	parent := filepath.Dir(path)
+	if parent == path {
+		return false
+	}
+
+	return IsCreatableDirectoryPath(parent)
 }
 
 func CreateFileIfNotExists(path string) (*os.File, error) {
@@ -31,4 +71,13 @@ func CreateFileIfNotExists(path string) (*os.File, error) {
 	}
 
 	return file, nil
+}
+
+func cleanPath(path string) (string, bool) {
+	path = strings.TrimSpace(path)
+	if path == "" {
+		return "", false
+	}
+
+	return filepath.Clean(path), true
 }

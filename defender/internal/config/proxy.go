@@ -77,6 +77,7 @@ type Proxy struct {
 	BackendUrl   string
 	Trusted      Trusted
 	PreserveHost bool
+	Error        Error
 }
 
 func (p Proxy) Boot() error {
@@ -84,9 +85,17 @@ func (p Proxy) Boot() error {
 
 	p.Absorber.Recover(proxy)
 
+	errorFile, err := p.Error.Boot()
+	if err != nil {
+		return fmt.Errorf("%s", p.Error.Format(err.Error()))
+	}
+	if errorFile != nil {
+		defer errorFile.Close()
+	}
+
 	file, err := p.Logger.Boot(proxy)
 	if err != nil {
-		return err
+		return p.Error.LogError(err)
 	}
 	if file != nil {
 		defer file.Close()
@@ -96,7 +105,7 @@ func (p Proxy) Boot() error {
 
 	target, err := url.Parse(p.BackendUrl)
 	if err != nil {
-		return err
+		return p.Error.LogError(err)
 	}
 
 	reverseProxy := &httputil.ReverseProxy{
@@ -118,11 +127,11 @@ func (p Proxy) Boot() error {
 	}
 
 	if err := p.Trusted.Trust(proxy); err != nil {
-		return err
+		return p.Error.LogError(err)
 	}
 
 	proxy.Any("/*proxyPath", gin.WrapH(reverseProxy))
 
 	log.Println(utilities.Infof("Defender proxy is running at http://0.0.0.0:%s", p.Address.Port))
-	return proxy.Run(fmt.Sprintf(":%s", p.Address.Port))
+	return p.Error.LogError(proxy.Run(fmt.Sprintf(":%s", p.Address.Port)))
 }

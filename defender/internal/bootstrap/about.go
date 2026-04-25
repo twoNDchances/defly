@@ -2,27 +2,28 @@ package bootstrap
 
 import (
 	"defly-defender/internal/config"
-	"defly-defender/internal/environments"
+	envcommon "defly-defender/internal/environments/common"
 
 	"github.com/spf13/viper"
 )
 
-func NewAbout() {
-	if !environments.AboutBannerEnable.Value() {
-		return
+func NewAbout() error {
+	if !envcommon.AboutBannerEnable.Value() {
+		return nil
 	}
 
 	viper.SetConfigFile("configs/about.yaml")
 
 	if err := viper.ReadInConfig(); err != nil {
-		panic(err)
+		return err
 	}
 
 	var about config.About
 	if err := viper.Unmarshal(&about); err != nil {
-		panic(err)
+		return err
 	}
 
 	about.PrintBanner()
 	about.PrintDetail()
+	return nil
 }

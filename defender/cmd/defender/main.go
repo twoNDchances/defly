@@ -13,13 +13,16 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func createApplication(ctx context.Context, applicationBooter func()) {
+func createApplication(ctx context.Context, cancel context.CancelFunc, applicationBooter func() error) {
 	for {
 		select {
 		case <-ctx.Done():
 			return
 		default:
-			applicationBooter()
+			if err := applicationBooter(); err != nil {
+				log.Println(err)
+				cancel()
+			}
 		}
 	}
 }
@@ -30,21 +33,24 @@ func main() {
 	ferrite.Init()
 
 	log.Println(utilities.Info("Booting..."))
-	bootstrap.NewAbout()
+	if err := bootstrap.NewAbout(); err != nil {
+		log.Println(utilities.Dangerf("[compile] %v", err))
+		os.Exit(1)
+	}
 
 	ctx, cancel := context.WithCancel(context.Background())
 
 	signalChannel := make(chan os.Signal, 1)
 	signal.Notify(signalChannel, os.Interrupt, syscall.SIGTERM)
 
-	go func () {
+	go func() {
 		<-signalChannel
 		log.Println(utilities.Info("Received interrupt signal, shutting down..."))
 		cancel()
 	}()
 
-	go createApplication(ctx, bootstrap.NewServer)
-	go createApplication(ctx, bootstrap.NewProxy)
+	go createApplication(ctx, cancel, bootstrap.NewServer)
+	go createApplication(ctx, cancel, bootstrap.NewProxy)
 
 	<-ctx.Done()
 	log.Println(utilities.Info("All applications stopped. Good bye"))

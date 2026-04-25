@@ -2,39 +2,53 @@ package bootstrap
 
 import (
 	"defly-defender/internal/config"
-	"defly-defender/internal/environments"
-	"defly-defender/internal/utilities"
+	envcommon "defly-defender/internal/environments/common"
+	envlogger "defly-defender/internal/environments/logger"
+	envserver "defly-defender/internal/environments/server"
 )
 
-func NewServer() {
-	serverHTTPSEnable := environments.ServerHTTPSEnable.Value()
+func NewServer() error {
+	from := "SERVER"
+	serverHTTPSEnable := envserver.ServerHTTPSEnable.Value()
 	serverTls := config.Tls{
 		Enable: serverHTTPSEnable,
 	}
 	if serverHTTPSEnable {
-		serverTls.Certificate = environments.ServerHTTPSCert.Value()
-		serverTls.Key = environments.ServerHTTPSKey.Value()
+		serverTls.Certificate = envserver.ServerHTTPSCert.Value()
+		serverTls.Key = envserver.ServerHTTPSKey.Value()
 	}
 
-	serverLoggerFileEnable := environments.ServerLoggerFileEnable.Value()
+	serverLoggerFileEnable := envlogger.ServerLoggerFileEnable.Value()
 	serverLogger := config.Logger{
-		From:     "SERVER",
-		Format:   environments.ServerLoggerFormat.Value(),
-		Timezone: environments.ServerLoggerTimezone.Value(),
+		From:     from,
+		Format:   envlogger.ServerLoggerFormat.Value(),
+		Timezone: envlogger.ServerLoggerTimezone.Value(),
 		File:     serverLoggerFileEnable,
 	}
 	if serverLoggerFileEnable {
-		serverLogger.Path = environments.ServerLoggerFilePath.Value()
+		serverLogger.Path = envlogger.ServerLoggerFilePath.Value()
+	}
+
+	errorFileEnable := envcommon.ErrorFileEnable.Value()
+	serverError := config.Error{
+		From:       from,
+		Label:      "runtime",
+		FileEnable: errorFileEnable,
+	}
+	if errorFileEnable {
+		serverError.DirectoryPath = envcommon.ErrorDirectoryPath.Value()
 	}
 
 	server := config.Server{
 		Address: config.Address{
-			Port: environments.ServerPort.Value(),
+			Port: envserver.ServerPort.Value(),
 		},
 		Tls:    serverTls,
 		Logger: serverLogger,
+		Error:  serverError,
 	}
 	if err := server.Boot(); err != nil {
-		panic(utilities.Danger(err.Error()))
+		return err
 	}
+	return nil
 }

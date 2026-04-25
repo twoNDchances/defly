@@ -14,6 +14,7 @@ type Server struct {
 	Tls      Tls
 	Logger   Logger
 	Locker   Locker
+	Error    Error
 }
 
 func (s Server) Boot() error {
@@ -21,9 +22,17 @@ func (s Server) Boot() error {
 
 	s.Absorber.Recover(server)
 
+	errorFile, err := s.Error.Boot()
+	if err != nil {
+		return fmt.Errorf("%s", s.Error.Format(err.Error()))
+	}
+	if errorFile != nil {
+		defer errorFile.Close()
+	}
+
 	file, err := s.Logger.Boot(server)
 	if err != nil {
-		return err
+		return s.Error.LogError(err)
 	}
 	if file != nil {
 		defer file.Close()
@@ -37,5 +46,5 @@ func (s Server) Boot() error {
 	}
 
 	log.Println(utilities.Infof("Defender server is running at %s://0.0.0.0:%s", scheme, s.Address.Port))
-	return s.Tls.Listen(server, fmt.Sprintf(":%s", s.Address.Port))
+	return s.Error.LogError(s.Tls.Listen(server, fmt.Sprintf(":%s", s.Address.Port)))
 }

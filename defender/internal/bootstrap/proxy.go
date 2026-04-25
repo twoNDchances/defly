@@ -2,53 +2,67 @@ package bootstrap
 
 import (
 	"defly-defender/internal/config"
-	"defly-defender/internal/environments"
-	"defly-defender/internal/utilities"
+	envcommon "defly-defender/internal/environments/common"
+	envlogger "defly-defender/internal/environments/logger"
+	envproxy "defly-defender/internal/environments/proxy"
 )
 
-func NewProxy() {
-	proxyTrustedEnable := environments.ProxyTrustedEnable.Value()
+func NewProxy() error {
+	from := "PROXY"
+	proxyTrustedEnable := envproxy.ProxyTrustedEnable.Value()
 	proxyTrusted := config.Trusted{
 		Enable: proxyTrustedEnable,
 	}
 	if proxyTrustedEnable {
-		proxyTrusted.List = environments.ProxyTrustedList.Value()
+		proxyTrusted.List = envproxy.ProxyTrustedList.Value()
 	}
 
-	proxyLoggerFileEnable := environments.ProxyLoggerFileEnable.Value()
+	proxyLoggerFileEnable := envlogger.ProxyLoggerFileEnable.Value()
 	proxyLogger := config.Logger{
-		From:     "PROXY",
-		Format:   environments.ProxyLoggerFormat.Value(),
-		Timezone: environments.ProxyLoggerTimezone.Value(),
+		From:     from,
+		Format:   envlogger.ProxyLoggerFormat.Value(),
+		Timezone: envlogger.ProxyLoggerTimezone.Value(),
 		File:     proxyLoggerFileEnable,
 	}
 	if proxyLoggerFileEnable {
-		proxyLogger.Path = environments.ProxyLoggerFilePath.Value()
+		proxyLogger.Path = envlogger.ProxyLoggerFilePath.Value()
+	}
+
+	errorFileEnable := envcommon.ErrorFileEnable.Value()
+	proxyError := config.Error{
+		From:       from,
+		Label:      "runtime",
+		FileEnable: errorFileEnable,
+	}
+	if errorFileEnable {
+		proxyError.DirectoryPath = envcommon.ErrorDirectoryPath.Value()
 	}
 
 	proxy := config.Proxy{
 		Address: config.Address{
-			Port: environments.ProxyPort.Value(),
+			Port: envproxy.ProxyPort.Value(),
 		},
 		Logger: proxyLogger,
 		Severity: config.Severity{
-			Info:      utilities.StringToInteger(environments.ProxySeverityInfo.Value()),
-			Notice:    utilities.StringToInteger(environments.ProxySeverityNotice.Value()),
-			Warning:   utilities.StringToInteger(environments.ProxySeverityWarning.Value()),
-			Error:     utilities.StringToInteger(environments.ProxySeverityError.Value()),
-			Critical:  utilities.StringToInteger(environments.ProxySeverityCritical.Value()),
-			Alert:     utilities.StringToInteger(environments.ProxySeverityAlert.Value()),
-			Emergency: utilities.StringToInteger(environments.ProxySeverityEmergency.Value()),
+			Info:      envproxy.ProxySeverityInfo.Value(),
+			Notice:    envproxy.ProxySeverityNotice.Value(),
+			Warning:   envproxy.ProxySeverityWarning.Value(),
+			Error:     envproxy.ProxySeverityError.Value(),
+			Critical:  envproxy.ProxySeverityCritical.Value(),
+			Alert:     envproxy.ProxySeverityAlert.Value(),
+			Emergency: envproxy.ProxySeverityEmergency.Value(),
 		},
 		Violation: config.Violation{
-			Score: utilities.StringToInteger(environments.ProxyViolationScore.Value()),
-			Level: utilities.StringToInteger(environments.ProxyViolationLevel.Value()),
+			Score: envproxy.ProxyViolationScore.Value(),
+			Level: envproxy.ProxyViolationLevel.Value(),
 		},
-		BackendUrl:   environments.ProxyBackendUrl.Value().String(),
+		BackendUrl:   envproxy.ProxyBackendUrl.Value().String(),
 		Trusted:      proxyTrusted,
-		PreserveHost: environments.ProxyPreserveHost.Value(),
+		PreserveHost: envproxy.ProxyPreserveHost.Value(),
+		Error:        proxyError,
 	}
 	if err := proxy.Boot(); err != nil {
-		panic(utilities.Danger(err.Error()))
+		return err
 	}
+	return nil
 }
