@@ -18,6 +18,11 @@ func validateStorageFilePath(value string) bool {
 	return utilities.IsCreatableFilePath(value)
 }
 
+func validateSecurityManager(value string) bool {
+	value = strings.TrimSpace(value)
+	return value != "" && !strings.ContainsAny(value, " \t\r\n/\\:")
+}
+
 func validateServerPath(value string) bool {
 	if !serverPathPattern.MatchString(value) {
 		return false
@@ -33,6 +38,7 @@ func validateServerPath(value string) bool {
 func ValidatePathsAndMethods() error {
 	paths := map[string]string{
 		"SERVER_PATH_STATE":     ServerPathState.Value(),
+		"SERVER_PATH_GATE":      ServerPathGate.Value(),
 		"SERVER_PATH_POLICIES":  ServerPathPolicies.Value(),
 		"SERVER_PATH_DECISIONS": ServerPathDecisions.Value(),
 	}
@@ -44,6 +50,10 @@ func ValidatePathsAndMethods() error {
 		ServerPathState.Value(): {
 			"SERVER_METHOD_CHECK":   ServerMethodCheck.Value(),
 			"SERVER_METHOD_INSPECT": ServerMethodInspect.Value(),
+		},
+		ServerPathGate.Value(): {
+			"SERVER_METHOD_LOCK":   ServerMethodLock.Value(),
+			"SERVER_METHOD_UNLOCK": ServerMethodUnlock.Value(),
 		},
 		ServerPathPolicies.Value(): {
 			"SERVER_METHOD_APPLY":  ServerMethodApply.Value(),

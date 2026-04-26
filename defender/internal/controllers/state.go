@@ -7,7 +7,7 @@ import (
 )
 
 type State struct {
-	Policies *[]globals.Policy
+	Policies  *[]globals.Policy
 	Decisions *[]globals.Decision
 }
 
@@ -18,10 +18,14 @@ func (s *State) Check(ctx *gin.Context) {
 }
 
 func (s *State) Inspect(ctx *gin.Context) {
+	globals.Gate.RLock()
+	defer globals.Gate.RUnlock()
+
 	globals.Pauser.RLock()
 	defer globals.Pauser.RUnlock()
+
 	ctx.JSON(200, gin.H{
-		"policies": s.Policies,
+		"policies":  s.Policies,
 		"decisions": s.Decisions,
 	})
 }

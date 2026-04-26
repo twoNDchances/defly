@@ -86,6 +86,46 @@ func TestValidateStorageFilePath(t *testing.T) {
 	}
 }
 
+func TestValidateSecurityManager(t *testing.T) {
+	tests := map[string]struct {
+		value string
+		want  bool
+	}{
+		"host": {
+			value: "manager",
+			want:  true,
+		},
+		"host with port": {
+			value: "manager:8080",
+			want:  false,
+		},
+		"ipv4": {
+			value: "127.0.0.1",
+			want:  true,
+		},
+		"empty": {
+			value: "",
+			want:  false,
+		},
+		"space": {
+			value: "manager host",
+			want:  false,
+		},
+		"url": {
+			value: "https://manager",
+			want:  false,
+		},
+	}
+
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			if got := validateSecurityManager(tt.value); got != tt.want {
+				t.Fatalf("validateSecurityManager(%q) = %t, want %t", tt.value, got, tt.want)
+			}
+		})
+	}
+}
+
 func TestValidateServerPath(t *testing.T) {
 	tests := map[string]struct {
 		value string
@@ -150,6 +190,7 @@ func TestValidateDistinctValues(t *testing.T) {
 		"unique": {
 			values: map[string]string{
 				"SERVER_PATH_STATE":     "state",
+				"SERVER_PATH_GATE":      "gate",
 				"SERVER_PATH_POLICIES":  "policies",
 				"SERVER_PATH_DECISIONS": "decisions",
 			},
@@ -158,7 +199,8 @@ func TestValidateDistinctValues(t *testing.T) {
 		"duplicate": {
 			values: map[string]string{
 				"SERVER_PATH_STATE":     "state",
-				"SERVER_PATH_POLICIES":  "state",
+				"SERVER_PATH_GATE":      "gate",
+				"SERVER_PATH_POLICIES":  "gate",
 				"SERVER_PATH_DECISIONS": "decisions",
 			},
 			wantErr: true,

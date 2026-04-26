@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"log"
+	"net"
 	"os"
 	"strings"
 
@@ -28,9 +29,50 @@ func (t Tls) Listen(application *gin.Engine, address string) error {
 	return application.Run(address)
 }
 
+type Security struct {
+	Manager  string
+	Username string
+	Password string
+}
+
+func (s Security) Secure(server *gin.Engine) error {
+	managerIPs := map[string]bool{}
+	if ip := net.ParseIP(s.Manager); ip != nil {
+		managerIPs[ip.String()] = true
+	} else {
+		addresses, err := net.LookupHost(s.Manager)
+		if err == nil {
+			for _, address := range addresses {
+				managerIPs[address] = true
+			}
+		}
+	}
+
+	server.Use(func(ctx *gin.Context) {
+		clientIP := ctx.ClientIP()
+		host := ctx.Request.Host
+		hostWithoutPort, _, _ := strings.Cut(host, ":")
+
+		if clientIP != s.Manager && !managerIPs[clientIP] && !strings.EqualFold(host, s.Manager) && !strings.EqualFold(hostWithoutPort, s.Manager) {
+			ctx.AbortWithStatusJSON(403, gin.H{
+				"error": "manager is not allowed",
+			})
+			return
+		}
+		ctx.Next()
+	})
+
+	server.Use(gin.BasicAuthForRealm(gin.Accounts{
+		s.Username: s.Password,
+	}, "Defly Defender"))
+
+	return nil
+}
+
 type Path struct {
 	Prefix    string
 	State     string
+	Gate      string
 	Policies  string
 	Decisions string
 }
@@ -38,6 +80,8 @@ type Path struct {
 type Method struct {
 	Check     string
 	Inspect   string
+	Lock      string
+	Unlock    string
 	Apply     string
 	Revoke    string
 	Implement string
@@ -48,6 +92,7 @@ type Controller struct {
 	Path     Path
 	Method   Method
 	State    *controllers.State
+	Gate     *controllers.Gate
 	Policy   *controllers.Policy
 	Decision *controllers.Decision
 }
@@ -65,6 +110,11 @@ func (c Controller) state(group *gin.RouterGroup) {
 	c.register(group, c.Method.Inspect, c.Path.State, c.State.Inspect)
 }
 
+func (c Controller) gate(group *gin.RouterGroup) {
+	c.register(group, c.Method.Lock, c.Path.Gate, c.Gate.Lock)
+	c.register(group, c.Method.Unlock, c.Path.Gate, c.Gate.Unlock)
+}
+
 func (c Controller) policies(group *gin.RouterGroup) {
 	c.register(group, c.Method.Apply, c.Path.Policies, c.Policy.Apply)
 	c.register(group, c.Method.Revoke, c.Path.Policies, c.Policy.Revoke)
@@ -78,6 +128,7 @@ func (c Controller) decisions(group *gin.RouterGroup) {
 func (c Controller) Control(server *gin.Engine) {
 	group := c.prefix(server)
 	c.state(group)
+	c.gate(group)
 	c.policies(group)
 	c.decisions(group)
 }
@@ -285,7 +336,7 @@ type Server struct {
 	Absorber   Absorber
 	Tls        Tls
 	Logger     Logger
-	Locker     Locker
+	Security   Security
 	Controller Controller
 	Storage    Storage
 	Error      Error
@@ -312,6 +363,10 @@ func (s Server) Boot() error {
 		defer file.Close()
 	}
 
+	if err := s.Security.Secure(server); err != nil {
+		return s.Error.LogError(err)
+	}
+
 	storage := &s.Storage
 	if err := storage.Load(); err != nil {
 		return s.Error.LogError(err)
@@ -320,6 +375,7 @@ func (s Server) Boot() error {
 		Policies:  globals.Policies,
 		Decisions: globals.Decisions,
 	}
+	s.Controller.Gate = &controllers.Gate{}
 	s.Controller.Policy = &controllers.Policy{
 		Policies: globals.Policies,
 		Store: PolicyStore{
@@ -333,7 +389,6 @@ func (s Server) Boot() error {
 		},
 	}
 
-	s.Locker.Lock(server)
 	s.Controller.Control(server)
 
 	scheme := "http"

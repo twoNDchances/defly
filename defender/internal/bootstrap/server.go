@@ -26,12 +26,15 @@ func NewServer() error {
 		Path: config.Path{
 			Prefix:    envserver.ServerPathPrefix.Value(),
 			State:     envserver.ServerPathState.Value(),
+			Gate:      envserver.ServerPathGate.Value(),
 			Policies:  envserver.ServerPathPolicies.Value(),
 			Decisions: envserver.ServerPathDecisions.Value(),
 		},
 		Method: config.Method{
 			Check:     envserver.ServerMethodCheck.Value(),
 			Inspect:   envserver.ServerMethodInspect.Value(),
+			Lock:      envserver.ServerMethodLock.Value(),
+			Unlock:    envserver.ServerMethodUnlock.Value(),
 			Apply:     envserver.ServerMethodApply.Value(),
 			Revoke:    envserver.ServerMethodRevoke.Value(),
 			Implement: envserver.ServerMethodImplement.Value(),
@@ -68,12 +71,19 @@ func NewServer() error {
 		serverStorage.Path = envserver.ServerStoragePath.Value()
 	}
 
+	serverSecurity := config.Security{
+		Manager:  envserver.ServerSecurityManager.Value(),
+		Username: envserver.ServerSecurityUsername.Value(),
+		Password: envserver.ServerSecurityPassword.Value(),
+	}
+
 	server := config.Server{
 		Address: config.Address{
 			Port: envserver.ServerPort.Value(),
 		},
 		Tls:        serverTls,
 		Logger:     serverLogger,
+		Security:   serverSecurity,
 		Controller: serverController,
 		Storage:    serverStorage,
 		Error:      serverError,

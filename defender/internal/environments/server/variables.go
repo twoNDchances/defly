@@ -41,6 +41,21 @@ var (
 				WithDefault("post").
 				Required()
 
+	ServerPathGate = ferrite.String("SERVER_CONTROLLER_PATH_GATE", "Path segment for Defender proxy gate routes").
+			WithDefault("gate").
+			WithConstraint("Must be a valid relative URL path without leading/trailing slash or spaces", validateServerPath).
+			Required()
+
+	ServerMethodLock = ferrite.Enum("SERVER_CONTROLLER_METHOD_LOCK", "HTTP method for locking Defender proxy gate").
+				WithMembers("post", "put", "patch", "delete").
+				WithDefault("put").
+				Required()
+
+	ServerMethodUnlock = ferrite.Enum("SERVER_CONTROLLER_METHOD_UNLOCK", "HTTP method for unlocking Defender proxy gate").
+				WithMembers("post", "put", "patch", "delete").
+				WithDefault("delete").
+				Required()
+
 	ServerPathPolicies = ferrite.String("SERVER_CONTROLLER_PATH_POLICIES", "Path segment for Defender Server policy routes").
 				WithDefault("policies").
 				WithConstraint("Must be a valid relative URL path without leading/trailing slash or spaces", validateServerPath).
@@ -80,4 +95,19 @@ var (
 				WithDefault("resources/storage/data.yaml").
 				WithConstraint("Must be a valid writable storage file path", validateStorageFilePath).
 				Required(ferrite.RelevantWhen(ServerStorageType, "file"))
+
+	ServerSecurityManager = ferrite.String("SERVER_SECURITY_MANAGER", "Manager IP address or host allowed to access Defender Server").
+				WithDefault("manager").
+				WithConstraint("Must be a valid manager IP address or host name", validateSecurityManager).
+				Required()
+
+	ServerSecurityUsername = ferrite.String("SERVER_SECURITY_USERNAME", "Username for Defender Server basic authentication").
+				WithMinimumLength(4).
+				WithDefault("defly-defender").
+				Required()
+
+	ServerSecurityPassword = ferrite.String("SERVER_SECURITY_PASSWORD", "Password for Defender Server basic authentication").
+				WithMinimumLength(4).
+				WithDefault("P@55w0rd").
+				Required()
 )

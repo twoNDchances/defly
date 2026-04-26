@@ -1,6 +1,7 @@
 package config
 
 import (
+	"defly-defender/internal/globals"
 	"defly-defender/internal/utilities"
 	"fmt"
 	"log"
@@ -71,7 +72,6 @@ type Proxy struct {
 	Address      Address
 	Absorber     Absorber
 	Logger       Logger
-	Locker       Locker
 	Severity     Severity
 	Violation    Violation
 	BackendUrl   string
@@ -101,7 +101,11 @@ func (p Proxy) Boot() error {
 		defer file.Close()
 	}
 
-	p.Locker.Lock(proxy)
+	proxy.Use(func(ctx *gin.Context) {
+		globals.Gate.RLock()
+		defer globals.Gate.RUnlock()
+		ctx.Next()
+	})
 
 	target, err := url.Parse(p.BackendUrl)
 	if err != nil {

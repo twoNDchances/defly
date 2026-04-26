@@ -21,14 +21,6 @@ func (a Absorber) Recover(application *gin.Engine) {
 	application.Use(gin.Recovery())
 }
 
-type Locker struct{}
-
-func (l Locker) Lock(application *gin.Engine) {
-	application.Use(func(ctx *gin.Context) {
-		ctx.Next()
-	})
-}
-
 type Error struct {
 	From          string
 	Label         string
