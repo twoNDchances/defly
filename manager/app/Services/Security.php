@@ -20,8 +20,11 @@ class Security
         'update' => 'Update',
         'deleteAny' => 'Multi-delete',
         'delete' => 'Delete',
+        'clone' => 'Clone',
         'validate' => 'Validate',
         'validateAny' => 'Multi-validate',
+        'deploy' => 'Deploy',
+        'deployAny' => 'Multi-deploy',
     ];
 
     public static $excludeActionsByModel = [

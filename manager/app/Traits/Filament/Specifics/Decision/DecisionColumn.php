@@ -39,4 +39,9 @@ trait DecisionColumn
         return self::textColumn('action', __('models.decision.fields.action'))
             ->formatStateUsing(fn ($record, $state) => self::actionOptionsPerDirection()[$record->direction->value][$state->value]);
     }
+
+    public static function getDefenders()
+    {
+        return self::relationshipColumn('defenders.name', __('tables.decision.defenders'));
+    }
 }

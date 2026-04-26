@@ -39,4 +39,9 @@ trait PolicyColumn
     {
         return self::relationshipColumn('rules.name', __('tables.policy.rules'));
     }
+
+    public static function getDefenders()
+    {
+        return self::relationshipColumn('defenders.name', __('tables.policy.defenders'));
+    }
 }

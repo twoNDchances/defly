@@ -36,4 +36,11 @@ class Decision extends Model
             'updated_at' => 'datetime',
         ];
     }
+
+    public function defenders()
+    {
+        return $this->belongsToMany(Defender::class, 'defenders_decisions', 'decision', 'defender')
+            ->withPivot('order')
+            ->orderByPivot('order');
+    }
 }

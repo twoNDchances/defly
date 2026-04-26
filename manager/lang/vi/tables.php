@@ -47,4 +47,15 @@ return [
             'validate_bulk_button' => 'Xác minh các mục đã chọn',
         ],
     ],
+    'decision' => [
+        'defenders' => 'Defender sử dụng',
+    ],
+    'defender' => [
+        'policies' => 'Chính sách sử dụng',
+        'decisions' => 'Phán quyết sử dụng',
+        'buttons' => [
+            'deploy_button' => 'Triển khai',
+            'deploy_bulk_button' => 'Triển khai các mục đã chọn',
+        ],
+    ],
 ];

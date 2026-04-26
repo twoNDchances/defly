@@ -54,6 +54,7 @@ trait PolicyField
     public static function setValidationDetails()
     {
         return self::codeEditor('validation_details', __('models.policy.fields.validation_details'), Language::Json)
+            ->helperText(__('forms.policy.descriptions.validation_details'))
             ->formatStateUsing(function ($state) {
                 if ($state === null) {
                     return null;

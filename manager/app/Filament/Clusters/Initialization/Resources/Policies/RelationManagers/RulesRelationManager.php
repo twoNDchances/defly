@@ -4,7 +4,6 @@ namespace App\Filament\Clusters\Initialization\Resources\Policies\RelationManage
 
 use App\Filament\Components\Rule\RuleForm;
 use App\Filament\Components\Rule\RuleTable;
-use App\Services\Lock;
 use App\Traits\Filament\Specifics\Rule\RuleButton;
 use App\Traits\Filament\Specifics\Rule\RuleData;
 use Filament\Resources\RelationManagers\RelationManager;
@@ -35,14 +34,13 @@ class RulesRelationManager extends RelationManager
                 //
             ])
             ->headerActions([
-                self::createButton()->after(fn (Model $record) => Lock::syncByRelationship($record::class, $record->getKey())),
-                self::attachAndLockButton()->recordSelectOptionsQuery(fn ($query) => $query->where('phase', $policyPhase)),
+                self::attachRulesAndLockButton()->recordSelectOptionsQuery(fn ($query) => $query->where('phase', $policyPhase)),
             ])
             ->recordActions([
-                self::buttonGroup(edit: false, delete: false, more: [self::detachAndUnlockButton()]),
+                self::buttonGroup(edit: false, delete: false, more: [self::detachRulesAndUnlockButton()]),
             ])
             ->toolbarActions([
-                self::bulkButtonGroup(false, [self::detachAndUnlockBulkButton()]),
+                self::bulkButtonGroup(false, [self::detachRulesAndUnlockBulkButton()]),
             ])
             ->reorderable('order');
     }

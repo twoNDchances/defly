@@ -3,6 +3,8 @@
 namespace App\Services;
 
 use App\Models\Action;
+use App\Models\Decision;
+use App\Models\Defender;
 use App\Models\Engine;
 use App\Models\Policy;
 use App\Models\Rule;
@@ -50,7 +52,10 @@ class Lock
             ['type' => 'table', 'table' => 'targets_engines', 'foreign_key' => 'engine'],
         ],
         Policy::class => [
-            ['type' => 'table', 'table' => 'policies_rules', 'foreign_key' => 'policy'],
+            ['type' => 'table', 'table' => 'defenders_policies', 'foreign_key' => 'policy'],
+        ],
+        Decision::class => [
+            ['type' => 'table', 'table' => 'defenders_decisions', 'foreign_key' => 'decision'],
         ],
     ];
 
@@ -67,6 +72,10 @@ class Lock
         ],
         Policy::class => [
             ['table' => 'policies_rules', 'self_key' => 'policy', 'related_model' => Rule::class, 'related_key' => 'rule'],
+        ],
+        Defender::class => [
+            ['table' => 'defenders_policies', 'self_key' => 'defender', 'related_model' => Policy::class, 'related_key' => 'policy'],
+            ['table' => 'defenders_decisions', 'self_key' => 'defender', 'related_model' => Decision::class, 'related_key' => 'decision'],
         ],
     ];
 

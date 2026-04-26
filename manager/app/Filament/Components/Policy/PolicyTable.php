@@ -16,6 +16,7 @@ class PolicyTable
             self::getPhase(),
             self::getValidationStatus(),
             self::getRules(),
+            self::getDefenders(),
             self::getLabels(),
             self::getIsLocked(),
             self::getCreatedBy(),

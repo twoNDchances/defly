@@ -16,6 +16,7 @@ class DecisionTable
             self::getCondition(),
             self::getScore(),
             self::getAction(),
+            self::getDefenders(),
             self::getLabels(),
             self::getIsLocked(),
             self::getCreatedBy(),

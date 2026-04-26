@@ -330,4 +330,31 @@ return [
             'value' => 'Giá trị',
         ],
     ],
+    'defender' => [
+        'name' => 'Defender',
+        'fields' => [
+            'name' => 'Tên',
+            'status' => 'Trạng thái',
+            'details' => 'Chi tiết',
+            'deployment_status' => 'Trạng thái triển khai',
+            'deployment_details' => 'Chi tiết triển khai',
+        ],
+        'extras' => [
+            'status' => [
+                'normal' => 'Bình thường',
+                'abnormal' => 'Không bình thường',
+            ],
+            'deployment_status' => [
+                'pending' => 'Đang chờ',
+                'deploying' => 'Đang triển khai',
+                'failed' => 'Đã thất bại',
+                'successful' => 'Thành công',
+            ],
+            'common_environment_variables' => 'Biến môi trường chung',
+            'server_environment_variables' => 'Biến môi trường server',
+            'proxy_environment_variables' => 'Biến môi trường proxy',
+            'key' => 'Tên biến',
+            'value' => 'Giá trị biến',
+        ],
+    ],
 ];

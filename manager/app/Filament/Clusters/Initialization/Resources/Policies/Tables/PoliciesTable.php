@@ -17,8 +17,8 @@ class PoliciesTable
             ->recordActions([
                 PolicyTable::buttonGroup(
                     more: [
-                        PolicyTable::validateButton(),
-                        PolicyTable::cloneButton(),
+                        PolicyTable::validatePolicyButton(),
+                        PolicyTable::clonePolicyButton(),
                     ],
                 ),
             ])
@@ -26,7 +26,7 @@ class PoliciesTable
                 PolicyTable::bulkButtonGroup(
                     false,
                     [
-                        PolicyTable::validateBulkButton(),
+                        PolicyTable::validatePolicyBulkButton(),
                         PolicyTable::deleteUnlockedBulkButton(),
                     ],
                 ),

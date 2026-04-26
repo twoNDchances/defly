@@ -7,10 +7,11 @@ use App\Models\Policy;
 use App\Models\User;
 use App\Services\Security;
 use App\Traits\Policies\Basic;
+use App\Traits\Policies\Extra;
 
 class PolicyPolicy
 {
-    use Basic;
+    use Basic, Extra;
 
     public function getModel()
     {

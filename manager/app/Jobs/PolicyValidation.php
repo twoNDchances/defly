@@ -707,5 +707,4 @@ class PolicyValidation implements ShouldQueue
 
         return $type !== null ? ActionType::tryFrom($type)?->value : null;
     }
-
 }

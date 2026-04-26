@@ -431,4 +431,48 @@ return [
             'value' => 'Dùng để lưu trữ nội dung',
         ],
     ],
+    'defender' => [
+        'text_examples' => [
+            'name' => 'defender-1',
+        ],
+        'descriptions' => [
+            'name' => 'Tên duy nhất theo kiểu kebab đại diện defender này',
+            'status' => 'Trạng thái hiện tại của defender sau khi triển khai',
+            'details' => 'Chi tiết trạng thái của defender sau khi triển khai',
+            'deployment_status' => 'Trạng thái triển khai sẽ quyết định defender có thể bắt đầu sử dụng hay không',
+            'deploymnet_details' => 'Chi tiết triển khai, mục đích để bạn nắm được defender đang có lỗi gì',
+        ],
+        'extras' => [
+            'status' => [
+                'normal' => 'Defender được đánh giá là hoạt động ổn định',
+                'abnormal' => 'Defender được đánh giá là hoạt động không ổn định',
+            ],
+            'deployment_status' => [
+                'pending' => 'Trạng thái đang chờ được triển khai',
+                'deploying' => 'Trạng thái đang triển khai',
+                'failed' => 'Trạng thái triển khai đã thất bại, chưa đủ điều kiện sử dụng',
+                'successful' => 'Trạng thái triển khai thành công, đủ điều kiện sử dụng',
+            ],
+            'environment_variables' => [
+
+            ],
+        ],
+        'tabs' => [
+            'a' => [
+                'title' => 'Định nghĩa defender',
+            ],
+            'b' => [
+                'title' => 'Trạng thái defender',
+            ],
+            'c' => [
+                'title' => 'Chung',
+            ],
+            'd' => [
+                'title' => 'Server',
+            ],
+            'e' => [
+                'title' => 'Proxy',
+            ],
+        ],
+    ],
 ];

@@ -41,4 +41,11 @@ class Policy extends Model
             ->withPivot('order')
             ->orderByPivot('order');
     }
+
+    public function defenders()
+    {
+        return $this->belongsToMany(Defender::class, 'defenders_policies', 'policy', 'defender')
+            ->withPivot('order')
+            ->orderByPivot('order');
+    }
 }
