@@ -70,4 +70,14 @@ var (
 				WithMembers("post", "put", "patch", "delete").
 				WithDefault("delete").
 				Required()
+
+	ServerStorageType = ferrite.Enum("SERVER_STORAGE_TYPE", "Storage backend used by Defender Server").
+				WithMembers("file", "memory").
+				WithDefault("file").
+				Required()
+
+	ServerStoragePath = ferrite.String("SERVER_STORAGE_PATH", "Path to Defender Server storage file").
+				WithDefault("resources/storage/data.yaml").
+				WithConstraint("Must be a valid writable storage file path", validateStorageFilePath).
+				Required(ferrite.RelevantWhen(ServerStorageType, "file"))
 )

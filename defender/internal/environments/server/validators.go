@@ -14,6 +14,10 @@ func validateTLSFilePath(value string) bool {
 	return utilities.IsCreatableFilePath(value)
 }
 
+func validateStorageFilePath(value string) bool {
+	return utilities.IsCreatableFilePath(value)
+}
+
 func validateServerPath(value string) bool {
 	if !serverPathPattern.MatchString(value) {
 		return false

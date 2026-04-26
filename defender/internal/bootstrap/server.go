@@ -60,6 +60,14 @@ func NewServer() error {
 		serverError.DirectoryPath = envcommon.ErrorDirectoryPath.Value()
 	}
 
+	serverStorageType := envserver.ServerStorageType.Value()
+	serverStorage := config.Storage{
+		Type: serverStorageType,
+	}
+	if serverStorageType == "file" {
+		serverStorage.Path = envserver.ServerStoragePath.Value()
+	}
+
 	server := config.Server{
 		Address: config.Address{
 			Port: envserver.ServerPort.Value(),
@@ -67,6 +75,7 @@ func NewServer() error {
 		Tls:        serverTls,
 		Logger:     serverLogger,
 		Controller: serverController,
+		Storage:    serverStorage,
 		Error:      serverError,
 	}
 	if err := server.Boot(); err != nil {

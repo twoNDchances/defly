@@ -1,12 +1,18 @@
 package config
 
 import (
-	"defly-defender/internal/utilities"
+	"bytes"
 	"fmt"
 	"log"
+	"os"
 	"strings"
 
+	"defly-defender/internal/controllers"
+	"defly-defender/internal/globals"
+	"defly-defender/internal/utilities"
+
 	"github.com/gin-gonic/gin"
+	"go.yaml.in/yaml/v3"
 )
 
 type Tls struct {
@@ -39,31 +45,34 @@ type Method struct {
 }
 
 type Controller struct {
-	Path   Path
-	Method Method
+	Path     Path
+	Method   Method
+	State    *controllers.State
+	Policy   *controllers.Policy
+	Decision *controllers.Decision
 }
 
 func (c Controller) register(group *gin.RouterGroup, method, path string, handlers ...gin.HandlerFunc) {
 	group.Handle(strings.ToUpper(method), fmt.Sprintf("/%s", path), handlers...)
 }
 
+func (c Controller) prefix(server *gin.Engine) *gin.RouterGroup {
+	return server.Group(fmt.Sprintf("/%s", c.Path.Prefix))
+}
+
 func (c Controller) state(group *gin.RouterGroup) {
-	c.register(group, c.Method.Check, c.Path.State)
-	c.register(group, c.Method.Inspect, c.Path.State)
+	c.register(group, c.Method.Check, c.Path.State, c.State.Check)
+	c.register(group, c.Method.Inspect, c.Path.State, c.State.Inspect)
 }
 
 func (c Controller) policies(group *gin.RouterGroup) {
-	c.register(group, c.Method.Apply, c.Path.Policies)
-	c.register(group, c.Method.Revoke, c.Path.Policies)
+	c.register(group, c.Method.Apply, c.Path.Policies, c.Policy.Apply)
+	c.register(group, c.Method.Revoke, c.Path.Policies, c.Policy.Revoke)
 }
 
 func (c Controller) decisions(group *gin.RouterGroup) {
-	c.register(group, c.Method.Implement, c.Path.Decisions)
-	c.register(group, c.Method.Suspend, c.Path.Decisions)
-}
-
-func (c Controller) prefix(server *gin.Engine) *gin.RouterGroup {
-	return server.Group(fmt.Sprintf("/%s", c.Path.Prefix))
+	c.register(group, c.Method.Implement, c.Path.Decisions, c.Decision.Implement)
+	c.register(group, c.Method.Suspend, c.Path.Decisions, c.Decision.Suspend)
 }
 
 func (c Controller) Control(server *gin.Engine) {
@@ -73,6 +82,204 @@ func (c Controller) Control(server *gin.Engine) {
 	c.decisions(group)
 }
 
+type Data struct {
+	Policies  []globals.Policy   `yaml:"policies"`
+	Decisions []globals.Decision `yaml:"decisions"`
+}
+
+type Storage struct {
+	Type string
+	Path string
+	Data *Data
+}
+
+func (s *Storage) Load() error {
+	if s.Data == nil {
+		s.Data = &Data{}
+	}
+
+	if s.Type == "file" {
+		file, err := utilities.CreateFileIfNotExists(s.Path)
+		if err != nil {
+			return err
+		}
+		if err := file.Close(); err != nil {
+			return err
+		}
+
+		raw, err := os.ReadFile(s.Path)
+		if err != nil {
+			return err
+		}
+
+		if len(bytes.TrimSpace(raw)) > 0 {
+			if err := yaml.Unmarshal(raw, s.Data); err != nil {
+				return err
+			}
+		}
+	}
+	if s.Data.Policies == nil {
+		s.Data.Policies = []globals.Policy{}
+	}
+	if s.Data.Decisions == nil {
+		s.Data.Decisions = []globals.Decision{}
+	}
+
+	globals.Pauser.Lock()
+	defer globals.Pauser.Unlock()
+
+	globals.Policies = &s.Data.Policies
+	globals.Decisions = &s.Data.Decisions
+
+	return nil
+}
+
+func (s *Storage) persist() error {
+	if s.Type != "file" {
+		return nil
+	}
+
+	if s.Data == nil {
+		s.Data = &Data{}
+	}
+
+	if globals.Policies != nil {
+		s.Data.Policies = *globals.Policies
+	}
+	if globals.Decisions != nil {
+		s.Data.Decisions = *globals.Decisions
+	}
+
+	raw, err := yaml.Marshal(s.Data)
+	if err != nil {
+		return err
+	}
+
+	return os.WriteFile(s.Path, raw, 0666)
+}
+
+type PolicyStore struct {
+	Storage *Storage
+}
+
+func (p PolicyStore) Set(items []globals.Policy) error {
+	globals.Pauser.Lock()
+	defer globals.Pauser.Unlock()
+
+	if globals.Policies == nil {
+		policies := []globals.Policy{}
+		globals.Policies = &policies
+	}
+
+	for _, item := range items {
+		found := false
+		for index := range *globals.Policies {
+			if (*globals.Policies)[index].Id == item.Id {
+				(*globals.Policies)[index] = item
+				found = true
+				break
+			}
+		}
+		if !found {
+			*globals.Policies = append(*globals.Policies, item)
+		}
+	}
+
+	return p.Storage.persist()
+}
+
+func (p PolicyStore) Unset(ids []string) ([]string, error) {
+	globals.Pauser.Lock()
+	defer globals.Pauser.Unlock()
+
+	if globals.Policies == nil {
+		return []string{}, nil
+	}
+
+	idSet := map[string]bool{}
+	for _, id := range ids {
+		idSet[id] = true
+	}
+
+	revoked := []string{}
+	policies := (*globals.Policies)[:0]
+	for _, policy := range *globals.Policies {
+		if idSet[policy.Id] {
+			revoked = append(revoked, policy.Id)
+			continue
+		}
+		policies = append(policies, policy)
+	}
+
+	if len(revoked) == 0 {
+		return revoked, nil
+	}
+
+	*globals.Policies = policies
+	return revoked, p.Storage.persist()
+}
+
+type DecisionStore struct {
+	Storage *Storage
+}
+
+func (d DecisionStore) Set(items []globals.Decision) error {
+	globals.Pauser.Lock()
+	defer globals.Pauser.Unlock()
+
+	if globals.Decisions == nil {
+		decisions := []globals.Decision{}
+		globals.Decisions = &decisions
+	}
+
+	for _, item := range items {
+		found := false
+		for index := range *globals.Decisions {
+			if (*globals.Decisions)[index].Id == item.Id {
+				(*globals.Decisions)[index] = item
+				found = true
+				break
+			}
+		}
+		if !found {
+			*globals.Decisions = append(*globals.Decisions, item)
+		}
+	}
+
+	return d.Storage.persist()
+}
+
+func (d DecisionStore) Unset(ids []string) ([]string, error) {
+	globals.Pauser.Lock()
+	defer globals.Pauser.Unlock()
+
+	if globals.Decisions == nil {
+		return []string{}, nil
+	}
+
+	idSet := map[string]bool{}
+	for _, id := range ids {
+		idSet[id] = true
+	}
+
+	suspended := []string{}
+	decisions := (*globals.Decisions)[:0]
+	for _, decision := range *globals.Decisions {
+		if idSet[decision.Id] {
+			suspended = append(suspended, decision.Id)
+			continue
+		}
+		decisions = append(decisions, decision)
+	}
+
+	if len(suspended) == 0 {
+		return suspended, nil
+	}
+
+	*globals.Decisions = decisions
+	return suspended, d.Storage.persist()
+}
+
 type Server struct {
 	Address    Address
 	Absorber   Absorber
@@ -80,6 +287,7 @@ type Server struct {
 	Logger     Logger
 	Locker     Locker
 	Controller Controller
+	Storage    Storage
 	Error      Error
 }
 
@@ -102,6 +310,27 @@ func (s Server) Boot() error {
 	}
 	if file != nil {
 		defer file.Close()
+	}
+
+	storage := &s.Storage
+	if err := storage.Load(); err != nil {
+		return s.Error.LogError(err)
+	}
+	s.Controller.State = &controllers.State{
+		Policies:  globals.Policies,
+		Decisions: globals.Decisions,
+	}
+	s.Controller.Policy = &controllers.Policy{
+		Policies: globals.Policies,
+		Store: PolicyStore{
+			Storage: storage,
+		},
+	}
+	s.Controller.Decision = &controllers.Decision{
+		Decisions: globals.Decisions,
+		Store: DecisionStore{
+			Storage: storage,
+		},
 	}
 
 	s.Locker.Lock(server)
