@@ -46,7 +46,9 @@ trait DefenderButton
         )
             ->authorize('deployAny')
             ->color('teal')
-            ->requiresConfirmation();
+            ->requiresConfirmation()
+            ->chunkSelectedRecords(100)
+            ->deselectRecordsAfterCompletion();
     }
 
     public static function deleteDoneBulkButton()

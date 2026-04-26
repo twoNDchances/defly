@@ -33,13 +33,13 @@ class PoliciesRelationManager extends RelationManager
                 //
             ])
             ->headerActions([
-                self::attachAndLockButton()->recordSelectOptionsQuery(fn ($query) => $query->where('validation_status', ValidationStatus::Passed)),
+                self::attachPolicesAndLockButton()->recordSelectOptionsQuery(fn ($query) => $query->where('validation_status', ValidationStatus::Passed)),
             ])
             ->recordActions([
-                self::buttonGroup(edit: false, delete: false, more: [self::detachAndUnlockButton()]),
+                self::buttonGroup(edit: false, delete: false, more: [self::detachPoliciesAndUnlockButton()]),
             ])
             ->toolbarActions([
-                self::bulkButtonGroup(false, [self::detachAndUnlockBulkButton()]),
+                self::bulkButtonGroup(false, [self::detachPoliciesAndUnlockBulkButton()]),
             ])
             ->reorderable('order');
     }

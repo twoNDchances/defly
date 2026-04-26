@@ -4,6 +4,8 @@ namespace App\Traits\Filament\Specifics\Policy;
 
 use App\Enums\Policy\ValidationStatus;
 use App\Jobs\PolicyValidation;
+use App\Models\Defender;
+use App\Services\Lock;
 use App\Traits\Filament\Generals\Components\Button;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Str;
@@ -11,6 +13,93 @@ use Illuminate\Support\Str;
 trait PolicyButton
 {
     use Button;
+    
+    public static function attachPolicesAndLockButton()
+    {
+        return self::attachAndLockButton()
+            ->after(function ($data, $table) {
+                $recordIds = $data['recordId'] ?? null;
+
+                if (blank($recordIds)) {
+                    return;
+                }
+
+                $recordIds = is_array($recordIds) ? $recordIds : [$recordIds];
+
+                $relatedModelClass = $table->getRelationship()->getRelated()::class;
+                Lock::syncByRelationship($relatedModelClass, $recordIds);
+
+                $ownerRecord = $table->getRelationship()->getParent();
+
+                if (! $ownerRecord instanceof Defender) {
+                    return;
+                }
+
+                $ownerRecord->forceFill([
+                    'deployment_status' => null,
+                    'deployment_details' => null,
+                ])->save();
+
+                $livewire = $table->getLivewire();
+                $livewire
+                    ->dispatch('refresh-form-data', statePaths: ['deployment_status', 'deployment_details'])
+                    ->to($livewire->getPageClass());
+            });
+    }
+
+    public static function detachPoliciesAndUnlockButton()
+    {
+        return self::detachAndUnlockButton()
+            ->after(function ($record, $table) {
+                if (! $record) {
+                    return;
+                }
+
+                Lock::syncByRelationship($record::class, $record->getKey());
+
+                $ownerRecord = $table->getRelationship()->getParent();
+
+                if (! $ownerRecord instanceof Defender) {
+                    return;
+                }
+
+                $ownerRecord->forceFill([
+                    'deployment_status' => null,
+                    'deployment_details' => null,
+                ])->save();
+
+                $livewire = $table->getLivewire();
+                $livewire
+                    ->dispatch('refresh-form-data', statePaths: ['deployment_status', 'deployment_details'])
+                    ->to($livewire->getPageClass());
+            });
+    }
+
+    public static function detachPoliciesAndUnlockBulkButton()
+    {
+        return self::detachAndUnlockBulkButton()
+            ->after(function ($records, $table) {
+                if (blank($records)) {
+                    return;
+                }
+
+                $ownerRecord = $table->getRelationship()->getParent();
+
+                if (! $ownerRecord instanceof Defender) {
+                    return;
+                }
+
+                $ownerRecord->forceFill([
+                    'deployment_status' => null,
+                    'deployment_details' => null,
+                ])->save();
+
+                $livewire = $table->getLivewire();
+                $livewire
+                    ->dispatch('refresh-form-data', statePaths: ['deployment_status', 'deployment_details'])
+                    ->to($livewire->getPageClass());
+            });
+    }
 
     public static function validatePolicyButton()
     {
@@ -54,6 +143,9 @@ trait PolicyButton
                     if (in_array($record->validation_status, [ValidationStatus::Pending, ValidationStatus::Validating])) {
                         continue;
                     }
+                    if ($record->is_locked) {
+                        continue;
+                    }
                     $record->validation_status = ValidationStatus::Pending;
                     $record->save();
                     PolicyValidation::dispatch($record->id);
@@ -61,7 +153,9 @@ trait PolicyButton
             }
         )
             ->authorize('validateAny')
-            ->color('cyan');
+            ->color('cyan')
+            ->chunkSelectedRecords(100)
+            ->deselectRecordsAfterCompletion();
     }
 
     public static function deleteUnlockedBulkButton()

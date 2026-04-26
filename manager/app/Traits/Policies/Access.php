@@ -16,7 +16,7 @@ trait Access
 
     public function checkAccess(User $user, $model, $action): bool
     {
-        if (in_array($action, ['update', 'delete'], true) && data_get($model, 'is_locked') === true) {
+        if (in_array($action, ['update', 'delete', 'validate'], true) && data_get($model, 'is_locked') === true) {
             return false;
         }
 
