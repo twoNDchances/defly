@@ -13,10 +13,6 @@ func NewServer() error {
 	serverTls := config.Tls{
 		Enable: serverHTTPSEnable,
 	}
-	if serverHTTPSEnable {
-		serverTls.Certificate = envserver.ServerHTTPSCert.Value()
-		serverTls.Key = envserver.ServerHTTPSKey.Value()
-	}
 
 	if err := envserver.ValidatePathsAndMethods(); err != nil {
 		return err

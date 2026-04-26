@@ -10,10 +10,6 @@ import (
 
 var serverPathPattern = regexp.MustCompile(`^[A-Za-z0-9._~-]+(?:/[A-Za-z0-9._~-]+)*$`)
 
-func validateTLSFilePath(value string) bool {
-	return utilities.IsCreatableFilePath(value)
-}
-
 func validateStorageFilePath(value string) bool {
 	return utilities.IsCreatableFilePath(value)
 }

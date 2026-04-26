@@ -16,19 +16,6 @@ import (
 	"go.yaml.in/yaml/v3"
 )
 
-type Tls struct {
-	Enable      bool
-	Certificate string
-	Key         string
-}
-
-func (t Tls) Listen(application *gin.Engine, address string) error {
-	if t.Enable {
-		return application.RunTLS(address, t.Certificate, t.Key)
-	}
-	return application.Run(address)
-}
-
 type Security struct {
 	Manager  string
 	Username string
