@@ -30,7 +30,7 @@ class Defenders(Model):
     deployment_status = CharField(
         max_length=10, choices=DeploymentStatus.choices, blank=True, null=True
     )
-    deployment_details = TextField(blank=True, null=True)
+    deployment_details = JSONField(blank=True, null=True)
     description = TextField(blank=True, null=True)
     created_by = UUIDField(blank=True, null=True)
     created_at = DateTimeField(blank=True, null=True)
