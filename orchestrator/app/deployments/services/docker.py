@@ -10,6 +10,7 @@ COMPOSE_PROJECT_LABEL = "com.docker.compose.project"
 COMPOSE_SERVICE_LABEL = "com.docker.compose.service"
 COMPOSE_ONEOFF_LABEL = "com.docker.compose.oneoff"
 COMPOSE_VERSION_LABEL = "com.docker.compose.version"
+COMPOSE_VOLUME_LABEL = "com.docker.compose.volume"
 COMPOSE_PROJECT_CONFIG_FILES_LABEL = "com.docker.compose.project.config_files"
 COMPOSE_PROJECT_WORKING_DIR_LABEL = "com.docker.compose.project.working_dir"
 
@@ -52,7 +53,7 @@ class DockerService:
     ) -> dict[str, Any]:
         client = DockerClient(base_url="unix:///var/run/docker.sock")
         try:
-            image_tag = f"defly-defender:{defender_id}"
+            image_tag = "defly-defender"
             image, build_logs = client.images.build(
                 path=source_directory,
                 dockerfile="Dockerfile",
@@ -75,10 +76,20 @@ class DockerService:
                 compose_labels=compose_context["labels"],
             )
             proxy_port_string = str(proxy_port)
-            volume_name = f"{container_name}-resources"
+            volume_key = f"{container_name}-resources"
+            volume_name = DockerService._get_compose_resource_name(
+                resource_key=volume_key,
+                compose_labels=compose_context["labels"],
+            )
+            volume_labels = DockerService._build_volume_labels(
+                defender_id=defender_id,
+                defender_name=defender_name,
+                volume_key=volume_key,
+                compose_labels=compose_context["labels"],
+            )
             resources_volume = client.volumes.create(
                 name=volume_name,
-                labels=container_labels,
+                labels=volume_labels,
             )
 
             container_environment_variables = dict(environment_variables)
@@ -115,10 +126,11 @@ class DockerService:
                 "container_name": container.name,
                 "container_networks": container_networks,
                 "resources_volume": resources_volume.name,
+                "resources_volume_key": volume_key,
                 "proxy_port": proxy_port,
                 "compose_project": compose_context["labels"].get(COMPOSE_PROJECT_LABEL),
                 "compose_service": container_labels.get(COMPOSE_SERVICE_LABEL),
-                "build_logs_tail": build_log_lines[-20:],
+                "build_logs_tail": build_log_lines,
             }
         finally:
             client.close()
@@ -287,6 +299,55 @@ class DockerService:
                 labels[label_name] = label_value
 
         return labels
+
+    @staticmethod
+    def _build_volume_labels(
+        *,
+        defender_id: str,
+        defender_name: str,
+        volume_key: str,
+        compose_labels: dict[str, str],
+    ) -> dict[str, str]:
+        labels = {
+            "defly.service": "defender",
+            "defly.defender_id": defender_id,
+            "defly.defender_name": defender_name,
+            "defly.volume": "resources",
+        }
+
+        compose_project = compose_labels.get(COMPOSE_PROJECT_LABEL)
+        if not compose_project:
+            return labels
+
+        labels.update(
+            {
+                COMPOSE_PROJECT_LABEL: compose_project,
+                COMPOSE_VOLUME_LABEL: volume_key,
+            }
+        )
+
+        for label_name in (
+            COMPOSE_VERSION_LABEL,
+            COMPOSE_PROJECT_CONFIG_FILES_LABEL,
+            COMPOSE_PROJECT_WORKING_DIR_LABEL,
+        ):
+            label_value = compose_labels.get(label_name)
+            if label_value:
+                labels[label_name] = label_value
+
+        return labels
+
+    @staticmethod
+    def _get_compose_resource_name(
+        *,
+        resource_key: str,
+        compose_labels: dict[str, str],
+    ) -> str:
+        compose_project = compose_labels.get(COMPOSE_PROJECT_LABEL)
+        if not compose_project:
+            return resource_key
+
+        return f"{compose_project}_{resource_key}"
 
     @staticmethod
     def _remove_existing_container(client: DockerClient, container_name: str) -> None:
