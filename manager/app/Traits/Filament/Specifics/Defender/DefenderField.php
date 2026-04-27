@@ -22,6 +22,23 @@ trait DefenderField
             ->required();
     }
 
+    public static function setProxyPort()
+    {
+        return self::textInput(
+            'proxy_port',
+            __('models.defender.fields.proxy_port'),
+            __('forms.defender.text_examples.proxy_port'),
+            [
+                'integer', 'min:1', 'max:65535',
+            ]
+        )
+        ->helperText(__('forms.defender.descriptions.proxy_port'))
+        ->required()
+        ->integer()
+        ->default(9948)
+        ->maxLength(null);
+    }
+
     public static function setCommonEnvironmentVariables()
     {
         $variables = [
@@ -302,14 +319,31 @@ trait DefenderField
             self::statusOptionsAndColors(),
         )
             ->helperText(fn ($state) => self::statusDescriptions()[$state])
-            ->disabled();
+            ->disabled()
+            ->visibleOn(['view', 'edit']);
     }
 
     public static function setDetails()
     {
         return self::codeEditor('details', __('models.defender.fields.details'), Language::Json)
             ->helperText(__('forms.defender.descriptions.details'))
-            ->disabled();
+            ->formatStateUsing(function ($state) {
+                if ($state === null) {
+                    return null;
+                }
+
+                if (is_string($state)) {
+                    return $state;
+                }
+
+                if (is_array($state)) {
+                    return json_encode($state, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+                }
+
+                return (string) $state;
+            })
+            ->disabled()
+            ->visibleOn(['view', 'edit']);
     }
 
     public static function setDeploymentStatus()
@@ -320,13 +354,15 @@ trait DefenderField
             self::deploymentStatusOptionsAndColors(),
         )
             ->helperText(fn ($state) => self::deploymentStatusDescriptions()[$state])
-            ->disabled();
+            ->disabled()
+            ->visibleOn(['view', 'edit']);
     }
 
     public static function setDeploymentDetails()
     {
         return self::textArea('deployment_details', __('models.defender.fields.deployment_details'))
             ->helperText(__('forms.defender.descriptions.deploymnet_details'))
-            ->disabled();
+            ->disabled()
+            ->visibleOn(['view', 'edit']);
     }
 }

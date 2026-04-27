@@ -330,4 +330,32 @@ return [
             'value' => 'Value',
         ],
     ],
+    'defender' => [
+        'name' => 'Defender',
+        'fields' => [
+            'name' => 'Name',
+            'proxy_port' => 'Proxy port',
+            'status' => 'Status',
+            'details' => 'Details',
+            'deployment_status' => 'Deployment status',
+            'deployment_details' => 'Deployment details',
+        ],
+        'extras' => [
+            'status' => [
+                'normal' => 'Normal',
+                'abnormal' => 'Abnormal',
+            ],
+            'deployment_status' => [
+                'pending' => 'Pending',
+                'deploying' => 'Deploying',
+                'failed' => 'Failed',
+                'successful' => 'Successful',
+            ],
+            'common_environment_variables' => 'Common environment variables',
+            'server_environment_variables' => 'Server environment variables',
+            'proxy_environment_variables' => 'Proxy environment variables',
+            'key' => 'Variable name',
+            'value' => 'Variable value',
+        ],
+    ],
 ];

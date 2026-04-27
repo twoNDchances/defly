@@ -47,4 +47,15 @@ return [
             'validate_bulk_button' => 'Validate selected items',
         ],
     ],
+    'decision' => [
+        'defenders' => 'Defenders in use',
+    ],
+    'defender' => [
+        'policies' => 'Policies in use',
+        'decisions' => 'Decisions in use',
+        'buttons' => [
+            'deploy_button' => 'Deploy',
+            'deploy_bulk_button' => 'Deploy selected items',
+        ],
+    ],
 ];

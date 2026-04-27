@@ -434,9 +434,11 @@ return [
     'defender' => [
         'text_examples' => [
             'name' => 'defender-1',
+            'proxy_port' => '9948',
         ],
         'descriptions' => [
             'name' => 'Tên duy nhất theo kiểu kebab đại diện defender này',
+            'proxy_port' => 'Cổng mà Defender Proxy sẽ mở khi triển khai thành công',
             'status' => 'Trạng thái hiện tại của defender sau khi triển khai',
             'details' => 'Chi tiết trạng thái của defender sau khi triển khai',
             'deployment_status' => 'Trạng thái triển khai sẽ quyết định defender có thể bắt đầu sử dụng hay không',

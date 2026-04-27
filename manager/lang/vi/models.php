@@ -334,6 +334,7 @@ return [
         'name' => 'Defender',
         'fields' => [
             'name' => 'Tên',
+            'proxy_port' => 'Cổng proxy',
             'status' => 'Trạng thái',
             'details' => 'Chi tiết',
             'deployment_status' => 'Trạng thái triển khai',

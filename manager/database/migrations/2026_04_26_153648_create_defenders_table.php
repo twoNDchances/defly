@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('defenders', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->string('name')->unique()->index();
+            $table->integer('proxy_port')->default(9948);
             $table->json('environment_variables');
             $table->enum('status', ['normal', 'abnormal'])->nullable();
             $table->json('details')->nullable();

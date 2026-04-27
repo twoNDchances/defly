@@ -24,12 +24,15 @@ class DefenderForm
                                 ->columns(1)
                                 ->schema([
                                     Tab::make(__('forms.defender.tabs.a.title'))
+                                        ->columns(2)
                                         ->schema([
                                             self::setName(),
-                                            self::setDescription(),
+                                            self::setProxyPort(),
+                                            self::setDescription()->columnSpanFull(),
                                         ]),
 
                                     Tab::make(__('forms.defender.tabs.b.title'))
+                                        ->columns(1)
                                         ->visibleOn(['view', 'edit'])
                                         ->schema([
                                             self::setStatus(),

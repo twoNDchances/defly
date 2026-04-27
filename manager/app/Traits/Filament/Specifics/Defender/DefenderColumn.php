@@ -13,6 +13,11 @@ trait DefenderColumn
         return self::textColumn('name', __('models.defender.fields.name'));
     }
 
+    public static function getProxyPort()
+    {
+        return self::textColumn('proxy_port', __('models.defender.fields.proxy_port'));
+    }
+
     public static function getStatus()
     {
         return self::booleanColumn('status', __('models.defender.fields.status'));

@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 
-#[Fillable(['name', 'environment_variables', 'status', 'details', 'deployment_status', 'deployment_details', 'description', 'created_by'])]
+#[Fillable(['name', 'proxy_port', 'environment_variables', 'status', 'details', 'deployment_status', 'deployment_details', 'description', 'created_by'])]
 #[ObservedBy(DefenderObserver::class)]
 class Defender extends Model
 {
@@ -23,6 +23,7 @@ class Defender extends Model
         return [
             'id' => 'string',
             'name' => 'string',
+            'proxy_port' => 'integer',
             'environment_variables' => 'json',
             'status' => Status::class,
             'details' => 'array',

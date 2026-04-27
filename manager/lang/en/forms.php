@@ -431,4 +431,50 @@ return [
             'value' => 'Used to store the content',
         ],
     ],
+    'defender' => [
+        'text_examples' => [
+            'name' => 'defender-1',
+            'proxy_port' => '9948',
+        ],
+        'descriptions' => [
+            'name' => 'A unique kebab-case name representing this defender',
+            'proxy_port' => 'Port that Defender Proxy will open after successful deployment',
+            'status' => 'Current defender status after deployment',
+            'details' => 'Detailed defender status after deployment',
+            'deployment_status' => 'Deployment status determines whether this defender can start being used',
+            'deploymnet_details' => 'Deployment details to help you identify defender issues',
+        ],
+        'extras' => [
+            'status' => [
+                'normal' => 'Defender is considered to be operating normally',
+                'abnormal' => 'Defender is considered to be operating abnormally',
+            ],
+            'deployment_status' => [
+                'pending' => 'Waiting for deployment',
+                'deploying' => 'Deploying',
+                'failed' => 'Deployment failed, not ready to use',
+                'successful' => 'Deployment successful, ready to use',
+            ],
+            'environment_variables' => [
+
+            ],
+        ],
+        'tabs' => [
+            'a' => [
+                'title' => 'Defender definition',
+            ],
+            'b' => [
+                'title' => 'Defender status',
+            ],
+            'c' => [
+                'title' => 'General',
+            ],
+            'd' => [
+                'title' => 'Server',
+            ],
+            'e' => [
+                'title' => 'Proxy',
+            ],
+        ],
+    ],
 ];

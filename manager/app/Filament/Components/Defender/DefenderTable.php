@@ -12,6 +12,7 @@ class DefenderTable
     {
         return [
             self::getName(),
+            self::getProxyPort(),
             self::getStatus(),
             self::getDeploymentStatus(),
             self::getPolicies(),
