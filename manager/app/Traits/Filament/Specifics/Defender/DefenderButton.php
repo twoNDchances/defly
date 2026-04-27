@@ -51,6 +51,42 @@ trait DefenderButton
             ->deselectRecordsAfterCompletion();
     }
 
+    public static function cancelDefenderButton()
+    {
+        return self::button(
+            'cancel_button',
+            __('tables.defender.buttons.cancel_button'),
+            Heroicon::OutlinedArchiveBoxXMark,
+            function ($record) {
+                //
+            }
+        )
+            ->authorize('cancel')
+            ->color('pink');
+    }
+
+    public static function cancelDefenderBulkButton()
+    {
+        return self::bulkButton(
+            'cancel_bulk_button',
+            __('tables.defender.buttons.cancel_bulk_button'),
+            Heroicon::OutlinedArchiveBoxXMark,
+            function ($records) {
+                foreach ($records as $record) {
+                    if ($record->deployment_status == DeploymentStatus::Successful) {
+                        //
+                    }
+                    continue;
+                }
+            }
+        )
+            ->authorize('cancelAny')
+            ->color('pink')
+            ->requiresConfirmation()
+            ->chunkSelectedRecords(100)
+            ->deselectRecordsAfterCompletion();
+    }
+
     public static function deleteDoneBulkButton()
     {
         return self::deleteBulkButton()
@@ -59,6 +95,7 @@ trait DefenderButton
                     if (in_array($record->deployment_status, [
                         DeploymentStatus::Pending,
                         DeploymentStatus::Deploying,
+                        DeploymentStatus::Successful,
                     ], true)) {
                         continue;
                     }

@@ -33,7 +33,7 @@ env = Env(
     SERVER_PATH_PREFIX=(str, "api/v1"),
     SERVER_PATH_DEPLOYMENT=(str, "deployments"),
     SERVER_METHOD_DEPLOY=(str, "post"),
-    SERVER_METHOD_INSPECT=(str, "get"),
+    SERVER_METHOD_FOLLOW=(str, "get"),
     SERVER_METHOD_CANCEL=(str, "delete"),
     SERVER_SOURCE_DEFENDER=(str, "./defender"),
 )
@@ -122,8 +122,8 @@ SERVER_PATH_DEPLOYMENT = validate_path_value(
 SERVER_METHOD_DEPLOY = validate_http_method(
     "SERVER_METHOD_DEPLOY", env.str("SERVER_METHOD_DEPLOY")
 )
-SERVER_METHOD_INSPECT = validate_http_method(
-    "SERVER_METHOD_INSPECT", env.str("SERVER_METHOD_INSPECT")
+SERVER_METHOD_FOLLOW = validate_http_method(
+    "SERVER_METHOD_FOLLOW", env.str("SERVER_METHOD_FOLLOW")
 )
 SERVER_METHOD_CANCEL = validate_http_method(
     "SERVER_METHOD_CANCEL", env.str("SERVER_METHOD_CANCEL")
@@ -132,7 +132,7 @@ SERVER_DEPLOYMENT_METHODS = register_endpoint_method_registry(
     endpoint=SERVER_PATH_DEPLOYMENT,
     registry=[
         {"name": "SERVER_METHOD_DEPLOY", "method": SERVER_METHOD_DEPLOY},
-        {"name": "SERVER_METHOD_INSPECT", "method": SERVER_METHOD_INSPECT},
+        {"name": "SERVER_METHOD_FOLLOW", "method": SERVER_METHOD_FOLLOW},
         {"name": "SERVER_METHOD_CANCEL", "method": SERVER_METHOD_CANCEL},
     ],
 )

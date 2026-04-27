@@ -25,6 +25,9 @@ class Security
         'validateAny' => 'Multi-validate',
         'deploy' => 'Deploy',
         'deployAny' => 'Multi-deploy',
+        'cancel' => 'Cancel',
+        'cancelAny' => 'Multi-cancel',
+        'follow' => 'Follow',
     ];
 
     public static $excludeActionsByModel = [

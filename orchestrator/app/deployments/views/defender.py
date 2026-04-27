@@ -29,18 +29,18 @@ class DefenderView(View):
     async def _handle_action(self, request: HttpRequest, *args, **kwargs):
         method = request.method.lower()
         deploy_method = settings.SERVER_METHOD_DEPLOY.lower()
-        inspect_method = settings.SERVER_METHOD_INSPECT.lower()
+        follow_method = settings.SERVER_METHOD_FOLLOW.lower()
         cancel_method = settings.SERVER_METHOD_CANCEL.lower()
 
         if method == deploy_method:
             return await self._deploy_defender(*args, **kwargs)
-        if method == inspect_method:
-            return await self._inspect_defender(*args, **kwargs)
+        if method == follow_method:
+            return await self._follow_defender(*args, **kwargs)
         if method == cancel_method:
             return await self._cancel_defender(*args, **kwargs)
 
         allowed_methods = sorted(
-            {deploy_method.upper(), inspect_method.upper(), cancel_method.upper()}
+            {deploy_method.upper(), follow_method.upper(), cancel_method.upper()}
         )
         return HttpResponseNotAllowed(allowed_methods)
 
@@ -111,7 +111,7 @@ class DefenderView(View):
             }
         )
 
-    async def _inspect_defender(self, *args, **kwargs):
+    async def _follow_defender(self, *args, **kwargs):
         defender_id = kwargs.get("defender_id")
         defender = await Defenders.objects.filter(id=defender_id).afirst()
         if defender is None:
@@ -131,7 +131,7 @@ class DefenderView(View):
         except (DockerException, RuntimeError) as exception:
             error_logs = DockerService.stringify_deploy_error(exception)
             return JsonResponse(
-                {"detail": "Failed to inspect defender logs.", "error": error_logs},
+                {"detail": "Failed to follow defender logs.", "error": error_logs},
                 status=500,
             )
 

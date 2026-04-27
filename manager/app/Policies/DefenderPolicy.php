@@ -42,6 +42,10 @@ class DefenderPolicy
             return false;
         }
 
+        if ($defender->deployment_status == DeploymentStatus::Successful) {
+            return false;
+        }
+
         return $this->checkAccess($user, $defender, 'delete');
     }
 
@@ -57,5 +61,26 @@ class DefenderPolicy
     public function deployAny(User $user): bool
     {
         return Security::can($this->getModel(), 'deployAny', $user);
+    }
+
+    public function cancel(User $user, Defender $defender): bool
+    {
+        if ($defender->deployment_status == DeploymentStatus::Successful) {
+            return $this->checkAccess($user, $defender, 'cancel');
+        }
+        return false;
+    }
+
+    public function cancelAny(User $user): bool
+    {
+        return Security::can($this->getModel(), 'cancelAny', $user);
+    }
+
+    public function follow(User $user, Defender $defender): bool
+    {
+        if ($defender->deployment_status == DeploymentStatus::Successful) {
+            return $this->checkAccess($user, $defender, 'follow');
+        }
+        return false;
     }
 }

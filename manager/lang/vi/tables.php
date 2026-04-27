@@ -56,6 +56,8 @@ return [
         'buttons' => [
             'deploy_button' => 'Triển khai',
             'deploy_bulk_button' => 'Triển khai các mục đã chọn',
+            'cancel_button' => 'Hủy bỏ',
+            'cancel_bulk_button' => 'Hủy bỏ các mục đã chọn',
         ],
     ],
 ];
