@@ -76,6 +76,7 @@ trait DefenderButton
                     if ($record->deployment_status == DeploymentStatus::Successful) {
                         //
                     }
+
                     continue;
                 }
             }

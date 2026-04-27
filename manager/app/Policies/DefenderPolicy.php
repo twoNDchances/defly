@@ -68,6 +68,7 @@ class DefenderPolicy
         if ($defender->deployment_status == DeploymentStatus::Successful) {
             return $this->checkAccess($user, $defender, 'cancel');
         }
+
         return false;
     }
 
@@ -81,6 +82,7 @@ class DefenderPolicy
         if ($defender->deployment_status == DeploymentStatus::Successful) {
             return $this->checkAccess($user, $defender, 'follow');
         }
+
         return false;
     }
 }

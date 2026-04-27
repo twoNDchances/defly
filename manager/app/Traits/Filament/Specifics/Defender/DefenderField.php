@@ -32,11 +32,11 @@ trait DefenderField
                 'integer', 'min:1', 'max:65535',
             ]
         )
-        ->helperText(__('forms.defender.descriptions.proxy_port'))
-        ->required()
-        ->integer()
-        ->default(9948)
-        ->maxLength(null);
+            ->helperText(__('forms.defender.descriptions.proxy_port'))
+            ->required()
+            ->integer()
+            ->default(9948)
+            ->maxLength(null);
     }
 
     public static function setCommonEnvironmentVariables()
@@ -88,8 +88,7 @@ trait DefenderField
             ->reorderable(false)
             ->minItems(count($variables))
             ->maxItems(count($variables))
-            ->collapsed()
-            ->columnSpanFull();
+            ->collapsed();
     }
 
     public static function setServerEnvironmentVariables()
@@ -185,8 +184,7 @@ trait DefenderField
             ->reorderable(false)
             ->minItems(count($variables))
             ->maxItems(count($variables))
-            ->collapsed()
-            ->columnSpanFull();
+            ->collapsed();
     }
 
     public static function setProxyEnvironmentVariables()
@@ -307,8 +305,7 @@ trait DefenderField
             ->reorderable(false)
             ->minItems(count($variables))
             ->maxItems(count($variables))
-            ->collapsed()
-            ->columnSpanFull();
+            ->collapsed();
     }
 
     public static function setStatus()
@@ -360,8 +357,23 @@ trait DefenderField
 
     public static function setDeploymentDetails()
     {
-        return self::textArea('deployment_details', __('models.defender.fields.deployment_details'))
+        return self::codeEditor('deployment_details', __('models.defender.fields.deployment_details'), Language::Json)
             ->helperText(__('forms.defender.descriptions.deploymnet_details'))
+            ->formatStateUsing(function ($state) {
+                if ($state === null) {
+                    return null;
+                }
+
+                if (is_string($state)) {
+                    return $state;
+                }
+
+                if (is_array($state)) {
+                    return json_encode($state, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+                }
+
+                return (string) $state;
+            })
             ->disabled()
             ->visibleOn(['view', 'edit']);
     }
