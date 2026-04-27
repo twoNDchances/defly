@@ -1,4 +1,3 @@
-from json import dumps
 from os import getenv
 from re import sub
 from typing import Any
@@ -200,14 +199,6 @@ class DockerService:
             if exception.msg:
                 return DockerService.split_lines_preserve_newline(str(exception.msg))
         return DockerService.split_lines_preserve_newline(str(exception))
-
-    @staticmethod
-    def serialize_deployment_details(payload: dict[str, Any]) -> str:
-        return dumps(payload, ensure_ascii=True)
-
-    @staticmethod
-    def serialize_log_lines(log_lines: list[str]) -> str:
-        return dumps(log_lines, ensure_ascii=True)
 
     @staticmethod
     def extract_build_log_lines(build_logs: list[dict[str, Any]]) -> list[str]:

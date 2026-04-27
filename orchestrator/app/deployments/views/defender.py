@@ -61,7 +61,7 @@ class DefenderView(View):
 
         await Defenders.objects.filter(id=defender_id).aupdate(
             deployment_status=Defenders.DeploymentStatus.DEPLOYING,
-            deployment_details="Starting deployment...",
+            deployment_details={"message": "Starting deployment..."},
             updated_at=timezone.now(),
         )
 
@@ -100,9 +100,7 @@ class DefenderView(View):
 
         await Defenders.objects.filter(id=defender_id).aupdate(
             deployment_status=Defenders.DeploymentStatus.SUCCESSFUL,
-            deployment_details=DockerService.serialize_deployment_details(
-                deployment_result
-            ),
+            deployment_details=deployment_result,
             updated_at=timezone.now(),
         )
 
@@ -181,9 +179,7 @@ class DefenderView(View):
 
         await Defenders.objects.filter(id=defender_id).aupdate(
             deployment_status=None,
-            deployment_details=DockerService.serialize_deployment_details(
-                cancellation_result
-            ),
+            deployment_details=cancellation_result,
             updated_at=timezone.now(),
         )
 
@@ -202,6 +198,6 @@ class DefenderView(View):
     ) -> None:
         await Defenders.objects.filter(id=defender_id).aupdate(
             deployment_status=Defenders.DeploymentStatus.FAILED,
-            deployment_details=DockerService.serialize_log_lines(error_logs),
+            deployment_details=error_logs,
             updated_at=timezone.now(),
         )
