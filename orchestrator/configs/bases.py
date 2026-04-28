@@ -44,8 +44,10 @@ Env.read_env(BASE_DIR / ".env")
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
+SECRET_KEY_FILE = env.str("SECRET_KEY_FILE")
+
 SECRET_KEY = load_secret_key_for_settings(
-    secret_key_file=env.str("SECRET_KEY_FILE"), base_dir=BASE_DIR
+    secret_key_file=SECRET_KEY_FILE, base_dir=BASE_DIR
 )
 
 ALLOWED_HOSTS = env.list("ALLOWED_HOSTS")
@@ -63,7 +65,6 @@ MIDDLEWARE = [
     "app.bases.middlewares.ServerManagerOnlyMiddleware",
     "app.bases.middlewares.ServerBasicAuthMiddleware",
     "django.middleware.common.CommonMiddleware",
-    "django.middleware.csrf.CsrfViewMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 

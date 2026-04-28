@@ -339,6 +339,7 @@ return [
             'details' => 'Chi tiết',
             'deployment_status' => 'Trạng thái triển khai',
             'deployment_details' => 'Chi tiết triển khai',
+            'log' => 'Nhật ký',
         ],
         'extras' => [
             'status' => [
@@ -347,7 +348,7 @@ return [
             ],
             'deployment_status' => [
                 'pending' => 'Đang chờ',
-                'deploying' => 'Đang triển khai',
+                'processing' => 'Đang xử lý',
                 'failed' => 'Đã thất bại',
                 'successful' => 'Thành công',
             ],

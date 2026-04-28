@@ -35,13 +35,13 @@ trait DefenderData
         return [
             'options' => [
                 DeploymentStatus::Pending->value => __('models.defender.extras.deployment_status.pending'),
-                DeploymentStatus::Deploying->value => __('models.defender.extras.deployment_status.deploying'),
+                DeploymentStatus::Processing->value => __('models.defender.extras.deployment_status.processing'),
                 DeploymentStatus::Failed->value => __('models.defender.extras.deployment_status.failed'),
                 DeploymentStatus::Successful->value => __('models.defender.extras.deployment_status.successful'),
             ],
             'colors' => [
                 DeploymentStatus::Pending->value => 'secondary',
-                DeploymentStatus::Deploying->value => 'info',
+                DeploymentStatus::Processing->value => 'info',
                 DeploymentStatus::Failed->value => 'danger',
                 DeploymentStatus::Successful->value => 'success',
             ],
@@ -53,7 +53,7 @@ trait DefenderData
         return [
             null => __('forms.defender.descriptions.deployment_status'),
             DeploymentStatus::Pending->value => __('forms.defender.extras.deployment_status.pending'),
-            DeploymentStatus::Deploying->value => __('forms.defender.extras.deployment_status.deploying'),
+            DeploymentStatus::Processing->value => __('forms.defender.extras.deployment_status.processing'),
             DeploymentStatus::Failed->value => __('forms.defender.extras.deployment_status.failed'),
             DeploymentStatus::Successful->value => __('forms.defender.extras.deployment_status.successful'),
         ];
@@ -61,26 +61,32 @@ trait DefenderData
 
     public static function saveForm($data)
     {
-        $data['environment_variables'] = [
-            ...self::environmentVariablesToMap(
-                self::mergeEnvironmentVariables(
-                    self::commonEnvironmentVariables(),
-                    $data['common_environment_variables'] ?? [],
+        if (
+            array_key_exists('common_environment_variables', $data)
+            || array_key_exists('server_environment_variables', $data)
+            || array_key_exists('proxy_environment_variables', $data)
+        ) {
+            $data['environment_variables'] = [
+                ...self::environmentVariablesToMap(
+                    self::mergeEnvironmentVariables(
+                        self::commonEnvironmentVariables(),
+                        $data['common_environment_variables'] ?? [],
+                    ),
                 ),
-            ),
-            ...self::environmentVariablesToMap(
-                self::mergeEnvironmentVariables(
-                    self::serverEnvironmentVariables(),
-                    $data['server_environment_variables'] ?? [],
+                ...self::environmentVariablesToMap(
+                    self::mergeEnvironmentVariables(
+                        self::serverEnvironmentVariables(),
+                        $data['server_environment_variables'] ?? [],
+                    ),
                 ),
-            ),
-            ...self::environmentVariablesToMap(
-                self::mergeEnvironmentVariables(
-                    self::proxyEnvironmentVariables(),
-                    $data['proxy_environment_variables'] ?? [],
+                ...self::environmentVariablesToMap(
+                    self::mergeEnvironmentVariables(
+                        self::proxyEnvironmentVariables(),
+                        $data['proxy_environment_variables'] ?? [],
+                    ),
                 ),
-            ),
-        ];
+            ];
+        }
 
         unset(
             $data['common_environment_variables'],

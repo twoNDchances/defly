@@ -339,6 +339,7 @@ return [
             'details' => 'Details',
             'deployment_status' => 'Deployment status',
             'deployment_details' => 'Deployment details',
+            'log' => 'Log',
         ],
         'extras' => [
             'status' => [
@@ -347,7 +348,7 @@ return [
             ],
             'deployment_status' => [
                 'pending' => 'Pending',
-                'deploying' => 'Deploying',
+                'processing' => 'Processing',
                 'failed' => 'Failed',
                 'successful' => 'Successful',
             ],

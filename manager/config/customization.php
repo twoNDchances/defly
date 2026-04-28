@@ -22,19 +22,45 @@ return [
             'user_agent' => env('USER_AGENT', 'Defly/Manager'),
             'orchestrator' => [
                 'base_url' => env('ORCHESTRATOR_BASE_URL', 'http://orchestrator:8000'),
-                'path_prefix' => env('ORCHESTRATOR_PATH_PREFIX', 'api/v1'),
-                'path_deployment' => env('ORCHESTRATOR_PATH_DEPLOYMENT', 'deployments'),
-                'follow_method' => (function () {
-                    $default = 'get';
-                    $method = Str::lower(env('ORCHESTRATOR_METHOD_FOLLOW', $default));
-                    if (! in_array($method, ['get', 'post', 'put', 'patch', 'delete'], true)) {
-                        return $default;
-                    }
+                'paths' => [
+                    'prefix' => env('ORCHESTRATOR_PATH_PREFIX', 'api/v1'),
+                    'deployment' => [
+                        'path' => env('ORCHESTRATOR_PATH_DEPLOYMENT', 'deployments'),
+                        'methods' => [
+                            'deploy' => (function () {
+                                $default = 'post';
+                                $method = Str::lower(env('ORCHESTRATOR_METHOD_DEPLOY', $default));
+                                if (! in_array($method, ['get', 'post', 'put', 'patch', 'delete'], true)) {
+                                    return $default;
+                                }
 
-                    return $method;
-                })(),
-                'username' => env('ORCHESTRATOR_USERNAME', 'defly-orchestrator'),
-                'password' => env('ORCHESTRATOR_PASSWORD', 'P@55w0rd'),
+                                return $method;
+                            })(),
+                            'follow' => (function () {
+                                $default = 'get';
+                                $method = Str::lower(env('ORCHESTRATOR_METHOD_FOLLOW', $default));
+                                if (! in_array($method, ['get', 'post', 'put', 'patch', 'delete'], true)) {
+                                    return $default;
+                                }
+
+                                return $method;
+                            })(),
+                            'cancel' => (function () {
+                                $default = 'delete';
+                                $method = Str::lower(env('ORCHESTRATOR_METHOD_CANCEL', $default));
+                                if (! in_array($method, ['get', 'post', 'put', 'patch', 'delete'], true)) {
+                                    return $default;
+                                }
+
+                                return $method;
+                            })(),
+                        ],
+                    ],
+                ],
+                'credentials' => [
+                    'username' => env('ORCHESTRATOR_USERNAME', 'defly-orchestrator'),
+                    'password' => env('ORCHESTRATOR_PASSWORD', 'P@55w0rd'),
+                ],
             ],
         ],
         'default_credentials' => [

@@ -17,7 +17,7 @@ class Defenders(Model):
 
     class DeploymentStatus(TextChoices):
         PENDING = "pending", "Pending"
-        DEPLOYING = "deploying", "Deploying"
+        PROCESSING = "processing", "Processing"
         FAILED = "failed", "Failed"
         SUCCESSFUL = "successful", "Successful"
 

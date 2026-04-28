@@ -443,6 +443,7 @@ return [
             'details' => 'Chi tiết trạng thái của defender sau khi triển khai',
             'deployment_status' => 'Trạng thái triển khai sẽ quyết định defender có thể bắt đầu sử dụng hay không',
             'deploymnet_details' => 'Chi tiết triển khai, mục đích để bạn nắm được defender đang có lỗi gì',
+            'log' => 'Nhật ký defender mới nhất được trả về từ orchestrator',
         ],
         'extras' => [
             'status' => [
@@ -451,12 +452,21 @@ return [
             ],
             'deployment_status' => [
                 'pending' => 'Trạng thái đang chờ được triển khai',
-                'deploying' => 'Trạng thái đang triển khai',
+                'processing' => 'Trạng thái đang xử lý',
                 'failed' => 'Trạng thái triển khai đã thất bại, chưa đủ điều kiện sử dụng',
                 'successful' => 'Trạng thái triển khai thành công, đủ điều kiện sử dụng',
             ],
+            'log' => [
+                'failed_to_follow' => 'Không thể theo dõi nhật ký defender.',
+            ],
             'environment_variables' => [
 
+            ],
+        ],
+        'buttons' => [
+            'follow' => 'Theo dõi',
+            'tooltips' => [
+                'follow' => 'Lấy nhật ký defender mới nhất từ orchestrator',
             ],
         ],
         'tabs' => [
@@ -482,13 +492,24 @@ return [
                     ],
                 ],
             ],
-        ],
-        'sections' => [
-            'a' => [
-                'title' => 'Trạng thái defender',
+            'c' => [
+                'title' => 'Trạng thái',
+                'sections' => [
+                    'a' => [
+                        'title' => 'Trạng thái defender',
+                    ],
+                    'b' => [
+                        'title' => 'Trạng thái triển khai defender'
+                    ],
+                ],
             ],
-            'b' => [
-                'title' => 'Nhật ký defender',
+            'd' => [
+                'title' => 'Nhật ký',
+                'sections' => [
+                    'a' => [
+                        'title' => 'Nhật ký defender',
+                    ],
+                ],
             ],
         ],
     ],

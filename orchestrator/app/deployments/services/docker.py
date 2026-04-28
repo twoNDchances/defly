@@ -17,6 +17,10 @@ COMPOSE_PROJECT_WORKING_DIR_LABEL = "com.docker.compose.project.working_dir"
 
 class DockerService:
     @staticmethod
+    def get_client() -> DockerClient:
+        return DockerClient(base_url=getattr(settings, "SERVER_DOCKER_BASE_URL"))
+
+    @staticmethod
     def normalize_environment_variables(
         raw_environment_variables: Any,
     ) -> dict[str, str]:
@@ -51,7 +55,7 @@ class DockerService:
         environment_variables: dict[str, str],
         source_directory: str,
     ) -> dict[str, Any]:
-        client = DockerClient(base_url=getattr(settings, "SERVER_DOCKER_BASE_URL"))
+        client = DockerService.get_client()
         try:
             image_tag = "defly-defender"
             image, build_logs = client.images.build(
@@ -137,7 +141,7 @@ class DockerService:
 
     @staticmethod
     def cancel_container(*, defender_name: str) -> dict[str, Any]:
-        client = DockerClient(base_url="unix:///var/run/docker.sock")
+        client = DockerService.get_client()
         try:
             container_name = DockerService.get_container_name(defender_name)
             try:
@@ -157,7 +161,7 @@ class DockerService:
 
     @staticmethod
     def cleanup_container(*, defender_name: str) -> None:
-        client = DockerClient(base_url="unix:///var/run/docker.sock")
+        client = DockerService.get_client()
         try:
             container_name = DockerService.get_container_name(defender_name)
             DockerService._remove_existing_container(client, container_name)
@@ -170,7 +174,7 @@ class DockerService:
 
     @staticmethod
     def get_container_logs(*, defender_name: str) -> list[str] | None:
-        client = DockerClient(base_url="unix:///var/run/docker.sock")
+        client = DockerService.get_client()
         try:
             container_name = DockerService.get_container_name(defender_name)
             try:

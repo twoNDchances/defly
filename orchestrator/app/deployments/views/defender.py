@@ -60,7 +60,7 @@ class DefenderView(View):
             return JsonResponse({"detail": str(exception)}, status=400)
 
         await Defenders.objects.filter(id=defender_id).aupdate(
-            deployment_status=Defenders.DeploymentStatus.DEPLOYING,
+            deployment_status=Defenders.DeploymentStatus.PROCESSING,
             deployment_details={"message": "Starting deployment..."},
             updated_at=timezone.now(),
         )
@@ -145,7 +145,7 @@ class DefenderView(View):
             {
                 "detail": "Defender container logs.",
                 "container_name": DockerService.get_container_name(defender.name),
-                "logs": container_logs,
+                "logs": container_logs[-100:],
             }
         )
 

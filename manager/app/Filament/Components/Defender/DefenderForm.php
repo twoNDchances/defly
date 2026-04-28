@@ -45,16 +45,25 @@ class DefenderForm
             return $resolveDeploymentStatus($record) === DeploymentStatus::Successful;
         };
 
-        $shouldShowDeploymentResultFields = static function ($operation, $record) use ($resolveDeploymentStatus): bool {
+        $isDeploymentFailedOnViewOrEdit = static function ($operation, $record) use ($resolveDeploymentStatus): bool {
             if (! in_array($operation, ['view', 'edit'], true)) {
                 return false;
             }
 
-            return in_array(
-                $resolveDeploymentStatus($record),
-                [DeploymentStatus::Failed, DeploymentStatus::Successful],
-                true,
-            );
+            return $resolveDeploymentStatus($record) === DeploymentStatus::Failed;
+        };
+
+        $shouldShowDeploymentStatusFields = static function ($operation, $record) use ($isDeploymentFailedOnViewOrEdit, $isDeploymentSuccessfulOnViewOrEdit): bool {
+            return $isDeploymentFailedOnViewOrEdit($operation, $record)
+                || $isDeploymentSuccessfulOnViewOrEdit($operation, $record);
+        };
+
+        $shouldShowRuntimeStatusFields = static function ($operation, $record) use ($isDeploymentSuccessfulOnViewOrEdit): bool {
+            if (! in_array($operation, ['view', 'edit'], true)) {
+                return false;
+            }
+
+            return $isDeploymentSuccessfulOnViewOrEdit($operation, $record);
         };
 
         return [
@@ -97,7 +106,9 @@ class DefenderForm
                                         ->columnSpan(1)
                                         ->columns(1)
                                         ->schema([
-                                            self::setLabels(),
+                                            self::setLabels()
+                                                ->disabled($isEditLockedBySuccessfulDeployment)
+                                                ->validatedWhenNotDehydrated(fn ($operation, $record): bool => ! $isEditLockedBySuccessfulDeployment($operation, $record)),
                                         ]),
                                 ]),
 
@@ -132,21 +143,43 @@ class DefenderForm
                                                 ->validatedWhenNotDehydrated(fn ($operation, $record): bool => ! $isEditLockedBySuccessfulDeployment($operation, $record)),
                                         ]),
                                 ]),
-                        ]),
-                    Section::make(__('forms.defender.sections.a.title'))
-                        ->columns(1)
-                        ->visible($shouldShowDeploymentResultFields)
-                        ->schema([
-                            self::setStatus(),
-                            self::setDetails(),
-                            self::setDeploymentStatus(),
-                            self::setDeploymentDetails(),
-                        ]),
-                    Section::make(__('forms.defender.sections.b.title'))
-                        ->columns(1)
-                        ->visible($shouldShowDeploymentResultFields)
-                        ->schema([
-                            //
+
+                            Tab::make(__('forms.defender.tabs.c.title'))
+                                ->visible($shouldShowDeploymentStatusFields)
+                                ->columns(1)
+                                ->schema([
+                                    Section::make(__('forms.defender.tabs.c.sections.a.title'))
+                                        ->collapsible()
+                                        ->columns(1)
+                                        ->visible($shouldShowRuntimeStatusFields)
+                                        ->schema([
+                                            self::setStatus(),
+                                            self::setDetails(),
+                                        ]),
+
+                                    Section::make(__('forms.defender.tabs.c.sections.b.title'))
+                                        ->collapsed($isDeploymentSuccessfulOnViewOrEdit)
+                                        ->collapsible()
+                                        ->columns(1)
+                                        ->visible($shouldShowDeploymentStatusFields)
+                                        ->schema([
+                                            self::setDeploymentStatus(),
+                                            self::setDeploymentDetails(),
+                                        ]),
+                                ]),
+
+                            Tab::make(__('forms.defender.tabs.d.title'))
+                                ->visible($isDeploymentSuccessfulOnViewOrEdit)
+                                ->columns(1)
+                                ->schema([
+                                    Section::make(__('forms.defender.tabs.d.sections.a.title'))
+                                        ->collapsible()
+                                        ->columns(1)
+                                        ->schema([
+                                            self::setLog(),
+                                            self::followDefenderButton(),
+                                        ]),
+                                ]),
                         ]),
                 ]),
         ];

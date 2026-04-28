@@ -377,4 +377,15 @@ trait DefenderField
             ->disabled()
             ->visibleOn(['view', 'edit']);
     }
+
+    public static function setLog()
+    {
+        return self::codeEditor(
+            'log',
+            __('models.defender.fields.log'),
+            Language::Json,
+        )
+        ->helperText(__('forms.defender.descriptions.log'))
+        ->disabled();
+    }
 }

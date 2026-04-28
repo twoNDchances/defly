@@ -443,6 +443,7 @@ return [
             'details' => 'Detailed defender status after deployment',
             'deployment_status' => 'Deployment status determines whether this defender can start being used',
             'deploymnet_details' => 'Deployment details to help you identify defender issues',
+            'log' => 'Latest defender logs returned by the orchestrator',
         ],
         'extras' => [
             'status' => [
@@ -451,12 +452,21 @@ return [
             ],
             'deployment_status' => [
                 'pending' => 'Waiting for deployment',
-                'deploying' => 'Deploying',
+                'processing' => 'Processing',
                 'failed' => 'Deployment failed, not ready to use',
                 'successful' => 'Deployment successful, ready to use',
             ],
+            'log' => [
+                'failed_to_follow' => 'Failed to follow defender logs.',
+            ],
             'environment_variables' => [
 
+            ],
+        ],
+        'buttons' => [
+            'follow' => 'Follow',
+            'tooltips' => [
+                'follow' => 'Fetch the latest defender logs from the orchestrator',
             ],
         ],
         'tabs' => [
@@ -482,13 +492,24 @@ return [
                     ],
                 ],
             ],
-        ],
-        'sections' => [
-            'a' => [
-                'title' => 'Defender status',
+            'c' => [
+                'title' => 'Status',
+                'sections' => [
+                    'a' => [
+                        'title' => 'Defender status',
+                    ],
+                    'b' => [
+                        'title' => 'Defender deployment status',
+                    ],
+                ],
             ],
-            'b' => [
-                'title' => 'Defender logs',
+            'd' => [
+                'title' => 'Logs',
+                'sections' => [
+                    'a' => [
+                        'title' => 'Defender logs',
+                    ],
+                ],
             ],
         ],
     ],

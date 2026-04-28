@@ -19,7 +19,7 @@ class DefenderPolicy
 
     private const PROTECTED_STATUSES = [
         DeploymentStatus::Pending,
-        DeploymentStatus::Deploying,
+        DeploymentStatus::Processing,
     ];
 
     protected function isProtectedStatus(Defender $defender): bool
