@@ -78,7 +78,6 @@ class DeflyManagerPanelProvider extends PanelProvider
                 NavigationGroup::make()
                     ->label(fn (): string => __('navigations.groups.security')),
             ])
-            ->unsavedChangesAlerts()
             ->plugins([
                 FilamentLanguageSwitcherPlugin::make()
                     ->locales(['vi', 'en'])
