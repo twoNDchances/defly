@@ -13,7 +13,7 @@ use Illuminate\Support\Str;
 trait PolicyButton
 {
     use Button;
-    
+
     public static function attachPolicesAndLockButton()
     {
         return self::attachAndLockButton()

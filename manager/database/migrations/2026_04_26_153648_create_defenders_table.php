@@ -19,7 +19,7 @@ return new class extends Migration
             $table->enum('status', ['normal', 'abnormal'])->nullable();
             $table->json('details')->nullable();
             $table->enum('deployment_status', ['pending', 'deploying', 'failed', 'successful'])->nullable();
-            $table->longText('deployment_details')->nullable();
+            $table->json('deployment_details')->nullable();
             $table->longText('description')->nullable();
             $table->foreignUuid('created_by')->nullable()->index()->constrained('users')->nullOnDelete();
             $table->timestamps();

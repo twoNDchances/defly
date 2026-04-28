@@ -56,6 +56,8 @@ return [
         'buttons' => [
             'deploy_button' => 'Deploy',
             'deploy_bulk_button' => 'Deploy selected items',
+            'cancel_button' => 'Cancel',
+            'cancel_bulk_button' => 'Cancel selected items',
         ],
     ],
 ];

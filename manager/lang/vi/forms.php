@@ -461,19 +461,34 @@ return [
         ],
         'tabs' => [
             'a' => [
-                'title' => 'Định nghĩa defender',
+                'title' => 'Chính',
+                'sections' => [
+                    'a' => [
+                        'title' => 'Định nghĩa defender',
+                    ],
+                ],
             ],
             'b' => [
+                'title' => 'Biến môi trường',
+                'sections' => [
+                    'a' => [
+                        'title' => 'Chung',
+                    ],
+                    'b' => [
+                        'title' => 'Server',
+                    ],
+                    'c' => [
+                        'title' => 'Proxy',
+                    ],
+                ],
+            ],
+        ],
+        'sections' => [
+            'a' => [
                 'title' => 'Trạng thái defender',
             ],
-            'c' => [
-                'title' => 'Chung',
-            ],
-            'd' => [
-                'title' => 'Server',
-            ],
-            'e' => [
-                'title' => 'Proxy',
+            'b' => [
+                'title' => 'Nhật ký defender',
             ],
         ],
     ],

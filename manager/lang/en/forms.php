@@ -461,19 +461,34 @@ return [
         ],
         'tabs' => [
             'a' => [
-                'title' => 'Defender definition',
+                'title' => 'Main',
+                'sections' => [
+                    'a' => [
+                        'title' => 'Defender definition',
+                    ],
+                ],
             ],
             'b' => [
+                'title' => 'Environment variables',
+                'sections' => [
+                    'a' => [
+                        'title' => 'Common',
+                    ],
+                    'b' => [
+                        'title' => 'Server',
+                    ],
+                    'c' => [
+                        'title' => 'Proxy',
+                    ],
+                ],
+            ],
+        ],
+        'sections' => [
+            'a' => [
                 'title' => 'Defender status',
             ],
-            'c' => [
-                'title' => 'General',
-            ],
-            'd' => [
-                'title' => 'Server',
-            ],
-            'e' => [
-                'title' => 'Proxy',
+            'b' => [
+                'title' => 'Defender logs',
             ],
         ],
     ],

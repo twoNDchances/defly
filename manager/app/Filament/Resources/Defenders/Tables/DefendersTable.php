@@ -21,13 +21,14 @@ class DefendersTable
                 DefenderTable::bulkButtonGroup(),
             ])
             ->recordActions([
-                DefenderTable::buttonGroup(more: [DefenderTable::deployDefenderButton()]),
+                DefenderTable::buttonGroup(more: [DefenderTable::deployDefenderButton(), DefenderTable::cancelDefenderButton()]),
             ])
             ->toolbarActions([
                 DefenderTable::bulkButtonGroup(
                     false,
                     [
                         DefenderTable::deployDefenderBulkButton(),
+                        DefenderTable::cancelDefenderBulkButton(),
                         DefenderTable::deleteDoneBulkButton(),
                     ],
                 ),
