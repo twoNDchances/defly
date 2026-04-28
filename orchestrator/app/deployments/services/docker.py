@@ -2,6 +2,7 @@ from os import getenv
 from re import sub
 from typing import Any
 
+from django.conf import settings
 from docker import DockerClient
 from docker.errors import BuildError, NotFound
 
@@ -50,7 +51,7 @@ class DockerService:
         environment_variables: dict[str, str],
         source_directory: str,
     ) -> dict[str, Any]:
-        client = DockerClient(base_url="unix:///var/run/docker.sock")
+        client = DockerClient(base_url=getattr(settings, "SERVER_DOCKER_BASE_URL"))
         try:
             image_tag = "defly-defender"
             image, build_logs = client.images.build(

@@ -36,6 +36,7 @@ env = Env(
     SERVER_METHOD_INSPECT=(str, "get"),
     SERVER_METHOD_CANCEL=(str, "delete"),
     SERVER_SOURCE_DEFENDER=(str, "./defender"),
+    SERVER_DOCKER_BASE_URL=(str, "tcp://localhost:2375"),
 )
 
 Env.read_env(BASE_DIR / ".env")
