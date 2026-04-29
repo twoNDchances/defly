@@ -65,6 +65,9 @@ return [
                     'skip_verify' => (bool) env('ORCHESTRATOR_TLS_SKIP_VERIFY', false),
                     'cert_file' => env('ORCHESTRATOR_TLS_CERT_FILE', 'storage/tls/orchestrator/orchestrator.crt'),
                 ],
+                'headers' => [
+                    'email_header_key' => env('ORCHESTRATOR_EMAIL_HEADER_KEY', 'X-Executor'),
+                ],
             ],
         ],
         'default_credentials' => [

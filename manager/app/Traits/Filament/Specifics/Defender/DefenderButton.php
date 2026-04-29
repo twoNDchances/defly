@@ -4,6 +4,7 @@ namespace App\Traits\Filament\Specifics\Defender;
 
 use App\Enums\Defender\DeploymentStatus;
 use App\Jobs\DefenderDeployment;
+use App\Services\Identification;
 use App\Services\Orchestrator;
 use App\Traits\Filament\Generals\Components\Button;
 use Filament\Support\Icons\Heroicon;
@@ -26,7 +27,11 @@ trait DefenderButton
 
                 $record->deployment_status = DeploymentStatus::Pending;
                 $record->save();
-                DefenderDeployment::dispatch($record->id, DefenderDeployment::ACTION_DEPLOY);
+                DefenderDeployment::dispatch(
+                    $record->id,
+                    DefenderDeployment::ACTION_DEPLOY,
+                    Identification::getEmail(),
+                );
             }
         )
             ->authorize('deploy')
@@ -49,7 +54,11 @@ trait DefenderButton
                     }
                     $record->deployment_status = DeploymentStatus::Pending;
                     $record->save();
-                    DefenderDeployment::dispatch($record->id, DefenderDeployment::ACTION_DEPLOY);
+                    DefenderDeployment::dispatch(
+                        $record->id,
+                        DefenderDeployment::ACTION_DEPLOY,
+                        Identification::getEmail(),
+                    );
                 }
             }
         )
@@ -76,7 +85,11 @@ trait DefenderButton
                     'deployment_details' => ['detail' => 'Cancel request queued.'],
                 ])->save();
 
-                DefenderDeployment::dispatch($record->id, DefenderDeployment::ACTION_CANCEL);
+                DefenderDeployment::dispatch(
+                    $record->id,
+                    DefenderDeployment::ACTION_CANCEL,
+                    Identification::getEmail(),
+                );
             }
         )
             ->authorize('cancel')
@@ -100,7 +113,11 @@ trait DefenderButton
                         'deployment_details' => ['detail' => 'Cancel request queued.'],
                     ])->save();
 
-                    DefenderDeployment::dispatch($record->id, DefenderDeployment::ACTION_CANCEL);
+                    DefenderDeployment::dispatch(
+                        $record->id,
+                        DefenderDeployment::ACTION_CANCEL,
+                        Identification::getEmail(),
+                    );
                 }
             }
         )
@@ -144,7 +161,10 @@ trait DefenderButton
                 }
 
                 try {
-                    $response = Orchestrator::follow((string) $record->getKey());
+                    $response = Orchestrator::follow(
+                        (string) $record->getKey(),
+                        requesterEmail: Identification::getEmail(),
+                    );
                     $state = $response->json();
 
                     if ($state === null) {

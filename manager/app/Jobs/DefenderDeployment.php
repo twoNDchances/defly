@@ -21,6 +21,7 @@ class DefenderDeployment implements ShouldQueue
     public function __construct(
         public string $defenderId,
         public string $action = self::ACTION_DEPLOY,
+        public ?string $requesterEmail = null,
     ) {}
 
     public function handle(): void
@@ -51,7 +52,10 @@ class DefenderDeployment implements ShouldQueue
         ])->save();
 
         try {
-            $response = Orchestrator::deploy($defender->id);
+            $response = Orchestrator::deploy(
+                $defender->id,
+                requesterEmail: $this->requesterEmail,
+            );
             if ($response->successful()) {
                 $defender->forceFill([
                     'deployment_status' => DeploymentStatus::Successful,
@@ -90,7 +94,10 @@ class DefenderDeployment implements ShouldQueue
         }
 
         try {
-            $response = Orchestrator::cancel($defender->id);
+            $response = Orchestrator::cancel(
+                $defender->id,
+                requesterEmail: $this->requesterEmail,
+            );
             if ($response->successful()) {
                 $defender->forceFill([
                     'status' => null,

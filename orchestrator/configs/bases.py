@@ -29,6 +29,7 @@ env = Env(
     SERVER_MANAGER=(str, "manager"),
     SERVER_USERNAME=(str, "defly-orchestrator"),
     SERVER_PASSWORD=(str, "P@55w0rd"),
+    SERVER_EMAIL_HEADER_KEY=(str, "X-Executor"),
     SERVER_PATH_PREFIX=(str, "api/v1"),
     SERVER_PATH_DEPLOYMENT=(str, "deployments"),
     SERVER_METHOD_DEPLOY=(str, "post"),
@@ -64,6 +65,7 @@ MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "app.bases.middlewares.ServerManagerOnlyMiddleware",
     "app.bases.middlewares.ServerBasicAuthMiddleware",
+    "app.deployments.middlewares.ServerPermissionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
@@ -115,6 +117,10 @@ USE_TZ = env.bool("USE_TZ")
 SERVER_MANAGER = require_non_empty("SERVER_MANAGER", env.str("SERVER_MANAGER"))
 SERVER_USERNAME = validate_username("SERVER_USERNAME", env.str("SERVER_USERNAME"))
 SERVER_PASSWORD = require_non_empty("SERVER_PASSWORD", env.str("SERVER_PASSWORD"))
+SERVER_EMAIL_HEADER_KEY = require_non_empty(
+    "SERVER_EMAIL_HEADER_KEY",
+    env.str("SERVER_EMAIL_HEADER_KEY"),
+)
 SERVER_PATH_PREFIX = validate_path_value(
     "SERVER_PATH_PREFIX", env.str("SERVER_PATH_PREFIX")
 )

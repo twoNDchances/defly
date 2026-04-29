@@ -16,11 +16,15 @@ abstract class Connector
 
     protected static ?string $password = null;
 
-    protected static function request(): PendingRequest
+    protected static function request(array $headers = []): PendingRequest
     {
         $request = Http::baseUrl(static::baseUri())
             ->acceptJson()
             ->asJson();
+        $requestHeaders = array_merge(static::requestHeaders(), $headers);
+        if ($requestHeaders !== []) {
+            $request = $request->withHeaders($requestHeaders);
+        }
         $requestOptions = static::requestOptions();
         if ($requestOptions !== []) {
             $request = $request->withOptions($requestOptions);
@@ -41,16 +45,20 @@ abstract class Connector
         string $method,
         array $data = [],
         array $query = [],
+        array $headers = [],
     ): Response {
         $path = static::normalizePath($path);
         $method = strtolower(trim($method));
 
         return match ($method) {
-            'get' => static::request()->get($path, $query !== [] ? $query : $data),
-            'post' => static::request()->post($path, $data),
-            'put' => static::request()->put($path, $data),
-            'patch' => static::request()->patch($path, $data),
-            'delete' => static::request()->delete($path, $data),
+            'get' => static::request($headers)->get(
+                $path,
+                $query !== [] ? $query : $data
+            ),
+            'post' => static::request($headers)->post($path, $data),
+            'put' => static::request($headers)->put($path, $data),
+            'patch' => static::request($headers)->patch($path, $data),
+            'delete' => static::request($headers)->delete($path, $data),
         };
     }
 
@@ -75,6 +83,11 @@ abstract class Connector
     }
 
     protected static function requestOptions(): array
+    {
+        return [];
+    }
+
+    protected static function requestHeaders(): array
     {
         return [];
     }

@@ -7,30 +7,45 @@ use Override;
 
 class Orchestrator extends Connector
 {
-    public static function deploy(string $defenderId, array $data = []): Response
+    public static function deploy(
+        string $defenderId,
+        array $data = [],
+        ?string $requesterEmail = null,
+    ): Response
     {
         return static::send(
             static::deploymentPath($defenderId),
             config('customization.backend.apis.orchestrator.paths.deployment.methods.deploy', 'post'),
             $data,
+            headers: static::emailHeader($requesterEmail),
         );
     }
 
-    public static function follow(string $defenderId, array $query = []): Response
+    public static function follow(
+        string $defenderId,
+        array $query = [],
+        ?string $requesterEmail = null,
+    ): Response
     {
         return static::send(
             static::deploymentPath($defenderId),
             config('customization.backend.apis.orchestrator.paths.deployment.methods.follow', 'get'),
             query: $query,
+            headers: static::emailHeader($requesterEmail),
         );
     }
 
-    public static function cancel(string $defenderId, array $data = []): Response
+    public static function cancel(
+        string $defenderId,
+        array $data = [],
+        ?string $requesterEmail = null,
+    ): Response
     {
         return static::send(
             static::deploymentPath($defenderId),
             config('customization.backend.apis.orchestrator.paths.deployment.methods.cancel', 'delete'),
             $data,
+            headers: static::emailHeader($requesterEmail),
         );
     }
 
@@ -90,5 +105,39 @@ class Orchestrator extends Connector
         }
 
         return ['verify' => $certificatePath];
+    }
+
+    #[Override]
+    protected static function requestHeaders(): array
+    {
+        $headerName = trim((string) config(
+            'customization.backend.apis.orchestrator.headers.email_header_key',
+            'X-Executor',
+        ));
+        $email = trim((string) Identification::getEmail());
+
+        if (($headerName === '') || ($email === '')) {
+            return [];
+        }
+
+        return [$headerName => $email];
+    }
+
+    protected static function emailHeader(?string $requesterEmail = null): array
+    {
+        $headerName = trim((string) config(
+            'customization.backend.apis.orchestrator.headers.email_header_key',
+            'X-Executor',
+        ));
+        if ($headerName === '') {
+            return [];
+        }
+
+        $email = trim((string) ($requesterEmail ?? ''));
+        if ($email === '') {
+            return static::requestHeaders();
+        }
+
+        return [$headerName => $email];
     }
 }
