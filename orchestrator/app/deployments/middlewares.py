@@ -31,19 +31,11 @@ class ServerPermissionMiddleware(ServerHelperMiddleware):
             )
 
         user = PermissionService.resolve_user_by_email(user_email)
-        if user is None:
-            return JsonResponse({"detail": "Forbidden: user is not found."}, status=403)
-
-        if not PermissionService.user_is_active_and_verified(user):
-            return JsonResponse(
-                {"detail": "Forbidden: user is not active or verified."},
-                status=403,
-            )
-
-        if bool(user.is_root):
-            return self.get_response(request)
-
-        if not PermissionService.user_has_action_permission(user=user, action=action):
+        if not PermissionService.can(
+            user=user,
+            model=PermissionService.PERMISSION_MODEL,
+            action=action,
+        ):
             return JsonResponse(
                 {"detail": "Forbidden: user does not have permission."},
                 status=403,
