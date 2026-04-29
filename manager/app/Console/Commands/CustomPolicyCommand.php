@@ -39,7 +39,7 @@ class CustomPolicyCommand extends Command
 
 namespace App\Policies;
 
-use App\Models\\{$modelName};
+use App\Models\{$modelName};
 use App\Traits\Policies\Basic;
 
 class {$policyName}

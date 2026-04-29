@@ -37,9 +37,9 @@ return [
     ],
     'rule' => [
         'actions' => 'Hành động sử dụng',
-        'policies' => 'Chính sách sử dụng',
+        'principles' => 'Nguyên tắc sử dụng',
     ],
-    'policy' => [
+    'principle' => [
         'rules' => 'Quy tắc sử dụng',
         'defenders' => 'Defender sử dụng',
         'buttons' => [
@@ -51,7 +51,7 @@ return [
         'defenders' => 'Defender sử dụng',
     ],
     'defender' => [
-        'policies' => 'Chính sách sử dụng',
+        'principles' => 'Nguyên tắc sử dụng',
         'decisions' => 'Phán quyết sử dụng',
         'buttons' => [
             'deploy_button' => 'Triển khai',

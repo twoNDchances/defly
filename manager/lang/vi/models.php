@@ -240,8 +240,8 @@ return [
             ],
         ],
     ],
-    'policy' => [
-        'name' => 'Chính sách',
+    'principle' => [
+        'name' => 'Nguyên tắc',
         'fields' => [
             'name' => 'Tên',
             'level' => 'Cấp độ thực thi',

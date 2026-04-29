@@ -37,9 +37,9 @@ return [
     ],
     'rule' => [
         'actions' => 'Actions in use',
-        'policies' => 'Policies in use',
+        'principles' => 'Principles in use',
     ],
-    'policy' => [
+    'principle' => [
         'rules' => 'Rules in use',
         'defenders' => 'Defenders in use',
         'buttons' => [
@@ -51,7 +51,7 @@ return [
         'defenders' => 'Defenders in use',
     ],
     'defender' => [
-        'policies' => 'Policies in use',
+        'principles' => 'Principles in use',
         'decisions' => 'Decisions in use',
         'buttons' => [
             'deploy_button' => 'Deploy',

@@ -6,7 +6,7 @@ use App\Filament\Resources\Defenders\Pages\CreateDefender;
 use App\Filament\Resources\Defenders\Pages\EditDefender;
 use App\Filament\Resources\Defenders\Pages\ListDefenders;
 use App\Filament\Resources\Defenders\RelationManagers\DecisionsRelationManager;
-use App\Filament\Resources\Defenders\RelationManagers\PoliciesRelationManager;
+use App\Filament\Resources\Defenders\RelationManagers\PrinciplesRelationManager;
 use App\Filament\Resources\Defenders\Schemas\DefenderForm;
 use App\Filament\Resources\Defenders\Tables\DefendersTable;
 use App\Models\Defender;
@@ -40,7 +40,7 @@ class DefenderResource extends Resource
     public static function getRelations(): array
     {
         return [
-            PoliciesRelationManager::class,
+            PrinciplesRelationManager::class,
             DecisionsRelationManager::class,
         ];
     }

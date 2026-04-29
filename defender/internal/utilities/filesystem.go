@@ -1,6 +1,7 @@
 package utilities
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -60,8 +61,7 @@ func CreateFileIfNotExists(path string) (*os.File, error) {
 		return nil, err
 	}
 
-	dir := filepath.Dir(path)
-	if err := os.MkdirAll(dir, os.ModePerm); err != nil {
+	if err := EnsureParentDir(path); err != nil {
 		return nil, err
 	}
 
@@ -71,6 +71,32 @@ func CreateFileIfNotExists(path string) (*os.File, error) {
 	}
 
 	return file, nil
+}
+
+func EnsureParentDir(path string) error {
+	dir := filepath.Dir(path)
+	if dir == "." || dir == "" {
+		return nil
+	}
+
+	return os.MkdirAll(dir, 0o755)
+}
+
+func FileExists(path string) (bool, error) {
+	info, err := os.Stat(path)
+	if err == nil {
+		if info.IsDir() {
+			return false, fmt.Errorf("%s is a directory", path)
+		}
+
+		return true, nil
+	}
+
+	if os.IsNotExist(err) {
+		return false, nil
+	}
+
+	return false, err
 }
 
 func cleanPath(path string) (string, bool) {

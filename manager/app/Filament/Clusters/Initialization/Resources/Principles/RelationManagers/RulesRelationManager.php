@@ -1,0 +1,57 @@
+<?php
+
+namespace App\Filament\Clusters\Initialization\Resources\Principles\RelationManagers;
+
+use App\Filament\Components\Rule\RuleForm;
+use App\Filament\Components\Rule\RuleTable;
+use App\Traits\Filament\Specifics\Rule\RuleButton;
+use App\Traits\Filament\Specifics\Rule\RuleData;
+use Filament\Resources\RelationManagers\RelationManager;
+use Filament\Schemas\Schema;
+use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
+
+class RulesRelationManager extends RelationManager
+{
+    use RuleButton, RuleData;
+
+    protected static string $relationship = 'rules';
+
+    public function form(Schema $schema): Schema
+    {
+        return $schema->components(RuleForm::build());
+    }
+
+    public function table(Table $table): Table
+    {
+        $principlePhase = $this->getOwnerRecord()->getRawOriginal('phase');
+
+        return $table
+            ->recordTitleAttribute('name')
+            ->modifyQueryUsing(fn ($query) => $query->where('phase', $principlePhase))
+            ->columns(RuleTable::build())
+            ->filters([
+                //
+            ])
+            ->headerActions([
+                self::attachRulesAndLockButton()->recordSelectOptionsQuery(fn ($query) => $query->where('phase', $principlePhase)),
+            ])
+            ->recordActions([
+                self::buttonGroup(edit: false, delete: false, more: [self::detachRulesAndUnlockButton()]),
+            ])
+            ->toolbarActions([
+                self::bulkButtonGroup(false, [self::detachRulesAndUnlockBulkButton()]),
+            ])
+            ->reorderable('order');
+    }
+
+    public static function getTitle(Model $ownerRecord, string $pageClass): string
+    {
+        return __('models.rule.name');
+    }
+
+    public static function getRecordLabel(): ?string
+    {
+        return __('models.rule.name');
+    }
+}

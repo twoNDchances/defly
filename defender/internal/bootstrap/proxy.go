@@ -1,7 +1,8 @@
 package bootstrap
 
 import (
-	"defly-defender/internal/config"
+	"defly-defender/internal/configs"
+	configproxy "defly-defender/internal/configs/proxy"
 	envcommon "defly-defender/internal/environments/common"
 	envlogger "defly-defender/internal/environments/logger"
 	envproxy "defly-defender/internal/environments/proxy"
@@ -10,7 +11,7 @@ import (
 func NewProxy() error {
 	from := "PROXY"
 	proxyTrustedEnable := envproxy.ProxyTrustedEnable.Value()
-	proxyTrusted := config.Trusted{
+	proxyTrusted := configproxy.Trusted{
 		Enable: proxyTrustedEnable,
 	}
 	if proxyTrustedEnable {
@@ -18,7 +19,7 @@ func NewProxy() error {
 	}
 
 	proxyLoggerFileEnable := envlogger.ProxyLoggerFileEnable.Value()
-	proxyLogger := config.Logger{
+	proxyLogger := configs.Logger{
 		From:     from,
 		Format:   envlogger.ProxyLoggerFormat.Value(),
 		Timezone: envlogger.ProxyLoggerTimezone.Value(),
@@ -29,7 +30,7 @@ func NewProxy() error {
 	}
 
 	errorFileEnable := envcommon.ErrorFileEnable.Value()
-	proxyError := config.Error{
+	proxyError := configs.Error{
 		From:       from,
 		Label:      "runtime",
 		FileEnable: errorFileEnable,
@@ -38,12 +39,12 @@ func NewProxy() error {
 		proxyError.DirectoryPath = envcommon.ErrorDirectoryPath.Value()
 	}
 
-	proxy := config.Proxy{
-		Address: config.Address{
+	proxy := configproxy.Proxy{
+		Address: configs.Address{
 			Port: envproxy.ProxyPort.Value(),
 		},
 		Logger: proxyLogger,
-		Severity: config.Severity{
+		Severity: configproxy.Severity{
 			Info:      envproxy.ProxySeverityInfo.Value(),
 			Notice:    envproxy.ProxySeverityNotice.Value(),
 			Warning:   envproxy.ProxySeverityWarning.Value(),
@@ -52,7 +53,7 @@ func NewProxy() error {
 			Alert:     envproxy.ProxySeverityAlert.Value(),
 			Emergency: envproxy.ProxySeverityEmergency.Value(),
 		},
-		Violation: config.Violation{
+		Violation: configproxy.Violation{
 			Score: envproxy.ProxyViolationScore.Value(),
 			Level: envproxy.ProxyViolationLevel.Value(),
 		},

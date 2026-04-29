@@ -1,7 +1,7 @@
 package bootstrap
 
 import (
-	"defly-defender/internal/config"
+	configabout "defly-defender/internal/configs/about"
 	envcommon "defly-defender/internal/environments/common"
 
 	"github.com/spf13/viper"
@@ -18,7 +18,7 @@ func NewAbout() error {
 		return err
 	}
 
-	var about config.About
+	var about configabout.About
 	if err := viper.Unmarshal(&about); err != nil {
 		return err
 	}

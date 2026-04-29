@@ -31,9 +31,9 @@ trait DefenderColumn
             ->badge();
     }
 
-    public static function getPolicies()
+    public static function getPrinciples()
     {
-        return self::relationshipColumn('policies.name', __('tables.defender.policies'));
+        return self::relationshipColumn('principles.name', __('tables.defender.principles'));
     }
 
     public static function getDecisions()

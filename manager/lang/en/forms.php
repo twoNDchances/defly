@@ -333,24 +333,24 @@ return [
             ],
         ],
     ],
-    'policy' => [
+    'principle' => [
         'text_examples' => [
-            'name' => 'policy',
+            'name' => 'principle',
             'level' => '1',
         ],
         'descriptions' => [
-            'name' => 'A unique kebab-case name for this policy',
-            'level' => 'Violation level this policy belongs to. The policy is skipped if this value is higher than the violation level configured in Defender',
-            'phase' => 'Phase where the policy will be executed',
-            'validation_status' => 'Status that decides whether the policy can be applied to Defender',
-            'validation_details' => 'Detailed validation results so you can identify policy errors',
+            'name' => 'A unique kebab-case name for this principle',
+            'level' => 'Violation level this principle belongs to. The principle is skipped if this value is higher than the violation level configured in Defender',
+            'phase' => 'Phase where the principle will be executed',
+            'validation_status' => 'Status that decides whether the principle can be applied to Defender',
+            'validation_details' => 'Detailed validation results so you can identify principle errors',
         ],
         'tabs' => [
             'a' => [
-                'title' => 'Policy definition',
+                'title' => 'Principle definition',
             ],
             'b' => [
-                'title' => 'Policy status',
+                'title' => 'Principle status',
             ],
         ],
         'extras' => [

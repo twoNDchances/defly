@@ -333,24 +333,24 @@ return [
             ],
         ],
     ],
-    'policy' => [
+    'principle' => [
         'text_examples' => [
-            'name' => 'chinh-sach',
+            'name' => 'nguyen-tac',
             'level' => '1',
         ],
         'descriptions' => [
-            'name' => 'Tên duy nhất theo kiểu kebab đại diện chính sách này',
-            'level' => 'Cập độ vi phạm mà chính sách thuộc về, chính sách sẽ bị bỏ qua nếu giá trị này lớn hơn cấp độ vi phạm được cấu hình trong Defender',
-            'phase' => 'Giai đoạn mà chính sách sẽ được thực thi',
-            'validation_status' => 'Trạng thái sẽ quyết định chính sách có được áp dụng vào Defender hay không',
-            'validation_details' => 'Chi tiết các xác thực dữ liệu, mục đích để bạn nắm được chính sách đang có lỗi gì',
+            'name' => 'Tên duy nhất theo kiểu kebab đại diện nguyên tắc này',
+            'level' => 'Cập độ vi phạm mà nguyên tắc thuộc về, nguyên tắc sẽ bị bỏ qua nếu giá trị này lớn hơn cấp độ vi phạm được cấu hình trong Defender',
+            'phase' => 'Giai đoạn mà nguyên tắc sẽ được thực thi',
+            'validation_status' => 'Trạng thái sẽ quyết định nguyên tắc có được áp dụng vào Defender hay không',
+            'validation_details' => 'Chi tiết các xác thực dữ liệu, mục đích để bạn nắm được nguyên tắc đang có lỗi gì',
         ],
         'tabs' => [
             'a' => [
-                'title' => 'Định nghĩa chính sách',
+                'title' => 'Định nghĩa nguyên tắc',
             ],
             'b' => [
-                'title' => 'Trạng thái chính sách',
+                'title' => 'Trạng thái nguyên tắc',
             ],
         ],
         'extras' => [

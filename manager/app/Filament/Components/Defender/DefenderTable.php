@@ -15,7 +15,7 @@ class DefenderTable
             self::getProxyPort(),
             self::getStatus(),
             self::getDeploymentStatus(),
-            self::getPolicies(),
+            self::getPrinciples(),
             self::getDecisions(),
             self::getLabels(),
             self::getCreatedBy(),

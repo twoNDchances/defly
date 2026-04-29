@@ -16,47 +16,17 @@ var (
 				WithConstraint("Must be a valid relative URL path without leading/trailing slash or spaces", validateServerPath).
 				Required()
 
-	ServerPathState = ferrite.String("SERVER_CONTROLLER_PATH_STATE", "Path segment for Defender Server state routes").
-			WithDefault("state").
-			WithConstraint("Must be a valid relative URL path without leading/trailing slash or spaces", validateServerPath).
-			Required()
-
-	ServerMethodCheck = ferrite.Enum("SERVER_CONTROLLER_METHOD_CHECK", "HTTP method for checking state").
-				WithMembers("get", "post", "put", "patch", "delete").
-				WithDefault("get").
-				Required()
-
-	ServerMethodInspect = ferrite.Enum("SERVER_CONTROLLER_METHOD_INSPECT", "HTTP method for inspecting state").
-				WithMembers("get", "post", "put", "patch", "delete").
-				WithDefault("post").
-				Required()
-
-	ServerPathGate = ferrite.String("SERVER_CONTROLLER_PATH_GATE", "Path segment for Defender proxy gate routes").
-			WithDefault("gate").
-			WithConstraint("Must be a valid relative URL path without leading/trailing slash or spaces", validateServerPath).
-			Required()
-
-	ServerMethodLock = ferrite.Enum("SERVER_CONTROLLER_METHOD_LOCK", "HTTP method for locking Defender proxy gate").
-				WithMembers("post", "put", "patch", "delete").
-				WithDefault("put").
-				Required()
-
-	ServerMethodUnlock = ferrite.Enum("SERVER_CONTROLLER_METHOD_UNLOCK", "HTTP method for unlocking Defender proxy gate").
-				WithMembers("post", "put", "patch", "delete").
-				WithDefault("delete").
-				Required()
-
-	ServerPathPolicies = ferrite.String("SERVER_CONTROLLER_PATH_POLICIES", "Path segment for Defender Server policy routes").
-				WithDefault("policies").
+	ServerPathPrinciples = ferrite.String("SERVER_CONTROLLER_PATH_PRINCIPLES", "Path segment for Defender Server principle routes").
+				WithDefault("principles").
 				WithConstraint("Must be a valid relative URL path without leading/trailing slash or spaces", validateServerPath).
 				Required()
 
-	ServerMethodApply = ferrite.Enum("SERVER_CONTROLLER_METHOD_APPLY", "HTTP method for applying policies").
+	ServerMethodApply = ferrite.Enum("SERVER_CONTROLLER_METHOD_APPLY", "HTTP method for applying principles").
 				WithMembers("post", "put", "patch", "delete").
 				WithDefault("put").
 				Required()
 
-	ServerMethodRevoke = ferrite.Enum("SERVER_CONTROLLER_METHOD_REVOKE", "HTTP method for revoking policies").
+	ServerMethodRevoke = ferrite.Enum("SERVER_CONTROLLER_METHOD_REVOKE", "HTTP method for revoking principles").
 				WithMembers("post", "put", "patch", "delete").
 				WithDefault("delete").
 				Required()

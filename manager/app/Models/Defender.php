@@ -36,9 +36,9 @@ class Defender extends Model
         ];
     }
 
-    public function policies()
+    public function principles()
     {
-        return $this->belongsToMany(Policy::class, 'defenders_policies', 'defender', 'policy')
+        return $this->belongsToMany(Principle::class, 'defenders_principles', 'defender', 'principle')
             ->withPivot('order')
             ->orderByPivot('order');
     }

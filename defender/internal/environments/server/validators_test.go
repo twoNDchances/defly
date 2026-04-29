@@ -153,7 +153,7 @@ func TestValidateDistinctValues(t *testing.T) {
 			values: map[string]string{
 				"SERVER_PATH_STATE":     "state",
 				"SERVER_PATH_GATE":      "gate",
-				"SERVER_PATH_POLICIES":  "policies",
+				"SERVER_PATH_PRINCIPLES": "principles",
 				"SERVER_PATH_DECISIONS": "decisions",
 			},
 			wantErr: false,
@@ -162,7 +162,7 @@ func TestValidateDistinctValues(t *testing.T) {
 			values: map[string]string{
 				"SERVER_PATH_STATE":     "state",
 				"SERVER_PATH_GATE":      "gate",
-				"SERVER_PATH_POLICIES":  "gate",
+				"SERVER_PATH_PRINCIPLES": "gate",
 				"SERVER_PATH_DECISIONS": "decisions",
 			},
 			wantErr: true,

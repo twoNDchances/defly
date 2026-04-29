@@ -240,8 +240,8 @@ return [
             ],
         ],
     ],
-    'policy' => [
-        'name' => 'Policy',
+    'principle' => [
+        'name' => 'Principle',
         'fields' => [
             'name' => 'Name',
             'level' => 'Execution level',

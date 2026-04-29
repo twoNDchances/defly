@@ -1,7 +1,8 @@
 package bootstrap
 
 import (
-	"defly-defender/internal/config"
+	"defly-defender/internal/configs"
+	configserver "defly-defender/internal/configs/server"
 	envcommon "defly-defender/internal/environments/common"
 	envlogger "defly-defender/internal/environments/logger"
 	envserver "defly-defender/internal/environments/server"
@@ -10,7 +11,7 @@ import (
 func NewServer() error {
 	from := "SERVER"
 	serverHTTPSEnable := envserver.ServerHTTPSEnable.Value()
-	serverTls := config.Tls{
+	serverTls := configs.Tls{
 		Enable: serverHTTPSEnable,
 		Name:   envcommon.DefenderName.Value(),
 	}
@@ -19,19 +20,13 @@ func NewServer() error {
 		return err
 	}
 
-	serverController := config.Controller{
-		Path: config.Path{
-			Prefix:    envserver.ServerPathPrefix.Value(),
-			State:     envserver.ServerPathState.Value(),
-			Gate:      envserver.ServerPathGate.Value(),
-			Policies:  envserver.ServerPathPolicies.Value(),
-			Decisions: envserver.ServerPathDecisions.Value(),
+	serverController := configserver.Controller{
+		Path: configserver.Path{
+			Prefix:     envserver.ServerPathPrefix.Value(),
+			Principles: envserver.ServerPathPrinciples.Value(),
+			Decisions:  envserver.ServerPathDecisions.Value(),
 		},
-		Method: config.Method{
-			Check:     envserver.ServerMethodCheck.Value(),
-			Inspect:   envserver.ServerMethodInspect.Value(),
-			Lock:      envserver.ServerMethodLock.Value(),
-			Unlock:    envserver.ServerMethodUnlock.Value(),
+		Method: configserver.Method{
 			Apply:     envserver.ServerMethodApply.Value(),
 			Revoke:    envserver.ServerMethodRevoke.Value(),
 			Implement: envserver.ServerMethodImplement.Value(),
@@ -40,7 +35,7 @@ func NewServer() error {
 	}
 
 	serverLoggerFileEnable := envlogger.ServerLoggerFileEnable.Value()
-	serverLogger := config.Logger{
+	serverLogger := configs.Logger{
 		From:     from,
 		Format:   envlogger.ServerLoggerFormat.Value(),
 		Timezone: envlogger.ServerLoggerTimezone.Value(),
@@ -51,7 +46,7 @@ func NewServer() error {
 	}
 
 	errorFileEnable := envcommon.ErrorFileEnable.Value()
-	serverError := config.Error{
+	serverError := configs.Error{
 		From:       from,
 		Label:      "runtime",
 		FileEnable: errorFileEnable,
@@ -61,21 +56,21 @@ func NewServer() error {
 	}
 
 	serverStorageType := envserver.ServerStorageType.Value()
-	serverStorage := config.Storage{
+	serverStorage := configserver.Storage{
 		Type: serverStorageType,
 	}
 	if serverStorageType == "file" {
 		serverStorage.Path = envserver.ServerStoragePath.Value()
 	}
 
-	serverSecurity := config.Security{
+	serverSecurity := configserver.Security{
 		Manager:  envserver.ServerSecurityManager.Value(),
 		Username: envserver.ServerSecurityUsername.Value(),
 		Password: envserver.ServerSecurityPassword.Value(),
 	}
 
-	server := config.Server{
-		Address: config.Address{
+	server := configserver.Server{
+		Address: configs.Address{
 			Port: envserver.ServerPort.Value(),
 		},
 		Tls:        serverTls,

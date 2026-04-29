@@ -33,9 +33,7 @@ func validateServerPath(value string) bool {
 
 func ValidatePathsAndMethods() error {
 	paths := map[string]string{
-		"SERVER_PATH_STATE":     ServerPathState.Value(),
-		"SERVER_PATH_GATE":      ServerPathGate.Value(),
-		"SERVER_PATH_POLICIES":  ServerPathPolicies.Value(),
+		"SERVER_PATH_PRINCIPLES": ServerPathPrinciples.Value(),
 		"SERVER_PATH_DECISIONS": ServerPathDecisions.Value(),
 	}
 	if err := validateDistinctValues("server path", paths); err != nil {
@@ -43,15 +41,7 @@ func ValidatePathsAndMethods() error {
 	}
 
 	methodGroups := map[string]map[string]string{
-		ServerPathState.Value(): {
-			"SERVER_METHOD_CHECK":   ServerMethodCheck.Value(),
-			"SERVER_METHOD_INSPECT": ServerMethodInspect.Value(),
-		},
-		ServerPathGate.Value(): {
-			"SERVER_METHOD_LOCK":   ServerMethodLock.Value(),
-			"SERVER_METHOD_UNLOCK": ServerMethodUnlock.Value(),
-		},
-		ServerPathPolicies.Value(): {
+		ServerPathPrinciples.Value(): {
 			"SERVER_METHOD_APPLY":  ServerMethodApply.Value(),
 			"SERVER_METHOD_REVOKE": ServerMethodRevoke.Value(),
 		},

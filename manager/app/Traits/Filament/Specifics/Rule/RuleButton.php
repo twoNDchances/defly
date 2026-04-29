@@ -2,7 +2,7 @@
 
 namespace App\Traits\Filament\Specifics\Rule;
 
-use App\Models\Policy;
+use App\Models\Principle;
 use App\Services\Lock;
 use App\Traits\Filament\Generals\Components\Button;
 
@@ -27,7 +27,7 @@ trait RuleButton
 
                 $ownerRecord = $table->getRelationship()->getParent();
 
-                if (! $ownerRecord instanceof Policy) {
+                if (! $ownerRecord instanceof Principle) {
                     return;
                 }
 
@@ -55,7 +55,7 @@ trait RuleButton
 
                 $ownerRecord = $table->getRelationship()->getParent();
 
-                if (! $ownerRecord instanceof Policy) {
+                if (! $ownerRecord instanceof Principle) {
                     return;
                 }
 
@@ -81,7 +81,7 @@ trait RuleButton
 
                 $ownerRecord = $table->getRelationship()->getParent();
 
-                if (! $ownerRecord instanceof Policy) {
+                if (! $ownerRecord instanceof Principle) {
                     return;
                 }
 

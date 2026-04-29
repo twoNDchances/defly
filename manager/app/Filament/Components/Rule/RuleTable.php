@@ -17,7 +17,7 @@ class RuleTable
             self::getComparator(),
             self::getWordlist(),
             self::getActions(),
-            self::getPolicies(),
+            self::getPrinciples(),
             self::getLabels(),
             self::getIsLocked(),
             self::getCreatedBy(),

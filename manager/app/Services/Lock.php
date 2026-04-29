@@ -6,7 +6,7 @@ use App\Models\Action;
 use App\Models\Decision;
 use App\Models\Defender;
 use App\Models\Engine;
-use App\Models\Policy;
+use App\Models\Principle;
 use App\Models\Rule;
 use App\Models\Target;
 use App\Models\Wordlist;
@@ -43,7 +43,7 @@ class Lock
             ['type' => 'model', 'model' => Rule::class, 'foreign_key' => 'target_id'],
         ],
         Rule::class => [
-            ['type' => 'table', 'table' => 'policies_rules', 'foreign_key' => 'rule'],
+            ['type' => 'table', 'table' => 'principles_rules', 'foreign_key' => 'rule'],
         ],
         Action::class => [
             ['type' => 'table', 'table' => 'rules_actions', 'foreign_key' => 'action'],
@@ -51,8 +51,8 @@ class Lock
         Engine::class => [
             ['type' => 'table', 'table' => 'targets_engines', 'foreign_key' => 'engine'],
         ],
-        Policy::class => [
-            ['type' => 'table', 'table' => 'defenders_policies', 'foreign_key' => 'policy'],
+        Principle::class => [
+            ['type' => 'table', 'table' => 'defenders_principles', 'foreign_key' => 'principle'],
         ],
         Decision::class => [
             ['type' => 'table', 'table' => 'defenders_decisions', 'foreign_key' => 'decision'],
@@ -68,13 +68,13 @@ class Lock
         ],
         Rule::class => [
             ['table' => 'rules_actions', 'self_key' => 'rule', 'related_model' => Action::class, 'related_key' => 'action'],
-            ['table' => 'policies_rules', 'self_key' => 'rule', 'related_model' => Policy::class, 'related_key' => 'policy'],
+            ['table' => 'principles_rules', 'self_key' => 'rule', 'related_model' => Principle::class, 'related_key' => 'principle'],
         ],
-        Policy::class => [
-            ['table' => 'policies_rules', 'self_key' => 'policy', 'related_model' => Rule::class, 'related_key' => 'rule'],
+        Principle::class => [
+            ['table' => 'principles_rules', 'self_key' => 'principle', 'related_model' => Rule::class, 'related_key' => 'rule'],
         ],
         Defender::class => [
-            ['table' => 'defenders_policies', 'self_key' => 'defender', 'related_model' => Policy::class, 'related_key' => 'policy'],
+            ['table' => 'defenders_principles', 'self_key' => 'defender', 'related_model' => Principle::class, 'related_key' => 'principle'],
             ['table' => 'defenders_decisions', 'self_key' => 'defender', 'related_model' => Decision::class, 'related_key' => 'decision'],
         ],
     ];

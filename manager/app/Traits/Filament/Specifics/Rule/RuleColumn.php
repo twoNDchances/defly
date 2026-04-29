@@ -42,8 +42,8 @@ trait RuleColumn
         return self::relationshipColumn('actions.name', __('tables.rule.actions'));
     }
 
-    public static function getPolicies()
+    public static function getPrinciples()
     {
-        return self::relationshipColumn('policies.name', __('tables.rule.policies'));
+        return self::relationshipColumn('principles.name', __('tables.rule.principles'));
     }
 }

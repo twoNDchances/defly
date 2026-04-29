@@ -1,0 +1,56 @@
+<?php
+
+namespace App\Filament\Resources\Defenders\RelationManagers;
+
+use App\Enums\Principle\ValidationStatus;
+use App\Filament\Components\Principle\PrincipleForm;
+use App\Filament\Components\Principle\PrincipleTable;
+use App\Traits\Filament\Specifics\Principle\PrincipleButton;
+use App\Traits\Filament\Specifics\Principle\PrincipleData;
+use Filament\Resources\RelationManagers\RelationManager;
+use Filament\Schemas\Schema;
+use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
+
+class PrinciplesRelationManager extends RelationManager
+{
+    use PrincipleButton, PrincipleData;
+
+    protected static string $relationship = 'principles';
+
+    public function form(Schema $schema): Schema
+    {
+        return $schema->components(PrincipleForm::build());
+    }
+
+    public function table(Table $table): Table
+    {
+        return $table
+            ->recordTitleAttribute('name')
+            ->modifyQueryUsing(fn ($query) => $query->where('validation_status', ValidationStatus::Passed))
+            ->columns(PrincipleTable::build())
+            ->filters([
+                //
+            ])
+            ->headerActions([
+                self::attachPolicesAndLockButton()->recordSelectOptionsQuery(fn ($query) => $query->where('validation_status', ValidationStatus::Passed)),
+            ])
+            ->recordActions([
+                self::buttonGroup(edit: false, delete: false, more: [self::detachPrinciplesAndUnlockButton()]),
+            ])
+            ->toolbarActions([
+                self::bulkButtonGroup(false, [self::detachPrinciplesAndUnlockBulkButton()]),
+            ])
+            ->reorderable('order');
+    }
+
+    public static function getTitle(Model $ownerRecord, string $pageClass): string
+    {
+        return __('models.principle.name');
+    }
+
+    public static function getRecordLabel(): ?string
+    {
+        return __('models.principle.name');
+    }
+}
