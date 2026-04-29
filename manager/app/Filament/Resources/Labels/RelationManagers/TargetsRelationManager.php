@@ -31,7 +31,6 @@ class TargetsRelationManager extends RelationManager
                 //
             ])
             ->headerActions([
-                self::createButton(),
                 self::attachButton(),
             ])
             ->recordActions([

@@ -31,7 +31,6 @@ class UsersRelationManager extends RelationManager
                 //
             ])
             ->headerActions([
-                self::createButton(),
                 self::attachButton()->recordSelectOptionsQuery(fn ($query) => $query->excludeCurrent()->excludeRoot()),
             ])
             ->recordActions([

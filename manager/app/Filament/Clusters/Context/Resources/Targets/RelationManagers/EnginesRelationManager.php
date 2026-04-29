@@ -4,7 +4,6 @@ namespace App\Filament\Clusters\Context\Resources\Targets\RelationManagers;
 
 use App\Filament\Components\Engine\EngineForm;
 use App\Filament\Components\Engine\EngineTable;
-use App\Services\Lock;
 use App\Traits\Filament\Specifics\Engine\EngineButton;
 use App\Traits\Filament\Specifics\Engine\EngineData;
 use Filament\Resources\RelationManagers\RelationManager;
@@ -32,7 +31,6 @@ class EnginesRelationManager extends RelationManager
                 //
             ])
             ->headerActions([
-                self::createButton()->after(fn (Model $record) => Lock::syncByRelationship($record::class, $record->getKey())),
                 self::attachAndLockButton(),
             ])
             ->recordActions([

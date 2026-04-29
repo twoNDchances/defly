@@ -4,7 +4,6 @@ namespace App\Filament\Clusters\Initialization\Resources\Rules\RelationManagers;
 
 use App\Filament\Components\Action\ActionForm;
 use App\Filament\Components\Action\ActionTable;
-use App\Services\Lock;
 use App\Traits\Filament\Specifics\Action\ActionButton;
 use App\Traits\Filament\Specifics\Action\ActionData;
 use Filament\Resources\RelationManagers\RelationManager;
@@ -32,7 +31,6 @@ class ActionsRelationManager extends RelationManager
                 //
             ])
             ->headerActions([
-                self::createButton()->after(fn (Model $record) => Lock::syncByRelationship($record::class, $record->getKey())),
                 self::attachAndLockButton(),
             ])
             ->recordActions([
