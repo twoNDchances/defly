@@ -72,7 +72,7 @@ SERVER_METHOD_DEPLOY="post"
 SERVER_METHOD_FOLLOW="get"
 SERVER_METHOD_CANCEL="delete"
 SERVER_SOURCE_DEFENDER="./defender"
-SERVER_DEFENDERS_TLS_VOLUME="defenders_tls"
+SERVER_DEFENDER_TLS_VOLUME="defender_tls"
 SERVER_DOCKER_BASE_URL="tcp://localhost:2375"
 ```
 
@@ -83,10 +83,10 @@ Docker host tên `manager`.
 `SERVER_SOURCE_DEFENDER` được resolve từ repository root. Giá trị mặc định
 `./defender` trỏ tới project Defender nằm cùng cấp với Orchestrator.
 
-`SERVER_DEFENDERS_TLS_VOLUME` là Docker volume key dùng cho file TLS của
+`SERVER_DEFENDER_TLS_VOLUME` là Docker volume key dùng cho file TLS của
 Defender. Khi Orchestrator chạy trong Docker Compose, key này sẽ được resolve
-theo Compose project hiện tại, nên mặc định `defenders_tls` sẽ thành volume
-thật như `defly_defenders_tls`.
+theo Compose project hiện tại, nên mặc định `defender_tls` sẽ thành volume
+thật như `defly_defender_tls`.
 
 ## Chạy
 
@@ -136,11 +136,11 @@ services:
       - ../defender:/defender:ro
     environment:
       SERVER_SOURCE_DEFENDER: /defender
-      SERVER_DEFENDERS_TLS_VOLUME: defenders_tls
+      SERVER_DEFENDER_TLS_VOLUME: defender_tls
 
 volumes:
   orchestrator_storage:
-  defenders_tls:
+  defender_tls:
 ```
 
 Docker image mặc định khởi động Orchestrator bằng TLS. Ở lần chạy đầu tiên,
@@ -201,7 +201,7 @@ name đã được normalize của Defender cộng với `_errors` hoặc `_logs
 Defender tên `edge-01`, khai báo Compose volumes là `edge-01_errors` và
 `edge-01_logs`.
 
-Volume `defenders_tls` dùng chung cũng được tạo bởi Docker Compose và không có
+Volume `defender_tls` dùng chung cũng được tạo bởi Docker Compose và không có
 tên Defender. Manager nên mount cùng volume đó vào thư mục storage TLS của
 Defender, ví dụ:
 
@@ -209,16 +209,16 @@ Defender, ví dụ:
 services:
   manager:
     volumes:
-      - defenders_tls:/var/www/html/storage/tls/defenders
+      - defender_tls:/var/www/html/storage/tls/defenders
 
   orchestrator:
     environment:
-      SERVER_DEFENDERS_TLS_VOLUME: defenders_tls
+      SERVER_DEFENDER_TLS_VOLUME: defender_tls
 
 volumes:
   edge-01_errors:
   edge-01_logs:
-  defenders_tls:
+  defender_tls:
 ```
 
 File TLS của Defender sẽ được ghi trong volume TLS dùng chung dưới dạng
@@ -231,7 +231,7 @@ ví dụ:
 ```powershell
 docker volume create edge-01_errors
 docker volume create edge-01_logs
-docker volume create defenders_tls
+docker volume create defender_tls
 ```
 
 Ở local mode, Orchestrator không thể tự suy ra Compose network từ container của

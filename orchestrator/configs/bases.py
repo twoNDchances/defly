@@ -8,7 +8,6 @@ from configs.validators import (
     require_non_empty,
     validate_http_method,
     validate_path_value,
-    validate_source_directory,
     validate_username,
 )
 
@@ -35,8 +34,8 @@ env = Env(
     SERVER_METHOD_DEPLOY=(str, "post"),
     SERVER_METHOD_FOLLOW=(str, "get"),
     SERVER_METHOD_CANCEL=(str, "delete"),
-    SERVER_SOURCE_DEFENDER=(str, "./defender"),
-    SERVER_DEFENDERS_TLS_VOLUME=(str, "defenders_tls"),
+    SERVER_DEFENDER_IMAGE=(str, "defly-defender:latest"),
+    SERVER_DEFENDER_TLS_VOLUME=(str, "defender_tls"),
     SERVER_DOCKER_BASE_URL=(str, "tcp://localhost:2375"),
 )
 
@@ -139,12 +138,11 @@ SERVER_DEPLOYMENT_METHODS = register_endpoint_method_registry(
         {"name": "SERVER_METHOD_CANCEL", "method": SERVER_METHOD_CANCEL},
     ],
 )
-SERVER_SOURCE_DEFENDER = validate_source_directory(
-    "SERVER_SOURCE_DEFENDER",
-    env.str("SERVER_SOURCE_DEFENDER"),
-    root_dir=BASE_DIR.parent,
+SERVER_DEFENDER_IMAGE = require_non_empty(
+    "SERVER_DEFENDER_IMAGE",
+    env.str("SERVER_DEFENDER_IMAGE"),
 )
-SERVER_DEFENDERS_TLS_VOLUME = require_non_empty(
-    "SERVER_DEFENDERS_TLS_VOLUME",
-    env.str("SERVER_DEFENDERS_TLS_VOLUME"),
+SERVER_DEFENDER_TLS_VOLUME = require_non_empty(
+    "SERVER_DEFENDER_TLS_VOLUME",
+    env.str("SERVER_DEFENDER_TLS_VOLUME"),
 )

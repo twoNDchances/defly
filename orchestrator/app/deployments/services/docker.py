@@ -4,7 +4,7 @@ from typing import Any
 
 from django.conf import settings
 from docker import DockerClient
-from docker.errors import BuildError, NotFound
+from docker.errors import BuildError, ImageNotFound, NotFound
 
 COMPOSE_PROJECT_LABEL = "com.docker.compose.project"
 COMPOSE_SERVICE_LABEL = "com.docker.compose.service"
@@ -52,19 +52,21 @@ class DockerService:
         defender_name: str,
         proxy_port: int,
         environment_variables: dict[str, str],
-        source_directory: str,
     ) -> dict[str, Any]:
         client = DockerService.get_client()
         try:
-            image_tag = "defly-defender"
-            image, build_logs = client.images.build(
-                path=source_directory,
-                dockerfile="Dockerfile",
-                tag=image_tag,
-                rm=True,
-                pull=False,
-            )
-            build_log_lines = DockerService.extract_build_log_lines(build_logs)
+            image_reference = str(
+                getattr(settings, "SERVER_DEFENDER_IMAGE", "")
+            ).strip()
+            if not image_reference:
+                raise RuntimeError("SERVER_DEFENDER_IMAGE cannot be empty.")
+            try:
+                client.images.get(image_reference)
+            except ImageNotFound as exception:
+                raise RuntimeError(
+                    f"Docker image {image_reference!r} does not exist. Build or pull "
+                    "the image before deploying this Defender."
+                ) from exception
 
             container_name = DockerService.get_container_name(defender_name)
             DockerService._remove_existing_container(client, container_name)
@@ -93,7 +95,7 @@ class DockerService:
             DockerService._ensure_volume(client, logs_volume)
 
             defenders_tls_volume = DockerService._get_compose_resource_name(
-                resource_key=getattr(settings, "SERVER_DEFENDERS_TLS_VOLUME"),
+                resource_key=getattr(settings, "SERVER_DEFENDER_TLS_VOLUME"),
                 compose_labels=compose_labels,
             )
             DockerService._require_existing_volume(client, defenders_tls_volume)
@@ -103,7 +105,7 @@ class DockerService:
             container_environment_variables["PROXY_PORT"] = proxy_port_string
 
             run_kwargs = {
-                "image": image.id,
+                "image": image_reference,
                 "name": container_name,
                 "detach": True,
                 "environment": container_environment_variables,
@@ -130,7 +132,7 @@ class DockerService:
             )
 
             return {
-                "image": image.tags[0] if image.tags else image.id,
+                "image": image_reference,
                 "container_id": container.id,
                 "container_name": container.name,
                 "container_networks": container_networks,
@@ -140,7 +142,6 @@ class DockerService:
                 "proxy_port": proxy_port,
                 "compose_project": compose_project or None,
                 "compose_service": container_labels.get(COMPOSE_SERVICE_LABEL),
-                "build_logs_tail": build_log_lines,
             }
         finally:
             client.close()

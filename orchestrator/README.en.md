@@ -72,7 +72,7 @@ SERVER_METHOD_DEPLOY="post"
 SERVER_METHOD_FOLLOW="get"
 SERVER_METHOD_CANCEL="delete"
 SERVER_SOURCE_DEFENDER="./defender"
-SERVER_DEFENDERS_TLS_VOLUME="defenders_tls"
+SERVER_DEFENDER_TLS_VOLUME="defender_tls"
 SERVER_DOCKER_BASE_URL="tcp://localhost:2375"
 ```
 
@@ -83,10 +83,10 @@ local development, set it to `localhost` if Manager is not running as the
 `SERVER_SOURCE_DEFENDER` is resolved from the repository root. The default
 `./defender` points to the sibling Defender project.
 
-`SERVER_DEFENDERS_TLS_VOLUME` is the Docker volume key used for Defender TLS
+`SERVER_DEFENDER_TLS_VOLUME` is the Docker volume key used for Defender TLS
 files. When Orchestrator runs inside Docker Compose, the key is resolved with
-the current Compose project name, so the default `defenders_tls` becomes a
-volume like `defly_defenders_tls`.
+the current Compose project name, so the default `defender_tls` becomes a
+volume like `defly_defender_tls`.
 
 ## Run
 
@@ -136,11 +136,11 @@ services:
       - ../defender:/defender:ro
     environment:
       SERVER_SOURCE_DEFENDER: /defender
-      SERVER_DEFENDERS_TLS_VOLUME: defenders_tls
+      SERVER_DEFENDER_TLS_VOLUME: defender_tls
 
 volumes:
   orchestrator_storage:
-  defenders_tls:
+  defender_tls:
 ```
 
 The Docker image starts Orchestrator with TLS by default. On first startup, the
@@ -201,7 +201,7 @@ normalized Defender container name plus `_errors` or `_logs`. For a Defender
 named `edge-01`, define the Compose volumes as `edge-01_errors` and
 `edge-01_logs`.
 
-The shared `defenders_tls` volume is also created by Docker Compose and does not
+The shared `defender_tls` volume is also created by Docker Compose and does not
 include the Defender name. Manager should mount that same volume to its Defender
 TLS storage directory, for example:
 
@@ -209,16 +209,16 @@ TLS storage directory, for example:
 services:
   manager:
     volumes:
-      - defenders_tls:/var/www/html/storage/tls/defenders
+      - defender_tls:/var/www/html/storage/tls/defenders
 
   orchestrator:
     environment:
-      SERVER_DEFENDERS_TLS_VOLUME: defenders_tls
+      SERVER_DEFENDER_TLS_VOLUME: defender_tls
 
 volumes:
   edge-01_errors:
   edge-01_logs:
-  defenders_tls:
+  defender_tls:
 ```
 
 Defender TLS files are written inside the shared TLS volume as
@@ -231,7 +231,7 @@ for example:
 ```powershell
 docker volume create edge-01_errors
 docker volume create edge-01_logs
-docker volume create defenders_tls
+docker volume create defender_tls
 ```
 
 In local mode, Orchestrator cannot infer a Compose network from its own

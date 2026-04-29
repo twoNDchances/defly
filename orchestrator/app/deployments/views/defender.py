@@ -72,7 +72,6 @@ class DefenderView(View):
                 defender_name=defender.name,
                 proxy_port=defender.proxy_port,
                 environment_variables=environment_variables,
-                source_directory=settings.SERVER_SOURCE_DEFENDER,
             )
         except (BuildError, APIError, DockerException, RuntimeError) as exception:
             docker_error = DockerService.stringify_deploy_error(exception)
