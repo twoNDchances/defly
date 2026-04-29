@@ -59,10 +59,9 @@ class DefenderView(View):
             await self._mark_failed(defender_id=defender_id, error_logs=error_logs)
             return JsonResponse({"detail": str(exception)}, status=400)
 
-        await Defenders.objects.filter(id=defender_id).aupdate(
-            deployment_status=Defenders.DeploymentStatus.PROCESSING,
-            deployment_details={"message": "Starting deployment..."},
-            updated_at=timezone.now(),
+        await self._mark_processing(
+            defender_id=defender_id,
+            message="Starting deployment...",
         )
 
         try:
@@ -154,6 +153,11 @@ class DefenderView(View):
         if defender is None:
             return JsonResponse({"detail": "Defender not found."}, status=404)
 
+        await self._mark_processing(
+            defender_id=defender_id,
+            message="Starting cancellation...",
+        )
+
         try:
             cancellation_result = await to_thread(
                 DockerService.cancel_container,
@@ -198,5 +202,17 @@ class DefenderView(View):
         await Defenders.objects.filter(id=defender_id).aupdate(
             deployment_status=Defenders.DeploymentStatus.FAILED,
             deployment_details=error_logs,
+            updated_at=timezone.now(),
+        )
+
+    async def _mark_processing(
+        self,
+        *,
+        defender_id,
+        message: str,
+    ) -> None:
+        await Defenders.objects.filter(id=defender_id).aupdate(
+            deployment_status=Defenders.DeploymentStatus.PROCESSING,
+            deployment_details={"message": message},
             updated_at=timezone.now(),
         )

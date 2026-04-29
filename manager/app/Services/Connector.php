@@ -21,6 +21,10 @@ abstract class Connector
         $request = Http::baseUrl(static::baseUri())
             ->acceptJson()
             ->asJson();
+        $requestOptions = static::requestOptions();
+        if ($requestOptions !== []) {
+            $request = $request->withOptions($requestOptions);
+        }
 
         if (filled(static::username()) || filled(static::password())) {
             $request->withBasicAuth(
@@ -68,6 +72,11 @@ abstract class Connector
     protected static function password(): ?string
     {
         return static::$password;
+    }
+
+    protected static function requestOptions(): array
+    {
+        return [];
     }
 
     protected static function normalizePath(string $path): string

@@ -61,6 +61,10 @@ return [
                     'username' => env('ORCHESTRATOR_USERNAME', 'defly-orchestrator'),
                     'password' => env('ORCHESTRATOR_PASSWORD', 'P@55w0rd'),
                 ],
+                'tls' => [
+                    'skip_verify' => (bool) env('ORCHESTRATOR_TLS_SKIP_VERIFY', false),
+                    'cert_file' => env('ORCHESTRATOR_TLS_CERT_FILE', 'storage/tls/orchestrator/orchestrator.crt'),
+                ],
             ],
         ],
         'default_credentials' => [

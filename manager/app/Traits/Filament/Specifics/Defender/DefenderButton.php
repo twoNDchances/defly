@@ -72,7 +72,7 @@ trait DefenderButton
                 }
 
                 $record->forceFill([
-                    'deployment_status' => DeploymentStatus::Processing,
+                    'deployment_status' => DeploymentStatus::Pending,
                     'deployment_details' => ['detail' => 'Cancel request queued.'],
                 ])->save();
 
@@ -96,7 +96,7 @@ trait DefenderButton
                     }
 
                     $record->forceFill([
-                        'deployment_status' => DeploymentStatus::Processing,
+                        'deployment_status' => DeploymentStatus::Pending,
                         'deployment_details' => ['detail' => 'Cancel request queued.'],
                     ])->save();
 

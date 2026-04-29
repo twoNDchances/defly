@@ -64,4 +64,31 @@ class Orchestrator extends Connector
     {
         return config('customization.backend.apis.orchestrator.credentials.password');
     }
+
+    #[Override]
+    protected static function requestOptions(): array
+    {
+        $skipVerify = (bool) config(
+            'customization.backend.apis.orchestrator.tls.skip_verify',
+            false,
+        );
+        if ($skipVerify) {
+            return ['verify' => false];
+        }
+
+        $configuredPath = (string) config(
+            'customization.backend.apis.orchestrator.tls.cert_file',
+            'storage/tls/orchestrator/orchestrator.crt',
+        );
+        $certificatePath = trim($configuredPath);
+        if ($certificatePath === '') {
+            $certificatePath = 'storage/tls/orchestrator/orchestrator.crt';
+        }
+
+        if (! str_starts_with($certificatePath, DIRECTORY_SEPARATOR) && ! preg_match('/^[A-Za-z]:\\\\/', $certificatePath)) {
+            $certificatePath = base_path($certificatePath);
+        }
+
+        return ['verify' => $certificatePath];
+    }
 }

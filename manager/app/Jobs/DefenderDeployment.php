@@ -85,7 +85,7 @@ class DefenderDeployment implements ShouldQueue
 
     protected function handleCancel(Defender $defender): void
     {
-        if (! in_array($defender->deployment_status, [DeploymentStatus::Successful, DeploymentStatus::Processing], true)) {
+        if (! in_array($defender->deployment_status, [DeploymentStatus::Successful, DeploymentStatus::Pending, DeploymentStatus::Processing], true)) {
             return;
         }
 
