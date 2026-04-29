@@ -12,6 +12,7 @@ func NewServer() error {
 	serverHTTPSEnable := envserver.ServerHTTPSEnable.Value()
 	serverTls := config.Tls{
 		Enable: serverHTTPSEnable,
+		Name:   envcommon.DefenderName.Value(),
 	}
 
 	if err := envserver.ValidatePathsAndMethods(); err != nil {

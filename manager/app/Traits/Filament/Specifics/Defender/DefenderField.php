@@ -44,7 +44,7 @@ trait DefenderField
         $variables = [
             ['key' => 'ABOUT_BANNER_ENABLE', 'value' => 'true'],
             ['key' => 'ERROR_FILE_ENABLE', 'value' => 'false'],
-            ['key' => 'ERROR_DIRECTORY_PATH', 'value' => 'resources/errors'],
+            ['key' => 'ERROR_DIRECTORY_PATH', 'value' => 'storage/errors'],
         ];
 
         $directoryPathRule = function (string $attribute, mixed $value, $fail): void {
@@ -96,7 +96,7 @@ trait DefenderField
         $variables = [
             ['key' => 'SERVER_HTTPS_ENABLE', 'value' => 'true'],
             ['key' => 'SERVER_LOGGER_FILE_ENABLE', 'value' => 'false'],
-            ['key' => 'SERVER_LOGGER_FILE_PATH', 'value' => 'resources/logs/server.log'],
+            ['key' => 'SERVER_LOGGER_FILE_PATH', 'value' => 'storage/logs/server.log'],
             ['key' => 'SERVER_LOGGER_FORMAT', 'value' => '[%time%] {%from%}: %status% %ip% %method% %path% %bytesSent% %bytesReceived% %error%'],
             ['key' => 'SERVER_LOGGER_TIMEZONE', 'value' => 'Asia/Ho_Chi_Minh'],
             ['key' => 'SERVER_PORT', 'value' => '9947'],
@@ -114,7 +114,7 @@ trait DefenderField
             ['key' => 'SERVER_CONTROLLER_METHOD_IMPLEMENT', 'value' => 'put'],
             ['key' => 'SERVER_CONTROLLER_METHOD_SUSPEND', 'value' => 'delete'],
             ['key' => 'SERVER_STORAGE_TYPE', 'value' => 'file'],
-            ['key' => 'SERVER_STORAGE_PATH', 'value' => 'resources/storage/data.yaml'],
+            ['key' => 'SERVER_STORAGE_PATH', 'value' => 'storage/data/data.yaml'],
             ['key' => 'SERVER_SECURITY_MANAGER', 'value' => 'manager'],
             ['key' => 'SERVER_SECURITY_USERNAME', 'value' => 'defly-defender'],
             ['key' => 'SERVER_SECURITY_PASSWORD', 'value' => 'P@55w0rd'],
@@ -192,7 +192,7 @@ trait DefenderField
         $variables = [
             ['key' => 'PROXY_BACKEND_URL', 'value' => 'http://localhost'],
             ['key' => 'PROXY_LOGGER_FILE_ENABLE', 'value' => 'false'],
-            ['key' => 'PROXY_LOGGER_FILE_PATH', 'value' => 'resources/logs/proxy.log'],
+            ['key' => 'PROXY_LOGGER_FILE_PATH', 'value' => 'storage/logs/proxy.log'],
             ['key' => 'PROXY_LOGGER_FORMAT', 'value' => '[%time%] {%from%}: %status% %ip% %method% %path% %bytesSent% %bytesReceived% %error%'],
             ['key' => 'PROXY_LOGGER_TIMEZONE', 'value' => 'Asia/Ho_Chi_Minh'],
             ['key' => 'PROXY_PORT', 'value' => '9948'],

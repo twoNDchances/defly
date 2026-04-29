@@ -18,9 +18,9 @@ WORKDIR /app
 
 COPY --from=builder /bin/defender /app/defender
 COPY configs /app/configs
-COPY resources /app/resources
+COPY storage /app/storage
 
-RUN mkdir -p /app/resources/errors /app/resources/logs /app/resources/storage /app/resources/tls \
+RUN mkdir -p /app/storage/errors /app/storage/logs /app/storage/data /app/storage/tls \
     && chown -R defender:defender /app
 
 EXPOSE 9947 9948

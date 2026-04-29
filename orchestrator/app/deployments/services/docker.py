@@ -10,7 +10,6 @@ COMPOSE_PROJECT_LABEL = "com.docker.compose.project"
 COMPOSE_SERVICE_LABEL = "com.docker.compose.service"
 COMPOSE_ONEOFF_LABEL = "com.docker.compose.oneoff"
 COMPOSE_VERSION_LABEL = "com.docker.compose.version"
-COMPOSE_VOLUME_LABEL = "com.docker.compose.volume"
 COMPOSE_PROJECT_CONFIG_FILES_LABEL = "com.docker.compose.project.config_files"
 COMPOSE_PROJECT_WORKING_DIR_LABEL = "com.docker.compose.project.working_dir"
 
@@ -74,29 +73,33 @@ class DockerService:
                 client
             )
             network_names = compose_context["network_names"]
+            compose_labels = compose_context["labels"]
+            compose_project = compose_labels.get(COMPOSE_PROJECT_LABEL, "").strip()
             container_labels = DockerService._build_container_labels(
                 defender_id=defender_id,
                 defender_name=defender_name,
-                compose_labels=compose_context["labels"],
+                compose_labels=compose_labels,
             )
             proxy_port_string = str(proxy_port)
-            volume_key = f"{container_name}-resources"
-            volume_name = DockerService._get_compose_resource_name(
-                resource_key=volume_key,
-                compose_labels=compose_context["labels"],
+            errors_volume = DockerService._get_compose_resource_name(
+                resource_key=f"{container_name}_errors",
+                compose_labels=compose_labels,
             )
-            volume_labels = DockerService._build_volume_labels(
-                defender_id=defender_id,
-                defender_name=defender_name,
-                volume_key=volume_key,
-                compose_labels=compose_context["labels"],
+            logs_volume = DockerService._get_compose_resource_name(
+                resource_key=f"{container_name}_logs",
+                compose_labels=compose_labels,
             )
-            resources_volume = client.volumes.create(
-                name=volume_name,
-                labels=volume_labels,
+            DockerService._ensure_volume(client, errors_volume)
+            DockerService._ensure_volume(client, logs_volume)
+
+            defenders_tls_volume = DockerService._get_compose_resource_name(
+                resource_key=getattr(settings, "SERVER_DEFENDERS_TLS_VOLUME"),
+                compose_labels=compose_labels,
             )
+            DockerService._require_existing_volume(client, defenders_tls_volume)
 
             container_environment_variables = dict(environment_variables)
+            container_environment_variables["DEFENDER_NAME"] = defender_name
             container_environment_variables["PROXY_PORT"] = proxy_port_string
 
             run_kwargs = {
@@ -107,7 +110,9 @@ class DockerService:
                 "labels": container_labels,
                 "restart_policy": {"Name": "unless-stopped"},
                 "volumes": {
-                    resources_volume.name: {"bind": "/app/resources", "mode": "rw"}
+                    errors_volume: {"bind": "/app/storage/errors", "mode": "rw"},
+                    logs_volume: {"bind": "/app/storage/logs", "mode": "rw"},
+                    defenders_tls_volume: {"bind": "/app/storage/tls", "mode": "rw"},
                 },
                 "ports": {f"{proxy_port_string}/tcp": proxy_port},
             }
@@ -129,10 +134,11 @@ class DockerService:
                 "container_id": container.id,
                 "container_name": container.name,
                 "container_networks": container_networks,
-                "resources_volume": resources_volume.name,
-                "resources_volume_key": volume_key,
+                "errors_volume": errors_volume,
+                "logs_volume": logs_volume,
+                "defenders_tls_volume": defenders_tls_volume,
                 "proxy_port": proxy_port,
-                "compose_project": compose_context["labels"].get(COMPOSE_PROJECT_LABEL),
+                "compose_project": compose_project or None,
                 "compose_service": container_labels.get(COMPOSE_SERVICE_LABEL),
                 "build_logs_tail": build_log_lines,
             }
@@ -297,43 +303,6 @@ class DockerService:
         return labels
 
     @staticmethod
-    def _build_volume_labels(
-        *,
-        defender_id: str,
-        defender_name: str,
-        volume_key: str,
-        compose_labels: dict[str, str],
-    ) -> dict[str, str]:
-        labels = {
-            "defly.service": "defender",
-            "defly.defender_id": defender_id,
-            "defly.defender_name": defender_name,
-            "defly.volume": "resources",
-        }
-
-        compose_project = compose_labels.get(COMPOSE_PROJECT_LABEL)
-        if not compose_project:
-            return labels
-
-        labels.update(
-            {
-                COMPOSE_PROJECT_LABEL: compose_project,
-                COMPOSE_VOLUME_LABEL: volume_key,
-            }
-        )
-
-        for label_name in (
-            COMPOSE_VERSION_LABEL,
-            COMPOSE_PROJECT_CONFIG_FILES_LABEL,
-            COMPOSE_PROJECT_WORKING_DIR_LABEL,
-        ):
-            label_value = compose_labels.get(label_name)
-            if label_value:
-                labels[label_name] = label_value
-
-        return labels
-
-    @staticmethod
     def _get_compose_resource_name(
         *,
         resource_key: str,
@@ -344,6 +313,23 @@ class DockerService:
             return resource_key
 
         return f"{compose_project}_{resource_key}"
+
+    @staticmethod
+    def _require_existing_volume(client: DockerClient, volume_name: str) -> None:
+        try:
+            client.volumes.get(volume_name)
+        except NotFound as exception:
+            raise RuntimeError(
+                f"Docker volume {volume_name!r} does not exist. Create it with "
+                "Docker Compose before deploying this Defender."
+            ) from exception
+
+    @staticmethod
+    def _ensure_volume(client: DockerClient, volume_name: str) -> None:
+        try:
+            client.volumes.get(volume_name)
+        except NotFound:
+            client.volumes.create(name=volume_name)
 
     @staticmethod
     def _remove_existing_container(client: DockerClient, container_name: str) -> None:

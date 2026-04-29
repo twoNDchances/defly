@@ -16,7 +16,7 @@ from configs.validators import (
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 env = Env(
-    SECRET_KEY_FILE=(str, "secret/key.txt"),
+    SECRET_KEY_FILE=(str, "storage/secret/key.txt"),
     ALLOWED_HOSTS=(list[str], ["*"]),
     DB_HOST=(str, "localhost"),
     DB_PORT=(str, "3306"),
@@ -36,6 +36,7 @@ env = Env(
     SERVER_METHOD_FOLLOW=(str, "get"),
     SERVER_METHOD_CANCEL=(str, "delete"),
     SERVER_SOURCE_DEFENDER=(str, "./defender"),
+    SERVER_DEFENDERS_TLS_VOLUME=(str, "defenders_tls"),
     SERVER_DOCKER_BASE_URL=(str, "tcp://localhost:2375"),
 )
 
@@ -142,4 +143,8 @@ SERVER_SOURCE_DEFENDER = validate_source_directory(
     "SERVER_SOURCE_DEFENDER",
     env.str("SERVER_SOURCE_DEFENDER"),
     root_dir=BASE_DIR.parent,
+)
+SERVER_DEFENDERS_TLS_VOLUME = require_non_empty(
+    "SERVER_DEFENDERS_TLS_VOLUME",
+    env.str("SERVER_DEFENDERS_TLS_VOLUME"),
 )

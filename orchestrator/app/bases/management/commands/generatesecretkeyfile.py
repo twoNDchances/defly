@@ -8,13 +8,6 @@ from django.core.management.utils import get_random_secret_key
 class Command(BaseCommand):
     help = "Generate Django SECRET_KEY and write it to SECRET_KEY_FILE."
 
-    def add_arguments(self, parser):
-        parser.add_argument(
-            "--force",
-            action="store_true",
-            help="Overwrite SECRET_KEY_FILE if it already exists.",
-        )
-
     def handle(self, *args, **options):
         secret_key_file_setting = getattr(settings, "SECRET_KEY_FILE", None)
         if not secret_key_file_setting:
@@ -25,12 +18,6 @@ class Command(BaseCommand):
             secret_key_file = Path(settings.BASE_DIR) / secret_key_file
 
         secret_key_file = secret_key_file.resolve()
-
-        if secret_key_file.exists() and not options["force"]:
-            raise CommandError(
-                f"{secret_key_file} already exists. Use --force to overwrite."
-            )
-
         secret_key_file.parent.mkdir(parents=True, exist_ok=True)
         secret_key_file.write_text(f"{get_random_secret_key()}\n", encoding="utf-8")
 

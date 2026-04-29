@@ -82,7 +82,7 @@ var (
 				Required()
 
 	ServerStoragePath = ferrite.String("SERVER_STORAGE_PATH", "Path to Defender Server storage file").
-				WithDefault("resources/storage/data.yaml").
+				WithDefault("storage/data/data.yaml").
 				WithConstraint("Must be a valid writable storage file path", validateStorageFilePath).
 				Required(ferrite.RelevantWhen(ServerStorageType, "file"))
 

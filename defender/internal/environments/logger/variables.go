@@ -16,7 +16,7 @@ var (
 				Required()
 
 	ServerLoggerFilePath = ferrite.String("SERVER_LOGGER_FILE_PATH", "A path where logs of Defly Defender Server stored").
-				WithDefault("resources/logs/server.log").
+				WithDefault("storage/logs/server.log").
 				WithConstraint("Must be a valid writable log file path", validateLoggerFilePath).
 				Required(ferrite.RelevantIf(ServerLoggerFileEnable))
 
@@ -33,7 +33,7 @@ var (
 				Required()
 
 	ProxyLoggerFilePath = ferrite.String("PROXY_LOGGER_FILE_PATH", "A path where logs of Defly Defender Proxy stored").
-				WithDefault("resources/logs/proxy.log").
+				WithDefault("storage/logs/proxy.log").
 				WithConstraint("Must be a valid writable log file path", validateLoggerFilePath).
 				Required(ferrite.RelevantIf(ProxyLoggerFileEnable))
 )

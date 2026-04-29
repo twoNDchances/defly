@@ -99,7 +99,7 @@ def load_secret_key_for_settings(
     *,
     secret_key_file: str,
     base_dir: Path,
-    bootstrap_command: str = "generatesecretkeyfile",
+    bootstrap_commands: tuple[str, ...] = ("generatesecretkeyfile", "generatetlsfile"),
 ) -> str:
     normalized_secret_key_file = require_non_empty("SECRET_KEY_FILE", secret_key_file)
     secret_key_file_path = Path(normalized_secret_key_file)
@@ -115,9 +115,9 @@ def load_secret_key_for_settings(
             )
         return secret_key
 
-    if len(sys_argv) > 1 and sys_argv[1].strip().lower() == bootstrap_command.lower():
+    if len(sys_argv) > 1 and sys_argv[1].strip().lower() in bootstrap_commands:
         # Allow bootstrapping command to run before SECRET_KEY_FILE is created.
-        return "temporary-secret-key-for-generatesecretkeyfile-only"
+        return "temporary-secret-key-for-bootstrap-commands-only"
 
     raise ImproperlyConfigured(
         f"SECRET_KEY_FILE does not exist: {secret_key_file_path!s}"

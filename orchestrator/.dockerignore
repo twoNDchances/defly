@@ -1,0 +1,15 @@
+.env
+.venv
+.ruff_cache
+__pycache__
+*.py[cod]
+
+storage/*
+!storage/secret/
+!storage/secret/.gitignore
+!storage/tls/
+!storage/tls/.gitignore
+
+.git
+.gitignore
+.pre-commit-config.yaml

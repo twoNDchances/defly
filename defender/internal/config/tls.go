@@ -12,20 +12,22 @@ import (
 	"net"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
 )
 
 const (
-	defaultTLSCertificatePath = "resources/tls/tls.crt"
-	defaultTLSKeyPath         = "resources/tls/tls.key"
-	defaultTLSValidDays       = 365
-	defaultTLSKeySize         = 2048
+	defaultTLSDirectoryPath = "storage/tls"
+	defaultTLSName          = "defender"
+	defaultTLSValidDays     = 365
+	defaultTLSKeySize       = 2048
 )
 
 type Tls struct {
 	Enable bool
+	Name   string
 }
 
 func (t Tls) Listen(application *gin.Engine, address string) error {
@@ -33,14 +35,28 @@ func (t Tls) Listen(application *gin.Engine, address string) error {
 		return application.Run(address)
 	}
 
-	if err := ensureTLSCertificatePair(defaultTLSCertificatePath, defaultTLSKeyPath); err != nil {
+	certPath, keyPath := t.certificatePairPaths()
+	if err := ensureTLSCertificatePair(certPath, keyPath, t.certificateName()); err != nil {
 		return err
 	}
 
-	return application.RunTLS(address, defaultTLSCertificatePath, defaultTLSKeyPath)
+	return application.RunTLS(address, certPath, keyPath)
 }
 
-func ensureTLSCertificatePair(certPath, keyPath string) error {
+func (t Tls) certificateName() string {
+	name := strings.TrimSpace(t.Name)
+	if name == "" {
+		return defaultTLSName
+	}
+	return name
+}
+
+func (t Tls) certificatePairPaths() (string, string) {
+	name := t.certificateName()
+	return filepath.Join(defaultTLSDirectoryPath, name+".crt"), filepath.Join(defaultTLSDirectoryPath, name+".key")
+}
+
+func ensureTLSCertificatePair(certPath, keyPath, name string) error {
 	loadErr := validateTLSCertificatePair(certPath, keyPath)
 	if loadErr == nil {
 		return nil
@@ -60,7 +76,7 @@ func ensureTLSCertificatePair(certPath, keyPath string) error {
 		return fmt.Errorf("failed to load TLS certificate pair: %w", loadErr)
 	}
 
-	if err := generateSelfSignedTLSCertificate(certPath, keyPath); err != nil {
+	if err := generateSelfSignedTLSCertificate(certPath, keyPath, name); err != nil {
 		return fmt.Errorf("failed to generate TLS certificate pair: %w", err)
 	}
 
@@ -76,7 +92,7 @@ func validateTLSCertificatePair(certPath, keyPath string) error {
 	return err
 }
 
-func generateSelfSignedTLSCertificate(certPath, keyPath string) error {
+func generateSelfSignedTLSCertificate(certPath, keyPath, name string) error {
 	key, err := rsa.GenerateKey(rand.Reader, defaultTLSKeySize)
 	if err != nil {
 		return err
@@ -90,7 +106,7 @@ func generateSelfSignedTLSCertificate(certPath, keyPath string) error {
 	template := x509.Certificate{
 		SerialNumber: serialNumber,
 		Subject: pkix.Name{
-			CommonName:   "localhost",
+			CommonName:   name,
 			Organization: []string{"Defly Defender"},
 		},
 		NotBefore:             time.Now().Add(-1 * time.Hour),
@@ -98,7 +114,7 @@ func generateSelfSignedTLSCertificate(certPath, keyPath string) error {
 		KeyUsage:              x509.KeyUsageDigitalSignature | x509.KeyUsageKeyEncipherment,
 		ExtKeyUsage:           []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
 		BasicConstraintsValid: true,
-		DNSNames:              []string{"localhost"},
+		DNSNames:              []string{"localhost", name},
 		IPAddresses:           []net.IP{net.ParseIP("127.0.0.1")},
 	}
 

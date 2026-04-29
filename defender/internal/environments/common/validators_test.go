@@ -43,3 +43,47 @@ func TestValidateErrorFilePath(t *testing.T) {
 		})
 	}
 }
+
+func TestValidateDefenderName(t *testing.T) {
+	tests := map[string]struct {
+		value string
+		want  bool
+	}{
+		"default": {
+			value: "defender",
+			want:  true,
+		},
+		"kebab": {
+			value: "defender-1",
+			want:  true,
+		},
+		"underscore and dot": {
+			value: "defender_1.local",
+			want:  true,
+		},
+		"empty": {
+			value: "",
+			want:  false,
+		},
+		"path traversal": {
+			value: "..",
+			want:  false,
+		},
+		"path separator": {
+			value: "team/defender",
+			want:  false,
+		},
+		"space": {
+			value: "team defender",
+			want:  false,
+		},
+	}
+
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			if got := validateDefenderName(tt.value); got != tt.want {
+				t.Fatalf("validateDefenderName(%q) = %t, want %t", tt.value, got, tt.want)
+			}
+		})
+	}
+}
