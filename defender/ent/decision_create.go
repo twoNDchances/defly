@@ -57,6 +57,20 @@ func (dc *DecisionCreate) SetConfigurations(m map[string]interface{}) *DecisionC
 	return dc
 }
 
+// SetIsImplemented sets the "is_implemented" field.
+func (dc *DecisionCreate) SetIsImplemented(b bool) *DecisionCreate {
+	dc.mutation.SetIsImplemented(b)
+	return dc
+}
+
+// SetNillableIsImplemented sets the "is_implemented" field if the given value is not nil.
+func (dc *DecisionCreate) SetNillableIsImplemented(b *bool) *DecisionCreate {
+	if b != nil {
+		dc.SetIsImplemented(*b)
+	}
+	return dc
+}
+
 // SetID sets the "id" field.
 func (dc *DecisionCreate) SetID(u uuid.UUID) *DecisionCreate {
 	dc.mutation.SetID(u)
@@ -121,6 +135,10 @@ func (dc *DecisionCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (dc *DecisionCreate) defaults() {
+	if _, ok := dc.mutation.IsImplemented(); !ok {
+		v := decision.DefaultIsImplemented
+		dc.mutation.SetIsImplemented(v)
+	}
 	if _, ok := dc.mutation.ID(); !ok {
 		v := decision.DefaultID()
 		dc.mutation.SetID(v)
@@ -163,6 +181,9 @@ func (dc *DecisionCreate) check() error {
 		if err := decision.ActionValidator(v); err != nil {
 			return &ValidationError{Name: "action", err: fmt.Errorf(`ent: validator failed for field "Decision.action": %w`, err)}
 		}
+	}
+	if _, ok := dc.mutation.IsImplemented(); !ok {
+		return &ValidationError{Name: "is_implemented", err: errors.New(`ent: missing required field "Decision.is_implemented"`)}
 	}
 	return nil
 }
@@ -222,6 +243,10 @@ func (dc *DecisionCreate) createSpec() (*Decision, *sqlgraph.CreateSpec) {
 	if value, ok := dc.mutation.Configurations(); ok {
 		_spec.SetField(decision.FieldConfigurations, field.TypeJSON, value)
 		_node.Configurations = value
+	}
+	if value, ok := dc.mutation.IsImplemented(); ok {
+		_spec.SetField(decision.FieldIsImplemented, field.TypeBool, value)
+		_node.IsImplemented = value
 	}
 	if nodes := dc.mutation.DefendersIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

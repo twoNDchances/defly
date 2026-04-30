@@ -37,6 +37,7 @@ func (Decision) Fields() []ent.Field {
 			"force_no_cache",
 		),
 		field.JSON("configurations", map[string]any{}).Optional(),
+		field.Bool("is_implemented").Default(false),
 	}
 }
 

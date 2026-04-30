@@ -42,6 +42,7 @@ return [
     'principle' => [
         'rules' => 'Quy tắc sử dụng',
         'defenders' => 'Defender sử dụng',
+        'is_applied' => 'Được áp dụng',
         'buttons' => [
             'validate_button' => 'Xác minh',
             'validate_bulk_button' => 'Xác minh các mục đã chọn',
@@ -49,6 +50,7 @@ return [
     ],
     'decision' => [
         'defenders' => 'Defender sử dụng',
+        'is_implemented' => 'Được triển khai',
     ],
     'defender' => [
         'principles' => 'Nguyên tắc sử dụng',

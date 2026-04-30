@@ -28,6 +28,10 @@ class Security
         'cancel' => 'Cancel',
         'cancelAny' => 'Multi-cancel',
         'follow' => 'Follow',
+        'apply' => 'Apply',
+        'revoke' => 'Revoke',
+        'implement' => 'Implement',
+        'suspend' => 'Suspend',
     ];
 
     public static $excludeActionsByModel = [

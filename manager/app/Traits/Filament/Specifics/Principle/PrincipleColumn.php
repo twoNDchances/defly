@@ -44,4 +44,9 @@ trait PrincipleColumn
     {
         return self::relationshipColumn('defenders.name', __('tables.principle.defenders'));
     }
+
+    public static function getIsApplied()
+    {
+        return self::booleanColumn('is_applied', __('tables.principle.is_applied'));
+    }
 }

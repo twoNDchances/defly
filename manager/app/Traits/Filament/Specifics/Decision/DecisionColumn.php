@@ -44,4 +44,9 @@ trait DecisionColumn
     {
         return self::relationshipColumn('defenders.name', __('tables.decision.defenders'));
     }
+
+    public static function getIsImplemented()
+    {
+        return self::booleanColumn('is_implemented', __('tables.decision.is_implemented'));
+    }
 }

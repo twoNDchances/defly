@@ -42,6 +42,7 @@ return [
     'principle' => [
         'rules' => 'Rules in use',
         'defenders' => 'Defenders in use',
+        'is_applied' => 'Is applied',
         'buttons' => [
             'validate_button' => 'Validate',
             'validate_bulk_button' => 'Validate selected items',
@@ -49,6 +50,7 @@ return [
     ],
     'decision' => [
         'defenders' => 'Defenders in use',
+        'is_implemented' => 'Is implemented',
     ],
     'defender' => [
         'principles' => 'Principles in use',

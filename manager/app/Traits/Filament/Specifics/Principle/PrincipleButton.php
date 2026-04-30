@@ -2,6 +2,7 @@
 
 namespace App\Traits\Filament\Specifics\Principle;
 
+use App\Enums\Defender\DeploymentStatus;
 use App\Enums\Principle\ValidationStatus;
 use App\Jobs\PrincipleValidation;
 use App\Models\Defender;
@@ -13,6 +14,12 @@ use Illuminate\Support\Str;
 trait PrincipleButton
 {
     use Button;
+
+    protected static function ownerDefenderIsDeployed(?Defender $defender): bool
+    {
+        return $defender instanceof Defender
+            && $defender->deployment_status === DeploymentStatus::Successful;
+    }
 
     public static function attachPolicesAndLockButton()
     {
@@ -177,5 +184,85 @@ trait PrincipleButton
                     $record->delete();
                 }
             });
+    }
+
+    public static function applyPrincipleButton(?Defender $defender = null)
+    {
+        return self::button(
+            'apply_button',
+            'Apply',
+            Heroicon::OutlinedArrowUpOnSquareStack,
+            function ($record) use ($defender) {
+                if (! self::ownerDefenderIsDeployed($defender)) {
+                    return;
+                }
+
+            },
+        )
+            ->color('sky')
+            ->visible(fn () => self::ownerDefenderIsDeployed($defender))
+            ->authorize('apply');
+    }
+
+    public static function applyPrincipleBulkButton(?Defender $defender = null)
+    {
+        return self::bulkButton(
+            'apply_bulk_button',
+            'Apply selected items',
+            Heroicon::OutlinedArrowUpOnSquareStack,
+            function ($records) use ($defender) {
+                if (! self::ownerDefenderIsDeployed($defender)) {
+                    return;
+                }
+
+                foreach ($records as $record) {
+
+                }
+            },
+        )
+            ->color('sky')
+            ->visible(fn () => self::ownerDefenderIsDeployed($defender))
+            ->authorize('applyAny');
+    }
+
+    public static function revokePrincipleButton(?Defender $defender = null)
+    {
+        return self::button(
+            'revoke_button',
+            'Apply',
+            Heroicon::OutlinedArrowUturnLeft,
+            function ($record) use ($defender) {
+                if (! self::ownerDefenderIsDeployed($defender) || ! $record->is_applied) {
+                    return;
+                }
+
+            },
+        )
+            ->color('pink')
+            ->visible(fn ($record) => self::ownerDefenderIsDeployed($defender) && $record->is_applied)
+            ->authorize('revoke');
+    }
+
+    public static function revokePrincipleBulkButton(?Defender $defender = null)
+    {
+        return self::bulkButton(
+            'revoke_bulk_button',
+            'Revoke selected items',
+            Heroicon::OutlinedArrowUturnLeft,
+            function ($records) use ($defender) {
+                if (! self::ownerDefenderIsDeployed($defender)) {
+                    return;
+                }
+
+                foreach ($records as $record) {
+                    if (! $record->is_applied) {
+                        continue;
+                    }
+                }
+            },
+        )
+            ->color('pink')
+            ->visible(fn () => self::ownerDefenderIsDeployed($defender))
+            ->authorize('revokeAny');
     }
 }

@@ -28,7 +28,7 @@ class PrinciplesRelationManager extends RelationManager
         return $table
             ->recordTitleAttribute('name')
             ->modifyQueryUsing(fn ($query) => $query->where('validation_status', ValidationStatus::Passed))
-            ->columns(PrincipleTable::build())
+            ->columns([PrincipleTable::getIsApplied(), ...PrincipleTable::build()])
             ->filters([
                 //
             ])
@@ -36,10 +36,25 @@ class PrinciplesRelationManager extends RelationManager
                 self::attachPolicesAndLockButton()->recordSelectOptionsQuery(fn ($query) => $query->where('validation_status', ValidationStatus::Passed)),
             ])
             ->recordActions([
-                self::buttonGroup(edit: false, delete: false, more: [self::detachPrinciplesAndUnlockButton()]),
+                self::buttonGroup(
+                    edit: false,
+                    delete: false,
+                    more: [
+                        self::applyPrincipleButton($this->getOwnerRecord()),
+                        self::revokePrincipleButton($this->getOwnerRecord()),
+                        self::detachPrinciplesAndUnlockButton(),
+                    ],
+                ),
             ])
             ->toolbarActions([
-                self::bulkButtonGroup(false, [self::detachPrinciplesAndUnlockBulkButton()]),
+                self::bulkButtonGroup(
+                    false,
+                    [
+                        self::applyPrincipleBulkButton($this->getOwnerRecord()),
+                        self::revokePrincipleBulkButton($this->getOwnerRecord()),
+                        self::detachPrinciplesAndUnlockBulkButton(),
+                    ],
+                ),
             ])
             ->reorderable('order');
     }

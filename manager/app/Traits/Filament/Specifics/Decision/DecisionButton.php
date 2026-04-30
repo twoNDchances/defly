@@ -2,6 +2,7 @@
 
 namespace App\Traits\Filament\Specifics\Decision;
 
+use App\Enums\Defender\DeploymentStatus;
 use App\Models\Defender;
 use App\Services\Lock;
 use App\Traits\Filament\Generals\Components\Button;
@@ -13,6 +14,12 @@ use Throwable;
 trait DecisionButton
 {
     use Button;
+
+    protected static function ownerDefenderIsDeployed(?Defender $defender): bool
+    {
+        return $defender instanceof Defender
+            && $defender->deployment_status === DeploymentStatus::Successful;
+    }
 
     public static function testRequestButton()
     {
@@ -134,5 +141,85 @@ trait DecisionButton
                     ->dispatch('refresh-form-data', statePaths: ['deployment_status', 'deployment_details'])
                     ->to($livewire->getPageClass());
             });
+    }
+
+    public static function implementDecisionButton(?Defender $defender = null)
+    {
+        return self::button(
+            'implement_button',
+            'Implement',
+            Heroicon::OutlinedBolt,
+            function ($record) use ($defender) {
+                if (! self::ownerDefenderIsDeployed($defender)) {
+                    return;
+                }
+
+            },
+        )
+            ->color('orange')
+            ->visible(fn () => self::ownerDefenderIsDeployed($defender))
+            ->authorize('implement');
+    }
+
+    public static function implementDecisionBulkButton(?Defender $defender = null)
+    {
+        return self::bulkButton(
+            'implement_bulk_button',
+            'Implement selected items',
+            Heroicon::OutlinedBolt,
+            function ($records) use ($defender) {
+                if (! self::ownerDefenderIsDeployed($defender)) {
+                    return;
+                }
+
+                foreach ($records as $record) {
+
+                }
+            },
+        )
+            ->color('orange')
+            ->visible(fn () => self::ownerDefenderIsDeployed($defender))
+            ->authorize('implementAny');
+    }
+
+    public static function suspendDecisionButton(?Defender $defender = null)
+    {
+        return self::button(
+            'suspend_button',
+            'Suspend',
+            Heroicon::OutlinedBoltSlash,
+            function ($record) use ($defender) {
+                if (! self::ownerDefenderIsDeployed($defender) || ! $record->is_implemented) {
+                    return;
+                }
+
+            },
+        )
+            ->color('yellow')
+            ->visible(fn ($record) => self::ownerDefenderIsDeployed($defender) && $record->is_implemented)
+            ->authorize('suspend');
+    }
+
+    public static function suspendDecisionBulkButton(?Defender $defender = null)
+    {
+        return self::bulkButton(
+            'suspend_bulk_button',
+            'Suspend selected items',
+            Heroicon::OutlinedBoltSlash,
+            function ($records) use ($defender) {
+                if (! self::ownerDefenderIsDeployed($defender)) {
+                    return;
+                }
+
+                foreach ($records as $record) {
+                    if (! $record->is_implemented) {
+                        continue;
+                    }
+                }
+            },
+        )
+            ->color('yellow')
+            ->visible(fn () => self::ownerDefenderIsDeployed($defender))
+            ->authorize('suspendAny');
     }
 }

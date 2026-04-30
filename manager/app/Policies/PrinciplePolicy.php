@@ -59,4 +59,24 @@ class PrinciplePolicy
     {
         return Security::can($this->getModel(), 'validateAny', $user);
     }
+
+    public function apply(User $user, Principle $principle): bool
+    {
+        return $this->checkAccess($user, $principle, 'apply');
+    }
+
+    public function applyAny(User $user): bool
+    {
+        return Security::can($this->getModel(), 'applyAny', $user);
+    }
+
+    public function revoke(User $user, Principle $principle): bool
+    {
+        return $this->checkAccess($user, $principle, 'revoke');
+    }
+
+    public function revokeAny(User $user): bool
+    {
+        return Security::can($this->getModel(), 'revokeAny', $user);
+    }
 }

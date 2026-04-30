@@ -26,7 +26,7 @@ class DecisionsRelationManager extends RelationManager
     {
         return $table
             ->recordTitleAttribute('name')
-            ->columns(DecisionTable::build())
+            ->columns([DecisionTable::getIsImplemented(), ...DecisionTable::build()])
             ->filters([
                 //
             ])
@@ -34,10 +34,25 @@ class DecisionsRelationManager extends RelationManager
                 self::attachDecisionsAndLockButton(),
             ])
             ->recordActions([
-                self::buttonGroup(edit: false, delete: false, more: [self::detachDecisionsAndUnlockButton()]),
+                self::buttonGroup(
+                    edit: false,
+                    delete: false,
+                    more: [
+                        self::implementDecisionButton($this->getOwnerRecord()),
+                        self::suspendDecisionButton($this->getOwnerRecord()),
+                        self::detachDecisionsAndUnlockButton(),
+                    ],
+                ),
             ])
             ->toolbarActions([
-                self::bulkButtonGroup(false, [self::detachDecisionsAndUnlockBulkButton()]),
+                self::bulkButtonGroup(
+                    false,
+                    [
+                        self::implementDecisionBulkButton($this->getOwnerRecord()),
+                        self::suspendDecisionBulkButton($this->getOwnerRecord()),
+                        self::detachDecisionsAndUnlockBulkButton(),
+                    ],
+                ),
             ])
             ->reorderable('order');
     }

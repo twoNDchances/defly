@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 
-#[Fillable(['name', 'direction', 'condition', 'score', 'action', 'configurations', 'description', 'created_by', 'is_locked'])]
+#[Fillable(['name', 'direction', 'condition', 'score', 'action', 'configurations', 'is_implemented', 'description', 'created_by', 'is_locked'])]
 #[ObservedBy(DecisionObserver::class)]
 class Decision extends Model
 {
@@ -29,6 +29,7 @@ class Decision extends Model
             'score' => 'float',
             'action' => Action::class,
             'configurations' => 'array',
+            'is_implemented' => 'boolean',
             'description' => 'string',
             'created_by' => 'string',
             'is_locked' => 'boolean',

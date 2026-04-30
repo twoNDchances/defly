@@ -86,6 +86,20 @@ func (pu *PrincipleUpdate) AddPhase(i int) *PrincipleUpdate {
 	return pu
 }
 
+// SetIsApplied sets the "is_applied" field.
+func (pu *PrincipleUpdate) SetIsApplied(b bool) *PrincipleUpdate {
+	pu.mutation.SetIsApplied(b)
+	return pu
+}
+
+// SetNillableIsApplied sets the "is_applied" field if the given value is not nil.
+func (pu *PrincipleUpdate) SetNillableIsApplied(b *bool) *PrincipleUpdate {
+	if b != nil {
+		pu.SetIsApplied(*b)
+	}
+	return pu
+}
+
 // AddRuleIDs adds the "rules" edge to the Rule entity by IDs.
 func (pu *PrincipleUpdate) AddRuleIDs(ids ...uuid.UUID) *PrincipleUpdate {
 	pu.mutation.AddRuleIDs(ids...)
@@ -226,6 +240,9 @@ func (pu *PrincipleUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := pu.mutation.AddedPhase(); ok {
 		_spec.AddField(principle.FieldPhase, field.TypeInt, value)
+	}
+	if value, ok := pu.mutation.IsApplied(); ok {
+		_spec.SetField(principle.FieldIsApplied, field.TypeBool, value)
 	}
 	if pu.mutation.RulesCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -390,6 +407,20 @@ func (puo *PrincipleUpdateOne) SetNillablePhase(i *int) *PrincipleUpdateOne {
 // AddPhase adds i to the "phase" field.
 func (puo *PrincipleUpdateOne) AddPhase(i int) *PrincipleUpdateOne {
 	puo.mutation.AddPhase(i)
+	return puo
+}
+
+// SetIsApplied sets the "is_applied" field.
+func (puo *PrincipleUpdateOne) SetIsApplied(b bool) *PrincipleUpdateOne {
+	puo.mutation.SetIsApplied(b)
+	return puo
+}
+
+// SetNillableIsApplied sets the "is_applied" field if the given value is not nil.
+func (puo *PrincipleUpdateOne) SetNillableIsApplied(b *bool) *PrincipleUpdateOne {
+	if b != nil {
+		puo.SetIsApplied(*b)
+	}
 	return puo
 }
 
@@ -563,6 +594,9 @@ func (puo *PrincipleUpdateOne) sqlSave(ctx context.Context) (_node *Principle, e
 	}
 	if value, ok := puo.mutation.AddedPhase(); ok {
 		_spec.AddField(principle.FieldPhase, field.TypeInt, value)
+	}
+	if value, ok := puo.mutation.IsApplied(); ok {
+		_spec.SetField(principle.FieldIsApplied, field.TypeBool, value)
 	}
 	if puo.mutation.RulesCleared() {
 		edge := &sqlgraph.EdgeSpec{
