@@ -18,7 +18,6 @@ type Server struct {
 	Logger     configs.Logger
 	Security   Security
 	Controller Controller
-	Storage    Storage
 	Error      configs.Error
 }
 
@@ -28,7 +27,7 @@ func (s Server) Boot() error {
 
 	errorFile, err := s.Error.Boot()
 	if err != nil {
-		return fmt.Errorf("%s", s.Error.Format(err.Error()))
+		return s.Error.LogError(err)
 	}
 	if errorFile != nil {
 		defer errorFile.Close()
@@ -46,10 +45,6 @@ func (s Server) Boot() error {
 		return s.Error.LogError(err)
 	}
 
-	storage := &s.Storage
-	if err := storage.Load(); err != nil {
-		return s.Error.LogError(err)
-	}
 	s.Controller.Policy = &controllers.Policy{}
 	s.Controller.Decision = &controllers.Decision{}
 
@@ -60,5 +55,5 @@ func (s Server) Boot() error {
 		scheme = "https"
 	}
 	log.Println(utilities.Infof("Defender server is running at %s://0.0.0.0:%s", scheme, s.Address.Port))
-	return s.Error.LogError(s.Tls.Listen(server, fmt.Sprintf(":%s", s.Address.Port)))
+	return s.Error.LogError(s.Tls.Listen(server, fmt.Sprintf("%s:%s", s.Address.Host, s.Address.Port)))
 }

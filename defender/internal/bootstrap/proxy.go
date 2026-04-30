@@ -3,13 +3,21 @@ package bootstrap
 import (
 	"defly-defender/internal/configs"
 	configproxy "defly-defender/internal/configs/proxy"
-	envcommon "defly-defender/internal/environments/common"
 	envlogger "defly-defender/internal/environments/logger"
 	envproxy "defly-defender/internal/environments/proxy"
 )
 
 func NewProxy() error {
 	from := "PROXY"
+	runtimeError := NewError(from, "runtime")
+	errorFile, err := runtimeError.Boot()
+	if err != nil {
+		return runtimeError.LogError(err)
+	}
+	if errorFile != nil {
+		defer errorFile.Close()
+	}
+
 	proxyTrustedEnable := envproxy.ProxyTrustedEnable.Value()
 	proxyTrusted := configproxy.Trusted{
 		Enable: proxyTrustedEnable,
@@ -29,18 +37,9 @@ func NewProxy() error {
 		proxyLogger.Path = envlogger.ProxyLoggerFilePath.Value()
 	}
 
-	errorFileEnable := envcommon.ErrorFileEnable.Value()
-	proxyError := configs.Error{
-		From:       from,
-		Label:      "runtime",
-		FileEnable: errorFileEnable,
-	}
-	if errorFileEnable {
-		proxyError.DirectoryPath = envcommon.ErrorDirectoryPath.Value()
-	}
-
 	proxy := configproxy.Proxy{
 		Address: configs.Address{
+			Host: "",
 			Port: envproxy.ProxyPort.Value(),
 		},
 		Logger: proxyLogger,
@@ -60,10 +59,10 @@ func NewProxy() error {
 		BackendUrl:   envproxy.ProxyBackendUrl.Value().String(),
 		Trusted:      proxyTrusted,
 		PreserveHost: envproxy.ProxyPreserveHost.Value(),
-		Error:        proxyError,
+		Error:        runtimeError,
 	}
 	if err := proxy.Boot(); err != nil {
-		return err
+		return runtimeError.LogError(err)
 	}
 	return nil
 }

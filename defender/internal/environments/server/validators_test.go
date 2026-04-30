@@ -1,52 +1,6 @@
 package server
 
-import (
-	"os"
-	"path/filepath"
-	"testing"
-)
-
-func TestValidateStorageFilePath(t *testing.T) {
-	root := t.TempDir()
-	existingFile := filepath.Join(root, "data.yaml")
-	if err := os.WriteFile(existingFile, []byte("storage"), 0o600); err != nil {
-		t.Fatal(err)
-	}
-
-	tests := map[string]struct {
-		value string
-		want  bool
-	}{
-		"empty": {
-			value: "",
-			want:  false,
-		},
-		"existing file": {
-			value: existingFile,
-			want:  true,
-		},
-		"missing file in existing directory": {
-			value: filepath.Join(root, "missing.yaml"),
-			want:  true,
-		},
-		"missing file in missing directory": {
-			value: filepath.Join(root, "nested", "data.yaml"),
-			want:  true,
-		},
-		"existing directory": {
-			value: root,
-			want:  false,
-		},
-	}
-
-	for name, tt := range tests {
-		t.Run(name, func(t *testing.T) {
-			if got := validateStorageFilePath(tt.value); got != tt.want {
-				t.Fatalf("validateStorageFilePath(%q) = %t, want %t", tt.value, got, tt.want)
-			}
-		})
-	}
-}
+import "testing"
 
 func TestValidateSecurityManager(t *testing.T) {
 	tests := map[string]struct {

@@ -6,6 +6,7 @@ import (
 	"context"
 	"defly-defender/ent/action"
 	"defly-defender/ent/decision"
+	"defly-defender/ent/defender"
 	"defly-defender/ent/engine"
 	"defly-defender/ent/group"
 	"defly-defender/ent/pattern"
@@ -85,6 +86,7 @@ func checkColumn(table, column string) error {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
 			action.Table:     action.ValidColumn,
 			decision.Table:   decision.ValidColumn,
+			defender.Table:   defender.ValidColumn,
 			engine.Table:     engine.ValidColumn,
 			group.Table:      group.ValidColumn,
 			pattern.Table:    pattern.ValidColumn,

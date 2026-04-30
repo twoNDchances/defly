@@ -31,7 +31,7 @@ func (p Proxy) Boot() error {
 
 	errorFile, err := p.Error.Boot()
 	if err != nil {
-		return fmt.Errorf("%s", p.Error.Format(err.Error()))
+		return p.Error.LogError(err)
 	}
 	if errorFile != nil {
 		defer errorFile.Close()
@@ -46,8 +46,8 @@ func (p Proxy) Boot() error {
 	}
 
 	proxy.Use(func(ctx *gin.Context) {
-		globals.Gate.RLock()
-		defer globals.Gate.RUnlock()
+		globals.Pauser.RLock()
+		defer globals.Pauser.RUnlock()
 		ctx.Next()
 	})
 
@@ -78,5 +78,5 @@ func (p Proxy) Boot() error {
 
 	proxy.Any("/*proxyPath", gin.WrapH(reverseProxy))
 	log.Println(utilities.Infof("Defender proxy is running at http://0.0.0.0:%s", p.Address.Port))
-	return p.Error.LogError(proxy.Run(fmt.Sprintf(":%s", p.Address.Port)))
+	return p.Error.LogError(proxy.Run(fmt.Sprintf("%s:%s", p.Address.Host, p.Address.Port)))
 }

@@ -50,5 +50,6 @@ func (Decision) Fields() []ent.Field {
 func (Decision) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.From("creator", User.Type).Ref("created_decisions").Field("created_by").Unique(),
+		edge.From("defenders", Defender.Type).Ref("decisions"),
 	}
 }

@@ -4,7 +4,9 @@ package ent
 
 import (
 	"context"
+	"database/sql/driver"
 	"defly-defender/ent/decision"
+	"defly-defender/ent/defender"
 	"defly-defender/ent/predicate"
 	"defly-defender/ent/user"
 	"fmt"
@@ -20,11 +22,12 @@ import (
 // DecisionQuery is the builder for querying Decision entities.
 type DecisionQuery struct {
 	config
-	ctx         *QueryContext
-	order       []decision.OrderOption
-	inters      []Interceptor
-	predicates  []predicate.Decision
-	withCreator *UserQuery
+	ctx           *QueryContext
+	order         []decision.OrderOption
+	inters        []Interceptor
+	predicates    []predicate.Decision
+	withCreator   *UserQuery
+	withDefenders *DefenderQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -76,6 +79,28 @@ func (dq *DecisionQuery) QueryCreator() *UserQuery {
 			sqlgraph.From(decision.Table, decision.FieldID, selector),
 			sqlgraph.To(user.Table, user.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, decision.CreatorTable, decision.CreatorColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(dq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryDefenders chains the current query on the "defenders" edge.
+func (dq *DecisionQuery) QueryDefenders() *DefenderQuery {
+	query := (&DefenderClient{config: dq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := dq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := dq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(decision.Table, decision.FieldID, selector),
+			sqlgraph.To(defender.Table, defender.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, decision.DefendersTable, decision.DefendersPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(dq.driver.Dialect(), step)
 		return fromU, nil
@@ -270,12 +295,13 @@ func (dq *DecisionQuery) Clone() *DecisionQuery {
 		return nil
 	}
 	return &DecisionQuery{
-		config:      dq.config,
-		ctx:         dq.ctx.Clone(),
-		order:       append([]decision.OrderOption{}, dq.order...),
-		inters:      append([]Interceptor{}, dq.inters...),
-		predicates:  append([]predicate.Decision{}, dq.predicates...),
-		withCreator: dq.withCreator.Clone(),
+		config:        dq.config,
+		ctx:           dq.ctx.Clone(),
+		order:         append([]decision.OrderOption{}, dq.order...),
+		inters:        append([]Interceptor{}, dq.inters...),
+		predicates:    append([]predicate.Decision{}, dq.predicates...),
+		withCreator:   dq.withCreator.Clone(),
+		withDefenders: dq.withDefenders.Clone(),
 		// clone intermediate query.
 		sql:  dq.sql.Clone(),
 		path: dq.path,
@@ -290,6 +316,17 @@ func (dq *DecisionQuery) WithCreator(opts ...func(*UserQuery)) *DecisionQuery {
 		opt(query)
 	}
 	dq.withCreator = query
+	return dq
+}
+
+// WithDefenders tells the query-builder to eager-load the nodes that are connected to
+// the "defenders" edge. The optional arguments are used to configure the query builder of the edge.
+func (dq *DecisionQuery) WithDefenders(opts ...func(*DefenderQuery)) *DecisionQuery {
+	query := (&DefenderClient{config: dq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	dq.withDefenders = query
 	return dq
 }
 
@@ -371,8 +408,9 @@ func (dq *DecisionQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Dec
 	var (
 		nodes       = []*Decision{}
 		_spec       = dq.querySpec()
-		loadedTypes = [1]bool{
+		loadedTypes = [2]bool{
 			dq.withCreator != nil,
+			dq.withDefenders != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -396,6 +434,13 @@ func (dq *DecisionQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Dec
 	if query := dq.withCreator; query != nil {
 		if err := dq.loadCreator(ctx, query, nodes, nil,
 			func(n *Decision, e *User) { n.Edges.Creator = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := dq.withDefenders; query != nil {
+		if err := dq.loadDefenders(ctx, query, nodes,
+			func(n *Decision) { n.Edges.Defenders = []*Defender{} },
+			func(n *Decision, e *Defender) { n.Edges.Defenders = append(n.Edges.Defenders, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -430,6 +475,67 @@ func (dq *DecisionQuery) loadCreator(ctx context.Context, query *UserQuery, node
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
+func (dq *DecisionQuery) loadDefenders(ctx context.Context, query *DefenderQuery, nodes []*Decision, init func(*Decision), assign func(*Decision, *Defender)) error {
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[uuid.UUID]*Decision)
+	nids := make(map[uuid.UUID]map[*Decision]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
+		if init != nil {
+			init(node)
+		}
+	}
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(decision.DefendersTable)
+		s.Join(joinT).On(s.C(defender.FieldID), joinT.C(decision.DefendersPrimaryKey[0]))
+		s.Where(sql.InValues(joinT.C(decision.DefendersPrimaryKey[1]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(decision.DefendersPrimaryKey[1]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
+		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]any, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]any{new(uuid.UUID)}, values...), nil
+			}
+			spec.Assign = func(columns []string, values []any) error {
+				outValue := *values[0].(*uuid.UUID)
+				inValue := *values[1].(*uuid.UUID)
+				if nids[inValue] == nil {
+					nids[inValue] = map[*Decision]struct{}{byID[outValue]: {}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byID[outValue]] = struct{}{}
+				return nil
+			}
+		})
+	})
+	neighbors, err := withInterceptors[[]*Defender](ctx, query, qr, query.inters)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected "defenders" node returned %v`, n.ID)
+		}
+		for kn := range nodes {
+			assign(kn, n)
 		}
 	}
 	return nil

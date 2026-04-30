@@ -484,6 +484,29 @@ func HasCreatorWith(preds ...predicate.User) predicate.Decision {
 	})
 }
 
+// HasDefenders applies the HasEdge predicate on the "defenders" edge.
+func HasDefenders() predicate.Decision {
+	return predicate.Decision(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, DefendersTable, DefendersPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasDefendersWith applies the HasEdge predicate on the "defenders" edge with a given conditions (other predicates).
+func HasDefendersWith(preds ...predicate.Defender) predicate.Decision {
+	return predicate.Decision(func(s *sql.Selector) {
+		step := newDefendersStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.Decision) predicate.Decision {
 	return predicate.Decision(sql.AndPredicates(predicates...))

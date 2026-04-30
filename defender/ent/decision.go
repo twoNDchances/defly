@@ -52,9 +52,11 @@ type Decision struct {
 type DecisionEdges struct {
 	// Creator holds the value of the creator edge.
 	Creator *User `json:"creator,omitempty"`
+	// Defenders holds the value of the defenders edge.
+	Defenders []*Defender `json:"defenders,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [2]bool
 }
 
 // CreatorOrErr returns the Creator value or an error if the edge
@@ -66,6 +68,15 @@ func (e DecisionEdges) CreatorOrErr() (*User, error) {
 		return nil, &NotFoundError{label: user.Label}
 	}
 	return nil, &NotLoadedError{edge: "creator"}
+}
+
+// DefendersOrErr returns the Defenders value or an error if the edge
+// was not loaded in eager-loading.
+func (e DecisionEdges) DefendersOrErr() ([]*Defender, error) {
+	if e.loadedTypes[1] {
+		return e.Defenders, nil
+	}
+	return nil, &NotLoadedError{edge: "defenders"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -194,6 +205,11 @@ func (d *Decision) Value(name string) (ent.Value, error) {
 // QueryCreator queries the "creator" edge of the Decision entity.
 func (d *Decision) QueryCreator() *UserQuery {
 	return NewDecisionClient(d.config).QueryCreator(d)
+}
+
+// QueryDefenders queries the "defenders" edge of the Decision entity.
+func (d *Decision) QueryDefenders() *DefenderQuery {
+	return NewDecisionClient(d.config).QueryDefenders(d)
 }
 
 // Update returns a builder for updating this Decision.

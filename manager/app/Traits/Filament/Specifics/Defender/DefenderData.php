@@ -161,6 +161,13 @@ trait DefenderData
             ['key' => 'ABOUT_BANNER_ENABLE', 'value' => 'true'],
             ['key' => 'ERROR_FILE_ENABLE', 'value' => 'false'],
             ['key' => 'ERROR_DIRECTORY_PATH', 'value' => 'storage/errors'],
+            ['key' => 'DATABASE_HOST', 'value' => '127.0.0.1'],
+            ['key' => 'DATABASE_PORT', 'value' => '3306'],
+            ['key' => 'DATABASE_NAME', 'value' => 'defly_manager'],
+            ['key' => 'DATABASE_USER', 'value' => 'root'],
+            ['key' => 'DATABASE_PASS', 'value' => ''],
+            ['key' => 'DOCTOR_INTERVAL_UNIT', 'value' => 'minute'],
+            ['key' => 'DOCTOR_INTERVAL_COUNT', 'value' => '1'],
         ];
     }
 
@@ -180,8 +187,6 @@ trait DefenderData
             ['key' => 'SERVER_CONTROLLER_PATH_DECISIONS', 'value' => 'decisions'],
             ['key' => 'SERVER_CONTROLLER_METHOD_IMPLEMENT', 'value' => 'put'],
             ['key' => 'SERVER_CONTROLLER_METHOD_SUSPEND', 'value' => 'delete'],
-            ['key' => 'SERVER_STORAGE_TYPE', 'value' => 'file'],
-            ['key' => 'SERVER_STORAGE_PATH', 'value' => 'storage/data/data.yaml'],
             ['key' => 'SERVER_SECURITY_MANAGER', 'value' => 'manager'],
             ['key' => 'SERVER_SECURITY_USERNAME', 'value' => 'defly-defender'],
             ['key' => 'SERVER_SECURITY_PASSWORD', 'value' => 'P@55w0rd'],

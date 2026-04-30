@@ -45,6 +45,13 @@ trait DefenderField
             ['key' => 'ABOUT_BANNER_ENABLE', 'value' => 'true'],
             ['key' => 'ERROR_FILE_ENABLE', 'value' => 'false'],
             ['key' => 'ERROR_DIRECTORY_PATH', 'value' => 'storage/errors'],
+            ['key' => 'DATABASE_HOST', 'value' => '127.0.0.1'],
+            ['key' => 'DATABASE_PORT', 'value' => '3306'],
+            ['key' => 'DATABASE_NAME', 'value' => 'defly_manager'],
+            ['key' => 'DATABASE_USER', 'value' => 'root'],
+            ['key' => 'DATABASE_PASS', 'value' => ''],
+            ['key' => 'DOCTOR_INTERVAL_UNIT', 'value' => 'minute'],
+            ['key' => 'DOCTOR_INTERVAL_COUNT', 'value' => '1'],
         ];
 
         $directoryPathRule = function (string $attribute, mixed $value, $fail): void {
@@ -58,10 +65,27 @@ trait DefenderField
             }
         };
 
+        $doctorIntervalCountRule = function (string $attribute, mixed $value, $fail): void {
+            if (! is_numeric($value)) {
+                return;
+            }
+
+            if ((int) $value < 30) {
+                $fail('The :attribute must be at least 30 when DOCTOR_INTERVAL_UNIT is second.');
+            }
+        };
+
         $valueRules = [
             'ABOUT_BANNER_ENABLE' => ['required', 'in:true,false'],
             'ERROR_FILE_ENABLE' => ['required', 'in:true,false'],
             'ERROR_DIRECTORY_PATH' => ['nullable', 'string', 'max:255', $directoryPathRule],
+            'DATABASE_HOST' => ['required', 'string', 'max:255', 'not_regex:/\s/'],
+            'DATABASE_PORT' => ['required', 'integer', 'min:1', 'max:65535'],
+            'DATABASE_NAME' => ['required', 'string', 'max:255', 'not_regex:/\s/'],
+            'DATABASE_USER' => ['required', 'string', 'max:255', 'not_regex:/\s/'],
+            'DATABASE_PASS' => ['nullable', 'string', 'max:255'],
+            'DOCTOR_INTERVAL_UNIT' => ['required', 'in:second,minute,hour'],
+            'DOCTOR_INTERVAL_COUNT' => ['required', 'integer', 'min:1', 'max:1000000'],
         ];
 
         return self::repeater(
@@ -77,8 +101,32 @@ trait DefenderField
                     ->required(),
 
                 self::textInput('value', __('models.defender.extras.value'))
-                    ->rules(fn ($get) => $valueRules[$get('key')] ?? ['nullable', 'string'])
-                    ->maxLength(255),
+                    ->rules(function ($get) use ($doctorIntervalCountRule, $valueRules) {
+                        $key = $get('key');
+                        if ($key !== 'DOCTOR_INTERVAL_COUNT') {
+                            return $valueRules[$key] ?? ['nullable', 'string'];
+                        }
+
+                        $commonVariables = $get('../../common_environment_variables');
+                        if (! is_array($commonVariables)) {
+                            return $valueRules[$key];
+                        }
+
+                        foreach ($commonVariables as $variable) {
+                            if (($variable['key'] ?? null) !== 'DOCTOR_INTERVAL_UNIT') {
+                                continue;
+                            }
+
+                            if (strtolower((string) ($variable['value'] ?? '')) === 'second') {
+                                return [...$valueRules[$key], $doctorIntervalCountRule];
+                            }
+                        }
+
+                        return $valueRules[$key];
+                    })
+                    ->maxLength(null)
+                    ->password()
+                    ->revealable(),
             ],
         )
             ->default($variables)
@@ -107,8 +155,6 @@ trait DefenderField
             ['key' => 'SERVER_CONTROLLER_PATH_DECISIONS', 'value' => 'decisions'],
             ['key' => 'SERVER_CONTROLLER_METHOD_IMPLEMENT', 'value' => 'put'],
             ['key' => 'SERVER_CONTROLLER_METHOD_SUSPEND', 'value' => 'delete'],
-            ['key' => 'SERVER_STORAGE_TYPE', 'value' => 'file'],
-            ['key' => 'SERVER_STORAGE_PATH', 'value' => 'storage/data/data.yaml'],
             ['key' => 'SERVER_SECURITY_MANAGER', 'value' => 'manager'],
             ['key' => 'SERVER_SECURITY_USERNAME', 'value' => 'defly-defender'],
             ['key' => 'SERVER_SECURITY_PASSWORD', 'value' => 'P@55w0rd'],
@@ -137,12 +183,10 @@ trait DefenderField
             'SERVER_CONTROLLER_PATH_PREFIX' => ['required', 'regex:/^[A-Za-z0-9._~-]+(?:\/[A-Za-z0-9._~-]+)*$/', 'not_regex:/(^|\/)\.{1,2}(\/|$)/'],
             'SERVER_CONTROLLER_PATH_PRINCIPLES' => ['required', 'regex:/^[A-Za-z0-9._~-]+(?:\/[A-Za-z0-9._~-]+)*$/', 'not_regex:/(^|\/)\.{1,2}(\/|$)/'],
             'SERVER_CONTROLLER_PATH_DECISIONS' => ['required', 'regex:/^[A-Za-z0-9._~-]+(?:\/[A-Za-z0-9._~-]+)*$/', 'not_regex:/(^|\/)\.{1,2}(\/|$)/'],
-            'SERVER_CONTROLLER_METHOD_APPLY' => ['required', 'in:get,post,put,patch,delete'],
-            'SERVER_CONTROLLER_METHOD_REVOKE' => ['required', 'in:get,post,put,patch,delete'],
-            'SERVER_CONTROLLER_METHOD_IMPLEMENT' => ['required', 'in:get,post,put,patch,delete'],
-            'SERVER_CONTROLLER_METHOD_SUSPEND' => ['required', 'in:get,post,put,patch,delete'],
-            'SERVER_STORAGE_TYPE' => ['required', 'in:file,memory'],
-            'SERVER_STORAGE_PATH' => ['nullable', 'string', 'max:255', $filePathRule],
+            'SERVER_CONTROLLER_METHOD_APPLY' => ['required', 'in:post,put,patch,delete'],
+            'SERVER_CONTROLLER_METHOD_REVOKE' => ['required', 'in:post,put,patch,delete'],
+            'SERVER_CONTROLLER_METHOD_IMPLEMENT' => ['required', 'in:post,put,patch,delete'],
+            'SERVER_CONTROLLER_METHOD_SUSPEND' => ['required', 'in:post,put,patch,delete'],
             'SERVER_SECURITY_MANAGER' => ['required', 'string', 'max:255', 'not_regex:/[\s\/\\\\:]/'],
             'SERVER_SECURITY_USERNAME' => ['required', 'string', 'min:4', 'max:255'],
             'SERVER_SECURITY_PASSWORD' => ['required', 'string', 'min:4', 'max:255'],
@@ -162,7 +206,9 @@ trait DefenderField
 
                 self::textInput('value', __('models.defender.extras.value'))
                     ->rules(fn ($get) => $valueRules[$get('key')] ?? ['nullable', 'string'])
-                    ->maxLength(null),
+                    ->maxLength(null)
+                    ->password()
+                    ->revealable(),
             ],
         )
             ->default($variables)
@@ -283,7 +329,9 @@ trait DefenderField
 
                 self::textInput('value', __('models.defender.extras.value'))
                     ->rules(fn ($get) => $valueRules[$get('key')] ?? ['nullable', 'string'])
-                    ->maxLength(null),
+                    ->maxLength(null)
+                    ->password()
+                    ->revealable(),
             ],
         )
             ->default($variables)

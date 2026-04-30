@@ -4,6 +4,7 @@ package ent
 
 import (
 	"context"
+	"defly-defender/ent/defender"
 	"defly-defender/ent/principle"
 	"defly-defender/ent/rule"
 	"defly-defender/ent/user"
@@ -185,6 +186,21 @@ func (pc *PrincipleCreate) AddRules(r ...*Rule) *PrincipleCreate {
 		ids[i] = r[i].ID
 	}
 	return pc.AddRuleIDs(ids...)
+}
+
+// AddDefenderIDs adds the "defenders" edge to the Defender entity by IDs.
+func (pc *PrincipleCreate) AddDefenderIDs(ids ...uuid.UUID) *PrincipleCreate {
+	pc.mutation.AddDefenderIDs(ids...)
+	return pc
+}
+
+// AddDefenders adds the "defenders" edges to the Defender entity.
+func (pc *PrincipleCreate) AddDefenders(d ...*Defender) *PrincipleCreate {
+	ids := make([]uuid.UUID, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
+	}
+	return pc.AddDefenderIDs(ids...)
 }
 
 // Mutation returns the PrincipleMutation object of the builder.
@@ -371,6 +387,22 @@ func (pc *PrincipleCreate) createSpec() (*Principle, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(rule.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := pc.mutation.DefendersIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   principle.DefendersTable,
+			Columns: principle.DefendersPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(defender.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

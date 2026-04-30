@@ -5,6 +5,7 @@ package ent
 import (
 	"context"
 	"defly-defender/ent/decision"
+	"defly-defender/ent/defender"
 	"defly-defender/ent/predicate"
 	"defly-defender/ent/user"
 	"errors"
@@ -212,6 +213,21 @@ func (du *DecisionUpdate) SetCreator(u *User) *DecisionUpdate {
 	return du.SetCreatorID(u.ID)
 }
 
+// AddDefenderIDs adds the "defenders" edge to the Defender entity by IDs.
+func (du *DecisionUpdate) AddDefenderIDs(ids ...uuid.UUID) *DecisionUpdate {
+	du.mutation.AddDefenderIDs(ids...)
+	return du
+}
+
+// AddDefenders adds the "defenders" edges to the Defender entity.
+func (du *DecisionUpdate) AddDefenders(d ...*Defender) *DecisionUpdate {
+	ids := make([]uuid.UUID, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
+	}
+	return du.AddDefenderIDs(ids...)
+}
+
 // Mutation returns the DecisionMutation object of the builder.
 func (du *DecisionUpdate) Mutation() *DecisionMutation {
 	return du.mutation
@@ -221,6 +237,27 @@ func (du *DecisionUpdate) Mutation() *DecisionMutation {
 func (du *DecisionUpdate) ClearCreator() *DecisionUpdate {
 	du.mutation.ClearCreator()
 	return du
+}
+
+// ClearDefenders clears all "defenders" edges to the Defender entity.
+func (du *DecisionUpdate) ClearDefenders() *DecisionUpdate {
+	du.mutation.ClearDefenders()
+	return du
+}
+
+// RemoveDefenderIDs removes the "defenders" edge to Defender entities by IDs.
+func (du *DecisionUpdate) RemoveDefenderIDs(ids ...uuid.UUID) *DecisionUpdate {
+	du.mutation.RemoveDefenderIDs(ids...)
+	return du
+}
+
+// RemoveDefenders removes "defenders" edges to Defender entities.
+func (du *DecisionUpdate) RemoveDefenders(d ...*Defender) *DecisionUpdate {
+	ids := make([]uuid.UUID, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
+	}
+	return du.RemoveDefenderIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -357,6 +394,51 @@ func (du *DecisionUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if du.mutation.DefendersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   decision.DefendersTable,
+			Columns: decision.DefendersPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(defender.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := du.mutation.RemovedDefendersIDs(); len(nodes) > 0 && !du.mutation.DefendersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   decision.DefendersTable,
+			Columns: decision.DefendersPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(defender.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := du.mutation.DefendersIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   decision.DefendersTable,
+			Columns: decision.DefendersPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(defender.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -566,6 +648,21 @@ func (duo *DecisionUpdateOne) SetCreator(u *User) *DecisionUpdateOne {
 	return duo.SetCreatorID(u.ID)
 }
 
+// AddDefenderIDs adds the "defenders" edge to the Defender entity by IDs.
+func (duo *DecisionUpdateOne) AddDefenderIDs(ids ...uuid.UUID) *DecisionUpdateOne {
+	duo.mutation.AddDefenderIDs(ids...)
+	return duo
+}
+
+// AddDefenders adds the "defenders" edges to the Defender entity.
+func (duo *DecisionUpdateOne) AddDefenders(d ...*Defender) *DecisionUpdateOne {
+	ids := make([]uuid.UUID, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
+	}
+	return duo.AddDefenderIDs(ids...)
+}
+
 // Mutation returns the DecisionMutation object of the builder.
 func (duo *DecisionUpdateOne) Mutation() *DecisionMutation {
 	return duo.mutation
@@ -575,6 +672,27 @@ func (duo *DecisionUpdateOne) Mutation() *DecisionMutation {
 func (duo *DecisionUpdateOne) ClearCreator() *DecisionUpdateOne {
 	duo.mutation.ClearCreator()
 	return duo
+}
+
+// ClearDefenders clears all "defenders" edges to the Defender entity.
+func (duo *DecisionUpdateOne) ClearDefenders() *DecisionUpdateOne {
+	duo.mutation.ClearDefenders()
+	return duo
+}
+
+// RemoveDefenderIDs removes the "defenders" edge to Defender entities by IDs.
+func (duo *DecisionUpdateOne) RemoveDefenderIDs(ids ...uuid.UUID) *DecisionUpdateOne {
+	duo.mutation.RemoveDefenderIDs(ids...)
+	return duo
+}
+
+// RemoveDefenders removes "defenders" edges to Defender entities.
+func (duo *DecisionUpdateOne) RemoveDefenders(d ...*Defender) *DecisionUpdateOne {
+	ids := make([]uuid.UUID, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
+	}
+	return duo.RemoveDefenderIDs(ids...)
 }
 
 // Where appends a list predicates to the DecisionUpdate builder.
@@ -741,6 +859,51 @@ func (duo *DecisionUpdateOne) sqlSave(ctx context.Context) (_node *Decision, err
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if duo.mutation.DefendersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   decision.DefendersTable,
+			Columns: decision.DefendersPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(defender.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := duo.mutation.RemovedDefendersIDs(); len(nodes) > 0 && !duo.mutation.DefendersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   decision.DefendersTable,
+			Columns: decision.DefendersPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(defender.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := duo.mutation.DefendersIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   decision.DefendersTable,
+			Columns: decision.DefendersPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(defender.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

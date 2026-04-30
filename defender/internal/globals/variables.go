@@ -1,10 +1,15 @@
 package globals
 
-import "sync"
+import (
+	"sync"
+
+	"defly-defender/ent"
+)
 
 var (
-	Pauser    = &sync.RWMutex{}
-	Gate      = &sync.RWMutex{}
-	Policies  *[]Policy
-	Decisions *[]Decision
+	Pauser = &sync.RWMutex{}
+
+	Defender   *ent.Defender
+	Principles []*ent.Principle
+	Decisions  []*ent.Decision
 )

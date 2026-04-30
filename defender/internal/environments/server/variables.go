@@ -46,16 +46,6 @@ var (
 				WithDefault("delete").
 				Required()
 
-	ServerStorageType = ferrite.Enum("SERVER_STORAGE_TYPE", "Storage backend used by Defender Server").
-				WithMembers("file", "memory").
-				WithDefault("file").
-				Required()
-
-	ServerStoragePath = ferrite.String("SERVER_STORAGE_PATH", "Path to Defender Server storage file").
-				WithDefault("storage/data/data.yaml").
-				WithConstraint("Must be a valid writable storage file path", validateStorageFilePath).
-				Required(ferrite.RelevantWhen(ServerStorageType, "file"))
-
 	ServerSecurityManager = ferrite.String("SERVER_SECURITY_MANAGER", "Manager IP address or host allowed to access Defender Server").
 				WithDefault("manager").
 				WithConstraint("Must be a valid manager IP address or host name", validateSecurityManager).

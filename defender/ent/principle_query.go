@@ -5,6 +5,7 @@ package ent
 import (
 	"context"
 	"database/sql/driver"
+	"defly-defender/ent/defender"
 	"defly-defender/ent/predicate"
 	"defly-defender/ent/principle"
 	"defly-defender/ent/rule"
@@ -22,12 +23,13 @@ import (
 // PrincipleQuery is the builder for querying Principle entities.
 type PrincipleQuery struct {
 	config
-	ctx         *QueryContext
-	order       []principle.OrderOption
-	inters      []Interceptor
-	predicates  []predicate.Principle
-	withCreator *UserQuery
-	withRules   *RuleQuery
+	ctx           *QueryContext
+	order         []principle.OrderOption
+	inters        []Interceptor
+	predicates    []predicate.Principle
+	withCreator   *UserQuery
+	withRules     *RuleQuery
+	withDefenders *DefenderQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -101,6 +103,28 @@ func (pq *PrincipleQuery) QueryRules() *RuleQuery {
 			sqlgraph.From(principle.Table, principle.FieldID, selector),
 			sqlgraph.To(rule.Table, rule.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, true, principle.RulesTable, principle.RulesPrimaryKey...),
+		)
+		fromU = sqlgraph.SetNeighbors(pq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryDefenders chains the current query on the "defenders" edge.
+func (pq *PrincipleQuery) QueryDefenders() *DefenderQuery {
+	query := (&DefenderClient{config: pq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := pq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := pq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(principle.Table, principle.FieldID, selector),
+			sqlgraph.To(defender.Table, defender.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, principle.DefendersTable, principle.DefendersPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(pq.driver.Dialect(), step)
 		return fromU, nil
@@ -295,13 +319,14 @@ func (pq *PrincipleQuery) Clone() *PrincipleQuery {
 		return nil
 	}
 	return &PrincipleQuery{
-		config:      pq.config,
-		ctx:         pq.ctx.Clone(),
-		order:       append([]principle.OrderOption{}, pq.order...),
-		inters:      append([]Interceptor{}, pq.inters...),
-		predicates:  append([]predicate.Principle{}, pq.predicates...),
-		withCreator: pq.withCreator.Clone(),
-		withRules:   pq.withRules.Clone(),
+		config:        pq.config,
+		ctx:           pq.ctx.Clone(),
+		order:         append([]principle.OrderOption{}, pq.order...),
+		inters:        append([]Interceptor{}, pq.inters...),
+		predicates:    append([]predicate.Principle{}, pq.predicates...),
+		withCreator:   pq.withCreator.Clone(),
+		withRules:     pq.withRules.Clone(),
+		withDefenders: pq.withDefenders.Clone(),
 		// clone intermediate query.
 		sql:  pq.sql.Clone(),
 		path: pq.path,
@@ -327,6 +352,17 @@ func (pq *PrincipleQuery) WithRules(opts ...func(*RuleQuery)) *PrincipleQuery {
 		opt(query)
 	}
 	pq.withRules = query
+	return pq
+}
+
+// WithDefenders tells the query-builder to eager-load the nodes that are connected to
+// the "defenders" edge. The optional arguments are used to configure the query builder of the edge.
+func (pq *PrincipleQuery) WithDefenders(opts ...func(*DefenderQuery)) *PrincipleQuery {
+	query := (&DefenderClient{config: pq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	pq.withDefenders = query
 	return pq
 }
 
@@ -408,9 +444,10 @@ func (pq *PrincipleQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Pr
 	var (
 		nodes       = []*Principle{}
 		_spec       = pq.querySpec()
-		loadedTypes = [2]bool{
+		loadedTypes = [3]bool{
 			pq.withCreator != nil,
 			pq.withRules != nil,
+			pq.withDefenders != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -441,6 +478,13 @@ func (pq *PrincipleQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Pr
 		if err := pq.loadRules(ctx, query, nodes,
 			func(n *Principle) { n.Edges.Rules = []*Rule{} },
 			func(n *Principle, e *Rule) { n.Edges.Rules = append(n.Edges.Rules, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := pq.withDefenders; query != nil {
+		if err := pq.loadDefenders(ctx, query, nodes,
+			func(n *Principle) { n.Edges.Defenders = []*Defender{} },
+			func(n *Principle, e *Defender) { n.Edges.Defenders = append(n.Edges.Defenders, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -533,6 +577,67 @@ func (pq *PrincipleQuery) loadRules(ctx context.Context, query *RuleQuery, nodes
 		nodes, ok := nids[n.ID]
 		if !ok {
 			return fmt.Errorf(`unexpected "rules" node returned %v`, n.ID)
+		}
+		for kn := range nodes {
+			assign(kn, n)
+		}
+	}
+	return nil
+}
+func (pq *PrincipleQuery) loadDefenders(ctx context.Context, query *DefenderQuery, nodes []*Principle, init func(*Principle), assign func(*Principle, *Defender)) error {
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[uuid.UUID]*Principle)
+	nids := make(map[uuid.UUID]map[*Principle]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
+		if init != nil {
+			init(node)
+		}
+	}
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(principle.DefendersTable)
+		s.Join(joinT).On(s.C(defender.FieldID), joinT.C(principle.DefendersPrimaryKey[0]))
+		s.Where(sql.InValues(joinT.C(principle.DefendersPrimaryKey[1]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(principle.DefendersPrimaryKey[1]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
+		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]any, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]any{new(uuid.UUID)}, values...), nil
+			}
+			spec.Assign = func(columns []string, values []any) error {
+				outValue := *values[0].(*uuid.UUID)
+				inValue := *values[1].(*uuid.UUID)
+				if nids[inValue] == nil {
+					nids[inValue] = map[*Principle]struct{}{byID[outValue]: {}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byID[outValue]] = struct{}{}
+				return nil
+			}
+		})
+	})
+	neighbors, err := withInterceptors[[]*Defender](ctx, query, qr, query.inters)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected "defenders" node returned %v`, n.ID)
 		}
 		for kn := range nodes {
 			assign(kn, n)

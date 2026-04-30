@@ -64,6 +64,22 @@ var (
 			},
 		},
 	}
+	// DefendersColumns holds the columns for the "defenders" table.
+	DefendersColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "name", Type: field.TypeString, Unique: true},
+		{Name: "proxy_port", Type: field.TypeInt, Nullable: true},
+		{Name: "status", Type: field.TypeEnum, Nullable: true, Enums: []string{"normal", "abnormal"}},
+		{Name: "details", Type: field.TypeJSON, Nullable: true},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+	}
+	// DefendersTable holds the schema information for the "defenders" table.
+	DefendersTable = &schema.Table{
+		Name:       "defenders",
+		Columns:    DefendersColumns,
+		PrimaryKey: []*schema.Column{DefendersColumns[0]},
+	}
 	// EnginesColumns holds the columns for the "engines" table.
 	EnginesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -316,6 +332,56 @@ var (
 			},
 		},
 	}
+	// DefendersPrinciplesColumns holds the columns for the "defenders_principles" table.
+	DefendersPrinciplesColumns = []*schema.Column{
+		{Name: "defender", Type: field.TypeUUID},
+		{Name: "principle", Type: field.TypeUUID},
+	}
+	// DefendersPrinciplesTable holds the schema information for the "defenders_principles" table.
+	DefendersPrinciplesTable = &schema.Table{
+		Name:       "defenders_principles",
+		Columns:    DefendersPrinciplesColumns,
+		PrimaryKey: []*schema.Column{DefendersPrinciplesColumns[0], DefendersPrinciplesColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "defenders_principles_defender",
+				Columns:    []*schema.Column{DefendersPrinciplesColumns[0]},
+				RefColumns: []*schema.Column{DefendersColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "defenders_principles_principle",
+				Columns:    []*schema.Column{DefendersPrinciplesColumns[1]},
+				RefColumns: []*schema.Column{PrinciplesColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
+	// DefendersDecisionsColumns holds the columns for the "defenders_decisions" table.
+	DefendersDecisionsColumns = []*schema.Column{
+		{Name: "defender", Type: field.TypeUUID},
+		{Name: "decision", Type: field.TypeUUID},
+	}
+	// DefendersDecisionsTable holds the schema information for the "defenders_decisions" table.
+	DefendersDecisionsTable = &schema.Table{
+		Name:       "defenders_decisions",
+		Columns:    DefendersDecisionsColumns,
+		PrimaryKey: []*schema.Column{DefendersDecisionsColumns[0], DefendersDecisionsColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "defenders_decisions_defender",
+				Columns:    []*schema.Column{DefendersDecisionsColumns[0]},
+				RefColumns: []*schema.Column{DefendersColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "defenders_decisions_decision",
+				Columns:    []*schema.Column{DefendersDecisionsColumns[1]},
+				RefColumns: []*schema.Column{DecisionsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
 	// TargetsEnginesColumns holds the columns for the "targets_engines" table.
 	TargetsEnginesColumns = []*schema.Column{
 		{Name: "engine", Type: field.TypeUUID},
@@ -445,6 +511,7 @@ var (
 	Tables = []*schema.Table{
 		ActionsTable,
 		DecisionsTable,
+		DefendersTable,
 		EnginesTable,
 		GroupsTable,
 		PatternsTable,
@@ -455,6 +522,8 @@ var (
 		UsersTable,
 		WordlistsTable,
 		RulesActionsTable,
+		DefendersPrinciplesTable,
+		DefendersDecisionsTable,
 		TargetsEnginesTable,
 		GroupPermissionsTable,
 		PrinciplesRulesTable,
@@ -480,6 +549,10 @@ func init() {
 	WordlistsTable.ForeignKeys[0].RefTable = UsersTable
 	RulesActionsTable.ForeignKeys[0].RefTable = ActionsTable
 	RulesActionsTable.ForeignKeys[1].RefTable = RulesTable
+	DefendersPrinciplesTable.ForeignKeys[0].RefTable = DefendersTable
+	DefendersPrinciplesTable.ForeignKeys[1].RefTable = PrinciplesTable
+	DefendersDecisionsTable.ForeignKeys[0].RefTable = DefendersTable
+	DefendersDecisionsTable.ForeignKeys[1].RefTable = DecisionsTable
 	TargetsEnginesTable.ForeignKeys[0].RefTable = EnginesTable
 	TargetsEnginesTable.ForeignKeys[1].RefTable = TargetsTable
 	GroupPermissionsTable.ForeignKeys[0].RefTable = GroupsTable

@@ -48,6 +48,10 @@ func (e Error) save(message string) error {
 	if !e.FileEnable {
 		return nil
 	}
+	if e.file == nil {
+		return fmt.Errorf("error log file is not initialized")
+	}
+
 	_, err := fmt.Fprintf(e.file,
 		"%s {%s} [%s] %s\n",
 		time.Now().Format(loggerTimeFormat),
@@ -70,7 +74,7 @@ func (e Error) LogString(message string) error {
 	}
 
 	formatted := e.Format(message)
-	if e.FileEnable {
+	if e.FileEnable && e.file != nil {
 		if err := e.save(message); err != nil {
 			formatted = fmt.Sprintf("%s; %s", formatted, e.Format(fmt.Sprintf("failed to save error: %v", err)))
 		}

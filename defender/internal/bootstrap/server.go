@@ -10,6 +10,15 @@ import (
 
 func NewServer() error {
 	from := "SERVER"
+	runtimeError := NewError(from, "runtime")
+	errorFile, err := runtimeError.Boot()
+	if err != nil {
+		return runtimeError.LogError(err)
+	}
+	if errorFile != nil {
+		defer errorFile.Close()
+	}
+
 	serverHTTPSEnable := envserver.ServerHTTPSEnable.Value()
 	serverTls := configs.Tls{
 		Enable: serverHTTPSEnable,
@@ -17,7 +26,7 @@ func NewServer() error {
 	}
 
 	if err := envserver.ValidatePathsAndMethods(); err != nil {
-		return err
+		return runtimeError.LogError(err)
 	}
 
 	serverController := configserver.Controller{
@@ -45,24 +54,6 @@ func NewServer() error {
 		serverLogger.Path = envlogger.ServerLoggerFilePath.Value()
 	}
 
-	errorFileEnable := envcommon.ErrorFileEnable.Value()
-	serverError := configs.Error{
-		From:       from,
-		Label:      "runtime",
-		FileEnable: errorFileEnable,
-	}
-	if errorFileEnable {
-		serverError.DirectoryPath = envcommon.ErrorDirectoryPath.Value()
-	}
-
-	serverStorageType := envserver.ServerStorageType.Value()
-	serverStorage := configserver.Storage{
-		Type: serverStorageType,
-	}
-	if serverStorageType == "file" {
-		serverStorage.Path = envserver.ServerStoragePath.Value()
-	}
-
 	serverSecurity := configserver.Security{
 		Manager:  envserver.ServerSecurityManager.Value(),
 		Username: envserver.ServerSecurityUsername.Value(),
@@ -71,17 +62,17 @@ func NewServer() error {
 
 	server := configserver.Server{
 		Address: configs.Address{
+			Host: "",
 			Port: envserver.ServerPort.Value(),
 		},
 		Tls:        serverTls,
 		Logger:     serverLogger,
 		Security:   serverSecurity,
 		Controller: serverController,
-		Storage:    serverStorage,
-		Error:      serverError,
+		Error:      runtimeError,
 	}
 	if err := server.Boot(); err != nil {
-		return err
+		return runtimeError.LogError(err)
 	}
 	return nil
 }

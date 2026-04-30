@@ -40,6 +40,8 @@ const (
 	FieldUpdatedAt = "updated_at"
 	// EdgeCreator holds the string denoting the creator edge name in mutations.
 	EdgeCreator = "creator"
+	// EdgeDefenders holds the string denoting the defenders edge name in mutations.
+	EdgeDefenders = "defenders"
 	// Table holds the table name of the decision in the database.
 	Table = "decisions"
 	// CreatorTable is the table that holds the creator relation/edge.
@@ -49,6 +51,11 @@ const (
 	CreatorInverseTable = "users"
 	// CreatorColumn is the table column denoting the creator relation/edge.
 	CreatorColumn = "created_by"
+	// DefendersTable is the table that holds the defenders relation/edge. The primary key declared below.
+	DefendersTable = "defenders_decisions"
+	// DefendersInverseTable is the table name for the Defender entity.
+	// It exists in this package in order to avoid circular dependency with the "defender" package.
+	DefendersInverseTable = "defenders"
 )
 
 // Columns holds all SQL columns for decision fields.
@@ -66,6 +73,12 @@ var Columns = []string{
 	FieldCreatedAt,
 	FieldUpdatedAt,
 }
+
+var (
+	// DefendersPrimaryKey and DefendersColumn2 are the table columns denoting the
+	// primary key for the defenders relation (M2M).
+	DefendersPrimaryKey = []string{"defender", "decision"}
+)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
@@ -236,10 +249,31 @@ func ByCreatorField(field string, opts ...sql.OrderTermOption) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newCreatorStep(), sql.OrderByField(field, opts...))
 	}
 }
+
+// ByDefendersCount orders the results by defenders count.
+func ByDefendersCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newDefendersStep(), opts...)
+	}
+}
+
+// ByDefenders orders the results by defenders terms.
+func ByDefenders(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newDefendersStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newCreatorStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(CreatorInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, true, CreatorTable, CreatorColumn),
+	)
+}
+func newDefendersStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(DefendersInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2M, true, DefendersTable, DefendersPrimaryKey...),
 	)
 }

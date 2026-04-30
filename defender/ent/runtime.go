@@ -5,6 +5,7 @@ package ent
 import (
 	"defly-defender/ent/action"
 	"defly-defender/ent/decision"
+	"defly-defender/ent/defender"
 	"defly-defender/ent/engine"
 	"defly-defender/ent/group"
 	"defly-defender/ent/pattern"
@@ -72,6 +73,26 @@ func init() {
 	decisionDescID := decisionFields[0].Descriptor()
 	// decision.DefaultID holds the default value on creation for the id field.
 	decision.DefaultID = decisionDescID.Default.(func() uuid.UUID)
+	defenderFields := schema.Defender{}.Fields()
+	_ = defenderFields
+	// defenderDescName is the schema descriptor for name field.
+	defenderDescName := defenderFields[1].Descriptor()
+	// defender.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	defender.NameValidator = defenderDescName.Validators[0].(func(string) error)
+	// defenderDescCreatedAt is the schema descriptor for created_at field.
+	defenderDescCreatedAt := defenderFields[5].Descriptor()
+	// defender.DefaultCreatedAt holds the default value on creation for the created_at field.
+	defender.DefaultCreatedAt = defenderDescCreatedAt.Default.(func() time.Time)
+	// defenderDescUpdatedAt is the schema descriptor for updated_at field.
+	defenderDescUpdatedAt := defenderFields[6].Descriptor()
+	// defender.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	defender.DefaultUpdatedAt = defenderDescUpdatedAt.Default.(func() time.Time)
+	// defender.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	defender.UpdateDefaultUpdatedAt = defenderDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// defenderDescID is the schema descriptor for id field.
+	defenderDescID := defenderFields[0].Descriptor()
+	// defender.DefaultID holds the default value on creation for the id field.
+	defender.DefaultID = defenderDescID.Default.(func() uuid.UUID)
 	engineFields := schema.Engine{}.Fields()
 	_ = engineFields
 	// engineDescName is the schema descriptor for name field.

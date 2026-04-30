@@ -16,6 +16,8 @@ type Tx struct {
 	Action *ActionClient
 	// Decision is the client for interacting with the Decision builders.
 	Decision *DecisionClient
+	// Defender is the client for interacting with the Defender builders.
+	Defender *DefenderClient
 	// Engine is the client for interacting with the Engine builders.
 	Engine *EngineClient
 	// Group is the client for interacting with the Group builders.
@@ -167,6 +169,7 @@ func (tx *Tx) Client() *Client {
 func (tx *Tx) init() {
 	tx.Action = NewActionClient(tx.config)
 	tx.Decision = NewDecisionClient(tx.config)
+	tx.Defender = NewDefenderClient(tx.config)
 	tx.Engine = NewEngineClient(tx.config)
 	tx.Group = NewGroupClient(tx.config)
 	tx.Pattern = NewPatternClient(tx.config)

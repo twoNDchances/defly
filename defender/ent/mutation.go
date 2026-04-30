@@ -6,6 +6,7 @@ import (
 	"context"
 	"defly-defender/ent/action"
 	"defly-defender/ent/decision"
+	"defly-defender/ent/defender"
 	"defly-defender/ent/engine"
 	"defly-defender/ent/group"
 	"defly-defender/ent/pattern"
@@ -37,6 +38,7 @@ const (
 	// Node types.
 	TypeAction     = "Action"
 	TypeDecision   = "Decision"
+	TypeDefender   = "Defender"
 	TypeEngine     = "Engine"
 	TypeGroup      = "Group"
 	TypePattern    = "Pattern"
@@ -973,26 +975,29 @@ func (m *ActionMutation) ResetEdge(name string) error {
 // DecisionMutation represents an operation that mutates the Decision nodes in the graph.
 type DecisionMutation struct {
 	config
-	op             Op
-	typ            string
-	id             *uuid.UUID
-	name           *string
-	direction      *decision.Direction
-	condition      *decision.Condition
-	score          *float64
-	addscore       *float64
-	action         *decision.Action
-	configurations *map[string]interface{}
-	description    *string
-	is_locked      *bool
-	created_at     *time.Time
-	updated_at     *time.Time
-	clearedFields  map[string]struct{}
-	creator        *uuid.UUID
-	clearedcreator bool
-	done           bool
-	oldValue       func(context.Context) (*Decision, error)
-	predicates     []predicate.Decision
+	op               Op
+	typ              string
+	id               *uuid.UUID
+	name             *string
+	direction        *decision.Direction
+	condition        *decision.Condition
+	score            *float64
+	addscore         *float64
+	action           *decision.Action
+	configurations   *map[string]interface{}
+	description      *string
+	is_locked        *bool
+	created_at       *time.Time
+	updated_at       *time.Time
+	clearedFields    map[string]struct{}
+	creator          *uuid.UUID
+	clearedcreator   bool
+	defenders        map[uuid.UUID]struct{}
+	removeddefenders map[uuid.UUID]struct{}
+	cleareddefenders bool
+	done             bool
+	oldValue         func(context.Context) (*Decision, error)
+	predicates       []predicate.Decision
 }
 
 var _ ent.Mutation = (*DecisionMutation)(nil)
@@ -1594,6 +1599,60 @@ func (m *DecisionMutation) ResetCreator() {
 	m.clearedcreator = false
 }
 
+// AddDefenderIDs adds the "defenders" edge to the Defender entity by ids.
+func (m *DecisionMutation) AddDefenderIDs(ids ...uuid.UUID) {
+	if m.defenders == nil {
+		m.defenders = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.defenders[ids[i]] = struct{}{}
+	}
+}
+
+// ClearDefenders clears the "defenders" edge to the Defender entity.
+func (m *DecisionMutation) ClearDefenders() {
+	m.cleareddefenders = true
+}
+
+// DefendersCleared reports if the "defenders" edge to the Defender entity was cleared.
+func (m *DecisionMutation) DefendersCleared() bool {
+	return m.cleareddefenders
+}
+
+// RemoveDefenderIDs removes the "defenders" edge to the Defender entity by IDs.
+func (m *DecisionMutation) RemoveDefenderIDs(ids ...uuid.UUID) {
+	if m.removeddefenders == nil {
+		m.removeddefenders = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.defenders, ids[i])
+		m.removeddefenders[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedDefenders returns the removed IDs of the "defenders" edge to the Defender entity.
+func (m *DecisionMutation) RemovedDefendersIDs() (ids []uuid.UUID) {
+	for id := range m.removeddefenders {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// DefendersIDs returns the "defenders" edge IDs in the mutation.
+func (m *DecisionMutation) DefendersIDs() (ids []uuid.UUID) {
+	for id := range m.defenders {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetDefenders resets all changes to the "defenders" edge.
+func (m *DecisionMutation) ResetDefenders() {
+	m.defenders = nil
+	m.cleareddefenders = false
+	m.removeddefenders = nil
+}
+
 // Where appends a list predicates to the DecisionMutation builder.
 func (m *DecisionMutation) Where(ps ...predicate.Decision) {
 	m.predicates = append(m.predicates, ps...)
@@ -1933,9 +1992,12 @@ func (m *DecisionMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *DecisionMutation) AddedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	if m.creator != nil {
 		edges = append(edges, decision.EdgeCreator)
+	}
+	if m.defenders != nil {
+		edges = append(edges, decision.EdgeDefenders)
 	}
 	return edges
 }
@@ -1948,27 +2010,47 @@ func (m *DecisionMutation) AddedIDs(name string) []ent.Value {
 		if id := m.creator; id != nil {
 			return []ent.Value{*id}
 		}
+	case decision.EdgeDefenders:
+		ids := make([]ent.Value, 0, len(m.defenders))
+		for id := range m.defenders {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *DecisionMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
+	if m.removeddefenders != nil {
+		edges = append(edges, decision.EdgeDefenders)
+	}
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
 func (m *DecisionMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case decision.EdgeDefenders:
+		ids := make([]ent.Value, 0, len(m.removeddefenders))
+		for id := range m.removeddefenders {
+			ids = append(ids, id)
+		}
+		return ids
+	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *DecisionMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	if m.clearedcreator {
 		edges = append(edges, decision.EdgeCreator)
+	}
+	if m.cleareddefenders {
+		edges = append(edges, decision.EdgeDefenders)
 	}
 	return edges
 }
@@ -1979,6 +2061,8 @@ func (m *DecisionMutation) EdgeCleared(name string) bool {
 	switch name {
 	case decision.EdgeCreator:
 		return m.clearedcreator
+	case decision.EdgeDefenders:
+		return m.cleareddefenders
 	}
 	return false
 }
@@ -2001,8 +2085,886 @@ func (m *DecisionMutation) ResetEdge(name string) error {
 	case decision.EdgeCreator:
 		m.ResetCreator()
 		return nil
+	case decision.EdgeDefenders:
+		m.ResetDefenders()
+		return nil
 	}
 	return fmt.Errorf("unknown Decision edge %s", name)
+}
+
+// DefenderMutation represents an operation that mutates the Defender nodes in the graph.
+type DefenderMutation struct {
+	config
+	op                Op
+	typ               string
+	id                *uuid.UUID
+	name              *string
+	proxy_port        *int
+	addproxy_port     *int
+	status            *defender.Status
+	details           *map[string]interface{}
+	created_at        *time.Time
+	updated_at        *time.Time
+	clearedFields     map[string]struct{}
+	principles        map[uuid.UUID]struct{}
+	removedprinciples map[uuid.UUID]struct{}
+	clearedprinciples bool
+	decisions         map[uuid.UUID]struct{}
+	removeddecisions  map[uuid.UUID]struct{}
+	cleareddecisions  bool
+	done              bool
+	oldValue          func(context.Context) (*Defender, error)
+	predicates        []predicate.Defender
+}
+
+var _ ent.Mutation = (*DefenderMutation)(nil)
+
+// defenderOption allows management of the mutation configuration using functional options.
+type defenderOption func(*DefenderMutation)
+
+// newDefenderMutation creates new mutation for the Defender entity.
+func newDefenderMutation(c config, op Op, opts ...defenderOption) *DefenderMutation {
+	m := &DefenderMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeDefender,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withDefenderID sets the ID field of the mutation.
+func withDefenderID(id uuid.UUID) defenderOption {
+	return func(m *DefenderMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *Defender
+		)
+		m.oldValue = func(ctx context.Context) (*Defender, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().Defender.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withDefender sets the old Defender of the mutation.
+func withDefender(node *Defender) defenderOption {
+	return func(m *DefenderMutation) {
+		m.oldValue = func(context.Context) (*Defender, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m DefenderMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m DefenderMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of Defender entities.
+func (m *DefenderMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *DefenderMutation) ID() (id uuid.UUID, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *DefenderMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uuid.UUID{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().Defender.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetName sets the "name" field.
+func (m *DefenderMutation) SetName(s string) {
+	m.name = &s
+}
+
+// Name returns the value of the "name" field in the mutation.
+func (m *DefenderMutation) Name() (r string, exists bool) {
+	v := m.name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldName returns the old "name" field's value of the Defender entity.
+// If the Defender object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DefenderMutation) OldName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldName: %w", err)
+	}
+	return oldValue.Name, nil
+}
+
+// ResetName resets all changes to the "name" field.
+func (m *DefenderMutation) ResetName() {
+	m.name = nil
+}
+
+// SetProxyPort sets the "proxy_port" field.
+func (m *DefenderMutation) SetProxyPort(i int) {
+	m.proxy_port = &i
+	m.addproxy_port = nil
+}
+
+// ProxyPort returns the value of the "proxy_port" field in the mutation.
+func (m *DefenderMutation) ProxyPort() (r int, exists bool) {
+	v := m.proxy_port
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldProxyPort returns the old "proxy_port" field's value of the Defender entity.
+// If the Defender object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DefenderMutation) OldProxyPort(ctx context.Context) (v *int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldProxyPort is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldProxyPort requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldProxyPort: %w", err)
+	}
+	return oldValue.ProxyPort, nil
+}
+
+// AddProxyPort adds i to the "proxy_port" field.
+func (m *DefenderMutation) AddProxyPort(i int) {
+	if m.addproxy_port != nil {
+		*m.addproxy_port += i
+	} else {
+		m.addproxy_port = &i
+	}
+}
+
+// AddedProxyPort returns the value that was added to the "proxy_port" field in this mutation.
+func (m *DefenderMutation) AddedProxyPort() (r int, exists bool) {
+	v := m.addproxy_port
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearProxyPort clears the value of the "proxy_port" field.
+func (m *DefenderMutation) ClearProxyPort() {
+	m.proxy_port = nil
+	m.addproxy_port = nil
+	m.clearedFields[defender.FieldProxyPort] = struct{}{}
+}
+
+// ProxyPortCleared returns if the "proxy_port" field was cleared in this mutation.
+func (m *DefenderMutation) ProxyPortCleared() bool {
+	_, ok := m.clearedFields[defender.FieldProxyPort]
+	return ok
+}
+
+// ResetProxyPort resets all changes to the "proxy_port" field.
+func (m *DefenderMutation) ResetProxyPort() {
+	m.proxy_port = nil
+	m.addproxy_port = nil
+	delete(m.clearedFields, defender.FieldProxyPort)
+}
+
+// SetStatus sets the "status" field.
+func (m *DefenderMutation) SetStatus(d defender.Status) {
+	m.status = &d
+}
+
+// Status returns the value of the "status" field in the mutation.
+func (m *DefenderMutation) Status() (r defender.Status, exists bool) {
+	v := m.status
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldStatus returns the old "status" field's value of the Defender entity.
+// If the Defender object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DefenderMutation) OldStatus(ctx context.Context) (v *defender.Status, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldStatus is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldStatus requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldStatus: %w", err)
+	}
+	return oldValue.Status, nil
+}
+
+// ClearStatus clears the value of the "status" field.
+func (m *DefenderMutation) ClearStatus() {
+	m.status = nil
+	m.clearedFields[defender.FieldStatus] = struct{}{}
+}
+
+// StatusCleared returns if the "status" field was cleared in this mutation.
+func (m *DefenderMutation) StatusCleared() bool {
+	_, ok := m.clearedFields[defender.FieldStatus]
+	return ok
+}
+
+// ResetStatus resets all changes to the "status" field.
+func (m *DefenderMutation) ResetStatus() {
+	m.status = nil
+	delete(m.clearedFields, defender.FieldStatus)
+}
+
+// SetDetails sets the "details" field.
+func (m *DefenderMutation) SetDetails(value map[string]interface{}) {
+	m.details = &value
+}
+
+// Details returns the value of the "details" field in the mutation.
+func (m *DefenderMutation) Details() (r map[string]interface{}, exists bool) {
+	v := m.details
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDetails returns the old "details" field's value of the Defender entity.
+// If the Defender object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DefenderMutation) OldDetails(ctx context.Context) (v map[string]interface{}, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDetails is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDetails requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDetails: %w", err)
+	}
+	return oldValue.Details, nil
+}
+
+// ClearDetails clears the value of the "details" field.
+func (m *DefenderMutation) ClearDetails() {
+	m.details = nil
+	m.clearedFields[defender.FieldDetails] = struct{}{}
+}
+
+// DetailsCleared returns if the "details" field was cleared in this mutation.
+func (m *DefenderMutation) DetailsCleared() bool {
+	_, ok := m.clearedFields[defender.FieldDetails]
+	return ok
+}
+
+// ResetDetails resets all changes to the "details" field.
+func (m *DefenderMutation) ResetDetails() {
+	m.details = nil
+	delete(m.clearedFields, defender.FieldDetails)
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *DefenderMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *DefenderMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the Defender entity.
+// If the Defender object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DefenderMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *DefenderMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *DefenderMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *DefenderMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the Defender entity.
+// If the Defender object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DefenderMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *DefenderMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+}
+
+// AddPrincipleIDs adds the "principles" edge to the Principle entity by ids.
+func (m *DefenderMutation) AddPrincipleIDs(ids ...uuid.UUID) {
+	if m.principles == nil {
+		m.principles = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.principles[ids[i]] = struct{}{}
+	}
+}
+
+// ClearPrinciples clears the "principles" edge to the Principle entity.
+func (m *DefenderMutation) ClearPrinciples() {
+	m.clearedprinciples = true
+}
+
+// PrinciplesCleared reports if the "principles" edge to the Principle entity was cleared.
+func (m *DefenderMutation) PrinciplesCleared() bool {
+	return m.clearedprinciples
+}
+
+// RemovePrincipleIDs removes the "principles" edge to the Principle entity by IDs.
+func (m *DefenderMutation) RemovePrincipleIDs(ids ...uuid.UUID) {
+	if m.removedprinciples == nil {
+		m.removedprinciples = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.principles, ids[i])
+		m.removedprinciples[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedPrinciples returns the removed IDs of the "principles" edge to the Principle entity.
+func (m *DefenderMutation) RemovedPrinciplesIDs() (ids []uuid.UUID) {
+	for id := range m.removedprinciples {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// PrinciplesIDs returns the "principles" edge IDs in the mutation.
+func (m *DefenderMutation) PrinciplesIDs() (ids []uuid.UUID) {
+	for id := range m.principles {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetPrinciples resets all changes to the "principles" edge.
+func (m *DefenderMutation) ResetPrinciples() {
+	m.principles = nil
+	m.clearedprinciples = false
+	m.removedprinciples = nil
+}
+
+// AddDecisionIDs adds the "decisions" edge to the Decision entity by ids.
+func (m *DefenderMutation) AddDecisionIDs(ids ...uuid.UUID) {
+	if m.decisions == nil {
+		m.decisions = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.decisions[ids[i]] = struct{}{}
+	}
+}
+
+// ClearDecisions clears the "decisions" edge to the Decision entity.
+func (m *DefenderMutation) ClearDecisions() {
+	m.cleareddecisions = true
+}
+
+// DecisionsCleared reports if the "decisions" edge to the Decision entity was cleared.
+func (m *DefenderMutation) DecisionsCleared() bool {
+	return m.cleareddecisions
+}
+
+// RemoveDecisionIDs removes the "decisions" edge to the Decision entity by IDs.
+func (m *DefenderMutation) RemoveDecisionIDs(ids ...uuid.UUID) {
+	if m.removeddecisions == nil {
+		m.removeddecisions = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.decisions, ids[i])
+		m.removeddecisions[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedDecisions returns the removed IDs of the "decisions" edge to the Decision entity.
+func (m *DefenderMutation) RemovedDecisionsIDs() (ids []uuid.UUID) {
+	for id := range m.removeddecisions {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// DecisionsIDs returns the "decisions" edge IDs in the mutation.
+func (m *DefenderMutation) DecisionsIDs() (ids []uuid.UUID) {
+	for id := range m.decisions {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetDecisions resets all changes to the "decisions" edge.
+func (m *DefenderMutation) ResetDecisions() {
+	m.decisions = nil
+	m.cleareddecisions = false
+	m.removeddecisions = nil
+}
+
+// Where appends a list predicates to the DefenderMutation builder.
+func (m *DefenderMutation) Where(ps ...predicate.Defender) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the DefenderMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *DefenderMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.Defender, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *DefenderMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *DefenderMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (Defender).
+func (m *DefenderMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *DefenderMutation) Fields() []string {
+	fields := make([]string, 0, 6)
+	if m.name != nil {
+		fields = append(fields, defender.FieldName)
+	}
+	if m.proxy_port != nil {
+		fields = append(fields, defender.FieldProxyPort)
+	}
+	if m.status != nil {
+		fields = append(fields, defender.FieldStatus)
+	}
+	if m.details != nil {
+		fields = append(fields, defender.FieldDetails)
+	}
+	if m.created_at != nil {
+		fields = append(fields, defender.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, defender.FieldUpdatedAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *DefenderMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case defender.FieldName:
+		return m.Name()
+	case defender.FieldProxyPort:
+		return m.ProxyPort()
+	case defender.FieldStatus:
+		return m.Status()
+	case defender.FieldDetails:
+		return m.Details()
+	case defender.FieldCreatedAt:
+		return m.CreatedAt()
+	case defender.FieldUpdatedAt:
+		return m.UpdatedAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *DefenderMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case defender.FieldName:
+		return m.OldName(ctx)
+	case defender.FieldProxyPort:
+		return m.OldProxyPort(ctx)
+	case defender.FieldStatus:
+		return m.OldStatus(ctx)
+	case defender.FieldDetails:
+		return m.OldDetails(ctx)
+	case defender.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case defender.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown Defender field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *DefenderMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case defender.FieldName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetName(v)
+		return nil
+	case defender.FieldProxyPort:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetProxyPort(v)
+		return nil
+	case defender.FieldStatus:
+		v, ok := value.(defender.Status)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetStatus(v)
+		return nil
+	case defender.FieldDetails:
+		v, ok := value.(map[string]interface{})
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDetails(v)
+		return nil
+	case defender.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case defender.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown Defender field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *DefenderMutation) AddedFields() []string {
+	var fields []string
+	if m.addproxy_port != nil {
+		fields = append(fields, defender.FieldProxyPort)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *DefenderMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case defender.FieldProxyPort:
+		return m.AddedProxyPort()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *DefenderMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case defender.FieldProxyPort:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddProxyPort(v)
+		return nil
+	}
+	return fmt.Errorf("unknown Defender numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *DefenderMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(defender.FieldProxyPort) {
+		fields = append(fields, defender.FieldProxyPort)
+	}
+	if m.FieldCleared(defender.FieldStatus) {
+		fields = append(fields, defender.FieldStatus)
+	}
+	if m.FieldCleared(defender.FieldDetails) {
+		fields = append(fields, defender.FieldDetails)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *DefenderMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *DefenderMutation) ClearField(name string) error {
+	switch name {
+	case defender.FieldProxyPort:
+		m.ClearProxyPort()
+		return nil
+	case defender.FieldStatus:
+		m.ClearStatus()
+		return nil
+	case defender.FieldDetails:
+		m.ClearDetails()
+		return nil
+	}
+	return fmt.Errorf("unknown Defender nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *DefenderMutation) ResetField(name string) error {
+	switch name {
+	case defender.FieldName:
+		m.ResetName()
+		return nil
+	case defender.FieldProxyPort:
+		m.ResetProxyPort()
+		return nil
+	case defender.FieldStatus:
+		m.ResetStatus()
+		return nil
+	case defender.FieldDetails:
+		m.ResetDetails()
+		return nil
+	case defender.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case defender.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown Defender field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *DefenderMutation) AddedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.principles != nil {
+		edges = append(edges, defender.EdgePrinciples)
+	}
+	if m.decisions != nil {
+		edges = append(edges, defender.EdgeDecisions)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *DefenderMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case defender.EdgePrinciples:
+		ids := make([]ent.Value, 0, len(m.principles))
+		for id := range m.principles {
+			ids = append(ids, id)
+		}
+		return ids
+	case defender.EdgeDecisions:
+		ids := make([]ent.Value, 0, len(m.decisions))
+		for id := range m.decisions {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *DefenderMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.removedprinciples != nil {
+		edges = append(edges, defender.EdgePrinciples)
+	}
+	if m.removeddecisions != nil {
+		edges = append(edges, defender.EdgeDecisions)
+	}
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *DefenderMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case defender.EdgePrinciples:
+		ids := make([]ent.Value, 0, len(m.removedprinciples))
+		for id := range m.removedprinciples {
+			ids = append(ids, id)
+		}
+		return ids
+	case defender.EdgeDecisions:
+		ids := make([]ent.Value, 0, len(m.removeddecisions))
+		for id := range m.removeddecisions {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *DefenderMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.clearedprinciples {
+		edges = append(edges, defender.EdgePrinciples)
+	}
+	if m.cleareddecisions {
+		edges = append(edges, defender.EdgeDecisions)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *DefenderMutation) EdgeCleared(name string) bool {
+	switch name {
+	case defender.EdgePrinciples:
+		return m.clearedprinciples
+	case defender.EdgeDecisions:
+		return m.cleareddecisions
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *DefenderMutation) ClearEdge(name string) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown Defender unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *DefenderMutation) ResetEdge(name string) error {
+	switch name {
+	case defender.EdgePrinciples:
+		m.ResetPrinciples()
+		return nil
+	case defender.EdgeDecisions:
+		m.ResetDecisions()
+		return nil
+	}
+	return fmt.Errorf("unknown Defender edge %s", name)
 }
 
 // EngineMutation represents an operation that mutates the Engine nodes in the graph.
@@ -5151,6 +6113,9 @@ type PrincipleMutation struct {
 	rules              map[uuid.UUID]struct{}
 	removedrules       map[uuid.UUID]struct{}
 	clearedrules       bool
+	defenders          map[uuid.UUID]struct{}
+	removeddefenders   map[uuid.UUID]struct{}
+	cleareddefenders   bool
 	done               bool
 	oldValue           func(context.Context) (*Principle, error)
 	predicates         []predicate.Principle
@@ -5806,6 +6771,60 @@ func (m *PrincipleMutation) ResetRules() {
 	m.removedrules = nil
 }
 
+// AddDefenderIDs adds the "defenders" edge to the Defender entity by ids.
+func (m *PrincipleMutation) AddDefenderIDs(ids ...uuid.UUID) {
+	if m.defenders == nil {
+		m.defenders = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.defenders[ids[i]] = struct{}{}
+	}
+}
+
+// ClearDefenders clears the "defenders" edge to the Defender entity.
+func (m *PrincipleMutation) ClearDefenders() {
+	m.cleareddefenders = true
+}
+
+// DefendersCleared reports if the "defenders" edge to the Defender entity was cleared.
+func (m *PrincipleMutation) DefendersCleared() bool {
+	return m.cleareddefenders
+}
+
+// RemoveDefenderIDs removes the "defenders" edge to the Defender entity by IDs.
+func (m *PrincipleMutation) RemoveDefenderIDs(ids ...uuid.UUID) {
+	if m.removeddefenders == nil {
+		m.removeddefenders = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.defenders, ids[i])
+		m.removeddefenders[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedDefenders returns the removed IDs of the "defenders" edge to the Defender entity.
+func (m *PrincipleMutation) RemovedDefendersIDs() (ids []uuid.UUID) {
+	for id := range m.removeddefenders {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// DefendersIDs returns the "defenders" edge IDs in the mutation.
+func (m *PrincipleMutation) DefendersIDs() (ids []uuid.UUID) {
+	for id := range m.defenders {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetDefenders resets all changes to the "defenders" edge.
+func (m *PrincipleMutation) ResetDefenders() {
+	m.defenders = nil
+	m.cleareddefenders = false
+	m.removeddefenders = nil
+}
+
 // Where appends a list predicates to the PrincipleMutation builder.
 func (m *PrincipleMutation) Where(ps ...predicate.Principle) {
 	m.predicates = append(m.predicates, ps...)
@@ -6146,12 +7165,15 @@ func (m *PrincipleMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *PrincipleMutation) AddedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.creator != nil {
 		edges = append(edges, principle.EdgeCreator)
 	}
 	if m.rules != nil {
 		edges = append(edges, principle.EdgeRules)
+	}
+	if m.defenders != nil {
+		edges = append(edges, principle.EdgeDefenders)
 	}
 	return edges
 }
@@ -6170,15 +7192,24 @@ func (m *PrincipleMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case principle.EdgeDefenders:
+		ids := make([]ent.Value, 0, len(m.defenders))
+		for id := range m.defenders {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *PrincipleMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.removedrules != nil {
 		edges = append(edges, principle.EdgeRules)
+	}
+	if m.removeddefenders != nil {
+		edges = append(edges, principle.EdgeDefenders)
 	}
 	return edges
 }
@@ -6193,18 +7224,27 @@ func (m *PrincipleMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case principle.EdgeDefenders:
+		ids := make([]ent.Value, 0, len(m.removeddefenders))
+		for id := range m.removeddefenders {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *PrincipleMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.clearedcreator {
 		edges = append(edges, principle.EdgeCreator)
 	}
 	if m.clearedrules {
 		edges = append(edges, principle.EdgeRules)
+	}
+	if m.cleareddefenders {
+		edges = append(edges, principle.EdgeDefenders)
 	}
 	return edges
 }
@@ -6217,6 +7257,8 @@ func (m *PrincipleMutation) EdgeCleared(name string) bool {
 		return m.clearedcreator
 	case principle.EdgeRules:
 		return m.clearedrules
+	case principle.EdgeDefenders:
+		return m.cleareddefenders
 	}
 	return false
 }
@@ -6241,6 +7283,9 @@ func (m *PrincipleMutation) ResetEdge(name string) error {
 		return nil
 	case principle.EdgeRules:
 		m.ResetRules()
+		return nil
+	case principle.EdgeDefenders:
+		m.ResetDefenders()
 		return nil
 	}
 	return fmt.Errorf("unknown Principle edge %s", name)

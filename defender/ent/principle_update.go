@@ -4,6 +4,7 @@ package ent
 
 import (
 	"context"
+	"defly-defender/ent/defender"
 	"defly-defender/ent/predicate"
 	"defly-defender/ent/principle"
 	"defly-defender/ent/rule"
@@ -227,6 +228,21 @@ func (pu *PrincipleUpdate) AddRules(r ...*Rule) *PrincipleUpdate {
 	return pu.AddRuleIDs(ids...)
 }
 
+// AddDefenderIDs adds the "defenders" edge to the Defender entity by IDs.
+func (pu *PrincipleUpdate) AddDefenderIDs(ids ...uuid.UUID) *PrincipleUpdate {
+	pu.mutation.AddDefenderIDs(ids...)
+	return pu
+}
+
+// AddDefenders adds the "defenders" edges to the Defender entity.
+func (pu *PrincipleUpdate) AddDefenders(d ...*Defender) *PrincipleUpdate {
+	ids := make([]uuid.UUID, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
+	}
+	return pu.AddDefenderIDs(ids...)
+}
+
 // Mutation returns the PrincipleMutation object of the builder.
 func (pu *PrincipleUpdate) Mutation() *PrincipleMutation {
 	return pu.mutation
@@ -257,6 +273,27 @@ func (pu *PrincipleUpdate) RemoveRules(r ...*Rule) *PrincipleUpdate {
 		ids[i] = r[i].ID
 	}
 	return pu.RemoveRuleIDs(ids...)
+}
+
+// ClearDefenders clears all "defenders" edges to the Defender entity.
+func (pu *PrincipleUpdate) ClearDefenders() *PrincipleUpdate {
+	pu.mutation.ClearDefenders()
+	return pu
+}
+
+// RemoveDefenderIDs removes the "defenders" edge to Defender entities by IDs.
+func (pu *PrincipleUpdate) RemoveDefenderIDs(ids ...uuid.UUID) *PrincipleUpdate {
+	pu.mutation.RemoveDefenderIDs(ids...)
+	return pu
+}
+
+// RemoveDefenders removes "defenders" edges to Defender entities.
+func (pu *PrincipleUpdate) RemoveDefenders(d ...*Defender) *PrincipleUpdate {
+	ids := make([]uuid.UUID, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
+	}
+	return pu.RemoveDefenderIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -431,6 +468,51 @@ func (pu *PrincipleUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(rule.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if pu.mutation.DefendersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   principle.DefendersTable,
+			Columns: principle.DefendersPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(defender.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := pu.mutation.RemovedDefendersIDs(); len(nodes) > 0 && !pu.mutation.DefendersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   principle.DefendersTable,
+			Columns: principle.DefendersPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(defender.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := pu.mutation.DefendersIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   principle.DefendersTable,
+			Columns: principle.DefendersPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(defender.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -654,6 +736,21 @@ func (puo *PrincipleUpdateOne) AddRules(r ...*Rule) *PrincipleUpdateOne {
 	return puo.AddRuleIDs(ids...)
 }
 
+// AddDefenderIDs adds the "defenders" edge to the Defender entity by IDs.
+func (puo *PrincipleUpdateOne) AddDefenderIDs(ids ...uuid.UUID) *PrincipleUpdateOne {
+	puo.mutation.AddDefenderIDs(ids...)
+	return puo
+}
+
+// AddDefenders adds the "defenders" edges to the Defender entity.
+func (puo *PrincipleUpdateOne) AddDefenders(d ...*Defender) *PrincipleUpdateOne {
+	ids := make([]uuid.UUID, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
+	}
+	return puo.AddDefenderIDs(ids...)
+}
+
 // Mutation returns the PrincipleMutation object of the builder.
 func (puo *PrincipleUpdateOne) Mutation() *PrincipleMutation {
 	return puo.mutation
@@ -684,6 +781,27 @@ func (puo *PrincipleUpdateOne) RemoveRules(r ...*Rule) *PrincipleUpdateOne {
 		ids[i] = r[i].ID
 	}
 	return puo.RemoveRuleIDs(ids...)
+}
+
+// ClearDefenders clears all "defenders" edges to the Defender entity.
+func (puo *PrincipleUpdateOne) ClearDefenders() *PrincipleUpdateOne {
+	puo.mutation.ClearDefenders()
+	return puo
+}
+
+// RemoveDefenderIDs removes the "defenders" edge to Defender entities by IDs.
+func (puo *PrincipleUpdateOne) RemoveDefenderIDs(ids ...uuid.UUID) *PrincipleUpdateOne {
+	puo.mutation.RemoveDefenderIDs(ids...)
+	return puo
+}
+
+// RemoveDefenders removes "defenders" edges to Defender entities.
+func (puo *PrincipleUpdateOne) RemoveDefenders(d ...*Defender) *PrincipleUpdateOne {
+	ids := make([]uuid.UUID, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
+	}
+	return puo.RemoveDefenderIDs(ids...)
 }
 
 // Where appends a list predicates to the PrincipleUpdate builder.
@@ -888,6 +1006,51 @@ func (puo *PrincipleUpdateOne) sqlSave(ctx context.Context) (_node *Principle, e
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(rule.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if puo.mutation.DefendersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   principle.DefendersTable,
+			Columns: principle.DefendersPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(defender.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := puo.mutation.RemovedDefendersIDs(); len(nodes) > 0 && !puo.mutation.DefendersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   principle.DefendersTable,
+			Columns: principle.DefendersPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(defender.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := puo.mutation.DefendersIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   principle.DefendersTable,
+			Columns: principle.DefendersPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(defender.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

@@ -12,6 +12,9 @@ type Action func(*sql.Selector)
 // Decision is the predicate function for decision builders.
 type Decision func(*sql.Selector)
 
+// Defender is the predicate function for defender builders.
+type Defender func(*sql.Selector)
+
 // Engine is the predicate function for engine builders.
 type Engine func(*sql.Selector)
 

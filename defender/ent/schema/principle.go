@@ -35,6 +35,7 @@ func (Principle) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.From("creator", User.Type).Ref("created_principles").Field("created_by").Unique(),
 		edge.From("rules", Rule.Type).Ref("principles"),
+		edge.From("defenders", Defender.Type).Ref("principles"),
 	}
 }
 

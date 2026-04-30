@@ -5,6 +5,7 @@ package ent
 import (
 	"context"
 	"defly-defender/ent/decision"
+	"defly-defender/ent/defender"
 	"defly-defender/ent/user"
 	"errors"
 	"fmt"
@@ -159,6 +160,21 @@ func (dc *DecisionCreate) SetNillableCreatorID(id *uuid.UUID) *DecisionCreate {
 // SetCreator sets the "creator" edge to the User entity.
 func (dc *DecisionCreate) SetCreator(u *User) *DecisionCreate {
 	return dc.SetCreatorID(u.ID)
+}
+
+// AddDefenderIDs adds the "defenders" edge to the Defender entity by IDs.
+func (dc *DecisionCreate) AddDefenderIDs(ids ...uuid.UUID) *DecisionCreate {
+	dc.mutation.AddDefenderIDs(ids...)
+	return dc
+}
+
+// AddDefenders adds the "defenders" edges to the Defender entity.
+func (dc *DecisionCreate) AddDefenders(d ...*Defender) *DecisionCreate {
+	ids := make([]uuid.UUID, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
+	}
+	return dc.AddDefenderIDs(ids...)
 }
 
 // Mutation returns the DecisionMutation object of the builder.
@@ -350,6 +366,22 @@ func (dc *DecisionCreate) createSpec() (*Decision, *sqlgraph.CreateSpec) {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.CreatedBy = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := dc.mutation.DefendersIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   decision.DefendersTable,
+			Columns: decision.DefendersPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(defender.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

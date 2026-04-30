@@ -32,6 +32,18 @@ func (f DecisionFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, er
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.DecisionMutation", m)
 }
 
+// The DefenderFunc type is an adapter to allow the use of ordinary
+// function as Defender mutator.
+type DefenderFunc func(context.Context, *ent.DefenderMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f DefenderFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.DefenderMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.DefenderMutation", m)
+}
+
 // The EngineFunc type is an adapter to allow the use of ordinary
 // function as Engine mutator.
 type EngineFunc func(context.Context, *ent.EngineMutation) (ent.Value, error)

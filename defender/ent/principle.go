@@ -52,9 +52,11 @@ type PrincipleEdges struct {
 	Creator *User `json:"creator,omitempty"`
 	// Rules holds the value of the rules edge.
 	Rules []*Rule `json:"rules,omitempty"`
+	// Defenders holds the value of the defenders edge.
+	Defenders []*Defender `json:"defenders,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [3]bool
 }
 
 // CreatorOrErr returns the Creator value or an error if the edge
@@ -75,6 +77,15 @@ func (e PrincipleEdges) RulesOrErr() ([]*Rule, error) {
 		return e.Rules, nil
 	}
 	return nil, &NotLoadedError{edge: "rules"}
+}
+
+// DefendersOrErr returns the Defenders value or an error if the edge
+// was not loaded in eager-loading.
+func (e PrincipleEdges) DefendersOrErr() ([]*Defender, error) {
+	if e.loadedTypes[2] {
+		return e.Defenders, nil
+	}
+	return nil, &NotLoadedError{edge: "defenders"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -203,6 +214,11 @@ func (pr *Principle) QueryCreator() *UserQuery {
 // QueryRules queries the "rules" edge of the Principle entity.
 func (pr *Principle) QueryRules() *RuleQuery {
 	return NewPrincipleClient(pr.config).QueryRules(pr)
+}
+
+// QueryDefenders queries the "defenders" edge of the Principle entity.
+func (pr *Principle) QueryDefenders() *DefenderQuery {
+	return NewPrincipleClient(pr.config).QueryDefenders(pr)
 }
 
 // Update returns a builder for updating this Principle.
