@@ -405,22 +405,6 @@ func (c *ActionClient) GetX(ctx context.Context, id uuid.UUID) *Action {
 	return obj
 }
 
-// QueryCreator queries the creator edge of a Action.
-func (c *ActionClient) QueryCreator(a *Action) *UserQuery {
-	query := (&UserClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := a.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(action.Table, action.FieldID, id),
-			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, action.CreatorTable, action.CreatorColumn),
-		)
-		fromV = sqlgraph.Neighbors(a.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // QueryRules queries the rules edge of a Action.
 func (c *ActionClient) QueryRules(a *Action) *RuleQuery {
 	query := (&RuleClient{config: c.config}).Query()
@@ -568,22 +552,6 @@ func (c *DecisionClient) GetX(ctx context.Context, id uuid.UUID) *Decision {
 		panic(err)
 	}
 	return obj
-}
-
-// QueryCreator queries the creator edge of a Decision.
-func (c *DecisionClient) QueryCreator(d *Decision) *UserQuery {
-	query := (&UserClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := d.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(decision.Table, decision.FieldID, id),
-			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, decision.CreatorTable, decision.CreatorColumn),
-		)
-		fromV = sqlgraph.Neighbors(d.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
 }
 
 // QueryDefenders queries the defenders edge of a Decision.
@@ -898,22 +866,6 @@ func (c *EngineClient) GetX(ctx context.Context, id uuid.UUID) *Engine {
 		panic(err)
 	}
 	return obj
-}
-
-// QueryCreator queries the creator edge of a Engine.
-func (c *EngineClient) QueryCreator(e *Engine) *UserQuery {
-	query := (&UserClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := e.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(engine.Table, engine.FieldID, id),
-			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, engine.CreatorTable, engine.CreatorColumn),
-		)
-		fromV = sqlgraph.Neighbors(e.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
 }
 
 // QueryTargets queries the targets edge of a Engine.
@@ -1544,22 +1496,6 @@ func (c *PrincipleClient) GetX(ctx context.Context, id uuid.UUID) *Principle {
 	return obj
 }
 
-// QueryCreator queries the creator edge of a Principle.
-func (c *PrincipleClient) QueryCreator(pr *Principle) *UserQuery {
-	query := (&UserClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := pr.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(principle.Table, principle.FieldID, id),
-			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, principle.CreatorTable, principle.CreatorColumn),
-		)
-		fromV = sqlgraph.Neighbors(pr.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // QueryRules queries the rules edge of a Principle.
 func (c *PrincipleClient) QueryRules(pr *Principle) *RuleQuery {
 	query := (&RuleClient{config: c.config}).Query()
@@ -1750,22 +1686,6 @@ func (c *RuleClient) QueryWordlist(r *Rule) *WordlistQuery {
 			sqlgraph.From(rule.Table, rule.FieldID, id),
 			sqlgraph.To(wordlist.Table, wordlist.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, rule.WordlistTable, rule.WordlistColumn),
-		)
-		fromV = sqlgraph.Neighbors(r.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryCreator queries the creator edge of a Rule.
-func (c *RuleClient) QueryCreator(r *Rule) *UserQuery {
-	query := (&UserClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := r.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(rule.Table, rule.FieldID, id),
-			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, rule.CreatorTable, rule.CreatorColumn),
 		)
 		fromV = sqlgraph.Neighbors(r.driver.Dialect(), step)
 		return fromV, nil
@@ -1970,22 +1890,6 @@ func (c *TargetClient) QueryWordlist(t *Target) *WordlistQuery {
 	return query
 }
 
-// QueryCreator queries the creator edge of a Target.
-func (c *TargetClient) QueryCreator(t *Target) *UserQuery {
-	query := (&UserClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := t.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(target.Table, target.FieldID, id),
-			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, target.CreatorTable, target.CreatorColumn),
-		)
-		fromV = sqlgraph.Neighbors(t.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // QueryEngines queries the engines edge of a Target.
 func (c *TargetClient) QueryEngines(t *Target) *EngineQuery {
 	query := (&EngineClient{config: c.config}).Query()
@@ -2183,118 +2087,6 @@ func (c *UserClient) QueryPermissions(u *User) *PermissionQuery {
 	return query
 }
 
-// QueryCreatedWordlists queries the created_wordlists edge of a User.
-func (c *UserClient) QueryCreatedWordlists(u *User) *WordlistQuery {
-	query := (&WordlistClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := u.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(user.Table, user.FieldID, id),
-			sqlgraph.To(wordlist.Table, wordlist.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, user.CreatedWordlistsTable, user.CreatedWordlistsColumn),
-		)
-		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryCreatedEngines queries the created_engines edge of a User.
-func (c *UserClient) QueryCreatedEngines(u *User) *EngineQuery {
-	query := (&EngineClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := u.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(user.Table, user.FieldID, id),
-			sqlgraph.To(engine.Table, engine.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, user.CreatedEnginesTable, user.CreatedEnginesColumn),
-		)
-		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryCreatedTargets queries the created_targets edge of a User.
-func (c *UserClient) QueryCreatedTargets(u *User) *TargetQuery {
-	query := (&TargetClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := u.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(user.Table, user.FieldID, id),
-			sqlgraph.To(target.Table, target.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, user.CreatedTargetsTable, user.CreatedTargetsColumn),
-		)
-		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryCreatedActions queries the created_actions edge of a User.
-func (c *UserClient) QueryCreatedActions(u *User) *ActionQuery {
-	query := (&ActionClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := u.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(user.Table, user.FieldID, id),
-			sqlgraph.To(action.Table, action.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, user.CreatedActionsTable, user.CreatedActionsColumn),
-		)
-		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryCreatedRules queries the created_rules edge of a User.
-func (c *UserClient) QueryCreatedRules(u *User) *RuleQuery {
-	query := (&RuleClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := u.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(user.Table, user.FieldID, id),
-			sqlgraph.To(rule.Table, rule.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, user.CreatedRulesTable, user.CreatedRulesColumn),
-		)
-		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryCreatedPrinciples queries the created_principles edge of a User.
-func (c *UserClient) QueryCreatedPrinciples(u *User) *PrincipleQuery {
-	query := (&PrincipleClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := u.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(user.Table, user.FieldID, id),
-			sqlgraph.To(principle.Table, principle.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, user.CreatedPrinciplesTable, user.CreatedPrinciplesColumn),
-		)
-		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryCreatedDecisions queries the created_decisions edge of a User.
-func (c *UserClient) QueryCreatedDecisions(u *User) *DecisionQuery {
-	query := (&DecisionClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := u.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(user.Table, user.FieldID, id),
-			sqlgraph.To(decision.Table, decision.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, user.CreatedDecisionsTable, user.CreatedDecisionsColumn),
-		)
-		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // Hooks returns the client hooks.
 func (c *UserClient) Hooks() []Hook {
 	return c.hooks.User
@@ -2426,22 +2218,6 @@ func (c *WordlistClient) GetX(ctx context.Context, id uuid.UUID) *Wordlist {
 		panic(err)
 	}
 	return obj
-}
-
-// QueryCreator queries the creator edge of a Wordlist.
-func (c *WordlistClient) QueryCreator(w *Wordlist) *UserQuery {
-	query := (&UserClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := w.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(wordlist.Table, wordlist.FieldID, id),
-			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, wordlist.CreatorTable, wordlist.CreatorColumn),
-		)
-		fromV = sqlgraph.Neighbors(w.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
 }
 
 // QueryTargets queries the targets edge of a Wordlist.

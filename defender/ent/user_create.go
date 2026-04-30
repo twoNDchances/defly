@@ -4,19 +4,11 @@ package ent
 
 import (
 	"context"
-	"defly-defender/ent/action"
-	"defly-defender/ent/decision"
-	"defly-defender/ent/engine"
 	"defly-defender/ent/group"
 	"defly-defender/ent/permission"
-	"defly-defender/ent/principle"
-	"defly-defender/ent/rule"
-	"defly-defender/ent/target"
 	"defly-defender/ent/user"
-	"defly-defender/ent/wordlist"
 	"errors"
 	"fmt"
-	"time"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -78,34 +70,6 @@ func (uc *UserCreate) SetNillableIsRoot(b *bool) *UserCreate {
 	return uc
 }
 
-// SetCreatedAt sets the "created_at" field.
-func (uc *UserCreate) SetCreatedAt(t time.Time) *UserCreate {
-	uc.mutation.SetCreatedAt(t)
-	return uc
-}
-
-// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (uc *UserCreate) SetNillableCreatedAt(t *time.Time) *UserCreate {
-	if t != nil {
-		uc.SetCreatedAt(*t)
-	}
-	return uc
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (uc *UserCreate) SetUpdatedAt(t time.Time) *UserCreate {
-	uc.mutation.SetUpdatedAt(t)
-	return uc
-}
-
-// SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
-func (uc *UserCreate) SetNillableUpdatedAt(t *time.Time) *UserCreate {
-	if t != nil {
-		uc.SetUpdatedAt(*t)
-	}
-	return uc
-}
-
 // SetID sets the "id" field.
 func (uc *UserCreate) SetID(u uuid.UUID) *UserCreate {
 	uc.mutation.SetID(u)
@@ -148,111 +112,6 @@ func (uc *UserCreate) AddPermissions(p ...*Permission) *UserCreate {
 		ids[i] = p[i].ID
 	}
 	return uc.AddPermissionIDs(ids...)
-}
-
-// AddCreatedWordlistIDs adds the "created_wordlists" edge to the Wordlist entity by IDs.
-func (uc *UserCreate) AddCreatedWordlistIDs(ids ...uuid.UUID) *UserCreate {
-	uc.mutation.AddCreatedWordlistIDs(ids...)
-	return uc
-}
-
-// AddCreatedWordlists adds the "created_wordlists" edges to the Wordlist entity.
-func (uc *UserCreate) AddCreatedWordlists(w ...*Wordlist) *UserCreate {
-	ids := make([]uuid.UUID, len(w))
-	for i := range w {
-		ids[i] = w[i].ID
-	}
-	return uc.AddCreatedWordlistIDs(ids...)
-}
-
-// AddCreatedEngineIDs adds the "created_engines" edge to the Engine entity by IDs.
-func (uc *UserCreate) AddCreatedEngineIDs(ids ...uuid.UUID) *UserCreate {
-	uc.mutation.AddCreatedEngineIDs(ids...)
-	return uc
-}
-
-// AddCreatedEngines adds the "created_engines" edges to the Engine entity.
-func (uc *UserCreate) AddCreatedEngines(e ...*Engine) *UserCreate {
-	ids := make([]uuid.UUID, len(e))
-	for i := range e {
-		ids[i] = e[i].ID
-	}
-	return uc.AddCreatedEngineIDs(ids...)
-}
-
-// AddCreatedTargetIDs adds the "created_targets" edge to the Target entity by IDs.
-func (uc *UserCreate) AddCreatedTargetIDs(ids ...uuid.UUID) *UserCreate {
-	uc.mutation.AddCreatedTargetIDs(ids...)
-	return uc
-}
-
-// AddCreatedTargets adds the "created_targets" edges to the Target entity.
-func (uc *UserCreate) AddCreatedTargets(t ...*Target) *UserCreate {
-	ids := make([]uuid.UUID, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return uc.AddCreatedTargetIDs(ids...)
-}
-
-// AddCreatedActionIDs adds the "created_actions" edge to the Action entity by IDs.
-func (uc *UserCreate) AddCreatedActionIDs(ids ...uuid.UUID) *UserCreate {
-	uc.mutation.AddCreatedActionIDs(ids...)
-	return uc
-}
-
-// AddCreatedActions adds the "created_actions" edges to the Action entity.
-func (uc *UserCreate) AddCreatedActions(a ...*Action) *UserCreate {
-	ids := make([]uuid.UUID, len(a))
-	for i := range a {
-		ids[i] = a[i].ID
-	}
-	return uc.AddCreatedActionIDs(ids...)
-}
-
-// AddCreatedRuleIDs adds the "created_rules" edge to the Rule entity by IDs.
-func (uc *UserCreate) AddCreatedRuleIDs(ids ...uuid.UUID) *UserCreate {
-	uc.mutation.AddCreatedRuleIDs(ids...)
-	return uc
-}
-
-// AddCreatedRules adds the "created_rules" edges to the Rule entity.
-func (uc *UserCreate) AddCreatedRules(r ...*Rule) *UserCreate {
-	ids := make([]uuid.UUID, len(r))
-	for i := range r {
-		ids[i] = r[i].ID
-	}
-	return uc.AddCreatedRuleIDs(ids...)
-}
-
-// AddCreatedPrincipleIDs adds the "created_principles" edge to the Principle entity by IDs.
-func (uc *UserCreate) AddCreatedPrincipleIDs(ids ...uuid.UUID) *UserCreate {
-	uc.mutation.AddCreatedPrincipleIDs(ids...)
-	return uc
-}
-
-// AddCreatedPrinciples adds the "created_principles" edges to the Principle entity.
-func (uc *UserCreate) AddCreatedPrinciples(p ...*Principle) *UserCreate {
-	ids := make([]uuid.UUID, len(p))
-	for i := range p {
-		ids[i] = p[i].ID
-	}
-	return uc.AddCreatedPrincipleIDs(ids...)
-}
-
-// AddCreatedDecisionIDs adds the "created_decisions" edge to the Decision entity by IDs.
-func (uc *UserCreate) AddCreatedDecisionIDs(ids ...uuid.UUID) *UserCreate {
-	uc.mutation.AddCreatedDecisionIDs(ids...)
-	return uc
-}
-
-// AddCreatedDecisions adds the "created_decisions" edges to the Decision entity.
-func (uc *UserCreate) AddCreatedDecisions(d ...*Decision) *UserCreate {
-	ids := make([]uuid.UUID, len(d))
-	for i := range d {
-		ids[i] = d[i].ID
-	}
-	return uc.AddCreatedDecisionIDs(ids...)
 }
 
 // Mutation returns the UserMutation object of the builder.
@@ -302,14 +161,6 @@ func (uc *UserCreate) defaults() {
 		v := user.DefaultIsRoot
 		uc.mutation.SetIsRoot(v)
 	}
-	if _, ok := uc.mutation.CreatedAt(); !ok {
-		v := user.DefaultCreatedAt()
-		uc.mutation.SetCreatedAt(v)
-	}
-	if _, ok := uc.mutation.UpdatedAt(); !ok {
-		v := user.DefaultUpdatedAt()
-		uc.mutation.SetUpdatedAt(v)
-	}
 	if _, ok := uc.mutation.ID(); !ok {
 		v := user.DefaultID()
 		uc.mutation.SetID(v)
@@ -334,12 +185,6 @@ func (uc *UserCreate) check() error {
 	}
 	if _, ok := uc.mutation.IsRoot(); !ok {
 		return &ValidationError{Name: "is_root", err: errors.New(`ent: missing required field "User.is_root"`)}
-	}
-	if _, ok := uc.mutation.CreatedAt(); !ok {
-		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "User.created_at"`)}
-	}
-	if _, ok := uc.mutation.UpdatedAt(); !ok {
-		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "User.updated_at"`)}
 	}
 	return nil
 }
@@ -392,14 +237,6 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		_spec.SetField(user.FieldIsRoot, field.TypeBool, value)
 		_node.IsRoot = value
 	}
-	if value, ok := uc.mutation.CreatedAt(); ok {
-		_spec.SetField(user.FieldCreatedAt, field.TypeTime, value)
-		_node.CreatedAt = value
-	}
-	if value, ok := uc.mutation.UpdatedAt(); ok {
-		_spec.SetField(user.FieldUpdatedAt, field.TypeTime, value)
-		_node.UpdatedAt = value
-	}
 	if nodes := uc.mutation.GroupsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
@@ -425,118 +262,6 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(permission.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := uc.mutation.CreatedWordlistsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   user.CreatedWordlistsTable,
-			Columns: []string{user.CreatedWordlistsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(wordlist.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := uc.mutation.CreatedEnginesIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   user.CreatedEnginesTable,
-			Columns: []string{user.CreatedEnginesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(engine.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := uc.mutation.CreatedTargetsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   user.CreatedTargetsTable,
-			Columns: []string{user.CreatedTargetsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(target.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := uc.mutation.CreatedActionsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   user.CreatedActionsTable,
-			Columns: []string{user.CreatedActionsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(action.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := uc.mutation.CreatedRulesIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   user.CreatedRulesTable,
-			Columns: []string{user.CreatedRulesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(rule.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := uc.mutation.CreatedPrinciplesIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   user.CreatedPrinciplesTable,
-			Columns: []string{user.CreatedPrinciplesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(principle.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := uc.mutation.CreatedDecisionsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   user.CreatedDecisionsTable,
-			Columns: []string{user.CreatedDecisionsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(decision.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

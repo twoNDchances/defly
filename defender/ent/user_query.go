@@ -5,17 +5,10 @@ package ent
 import (
 	"context"
 	"database/sql/driver"
-	"defly-defender/ent/action"
-	"defly-defender/ent/decision"
-	"defly-defender/ent/engine"
 	"defly-defender/ent/group"
 	"defly-defender/ent/permission"
 	"defly-defender/ent/predicate"
-	"defly-defender/ent/principle"
-	"defly-defender/ent/rule"
-	"defly-defender/ent/target"
 	"defly-defender/ent/user"
-	"defly-defender/ent/wordlist"
 	"fmt"
 	"math"
 
@@ -29,19 +22,12 @@ import (
 // UserQuery is the builder for querying User entities.
 type UserQuery struct {
 	config
-	ctx                   *QueryContext
-	order                 []user.OrderOption
-	inters                []Interceptor
-	predicates            []predicate.User
-	withGroups            *GroupQuery
-	withPermissions       *PermissionQuery
-	withCreatedWordlists  *WordlistQuery
-	withCreatedEngines    *EngineQuery
-	withCreatedTargets    *TargetQuery
-	withCreatedActions    *ActionQuery
-	withCreatedRules      *RuleQuery
-	withCreatedPrinciples *PrincipleQuery
-	withCreatedDecisions  *DecisionQuery
+	ctx             *QueryContext
+	order           []user.OrderOption
+	inters          []Interceptor
+	predicates      []predicate.User
+	withGroups      *GroupQuery
+	withPermissions *PermissionQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -115,160 +101,6 @@ func (uq *UserQuery) QueryPermissions() *PermissionQuery {
 			sqlgraph.From(user.Table, user.FieldID, selector),
 			sqlgraph.To(permission.Table, permission.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, false, user.PermissionsTable, user.PermissionsPrimaryKey...),
-		)
-		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryCreatedWordlists chains the current query on the "created_wordlists" edge.
-func (uq *UserQuery) QueryCreatedWordlists() *WordlistQuery {
-	query := (&WordlistClient{config: uq.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := uq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := uq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(user.Table, user.FieldID, selector),
-			sqlgraph.To(wordlist.Table, wordlist.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, user.CreatedWordlistsTable, user.CreatedWordlistsColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryCreatedEngines chains the current query on the "created_engines" edge.
-func (uq *UserQuery) QueryCreatedEngines() *EngineQuery {
-	query := (&EngineClient{config: uq.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := uq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := uq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(user.Table, user.FieldID, selector),
-			sqlgraph.To(engine.Table, engine.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, user.CreatedEnginesTable, user.CreatedEnginesColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryCreatedTargets chains the current query on the "created_targets" edge.
-func (uq *UserQuery) QueryCreatedTargets() *TargetQuery {
-	query := (&TargetClient{config: uq.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := uq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := uq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(user.Table, user.FieldID, selector),
-			sqlgraph.To(target.Table, target.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, user.CreatedTargetsTable, user.CreatedTargetsColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryCreatedActions chains the current query on the "created_actions" edge.
-func (uq *UserQuery) QueryCreatedActions() *ActionQuery {
-	query := (&ActionClient{config: uq.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := uq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := uq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(user.Table, user.FieldID, selector),
-			sqlgraph.To(action.Table, action.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, user.CreatedActionsTable, user.CreatedActionsColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryCreatedRules chains the current query on the "created_rules" edge.
-func (uq *UserQuery) QueryCreatedRules() *RuleQuery {
-	query := (&RuleClient{config: uq.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := uq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := uq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(user.Table, user.FieldID, selector),
-			sqlgraph.To(rule.Table, rule.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, user.CreatedRulesTable, user.CreatedRulesColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryCreatedPrinciples chains the current query on the "created_principles" edge.
-func (uq *UserQuery) QueryCreatedPrinciples() *PrincipleQuery {
-	query := (&PrincipleClient{config: uq.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := uq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := uq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(user.Table, user.FieldID, selector),
-			sqlgraph.To(principle.Table, principle.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, user.CreatedPrinciplesTable, user.CreatedPrinciplesColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryCreatedDecisions chains the current query on the "created_decisions" edge.
-func (uq *UserQuery) QueryCreatedDecisions() *DecisionQuery {
-	query := (&DecisionClient{config: uq.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := uq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := uq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(user.Table, user.FieldID, selector),
-			sqlgraph.To(decision.Table, decision.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, user.CreatedDecisionsTable, user.CreatedDecisionsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
 		return fromU, nil
@@ -463,20 +295,13 @@ func (uq *UserQuery) Clone() *UserQuery {
 		return nil
 	}
 	return &UserQuery{
-		config:                uq.config,
-		ctx:                   uq.ctx.Clone(),
-		order:                 append([]user.OrderOption{}, uq.order...),
-		inters:                append([]Interceptor{}, uq.inters...),
-		predicates:            append([]predicate.User{}, uq.predicates...),
-		withGroups:            uq.withGroups.Clone(),
-		withPermissions:       uq.withPermissions.Clone(),
-		withCreatedWordlists:  uq.withCreatedWordlists.Clone(),
-		withCreatedEngines:    uq.withCreatedEngines.Clone(),
-		withCreatedTargets:    uq.withCreatedTargets.Clone(),
-		withCreatedActions:    uq.withCreatedActions.Clone(),
-		withCreatedRules:      uq.withCreatedRules.Clone(),
-		withCreatedPrinciples: uq.withCreatedPrinciples.Clone(),
-		withCreatedDecisions:  uq.withCreatedDecisions.Clone(),
+		config:          uq.config,
+		ctx:             uq.ctx.Clone(),
+		order:           append([]user.OrderOption{}, uq.order...),
+		inters:          append([]Interceptor{}, uq.inters...),
+		predicates:      append([]predicate.User{}, uq.predicates...),
+		withGroups:      uq.withGroups.Clone(),
+		withPermissions: uq.withPermissions.Clone(),
 		// clone intermediate query.
 		sql:  uq.sql.Clone(),
 		path: uq.path,
@@ -502,83 +327,6 @@ func (uq *UserQuery) WithPermissions(opts ...func(*PermissionQuery)) *UserQuery 
 		opt(query)
 	}
 	uq.withPermissions = query
-	return uq
-}
-
-// WithCreatedWordlists tells the query-builder to eager-load the nodes that are connected to
-// the "created_wordlists" edge. The optional arguments are used to configure the query builder of the edge.
-func (uq *UserQuery) WithCreatedWordlists(opts ...func(*WordlistQuery)) *UserQuery {
-	query := (&WordlistClient{config: uq.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	uq.withCreatedWordlists = query
-	return uq
-}
-
-// WithCreatedEngines tells the query-builder to eager-load the nodes that are connected to
-// the "created_engines" edge. The optional arguments are used to configure the query builder of the edge.
-func (uq *UserQuery) WithCreatedEngines(opts ...func(*EngineQuery)) *UserQuery {
-	query := (&EngineClient{config: uq.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	uq.withCreatedEngines = query
-	return uq
-}
-
-// WithCreatedTargets tells the query-builder to eager-load the nodes that are connected to
-// the "created_targets" edge. The optional arguments are used to configure the query builder of the edge.
-func (uq *UserQuery) WithCreatedTargets(opts ...func(*TargetQuery)) *UserQuery {
-	query := (&TargetClient{config: uq.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	uq.withCreatedTargets = query
-	return uq
-}
-
-// WithCreatedActions tells the query-builder to eager-load the nodes that are connected to
-// the "created_actions" edge. The optional arguments are used to configure the query builder of the edge.
-func (uq *UserQuery) WithCreatedActions(opts ...func(*ActionQuery)) *UserQuery {
-	query := (&ActionClient{config: uq.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	uq.withCreatedActions = query
-	return uq
-}
-
-// WithCreatedRules tells the query-builder to eager-load the nodes that are connected to
-// the "created_rules" edge. The optional arguments are used to configure the query builder of the edge.
-func (uq *UserQuery) WithCreatedRules(opts ...func(*RuleQuery)) *UserQuery {
-	query := (&RuleClient{config: uq.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	uq.withCreatedRules = query
-	return uq
-}
-
-// WithCreatedPrinciples tells the query-builder to eager-load the nodes that are connected to
-// the "created_principles" edge. The optional arguments are used to configure the query builder of the edge.
-func (uq *UserQuery) WithCreatedPrinciples(opts ...func(*PrincipleQuery)) *UserQuery {
-	query := (&PrincipleClient{config: uq.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	uq.withCreatedPrinciples = query
-	return uq
-}
-
-// WithCreatedDecisions tells the query-builder to eager-load the nodes that are connected to
-// the "created_decisions" edge. The optional arguments are used to configure the query builder of the edge.
-func (uq *UserQuery) WithCreatedDecisions(opts ...func(*DecisionQuery)) *UserQuery {
-	query := (&DecisionClient{config: uq.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	uq.withCreatedDecisions = query
 	return uq
 }
 
@@ -660,16 +408,9 @@ func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 	var (
 		nodes       = []*User{}
 		_spec       = uq.querySpec()
-		loadedTypes = [9]bool{
+		loadedTypes = [2]bool{
 			uq.withGroups != nil,
 			uq.withPermissions != nil,
-			uq.withCreatedWordlists != nil,
-			uq.withCreatedEngines != nil,
-			uq.withCreatedTargets != nil,
-			uq.withCreatedActions != nil,
-			uq.withCreatedRules != nil,
-			uq.withCreatedPrinciples != nil,
-			uq.withCreatedDecisions != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -701,55 +442,6 @@ func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 		if err := uq.loadPermissions(ctx, query, nodes,
 			func(n *User) { n.Edges.Permissions = []*Permission{} },
 			func(n *User, e *Permission) { n.Edges.Permissions = append(n.Edges.Permissions, e) }); err != nil {
-			return nil, err
-		}
-	}
-	if query := uq.withCreatedWordlists; query != nil {
-		if err := uq.loadCreatedWordlists(ctx, query, nodes,
-			func(n *User) { n.Edges.CreatedWordlists = []*Wordlist{} },
-			func(n *User, e *Wordlist) { n.Edges.CreatedWordlists = append(n.Edges.CreatedWordlists, e) }); err != nil {
-			return nil, err
-		}
-	}
-	if query := uq.withCreatedEngines; query != nil {
-		if err := uq.loadCreatedEngines(ctx, query, nodes,
-			func(n *User) { n.Edges.CreatedEngines = []*Engine{} },
-			func(n *User, e *Engine) { n.Edges.CreatedEngines = append(n.Edges.CreatedEngines, e) }); err != nil {
-			return nil, err
-		}
-	}
-	if query := uq.withCreatedTargets; query != nil {
-		if err := uq.loadCreatedTargets(ctx, query, nodes,
-			func(n *User) { n.Edges.CreatedTargets = []*Target{} },
-			func(n *User, e *Target) { n.Edges.CreatedTargets = append(n.Edges.CreatedTargets, e) }); err != nil {
-			return nil, err
-		}
-	}
-	if query := uq.withCreatedActions; query != nil {
-		if err := uq.loadCreatedActions(ctx, query, nodes,
-			func(n *User) { n.Edges.CreatedActions = []*Action{} },
-			func(n *User, e *Action) { n.Edges.CreatedActions = append(n.Edges.CreatedActions, e) }); err != nil {
-			return nil, err
-		}
-	}
-	if query := uq.withCreatedRules; query != nil {
-		if err := uq.loadCreatedRules(ctx, query, nodes,
-			func(n *User) { n.Edges.CreatedRules = []*Rule{} },
-			func(n *User, e *Rule) { n.Edges.CreatedRules = append(n.Edges.CreatedRules, e) }); err != nil {
-			return nil, err
-		}
-	}
-	if query := uq.withCreatedPrinciples; query != nil {
-		if err := uq.loadCreatedPrinciples(ctx, query, nodes,
-			func(n *User) { n.Edges.CreatedPrinciples = []*Principle{} },
-			func(n *User, e *Principle) { n.Edges.CreatedPrinciples = append(n.Edges.CreatedPrinciples, e) }); err != nil {
-			return nil, err
-		}
-	}
-	if query := uq.withCreatedDecisions; query != nil {
-		if err := uq.loadCreatedDecisions(ctx, query, nodes,
-			func(n *User) { n.Edges.CreatedDecisions = []*Decision{} },
-			func(n *User, e *Decision) { n.Edges.CreatedDecisions = append(n.Edges.CreatedDecisions, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -875,237 +567,6 @@ func (uq *UserQuery) loadPermissions(ctx context.Context, query *PermissionQuery
 		for kn := range nodes {
 			assign(kn, n)
 		}
-	}
-	return nil
-}
-func (uq *UserQuery) loadCreatedWordlists(ctx context.Context, query *WordlistQuery, nodes []*User, init func(*User), assign func(*User, *Wordlist)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[uuid.UUID]*User)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
-		if init != nil {
-			init(nodes[i])
-		}
-	}
-	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(wordlist.FieldCreatedBy)
-	}
-	query.Where(predicate.Wordlist(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(user.CreatedWordlistsColumn), fks...))
-	}))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		fk := n.CreatedBy
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "created_by" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
-		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "created_by" returned %v for node %v`, *fk, n.ID)
-		}
-		assign(node, n)
-	}
-	return nil
-}
-func (uq *UserQuery) loadCreatedEngines(ctx context.Context, query *EngineQuery, nodes []*User, init func(*User), assign func(*User, *Engine)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[uuid.UUID]*User)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
-		if init != nil {
-			init(nodes[i])
-		}
-	}
-	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(engine.FieldCreatedBy)
-	}
-	query.Where(predicate.Engine(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(user.CreatedEnginesColumn), fks...))
-	}))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		fk := n.CreatedBy
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "created_by" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
-		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "created_by" returned %v for node %v`, *fk, n.ID)
-		}
-		assign(node, n)
-	}
-	return nil
-}
-func (uq *UserQuery) loadCreatedTargets(ctx context.Context, query *TargetQuery, nodes []*User, init func(*User), assign func(*User, *Target)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[uuid.UUID]*User)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
-		if init != nil {
-			init(nodes[i])
-		}
-	}
-	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(target.FieldCreatedBy)
-	}
-	query.Where(predicate.Target(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(user.CreatedTargetsColumn), fks...))
-	}))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		fk := n.CreatedBy
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "created_by" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
-		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "created_by" returned %v for node %v`, *fk, n.ID)
-		}
-		assign(node, n)
-	}
-	return nil
-}
-func (uq *UserQuery) loadCreatedActions(ctx context.Context, query *ActionQuery, nodes []*User, init func(*User), assign func(*User, *Action)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[uuid.UUID]*User)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
-		if init != nil {
-			init(nodes[i])
-		}
-	}
-	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(action.FieldCreatedBy)
-	}
-	query.Where(predicate.Action(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(user.CreatedActionsColumn), fks...))
-	}))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		fk := n.CreatedBy
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "created_by" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
-		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "created_by" returned %v for node %v`, *fk, n.ID)
-		}
-		assign(node, n)
-	}
-	return nil
-}
-func (uq *UserQuery) loadCreatedRules(ctx context.Context, query *RuleQuery, nodes []*User, init func(*User), assign func(*User, *Rule)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[uuid.UUID]*User)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
-		if init != nil {
-			init(nodes[i])
-		}
-	}
-	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(rule.FieldCreatedBy)
-	}
-	query.Where(predicate.Rule(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(user.CreatedRulesColumn), fks...))
-	}))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		fk := n.CreatedBy
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "created_by" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
-		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "created_by" returned %v for node %v`, *fk, n.ID)
-		}
-		assign(node, n)
-	}
-	return nil
-}
-func (uq *UserQuery) loadCreatedPrinciples(ctx context.Context, query *PrincipleQuery, nodes []*User, init func(*User), assign func(*User, *Principle)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[uuid.UUID]*User)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
-		if init != nil {
-			init(nodes[i])
-		}
-	}
-	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(principle.FieldCreatedBy)
-	}
-	query.Where(predicate.Principle(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(user.CreatedPrinciplesColumn), fks...))
-	}))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		fk := n.CreatedBy
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "created_by" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
-		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "created_by" returned %v for node %v`, *fk, n.ID)
-		}
-		assign(node, n)
-	}
-	return nil
-}
-func (uq *UserQuery) loadCreatedDecisions(ctx context.Context, query *DecisionQuery, nodes []*User, init func(*User), assign func(*User, *Decision)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[uuid.UUID]*User)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
-		if init != nil {
-			init(nodes[i])
-		}
-	}
-	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(decision.FieldCreatedBy)
-	}
-	query.Where(predicate.Decision(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(user.CreatedDecisionsColumn), fks...))
-	}))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		fk := n.CreatedBy
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "created_by" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
-		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "created_by" returned %v for node %v`, *fk, n.ID)
-		}
-		assign(node, n)
 	}
 	return nil
 }

@@ -5,12 +5,10 @@ package ent
 import (
 	"defly-defender/ent/rule"
 	"defly-defender/ent/target"
-	"defly-defender/ent/user"
 	"defly-defender/ent/wordlist"
 	"encoding/json"
 	"fmt"
 	"strings"
-	"time"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
@@ -36,16 +34,6 @@ type Rule struct {
 	Configurations map[string]interface{} `json:"configurations,omitempty"`
 	// WordlistID holds the value of the "wordlist_id" field.
 	WordlistID *uuid.UUID `json:"wordlist_id,omitempty"`
-	// Description holds the value of the "description" field.
-	Description *string `json:"description,omitempty"`
-	// CreatedBy holds the value of the "created_by" field.
-	CreatedBy *uuid.UUID `json:"created_by,omitempty"`
-	// IsLocked holds the value of the "is_locked" field.
-	IsLocked bool `json:"is_locked,omitempty"`
-	// CreatedAt holds the value of the "created_at" field.
-	CreatedAt time.Time `json:"created_at,omitempty"`
-	// UpdatedAt holds the value of the "updated_at" field.
-	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the RuleQuery when eager-loading is set.
 	Edges        RuleEdges `json:"edges"`
@@ -58,15 +46,13 @@ type RuleEdges struct {
 	Target *Target `json:"target,omitempty"`
 	// Wordlist holds the value of the wordlist edge.
 	Wordlist *Wordlist `json:"wordlist,omitempty"`
-	// Creator holds the value of the creator edge.
-	Creator *User `json:"creator,omitempty"`
 	// Actions holds the value of the actions edge.
 	Actions []*Action `json:"actions,omitempty"`
 	// Principles holds the value of the principles edge.
 	Principles []*Principle `json:"principles,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [5]bool
+	loadedTypes [4]bool
 }
 
 // TargetOrErr returns the Target value or an error if the edge
@@ -91,21 +77,10 @@ func (e RuleEdges) WordlistOrErr() (*Wordlist, error) {
 	return nil, &NotLoadedError{edge: "wordlist"}
 }
 
-// CreatorOrErr returns the Creator value or an error if the edge
-// was not loaded in eager-loading, or loaded but was not found.
-func (e RuleEdges) CreatorOrErr() (*User, error) {
-	if e.Creator != nil {
-		return e.Creator, nil
-	} else if e.loadedTypes[2] {
-		return nil, &NotFoundError{label: user.Label}
-	}
-	return nil, &NotLoadedError{edge: "creator"}
-}
-
 // ActionsOrErr returns the Actions value or an error if the edge
 // was not loaded in eager-loading.
 func (e RuleEdges) ActionsOrErr() ([]*Action, error) {
-	if e.loadedTypes[3] {
+	if e.loadedTypes[2] {
 		return e.Actions, nil
 	}
 	return nil, &NotLoadedError{edge: "actions"}
@@ -114,7 +89,7 @@ func (e RuleEdges) ActionsOrErr() ([]*Action, error) {
 // PrinciplesOrErr returns the Principles value or an error if the edge
 // was not loaded in eager-loading.
 func (e RuleEdges) PrinciplesOrErr() ([]*Principle, error) {
-	if e.loadedTypes[4] {
+	if e.loadedTypes[3] {
 		return e.Principles, nil
 	}
 	return nil, &NotLoadedError{edge: "principles"}
@@ -125,18 +100,16 @@ func (*Rule) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case rule.FieldTargetID, rule.FieldWordlistID, rule.FieldCreatedBy:
+		case rule.FieldTargetID, rule.FieldWordlistID:
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case rule.FieldConfigurations:
 			values[i] = new([]byte)
-		case rule.FieldIsInversed, rule.FieldIsLocked:
+		case rule.FieldIsInversed:
 			values[i] = new(sql.NullBool)
 		case rule.FieldPhase:
 			values[i] = new(sql.NullInt64)
-		case rule.FieldName, rule.FieldComparator, rule.FieldDescription:
+		case rule.FieldName, rule.FieldComparator:
 			values[i] = new(sql.NullString)
-		case rule.FieldCreatedAt, rule.FieldUpdatedAt:
-			values[i] = new(sql.NullTime)
 		case rule.FieldID:
 			values[i] = new(uuid.UUID)
 		default:
@@ -206,38 +179,6 @@ func (r *Rule) assignValues(columns []string, values []any) error {
 				r.WordlistID = new(uuid.UUID)
 				*r.WordlistID = *value.S.(*uuid.UUID)
 			}
-		case rule.FieldDescription:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field description", values[i])
-			} else if value.Valid {
-				r.Description = new(string)
-				*r.Description = value.String
-			}
-		case rule.FieldCreatedBy:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field created_by", values[i])
-			} else if value.Valid {
-				r.CreatedBy = new(uuid.UUID)
-				*r.CreatedBy = *value.S.(*uuid.UUID)
-			}
-		case rule.FieldIsLocked:
-			if value, ok := values[i].(*sql.NullBool); !ok {
-				return fmt.Errorf("unexpected type %T for field is_locked", values[i])
-			} else if value.Valid {
-				r.IsLocked = value.Bool
-			}
-		case rule.FieldCreatedAt:
-			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field created_at", values[i])
-			} else if value.Valid {
-				r.CreatedAt = value.Time
-			}
-		case rule.FieldUpdatedAt:
-			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
-			} else if value.Valid {
-				r.UpdatedAt = value.Time
-			}
 		default:
 			r.selectValues.Set(columns[i], values[i])
 		}
@@ -259,11 +200,6 @@ func (r *Rule) QueryTarget() *TargetQuery {
 // QueryWordlist queries the "wordlist" edge of the Rule entity.
 func (r *Rule) QueryWordlist() *WordlistQuery {
 	return NewRuleClient(r.config).QueryWordlist(r)
-}
-
-// QueryCreator queries the "creator" edge of the Rule entity.
-func (r *Rule) QueryCreator() *UserQuery {
-	return NewRuleClient(r.config).QueryCreator(r)
 }
 
 // QueryActions queries the "actions" edge of the Rule entity.
@@ -323,25 +259,6 @@ func (r *Rule) String() string {
 		builder.WriteString("wordlist_id=")
 		builder.WriteString(fmt.Sprintf("%v", *v))
 	}
-	builder.WriteString(", ")
-	if v := r.Description; v != nil {
-		builder.WriteString("description=")
-		builder.WriteString(*v)
-	}
-	builder.WriteString(", ")
-	if v := r.CreatedBy; v != nil {
-		builder.WriteString("created_by=")
-		builder.WriteString(fmt.Sprintf("%v", *v))
-	}
-	builder.WriteString(", ")
-	builder.WriteString("is_locked=")
-	builder.WriteString(fmt.Sprintf("%v", r.IsLocked))
-	builder.WriteString(", ")
-	builder.WriteString("created_at=")
-	builder.WriteString(r.CreatedAt.Format(time.ANSIC))
-	builder.WriteString(", ")
-	builder.WriteString("updated_at=")
-	builder.WriteString(r.UpdatedAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

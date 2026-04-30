@@ -4,11 +4,9 @@ package ent
 
 import (
 	"defly-defender/ent/decision"
-	"defly-defender/ent/user"
 	"encoding/json"
 	"fmt"
 	"strings"
-	"time"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
@@ -32,16 +30,6 @@ type Decision struct {
 	Action decision.Action `json:"action,omitempty"`
 	// Configurations holds the value of the "configurations" field.
 	Configurations map[string]interface{} `json:"configurations,omitempty"`
-	// Description holds the value of the "description" field.
-	Description *string `json:"description,omitempty"`
-	// CreatedBy holds the value of the "created_by" field.
-	CreatedBy *uuid.UUID `json:"created_by,omitempty"`
-	// IsLocked holds the value of the "is_locked" field.
-	IsLocked bool `json:"is_locked,omitempty"`
-	// CreatedAt holds the value of the "created_at" field.
-	CreatedAt time.Time `json:"created_at,omitempty"`
-	// UpdatedAt holds the value of the "updated_at" field.
-	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the DecisionQuery when eager-loading is set.
 	Edges        DecisionEdges `json:"edges"`
@@ -50,30 +38,17 @@ type Decision struct {
 
 // DecisionEdges holds the relations/edges for other nodes in the graph.
 type DecisionEdges struct {
-	// Creator holds the value of the creator edge.
-	Creator *User `json:"creator,omitempty"`
 	// Defenders holds the value of the defenders edge.
 	Defenders []*Defender `json:"defenders,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
-}
-
-// CreatorOrErr returns the Creator value or an error if the edge
-// was not loaded in eager-loading, or loaded but was not found.
-func (e DecisionEdges) CreatorOrErr() (*User, error) {
-	if e.Creator != nil {
-		return e.Creator, nil
-	} else if e.loadedTypes[0] {
-		return nil, &NotFoundError{label: user.Label}
-	}
-	return nil, &NotLoadedError{edge: "creator"}
+	loadedTypes [1]bool
 }
 
 // DefendersOrErr returns the Defenders value or an error if the edge
 // was not loaded in eager-loading.
 func (e DecisionEdges) DefendersOrErr() ([]*Defender, error) {
-	if e.loadedTypes[1] {
+	if e.loadedTypes[0] {
 		return e.Defenders, nil
 	}
 	return nil, &NotLoadedError{edge: "defenders"}
@@ -84,18 +59,12 @@ func (*Decision) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case decision.FieldCreatedBy:
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case decision.FieldConfigurations:
 			values[i] = new([]byte)
-		case decision.FieldIsLocked:
-			values[i] = new(sql.NullBool)
 		case decision.FieldScore:
 			values[i] = new(sql.NullFloat64)
-		case decision.FieldName, decision.FieldDirection, decision.FieldCondition, decision.FieldAction, decision.FieldDescription:
+		case decision.FieldName, decision.FieldDirection, decision.FieldCondition, decision.FieldAction:
 			values[i] = new(sql.NullString)
-		case decision.FieldCreatedAt, decision.FieldUpdatedAt:
-			values[i] = new(sql.NullTime)
 		case decision.FieldID:
 			values[i] = new(uuid.UUID)
 		default:
@@ -157,38 +126,6 @@ func (d *Decision) assignValues(columns []string, values []any) error {
 					return fmt.Errorf("unmarshal field configurations: %w", err)
 				}
 			}
-		case decision.FieldDescription:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field description", values[i])
-			} else if value.Valid {
-				d.Description = new(string)
-				*d.Description = value.String
-			}
-		case decision.FieldCreatedBy:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field created_by", values[i])
-			} else if value.Valid {
-				d.CreatedBy = new(uuid.UUID)
-				*d.CreatedBy = *value.S.(*uuid.UUID)
-			}
-		case decision.FieldIsLocked:
-			if value, ok := values[i].(*sql.NullBool); !ok {
-				return fmt.Errorf("unexpected type %T for field is_locked", values[i])
-			} else if value.Valid {
-				d.IsLocked = value.Bool
-			}
-		case decision.FieldCreatedAt:
-			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field created_at", values[i])
-			} else if value.Valid {
-				d.CreatedAt = value.Time
-			}
-		case decision.FieldUpdatedAt:
-			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
-			} else if value.Valid {
-				d.UpdatedAt = value.Time
-			}
 		default:
 			d.selectValues.Set(columns[i], values[i])
 		}
@@ -200,11 +137,6 @@ func (d *Decision) assignValues(columns []string, values []any) error {
 // This includes values selected through modifiers, order, etc.
 func (d *Decision) Value(name string) (ent.Value, error) {
 	return d.selectValues.Get(name)
-}
-
-// QueryCreator queries the "creator" edge of the Decision entity.
-func (d *Decision) QueryCreator() *UserQuery {
-	return NewDecisionClient(d.config).QueryCreator(d)
 }
 
 // QueryDefenders queries the "defenders" edge of the Decision entity.
@@ -252,25 +184,6 @@ func (d *Decision) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("configurations=")
 	builder.WriteString(fmt.Sprintf("%v", d.Configurations))
-	builder.WriteString(", ")
-	if v := d.Description; v != nil {
-		builder.WriteString("description=")
-		builder.WriteString(*v)
-	}
-	builder.WriteString(", ")
-	if v := d.CreatedBy; v != nil {
-		builder.WriteString("created_by=")
-		builder.WriteString(fmt.Sprintf("%v", *v))
-	}
-	builder.WriteString(", ")
-	builder.WriteString("is_locked=")
-	builder.WriteString(fmt.Sprintf("%v", d.IsLocked))
-	builder.WriteString(", ")
-	builder.WriteString("created_at=")
-	builder.WriteString(d.CreatedAt.Format(time.ANSIC))
-	builder.WriteString(", ")
-	builder.WriteString("updated_at=")
-	builder.WriteString(d.UpdatedAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

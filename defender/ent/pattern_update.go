@@ -9,7 +9,6 @@ import (
 	"defly-defender/ent/target"
 	"errors"
 	"fmt"
-	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -93,46 +92,6 @@ func (pu *PatternUpdate) SetNillableDatatype(pa *pattern.Datatype) *PatternUpdat
 	return pu
 }
 
-// SetDescription sets the "description" field.
-func (pu *PatternUpdate) SetDescription(s string) *PatternUpdate {
-	pu.mutation.SetDescription(s)
-	return pu
-}
-
-// SetNillableDescription sets the "description" field if the given value is not nil.
-func (pu *PatternUpdate) SetNillableDescription(s *string) *PatternUpdate {
-	if s != nil {
-		pu.SetDescription(*s)
-	}
-	return pu
-}
-
-// ClearDescription clears the value of the "description" field.
-func (pu *PatternUpdate) ClearDescription() *PatternUpdate {
-	pu.mutation.ClearDescription()
-	return pu
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (pu *PatternUpdate) SetCreatedAt(t time.Time) *PatternUpdate {
-	pu.mutation.SetCreatedAt(t)
-	return pu
-}
-
-// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (pu *PatternUpdate) SetNillableCreatedAt(t *time.Time) *PatternUpdate {
-	if t != nil {
-		pu.SetCreatedAt(*t)
-	}
-	return pu
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (pu *PatternUpdate) SetUpdatedAt(t time.Time) *PatternUpdate {
-	pu.mutation.SetUpdatedAt(t)
-	return pu
-}
-
 // AddTargetIDs adds the "targets" edge to the Target entity by IDs.
 func (pu *PatternUpdate) AddTargetIDs(ids ...uuid.UUID) *PatternUpdate {
 	pu.mutation.AddTargetIDs(ids...)
@@ -176,7 +135,6 @@ func (pu *PatternUpdate) RemoveTargets(t ...*Target) *PatternUpdate {
 
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (pu *PatternUpdate) Save(ctx context.Context) (int, error) {
-	pu.defaults()
 	return withHooks(ctx, pu.sqlSave, pu.mutation, pu.hooks)
 }
 
@@ -199,14 +157,6 @@ func (pu *PatternUpdate) Exec(ctx context.Context) error {
 func (pu *PatternUpdate) ExecX(ctx context.Context) {
 	if err := pu.Exec(ctx); err != nil {
 		panic(err)
-	}
-}
-
-// defaults sets the default values of the builder before save.
-func (pu *PatternUpdate) defaults() {
-	if _, ok := pu.mutation.UpdatedAt(); !ok {
-		v := pattern.UpdateDefaultUpdatedAt()
-		pu.mutation.SetUpdatedAt(v)
 	}
 }
 
@@ -256,18 +206,6 @@ func (pu *PatternUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := pu.mutation.Datatype(); ok {
 		_spec.SetField(pattern.FieldDatatype, field.TypeEnum, value)
-	}
-	if value, ok := pu.mutation.Description(); ok {
-		_spec.SetField(pattern.FieldDescription, field.TypeString, value)
-	}
-	if pu.mutation.DescriptionCleared() {
-		_spec.ClearField(pattern.FieldDescription, field.TypeString)
-	}
-	if value, ok := pu.mutation.CreatedAt(); ok {
-		_spec.SetField(pattern.FieldCreatedAt, field.TypeTime, value)
-	}
-	if value, ok := pu.mutation.UpdatedAt(); ok {
-		_spec.SetField(pattern.FieldUpdatedAt, field.TypeTime, value)
 	}
 	if pu.mutation.TargetsCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -397,46 +335,6 @@ func (puo *PatternUpdateOne) SetNillableDatatype(pa *pattern.Datatype) *PatternU
 	return puo
 }
 
-// SetDescription sets the "description" field.
-func (puo *PatternUpdateOne) SetDescription(s string) *PatternUpdateOne {
-	puo.mutation.SetDescription(s)
-	return puo
-}
-
-// SetNillableDescription sets the "description" field if the given value is not nil.
-func (puo *PatternUpdateOne) SetNillableDescription(s *string) *PatternUpdateOne {
-	if s != nil {
-		puo.SetDescription(*s)
-	}
-	return puo
-}
-
-// ClearDescription clears the value of the "description" field.
-func (puo *PatternUpdateOne) ClearDescription() *PatternUpdateOne {
-	puo.mutation.ClearDescription()
-	return puo
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (puo *PatternUpdateOne) SetCreatedAt(t time.Time) *PatternUpdateOne {
-	puo.mutation.SetCreatedAt(t)
-	return puo
-}
-
-// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (puo *PatternUpdateOne) SetNillableCreatedAt(t *time.Time) *PatternUpdateOne {
-	if t != nil {
-		puo.SetCreatedAt(*t)
-	}
-	return puo
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (puo *PatternUpdateOne) SetUpdatedAt(t time.Time) *PatternUpdateOne {
-	puo.mutation.SetUpdatedAt(t)
-	return puo
-}
-
 // AddTargetIDs adds the "targets" edge to the Target entity by IDs.
 func (puo *PatternUpdateOne) AddTargetIDs(ids ...uuid.UUID) *PatternUpdateOne {
 	puo.mutation.AddTargetIDs(ids...)
@@ -493,7 +391,6 @@ func (puo *PatternUpdateOne) Select(field string, fields ...string) *PatternUpda
 
 // Save executes the query and returns the updated Pattern entity.
 func (puo *PatternUpdateOne) Save(ctx context.Context) (*Pattern, error) {
-	puo.defaults()
 	return withHooks(ctx, puo.sqlSave, puo.mutation, puo.hooks)
 }
 
@@ -516,14 +413,6 @@ func (puo *PatternUpdateOne) Exec(ctx context.Context) error {
 func (puo *PatternUpdateOne) ExecX(ctx context.Context) {
 	if err := puo.Exec(ctx); err != nil {
 		panic(err)
-	}
-}
-
-// defaults sets the default values of the builder before save.
-func (puo *PatternUpdateOne) defaults() {
-	if _, ok := puo.mutation.UpdatedAt(); !ok {
-		v := pattern.UpdateDefaultUpdatedAt()
-		puo.mutation.SetUpdatedAt(v)
 	}
 }
 
@@ -590,18 +479,6 @@ func (puo *PatternUpdateOne) sqlSave(ctx context.Context) (_node *Pattern, err e
 	}
 	if value, ok := puo.mutation.Datatype(); ok {
 		_spec.SetField(pattern.FieldDatatype, field.TypeEnum, value)
-	}
-	if value, ok := puo.mutation.Description(); ok {
-		_spec.SetField(pattern.FieldDescription, field.TypeString, value)
-	}
-	if puo.mutation.DescriptionCleared() {
-		_spec.ClearField(pattern.FieldDescription, field.TypeString)
-	}
-	if value, ok := puo.mutation.CreatedAt(); ok {
-		_spec.SetField(pattern.FieldCreatedAt, field.TypeTime, value)
-	}
-	if value, ok := puo.mutation.UpdatedAt(); ok {
-		_spec.SetField(pattern.FieldUpdatedAt, field.TypeTime, value)
 	}
 	if puo.mutation.TargetsCleared() {
 		edge := &sqlgraph.EdgeSpec{

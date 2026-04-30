@@ -10,7 +10,6 @@ import (
 	"defly-defender/ent/principle"
 	"errors"
 	"fmt"
-	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -45,33 +44,6 @@ func (du *DefenderUpdate) SetNillableName(s *string) *DefenderUpdate {
 	return du
 }
 
-// SetProxyPort sets the "proxy_port" field.
-func (du *DefenderUpdate) SetProxyPort(i int) *DefenderUpdate {
-	du.mutation.ResetProxyPort()
-	du.mutation.SetProxyPort(i)
-	return du
-}
-
-// SetNillableProxyPort sets the "proxy_port" field if the given value is not nil.
-func (du *DefenderUpdate) SetNillableProxyPort(i *int) *DefenderUpdate {
-	if i != nil {
-		du.SetProxyPort(*i)
-	}
-	return du
-}
-
-// AddProxyPort adds i to the "proxy_port" field.
-func (du *DefenderUpdate) AddProxyPort(i int) *DefenderUpdate {
-	du.mutation.AddProxyPort(i)
-	return du
-}
-
-// ClearProxyPort clears the value of the "proxy_port" field.
-func (du *DefenderUpdate) ClearProxyPort() *DefenderUpdate {
-	du.mutation.ClearProxyPort()
-	return du
-}
-
 // SetStatus sets the "status" field.
 func (du *DefenderUpdate) SetStatus(d defender.Status) *DefenderUpdate {
 	du.mutation.SetStatus(d)
@@ -101,26 +73,6 @@ func (du *DefenderUpdate) SetDetails(m map[string]interface{}) *DefenderUpdate {
 // ClearDetails clears the value of the "details" field.
 func (du *DefenderUpdate) ClearDetails() *DefenderUpdate {
 	du.mutation.ClearDetails()
-	return du
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (du *DefenderUpdate) SetCreatedAt(t time.Time) *DefenderUpdate {
-	du.mutation.SetCreatedAt(t)
-	return du
-}
-
-// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (du *DefenderUpdate) SetNillableCreatedAt(t *time.Time) *DefenderUpdate {
-	if t != nil {
-		du.SetCreatedAt(*t)
-	}
-	return du
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (du *DefenderUpdate) SetUpdatedAt(t time.Time) *DefenderUpdate {
-	du.mutation.SetUpdatedAt(t)
 	return du
 }
 
@@ -203,7 +155,6 @@ func (du *DefenderUpdate) RemoveDecisions(d ...*Decision) *DefenderUpdate {
 
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (du *DefenderUpdate) Save(ctx context.Context) (int, error) {
-	du.defaults()
 	return withHooks(ctx, du.sqlSave, du.mutation, du.hooks)
 }
 
@@ -226,14 +177,6 @@ func (du *DefenderUpdate) Exec(ctx context.Context) error {
 func (du *DefenderUpdate) ExecX(ctx context.Context) {
 	if err := du.Exec(ctx); err != nil {
 		panic(err)
-	}
-}
-
-// defaults sets the default values of the builder before save.
-func (du *DefenderUpdate) defaults() {
-	if _, ok := du.mutation.UpdatedAt(); !ok {
-		v := defender.UpdateDefaultUpdatedAt()
-		du.mutation.SetUpdatedAt(v)
 	}
 }
 
@@ -267,15 +210,6 @@ func (du *DefenderUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := du.mutation.Name(); ok {
 		_spec.SetField(defender.FieldName, field.TypeString, value)
 	}
-	if value, ok := du.mutation.ProxyPort(); ok {
-		_spec.SetField(defender.FieldProxyPort, field.TypeInt, value)
-	}
-	if value, ok := du.mutation.AddedProxyPort(); ok {
-		_spec.AddField(defender.FieldProxyPort, field.TypeInt, value)
-	}
-	if du.mutation.ProxyPortCleared() {
-		_spec.ClearField(defender.FieldProxyPort, field.TypeInt)
-	}
 	if value, ok := du.mutation.Status(); ok {
 		_spec.SetField(defender.FieldStatus, field.TypeEnum, value)
 	}
@@ -287,12 +221,6 @@ func (du *DefenderUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if du.mutation.DetailsCleared() {
 		_spec.ClearField(defender.FieldDetails, field.TypeJSON)
-	}
-	if value, ok := du.mutation.CreatedAt(); ok {
-		_spec.SetField(defender.FieldCreatedAt, field.TypeTime, value)
-	}
-	if value, ok := du.mutation.UpdatedAt(); ok {
-		_spec.SetField(defender.FieldUpdatedAt, field.TypeTime, value)
 	}
 	if du.mutation.PrinciplesCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -418,33 +346,6 @@ func (duo *DefenderUpdateOne) SetNillableName(s *string) *DefenderUpdateOne {
 	return duo
 }
 
-// SetProxyPort sets the "proxy_port" field.
-func (duo *DefenderUpdateOne) SetProxyPort(i int) *DefenderUpdateOne {
-	duo.mutation.ResetProxyPort()
-	duo.mutation.SetProxyPort(i)
-	return duo
-}
-
-// SetNillableProxyPort sets the "proxy_port" field if the given value is not nil.
-func (duo *DefenderUpdateOne) SetNillableProxyPort(i *int) *DefenderUpdateOne {
-	if i != nil {
-		duo.SetProxyPort(*i)
-	}
-	return duo
-}
-
-// AddProxyPort adds i to the "proxy_port" field.
-func (duo *DefenderUpdateOne) AddProxyPort(i int) *DefenderUpdateOne {
-	duo.mutation.AddProxyPort(i)
-	return duo
-}
-
-// ClearProxyPort clears the value of the "proxy_port" field.
-func (duo *DefenderUpdateOne) ClearProxyPort() *DefenderUpdateOne {
-	duo.mutation.ClearProxyPort()
-	return duo
-}
-
 // SetStatus sets the "status" field.
 func (duo *DefenderUpdateOne) SetStatus(d defender.Status) *DefenderUpdateOne {
 	duo.mutation.SetStatus(d)
@@ -474,26 +375,6 @@ func (duo *DefenderUpdateOne) SetDetails(m map[string]interface{}) *DefenderUpda
 // ClearDetails clears the value of the "details" field.
 func (duo *DefenderUpdateOne) ClearDetails() *DefenderUpdateOne {
 	duo.mutation.ClearDetails()
-	return duo
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (duo *DefenderUpdateOne) SetCreatedAt(t time.Time) *DefenderUpdateOne {
-	duo.mutation.SetCreatedAt(t)
-	return duo
-}
-
-// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (duo *DefenderUpdateOne) SetNillableCreatedAt(t *time.Time) *DefenderUpdateOne {
-	if t != nil {
-		duo.SetCreatedAt(*t)
-	}
-	return duo
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (duo *DefenderUpdateOne) SetUpdatedAt(t time.Time) *DefenderUpdateOne {
-	duo.mutation.SetUpdatedAt(t)
 	return duo
 }
 
@@ -589,7 +470,6 @@ func (duo *DefenderUpdateOne) Select(field string, fields ...string) *DefenderUp
 
 // Save executes the query and returns the updated Defender entity.
 func (duo *DefenderUpdateOne) Save(ctx context.Context) (*Defender, error) {
-	duo.defaults()
 	return withHooks(ctx, duo.sqlSave, duo.mutation, duo.hooks)
 }
 
@@ -612,14 +492,6 @@ func (duo *DefenderUpdateOne) Exec(ctx context.Context) error {
 func (duo *DefenderUpdateOne) ExecX(ctx context.Context) {
 	if err := duo.Exec(ctx); err != nil {
 		panic(err)
-	}
-}
-
-// defaults sets the default values of the builder before save.
-func (duo *DefenderUpdateOne) defaults() {
-	if _, ok := duo.mutation.UpdatedAt(); !ok {
-		v := defender.UpdateDefaultUpdatedAt()
-		duo.mutation.SetUpdatedAt(v)
 	}
 }
 
@@ -670,15 +542,6 @@ func (duo *DefenderUpdateOne) sqlSave(ctx context.Context) (_node *Defender, err
 	if value, ok := duo.mutation.Name(); ok {
 		_spec.SetField(defender.FieldName, field.TypeString, value)
 	}
-	if value, ok := duo.mutation.ProxyPort(); ok {
-		_spec.SetField(defender.FieldProxyPort, field.TypeInt, value)
-	}
-	if value, ok := duo.mutation.AddedProxyPort(); ok {
-		_spec.AddField(defender.FieldProxyPort, field.TypeInt, value)
-	}
-	if duo.mutation.ProxyPortCleared() {
-		_spec.ClearField(defender.FieldProxyPort, field.TypeInt)
-	}
 	if value, ok := duo.mutation.Status(); ok {
 		_spec.SetField(defender.FieldStatus, field.TypeEnum, value)
 	}
@@ -690,12 +553,6 @@ func (duo *DefenderUpdateOne) sqlSave(ctx context.Context) (_node *Defender, err
 	}
 	if duo.mutation.DetailsCleared() {
 		_spec.ClearField(defender.FieldDetails, field.TypeJSON)
-	}
-	if value, ok := duo.mutation.CreatedAt(); ok {
-		_spec.SetField(defender.FieldCreatedAt, field.TypeTime, value)
-	}
-	if value, ok := duo.mutation.UpdatedAt(); ok {
-		_spec.SetField(defender.FieldUpdatedAt, field.TypeTime, value)
 	}
 	if duo.mutation.PrinciplesCleared() {
 		edge := &sqlgraph.EdgeSpec{

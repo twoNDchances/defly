@@ -7,10 +7,8 @@ import (
 	"defly-defender/ent/defender"
 	"defly-defender/ent/principle"
 	"defly-defender/ent/rule"
-	"defly-defender/ent/user"
 	"errors"
 	"fmt"
-	"time"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -50,96 +48,6 @@ func (pc *PrincipleCreate) SetPhase(i int) *PrincipleCreate {
 	return pc
 }
 
-// SetValidationStatus sets the "validation_status" field.
-func (pc *PrincipleCreate) SetValidationStatus(ps principle.ValidationStatus) *PrincipleCreate {
-	pc.mutation.SetValidationStatus(ps)
-	return pc
-}
-
-// SetNillableValidationStatus sets the "validation_status" field if the given value is not nil.
-func (pc *PrincipleCreate) SetNillableValidationStatus(ps *principle.ValidationStatus) *PrincipleCreate {
-	if ps != nil {
-		pc.SetValidationStatus(*ps)
-	}
-	return pc
-}
-
-// SetValidationDetails sets the "validation_details" field.
-func (pc *PrincipleCreate) SetValidationDetails(m map[string]interface{}) *PrincipleCreate {
-	pc.mutation.SetValidationDetails(m)
-	return pc
-}
-
-// SetDescription sets the "description" field.
-func (pc *PrincipleCreate) SetDescription(s string) *PrincipleCreate {
-	pc.mutation.SetDescription(s)
-	return pc
-}
-
-// SetNillableDescription sets the "description" field if the given value is not nil.
-func (pc *PrincipleCreate) SetNillableDescription(s *string) *PrincipleCreate {
-	if s != nil {
-		pc.SetDescription(*s)
-	}
-	return pc
-}
-
-// SetCreatedBy sets the "created_by" field.
-func (pc *PrincipleCreate) SetCreatedBy(u uuid.UUID) *PrincipleCreate {
-	pc.mutation.SetCreatedBy(u)
-	return pc
-}
-
-// SetNillableCreatedBy sets the "created_by" field if the given value is not nil.
-func (pc *PrincipleCreate) SetNillableCreatedBy(u *uuid.UUID) *PrincipleCreate {
-	if u != nil {
-		pc.SetCreatedBy(*u)
-	}
-	return pc
-}
-
-// SetIsLocked sets the "is_locked" field.
-func (pc *PrincipleCreate) SetIsLocked(b bool) *PrincipleCreate {
-	pc.mutation.SetIsLocked(b)
-	return pc
-}
-
-// SetNillableIsLocked sets the "is_locked" field if the given value is not nil.
-func (pc *PrincipleCreate) SetNillableIsLocked(b *bool) *PrincipleCreate {
-	if b != nil {
-		pc.SetIsLocked(*b)
-	}
-	return pc
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (pc *PrincipleCreate) SetCreatedAt(t time.Time) *PrincipleCreate {
-	pc.mutation.SetCreatedAt(t)
-	return pc
-}
-
-// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (pc *PrincipleCreate) SetNillableCreatedAt(t *time.Time) *PrincipleCreate {
-	if t != nil {
-		pc.SetCreatedAt(*t)
-	}
-	return pc
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (pc *PrincipleCreate) SetUpdatedAt(t time.Time) *PrincipleCreate {
-	pc.mutation.SetUpdatedAt(t)
-	return pc
-}
-
-// SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
-func (pc *PrincipleCreate) SetNillableUpdatedAt(t *time.Time) *PrincipleCreate {
-	if t != nil {
-		pc.SetUpdatedAt(*t)
-	}
-	return pc
-}
-
 // SetID sets the "id" field.
 func (pc *PrincipleCreate) SetID(u uuid.UUID) *PrincipleCreate {
 	pc.mutation.SetID(u)
@@ -152,25 +60,6 @@ func (pc *PrincipleCreate) SetNillableID(u *uuid.UUID) *PrincipleCreate {
 		pc.SetID(*u)
 	}
 	return pc
-}
-
-// SetCreatorID sets the "creator" edge to the User entity by ID.
-func (pc *PrincipleCreate) SetCreatorID(id uuid.UUID) *PrincipleCreate {
-	pc.mutation.SetCreatorID(id)
-	return pc
-}
-
-// SetNillableCreatorID sets the "creator" edge to the User entity by ID if the given value is not nil.
-func (pc *PrincipleCreate) SetNillableCreatorID(id *uuid.UUID) *PrincipleCreate {
-	if id != nil {
-		pc = pc.SetCreatorID(*id)
-	}
-	return pc
-}
-
-// SetCreator sets the "creator" edge to the User entity.
-func (pc *PrincipleCreate) SetCreator(u *User) *PrincipleCreate {
-	return pc.SetCreatorID(u.ID)
 }
 
 // AddRuleIDs adds the "rules" edge to the Rule entity by IDs.
@@ -242,18 +131,6 @@ func (pc *PrincipleCreate) defaults() {
 		v := principle.DefaultLevel
 		pc.mutation.SetLevel(v)
 	}
-	if _, ok := pc.mutation.IsLocked(); !ok {
-		v := principle.DefaultIsLocked
-		pc.mutation.SetIsLocked(v)
-	}
-	if _, ok := pc.mutation.CreatedAt(); !ok {
-		v := principle.DefaultCreatedAt()
-		pc.mutation.SetCreatedAt(v)
-	}
-	if _, ok := pc.mutation.UpdatedAt(); !ok {
-		v := principle.DefaultUpdatedAt()
-		pc.mutation.SetUpdatedAt(v)
-	}
 	if _, ok := pc.mutation.ID(); !ok {
 		v := principle.DefaultID()
 		pc.mutation.SetID(v)
@@ -275,20 +152,6 @@ func (pc *PrincipleCreate) check() error {
 	}
 	if _, ok := pc.mutation.Phase(); !ok {
 		return &ValidationError{Name: "phase", err: errors.New(`ent: missing required field "Principle.phase"`)}
-	}
-	if v, ok := pc.mutation.ValidationStatus(); ok {
-		if err := principle.ValidationStatusValidator(v); err != nil {
-			return &ValidationError{Name: "validation_status", err: fmt.Errorf(`ent: validator failed for field "Principle.validation_status": %w`, err)}
-		}
-	}
-	if _, ok := pc.mutation.IsLocked(); !ok {
-		return &ValidationError{Name: "is_locked", err: errors.New(`ent: missing required field "Principle.is_locked"`)}
-	}
-	if _, ok := pc.mutation.CreatedAt(); !ok {
-		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Principle.created_at"`)}
-	}
-	if _, ok := pc.mutation.UpdatedAt(); !ok {
-		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "Principle.updated_at"`)}
 	}
 	return nil
 }
@@ -336,47 +199,6 @@ func (pc *PrincipleCreate) createSpec() (*Principle, *sqlgraph.CreateSpec) {
 	if value, ok := pc.mutation.Phase(); ok {
 		_spec.SetField(principle.FieldPhase, field.TypeInt, value)
 		_node.Phase = value
-	}
-	if value, ok := pc.mutation.ValidationStatus(); ok {
-		_spec.SetField(principle.FieldValidationStatus, field.TypeEnum, value)
-		_node.ValidationStatus = &value
-	}
-	if value, ok := pc.mutation.ValidationDetails(); ok {
-		_spec.SetField(principle.FieldValidationDetails, field.TypeJSON, value)
-		_node.ValidationDetails = value
-	}
-	if value, ok := pc.mutation.Description(); ok {
-		_spec.SetField(principle.FieldDescription, field.TypeString, value)
-		_node.Description = &value
-	}
-	if value, ok := pc.mutation.IsLocked(); ok {
-		_spec.SetField(principle.FieldIsLocked, field.TypeBool, value)
-		_node.IsLocked = value
-	}
-	if value, ok := pc.mutation.CreatedAt(); ok {
-		_spec.SetField(principle.FieldCreatedAt, field.TypeTime, value)
-		_node.CreatedAt = value
-	}
-	if value, ok := pc.mutation.UpdatedAt(); ok {
-		_spec.SetField(principle.FieldUpdatedAt, field.TypeTime, value)
-		_node.UpdatedAt = value
-	}
-	if nodes := pc.mutation.CreatorIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   principle.CreatorTable,
-			Columns: []string{principle.CreatorColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_node.CreatedBy = &nodes[0]
-		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := pc.mutation.RulesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

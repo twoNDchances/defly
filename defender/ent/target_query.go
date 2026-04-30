@@ -10,7 +10,6 @@ import (
 	"defly-defender/ent/predicate"
 	"defly-defender/ent/rule"
 	"defly-defender/ent/target"
-	"defly-defender/ent/user"
 	"defly-defender/ent/wordlist"
 	"fmt"
 	"math"
@@ -31,7 +30,6 @@ type TargetQuery struct {
 	predicates   []predicate.Target
 	withPattern  *PatternQuery
 	withWordlist *WordlistQuery
-	withCreator  *UserQuery
 	withEngines  *EngineQuery
 	withRules    *RuleQuery
 	// intermediate query (i.e. traversal path).
@@ -107,28 +105,6 @@ func (tq *TargetQuery) QueryWordlist() *WordlistQuery {
 			sqlgraph.From(target.Table, target.FieldID, selector),
 			sqlgraph.To(wordlist.Table, wordlist.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, target.WordlistTable, target.WordlistColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(tq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryCreator chains the current query on the "creator" edge.
-func (tq *TargetQuery) QueryCreator() *UserQuery {
-	query := (&UserClient{config: tq.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := tq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := tq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(target.Table, target.FieldID, selector),
-			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, target.CreatorTable, target.CreatorColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(tq.driver.Dialect(), step)
 		return fromU, nil
@@ -374,7 +350,6 @@ func (tq *TargetQuery) Clone() *TargetQuery {
 		predicates:   append([]predicate.Target{}, tq.predicates...),
 		withPattern:  tq.withPattern.Clone(),
 		withWordlist: tq.withWordlist.Clone(),
-		withCreator:  tq.withCreator.Clone(),
 		withEngines:  tq.withEngines.Clone(),
 		withRules:    tq.withRules.Clone(),
 		// clone intermediate query.
@@ -402,17 +377,6 @@ func (tq *TargetQuery) WithWordlist(opts ...func(*WordlistQuery)) *TargetQuery {
 		opt(query)
 	}
 	tq.withWordlist = query
-	return tq
-}
-
-// WithCreator tells the query-builder to eager-load the nodes that are connected to
-// the "creator" edge. The optional arguments are used to configure the query builder of the edge.
-func (tq *TargetQuery) WithCreator(opts ...func(*UserQuery)) *TargetQuery {
-	query := (&UserClient{config: tq.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	tq.withCreator = query
 	return tq
 }
 
@@ -516,10 +480,9 @@ func (tq *TargetQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Targe
 	var (
 		nodes       = []*Target{}
 		_spec       = tq.querySpec()
-		loadedTypes = [5]bool{
+		loadedTypes = [4]bool{
 			tq.withPattern != nil,
 			tq.withWordlist != nil,
-			tq.withCreator != nil,
 			tq.withEngines != nil,
 			tq.withRules != nil,
 		}
@@ -551,12 +514,6 @@ func (tq *TargetQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Targe
 	if query := tq.withWordlist; query != nil {
 		if err := tq.loadWordlist(ctx, query, nodes, nil,
 			func(n *Target, e *Wordlist) { n.Edges.Wordlist = e }); err != nil {
-			return nil, err
-		}
-	}
-	if query := tq.withCreator; query != nil {
-		if err := tq.loadCreator(ctx, query, nodes, nil,
-			func(n *Target, e *User) { n.Edges.Creator = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -634,38 +591,6 @@ func (tq *TargetQuery) loadWordlist(ctx context.Context, query *WordlistQuery, n
 		nodes, ok := nodeids[n.ID]
 		if !ok {
 			return fmt.Errorf(`unexpected foreign-key "wordlist_id" returned %v`, n.ID)
-		}
-		for i := range nodes {
-			assign(nodes[i], n)
-		}
-	}
-	return nil
-}
-func (tq *TargetQuery) loadCreator(ctx context.Context, query *UserQuery, nodes []*Target, init func(*Target), assign func(*Target, *User)) error {
-	ids := make([]uuid.UUID, 0, len(nodes))
-	nodeids := make(map[uuid.UUID][]*Target)
-	for i := range nodes {
-		if nodes[i].CreatedBy == nil {
-			continue
-		}
-		fk := *nodes[i].CreatedBy
-		if _, ok := nodeids[fk]; !ok {
-			ids = append(ids, fk)
-		}
-		nodeids[fk] = append(nodeids[fk], nodes[i])
-	}
-	if len(ids) == 0 {
-		return nil
-	}
-	query.Where(user.IDIn(ids...))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		nodes, ok := nodeids[n.ID]
-		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "created_by" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -798,9 +723,6 @@ func (tq *TargetQuery) querySpec() *sqlgraph.QuerySpec {
 		}
 		if tq.withWordlist != nil {
 			_spec.Node.AddColumnOnce(target.FieldWordlistID)
-		}
-		if tq.withCreator != nil {
-			_spec.Node.AddColumnOnce(target.FieldCreatedBy)
 		}
 	}
 	if ps := tq.predicates; len(ps) > 0 {

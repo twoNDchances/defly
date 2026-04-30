@@ -6,7 +6,6 @@ import (
 	"defly-defender/ent/pattern"
 	"fmt"
 	"strings"
-	"time"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
@@ -26,12 +25,6 @@ type Pattern struct {
 	Type pattern.Type `json:"type,omitempty"`
 	// Datatype holds the value of the "datatype" field.
 	Datatype pattern.Datatype `json:"datatype,omitempty"`
-	// Description holds the value of the "description" field.
-	Description *string `json:"description,omitempty"`
-	// CreatedAt holds the value of the "created_at" field.
-	CreatedAt time.Time `json:"created_at,omitempty"`
-	// UpdatedAt holds the value of the "updated_at" field.
-	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the PatternQuery when eager-loading is set.
 	Edges        PatternEdges `json:"edges"`
@@ -63,10 +56,8 @@ func (*Pattern) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case pattern.FieldPhase:
 			values[i] = new(sql.NullInt64)
-		case pattern.FieldName, pattern.FieldType, pattern.FieldDatatype, pattern.FieldDescription:
+		case pattern.FieldName, pattern.FieldType, pattern.FieldDatatype:
 			values[i] = new(sql.NullString)
-		case pattern.FieldCreatedAt, pattern.FieldUpdatedAt:
-			values[i] = new(sql.NullTime)
 		case pattern.FieldID:
 			values[i] = new(uuid.UUID)
 		default:
@@ -113,25 +104,6 @@ func (pa *Pattern) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field datatype", values[i])
 			} else if value.Valid {
 				pa.Datatype = pattern.Datatype(value.String)
-			}
-		case pattern.FieldDescription:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field description", values[i])
-			} else if value.Valid {
-				pa.Description = new(string)
-				*pa.Description = value.String
-			}
-		case pattern.FieldCreatedAt:
-			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field created_at", values[i])
-			} else if value.Valid {
-				pa.CreatedAt = value.Time
-			}
-		case pattern.FieldUpdatedAt:
-			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
-			} else if value.Valid {
-				pa.UpdatedAt = value.Time
 			}
 		default:
 			pa.selectValues.Set(columns[i], values[i])
@@ -185,17 +157,6 @@ func (pa *Pattern) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("datatype=")
 	builder.WriteString(fmt.Sprintf("%v", pa.Datatype))
-	builder.WriteString(", ")
-	if v := pa.Description; v != nil {
-		builder.WriteString("description=")
-		builder.WriteString(*v)
-	}
-	builder.WriteString(", ")
-	builder.WriteString("created_at=")
-	builder.WriteString(pa.CreatedAt.Format(time.ANSIC))
-	builder.WriteString(", ")
-	builder.WriteString("updated_at=")
-	builder.WriteString(pa.UpdatedAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

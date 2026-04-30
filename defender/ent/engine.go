@@ -4,11 +4,9 @@ package ent
 
 import (
 	"defly-defender/ent/engine"
-	"defly-defender/ent/user"
 	"encoding/json"
 	"fmt"
 	"strings"
-	"time"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
@@ -30,16 +28,6 @@ type Engine struct {
 	Configurations map[string]interface{} `json:"configurations,omitempty"`
 	// OutputDatatype holds the value of the "output_datatype" field.
 	OutputDatatype engine.OutputDatatype `json:"output_datatype,omitempty"`
-	// Description holds the value of the "description" field.
-	Description *string `json:"description,omitempty"`
-	// CreatedBy holds the value of the "created_by" field.
-	CreatedBy *uuid.UUID `json:"created_by,omitempty"`
-	// IsLocked holds the value of the "is_locked" field.
-	IsLocked bool `json:"is_locked,omitempty"`
-	// CreatedAt holds the value of the "created_at" field.
-	CreatedAt time.Time `json:"created_at,omitempty"`
-	// UpdatedAt holds the value of the "updated_at" field.
-	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the EngineQuery when eager-loading is set.
 	Edges        EngineEdges `json:"edges"`
@@ -48,30 +36,17 @@ type Engine struct {
 
 // EngineEdges holds the relations/edges for other nodes in the graph.
 type EngineEdges struct {
-	// Creator holds the value of the creator edge.
-	Creator *User `json:"creator,omitempty"`
 	// Targets holds the value of the targets edge.
 	Targets []*Target `json:"targets,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
-}
-
-// CreatorOrErr returns the Creator value or an error if the edge
-// was not loaded in eager-loading, or loaded but was not found.
-func (e EngineEdges) CreatorOrErr() (*User, error) {
-	if e.Creator != nil {
-		return e.Creator, nil
-	} else if e.loadedTypes[0] {
-		return nil, &NotFoundError{label: user.Label}
-	}
-	return nil, &NotLoadedError{edge: "creator"}
+	loadedTypes [1]bool
 }
 
 // TargetsOrErr returns the Targets value or an error if the edge
 // was not loaded in eager-loading.
 func (e EngineEdges) TargetsOrErr() ([]*Target, error) {
-	if e.loadedTypes[1] {
+	if e.loadedTypes[0] {
 		return e.Targets, nil
 	}
 	return nil, &NotLoadedError{edge: "targets"}
@@ -82,16 +57,10 @@ func (*Engine) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case engine.FieldCreatedBy:
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case engine.FieldConfigurations:
 			values[i] = new([]byte)
-		case engine.FieldIsLocked:
-			values[i] = new(sql.NullBool)
-		case engine.FieldName, engine.FieldInputDatatype, engine.FieldType, engine.FieldOutputDatatype, engine.FieldDescription:
+		case engine.FieldName, engine.FieldInputDatatype, engine.FieldType, engine.FieldOutputDatatype:
 			values[i] = new(sql.NullString)
-		case engine.FieldCreatedAt, engine.FieldUpdatedAt:
-			values[i] = new(sql.NullTime)
 		case engine.FieldID:
 			values[i] = new(uuid.UUID)
 		default:
@@ -147,38 +116,6 @@ func (e *Engine) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				e.OutputDatatype = engine.OutputDatatype(value.String)
 			}
-		case engine.FieldDescription:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field description", values[i])
-			} else if value.Valid {
-				e.Description = new(string)
-				*e.Description = value.String
-			}
-		case engine.FieldCreatedBy:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field created_by", values[i])
-			} else if value.Valid {
-				e.CreatedBy = new(uuid.UUID)
-				*e.CreatedBy = *value.S.(*uuid.UUID)
-			}
-		case engine.FieldIsLocked:
-			if value, ok := values[i].(*sql.NullBool); !ok {
-				return fmt.Errorf("unexpected type %T for field is_locked", values[i])
-			} else if value.Valid {
-				e.IsLocked = value.Bool
-			}
-		case engine.FieldCreatedAt:
-			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field created_at", values[i])
-			} else if value.Valid {
-				e.CreatedAt = value.Time
-			}
-		case engine.FieldUpdatedAt:
-			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
-			} else if value.Valid {
-				e.UpdatedAt = value.Time
-			}
 		default:
 			e.selectValues.Set(columns[i], values[i])
 		}
@@ -190,11 +127,6 @@ func (e *Engine) assignValues(columns []string, values []any) error {
 // This includes values selected through modifiers, order, etc.
 func (e *Engine) Value(name string) (ent.Value, error) {
 	return e.selectValues.Get(name)
-}
-
-// QueryCreator queries the "creator" edge of the Engine entity.
-func (e *Engine) QueryCreator() *UserQuery {
-	return NewEngineClient(e.config).QueryCreator(e)
 }
 
 // QueryTargets queries the "targets" edge of the Engine entity.
@@ -239,25 +171,6 @@ func (e *Engine) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("output_datatype=")
 	builder.WriteString(fmt.Sprintf("%v", e.OutputDatatype))
-	builder.WriteString(", ")
-	if v := e.Description; v != nil {
-		builder.WriteString("description=")
-		builder.WriteString(*v)
-	}
-	builder.WriteString(", ")
-	if v := e.CreatedBy; v != nil {
-		builder.WriteString("created_by=")
-		builder.WriteString(fmt.Sprintf("%v", *v))
-	}
-	builder.WriteString(", ")
-	builder.WriteString("is_locked=")
-	builder.WriteString(fmt.Sprintf("%v", e.IsLocked))
-	builder.WriteString(", ")
-	builder.WriteString("created_at=")
-	builder.WriteString(e.CreatedAt.Format(time.ANSIC))
-	builder.WriteString(", ")
-	builder.WriteString("updated_at=")
-	builder.WriteString(e.UpdatedAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
-	"time"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
@@ -21,16 +20,10 @@ type Defender struct {
 	ID uuid.UUID `json:"id,omitempty"`
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty"`
-	// ProxyPort holds the value of the "proxy_port" field.
-	ProxyPort *int `json:"proxy_port,omitempty"`
 	// Status holds the value of the "status" field.
 	Status *defender.Status `json:"status,omitempty"`
 	// Details holds the value of the "details" field.
 	Details map[string]interface{} `json:"details,omitempty"`
-	// CreatedAt holds the value of the "created_at" field.
-	CreatedAt time.Time `json:"created_at,omitempty"`
-	// UpdatedAt holds the value of the "updated_at" field.
-	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the DefenderQuery when eager-loading is set.
 	Edges        DefenderEdges `json:"edges"`
@@ -73,12 +66,8 @@ func (*Defender) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case defender.FieldDetails:
 			values[i] = new([]byte)
-		case defender.FieldProxyPort:
-			values[i] = new(sql.NullInt64)
 		case defender.FieldName, defender.FieldStatus:
 			values[i] = new(sql.NullString)
-		case defender.FieldCreatedAt, defender.FieldUpdatedAt:
-			values[i] = new(sql.NullTime)
 		case defender.FieldID:
 			values[i] = new(uuid.UUID)
 		default:
@@ -108,13 +97,6 @@ func (d *Defender) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				d.Name = value.String
 			}
-		case defender.FieldProxyPort:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for field proxy_port", values[i])
-			} else if value.Valid {
-				d.ProxyPort = new(int)
-				*d.ProxyPort = int(value.Int64)
-			}
 		case defender.FieldStatus:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field status", values[i])
@@ -129,18 +111,6 @@ func (d *Defender) assignValues(columns []string, values []any) error {
 				if err := json.Unmarshal(*value, &d.Details); err != nil {
 					return fmt.Errorf("unmarshal field details: %w", err)
 				}
-			}
-		case defender.FieldCreatedAt:
-			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field created_at", values[i])
-			} else if value.Valid {
-				d.CreatedAt = value.Time
-			}
-		case defender.FieldUpdatedAt:
-			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
-			} else if value.Valid {
-				d.UpdatedAt = value.Time
 			}
 		default:
 			d.selectValues.Set(columns[i], values[i])
@@ -191,11 +161,6 @@ func (d *Defender) String() string {
 	builder.WriteString("name=")
 	builder.WriteString(d.Name)
 	builder.WriteString(", ")
-	if v := d.ProxyPort; v != nil {
-		builder.WriteString("proxy_port=")
-		builder.WriteString(fmt.Sprintf("%v", *v))
-	}
-	builder.WriteString(", ")
 	if v := d.Status; v != nil {
 		builder.WriteString("status=")
 		builder.WriteString(fmt.Sprintf("%v", *v))
@@ -203,12 +168,6 @@ func (d *Defender) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("details=")
 	builder.WriteString(fmt.Sprintf("%v", d.Details))
-	builder.WriteString(", ")
-	builder.WriteString("created_at=")
-	builder.WriteString(d.CreatedAt.Format(time.ANSIC))
-	builder.WriteString(", ")
-	builder.WriteString("updated_at=")
-	builder.WriteString(d.UpdatedAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

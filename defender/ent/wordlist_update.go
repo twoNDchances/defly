@@ -7,11 +7,9 @@ import (
 	"defly-defender/ent/predicate"
 	"defly-defender/ent/rule"
 	"defly-defender/ent/target"
-	"defly-defender/ent/user"
 	"defly-defender/ent/wordlist"
 	"errors"
 	"fmt"
-	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -126,99 +124,6 @@ func (wu *WordlistUpdate) ClearWordCount() *WordlistUpdate {
 	return wu
 }
 
-// SetDescription sets the "description" field.
-func (wu *WordlistUpdate) SetDescription(s string) *WordlistUpdate {
-	wu.mutation.SetDescription(s)
-	return wu
-}
-
-// SetNillableDescription sets the "description" field if the given value is not nil.
-func (wu *WordlistUpdate) SetNillableDescription(s *string) *WordlistUpdate {
-	if s != nil {
-		wu.SetDescription(*s)
-	}
-	return wu
-}
-
-// ClearDescription clears the value of the "description" field.
-func (wu *WordlistUpdate) ClearDescription() *WordlistUpdate {
-	wu.mutation.ClearDescription()
-	return wu
-}
-
-// SetCreatedBy sets the "created_by" field.
-func (wu *WordlistUpdate) SetCreatedBy(u uuid.UUID) *WordlistUpdate {
-	wu.mutation.SetCreatedBy(u)
-	return wu
-}
-
-// SetNillableCreatedBy sets the "created_by" field if the given value is not nil.
-func (wu *WordlistUpdate) SetNillableCreatedBy(u *uuid.UUID) *WordlistUpdate {
-	if u != nil {
-		wu.SetCreatedBy(*u)
-	}
-	return wu
-}
-
-// ClearCreatedBy clears the value of the "created_by" field.
-func (wu *WordlistUpdate) ClearCreatedBy() *WordlistUpdate {
-	wu.mutation.ClearCreatedBy()
-	return wu
-}
-
-// SetIsLocked sets the "is_locked" field.
-func (wu *WordlistUpdate) SetIsLocked(b bool) *WordlistUpdate {
-	wu.mutation.SetIsLocked(b)
-	return wu
-}
-
-// SetNillableIsLocked sets the "is_locked" field if the given value is not nil.
-func (wu *WordlistUpdate) SetNillableIsLocked(b *bool) *WordlistUpdate {
-	if b != nil {
-		wu.SetIsLocked(*b)
-	}
-	return wu
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (wu *WordlistUpdate) SetCreatedAt(t time.Time) *WordlistUpdate {
-	wu.mutation.SetCreatedAt(t)
-	return wu
-}
-
-// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (wu *WordlistUpdate) SetNillableCreatedAt(t *time.Time) *WordlistUpdate {
-	if t != nil {
-		wu.SetCreatedAt(*t)
-	}
-	return wu
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (wu *WordlistUpdate) SetUpdatedAt(t time.Time) *WordlistUpdate {
-	wu.mutation.SetUpdatedAt(t)
-	return wu
-}
-
-// SetCreatorID sets the "creator" edge to the User entity by ID.
-func (wu *WordlistUpdate) SetCreatorID(id uuid.UUID) *WordlistUpdate {
-	wu.mutation.SetCreatorID(id)
-	return wu
-}
-
-// SetNillableCreatorID sets the "creator" edge to the User entity by ID if the given value is not nil.
-func (wu *WordlistUpdate) SetNillableCreatorID(id *uuid.UUID) *WordlistUpdate {
-	if id != nil {
-		wu = wu.SetCreatorID(*id)
-	}
-	return wu
-}
-
-// SetCreator sets the "creator" edge to the User entity.
-func (wu *WordlistUpdate) SetCreator(u *User) *WordlistUpdate {
-	return wu.SetCreatorID(u.ID)
-}
-
 // AddTargetIDs adds the "targets" edge to the Target entity by IDs.
 func (wu *WordlistUpdate) AddTargetIDs(ids ...uuid.UUID) *WordlistUpdate {
 	wu.mutation.AddTargetIDs(ids...)
@@ -252,12 +157,6 @@ func (wu *WordlistUpdate) AddRules(r ...*Rule) *WordlistUpdate {
 // Mutation returns the WordlistMutation object of the builder.
 func (wu *WordlistUpdate) Mutation() *WordlistMutation {
 	return wu.mutation
-}
-
-// ClearCreator clears the "creator" edge to the User entity.
-func (wu *WordlistUpdate) ClearCreator() *WordlistUpdate {
-	wu.mutation.ClearCreator()
-	return wu
 }
 
 // ClearTargets clears all "targets" edges to the Target entity.
@@ -304,7 +203,6 @@ func (wu *WordlistUpdate) RemoveRules(r ...*Rule) *WordlistUpdate {
 
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (wu *WordlistUpdate) Save(ctx context.Context) (int, error) {
-	wu.defaults()
 	return withHooks(ctx, wu.sqlSave, wu.mutation, wu.hooks)
 }
 
@@ -327,14 +225,6 @@ func (wu *WordlistUpdate) Exec(ctx context.Context) error {
 func (wu *WordlistUpdate) ExecX(ctx context.Context) {
 	if err := wu.Exec(ctx); err != nil {
 		panic(err)
-	}
-}
-
-// defaults sets the default values of the builder before save.
-func (wu *WordlistUpdate) defaults() {
-	if _, ok := wu.mutation.UpdatedAt(); !ok {
-		v := wordlist.UpdateDefaultUpdatedAt()
-		wu.mutation.SetUpdatedAt(v)
 	}
 }
 
@@ -396,50 +286,6 @@ func (wu *WordlistUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if wu.mutation.WordCountCleared() {
 		_spec.ClearField(wordlist.FieldWordCount, field.TypeInt)
-	}
-	if value, ok := wu.mutation.Description(); ok {
-		_spec.SetField(wordlist.FieldDescription, field.TypeString, value)
-	}
-	if wu.mutation.DescriptionCleared() {
-		_spec.ClearField(wordlist.FieldDescription, field.TypeString)
-	}
-	if value, ok := wu.mutation.IsLocked(); ok {
-		_spec.SetField(wordlist.FieldIsLocked, field.TypeBool, value)
-	}
-	if value, ok := wu.mutation.CreatedAt(); ok {
-		_spec.SetField(wordlist.FieldCreatedAt, field.TypeTime, value)
-	}
-	if value, ok := wu.mutation.UpdatedAt(); ok {
-		_spec.SetField(wordlist.FieldUpdatedAt, field.TypeTime, value)
-	}
-	if wu.mutation.CreatorCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   wordlist.CreatorTable,
-			Columns: []string{wordlist.CreatorColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := wu.mutation.CreatorIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   wordlist.CreatorTable,
-			Columns: []string{wordlist.CreatorColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if wu.mutation.TargetsCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -644,99 +490,6 @@ func (wuo *WordlistUpdateOne) ClearWordCount() *WordlistUpdateOne {
 	return wuo
 }
 
-// SetDescription sets the "description" field.
-func (wuo *WordlistUpdateOne) SetDescription(s string) *WordlistUpdateOne {
-	wuo.mutation.SetDescription(s)
-	return wuo
-}
-
-// SetNillableDescription sets the "description" field if the given value is not nil.
-func (wuo *WordlistUpdateOne) SetNillableDescription(s *string) *WordlistUpdateOne {
-	if s != nil {
-		wuo.SetDescription(*s)
-	}
-	return wuo
-}
-
-// ClearDescription clears the value of the "description" field.
-func (wuo *WordlistUpdateOne) ClearDescription() *WordlistUpdateOne {
-	wuo.mutation.ClearDescription()
-	return wuo
-}
-
-// SetCreatedBy sets the "created_by" field.
-func (wuo *WordlistUpdateOne) SetCreatedBy(u uuid.UUID) *WordlistUpdateOne {
-	wuo.mutation.SetCreatedBy(u)
-	return wuo
-}
-
-// SetNillableCreatedBy sets the "created_by" field if the given value is not nil.
-func (wuo *WordlistUpdateOne) SetNillableCreatedBy(u *uuid.UUID) *WordlistUpdateOne {
-	if u != nil {
-		wuo.SetCreatedBy(*u)
-	}
-	return wuo
-}
-
-// ClearCreatedBy clears the value of the "created_by" field.
-func (wuo *WordlistUpdateOne) ClearCreatedBy() *WordlistUpdateOne {
-	wuo.mutation.ClearCreatedBy()
-	return wuo
-}
-
-// SetIsLocked sets the "is_locked" field.
-func (wuo *WordlistUpdateOne) SetIsLocked(b bool) *WordlistUpdateOne {
-	wuo.mutation.SetIsLocked(b)
-	return wuo
-}
-
-// SetNillableIsLocked sets the "is_locked" field if the given value is not nil.
-func (wuo *WordlistUpdateOne) SetNillableIsLocked(b *bool) *WordlistUpdateOne {
-	if b != nil {
-		wuo.SetIsLocked(*b)
-	}
-	return wuo
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (wuo *WordlistUpdateOne) SetCreatedAt(t time.Time) *WordlistUpdateOne {
-	wuo.mutation.SetCreatedAt(t)
-	return wuo
-}
-
-// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (wuo *WordlistUpdateOne) SetNillableCreatedAt(t *time.Time) *WordlistUpdateOne {
-	if t != nil {
-		wuo.SetCreatedAt(*t)
-	}
-	return wuo
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (wuo *WordlistUpdateOne) SetUpdatedAt(t time.Time) *WordlistUpdateOne {
-	wuo.mutation.SetUpdatedAt(t)
-	return wuo
-}
-
-// SetCreatorID sets the "creator" edge to the User entity by ID.
-func (wuo *WordlistUpdateOne) SetCreatorID(id uuid.UUID) *WordlistUpdateOne {
-	wuo.mutation.SetCreatorID(id)
-	return wuo
-}
-
-// SetNillableCreatorID sets the "creator" edge to the User entity by ID if the given value is not nil.
-func (wuo *WordlistUpdateOne) SetNillableCreatorID(id *uuid.UUID) *WordlistUpdateOne {
-	if id != nil {
-		wuo = wuo.SetCreatorID(*id)
-	}
-	return wuo
-}
-
-// SetCreator sets the "creator" edge to the User entity.
-func (wuo *WordlistUpdateOne) SetCreator(u *User) *WordlistUpdateOne {
-	return wuo.SetCreatorID(u.ID)
-}
-
 // AddTargetIDs adds the "targets" edge to the Target entity by IDs.
 func (wuo *WordlistUpdateOne) AddTargetIDs(ids ...uuid.UUID) *WordlistUpdateOne {
 	wuo.mutation.AddTargetIDs(ids...)
@@ -770,12 +523,6 @@ func (wuo *WordlistUpdateOne) AddRules(r ...*Rule) *WordlistUpdateOne {
 // Mutation returns the WordlistMutation object of the builder.
 func (wuo *WordlistUpdateOne) Mutation() *WordlistMutation {
 	return wuo.mutation
-}
-
-// ClearCreator clears the "creator" edge to the User entity.
-func (wuo *WordlistUpdateOne) ClearCreator() *WordlistUpdateOne {
-	wuo.mutation.ClearCreator()
-	return wuo
 }
 
 // ClearTargets clears all "targets" edges to the Target entity.
@@ -835,7 +582,6 @@ func (wuo *WordlistUpdateOne) Select(field string, fields ...string) *WordlistUp
 
 // Save executes the query and returns the updated Wordlist entity.
 func (wuo *WordlistUpdateOne) Save(ctx context.Context) (*Wordlist, error) {
-	wuo.defaults()
 	return withHooks(ctx, wuo.sqlSave, wuo.mutation, wuo.hooks)
 }
 
@@ -858,14 +604,6 @@ func (wuo *WordlistUpdateOne) Exec(ctx context.Context) error {
 func (wuo *WordlistUpdateOne) ExecX(ctx context.Context) {
 	if err := wuo.Exec(ctx); err != nil {
 		panic(err)
-	}
-}
-
-// defaults sets the default values of the builder before save.
-func (wuo *WordlistUpdateOne) defaults() {
-	if _, ok := wuo.mutation.UpdatedAt(); !ok {
-		v := wordlist.UpdateDefaultUpdatedAt()
-		wuo.mutation.SetUpdatedAt(v)
 	}
 }
 
@@ -944,50 +682,6 @@ func (wuo *WordlistUpdateOne) sqlSave(ctx context.Context) (_node *Wordlist, err
 	}
 	if wuo.mutation.WordCountCleared() {
 		_spec.ClearField(wordlist.FieldWordCount, field.TypeInt)
-	}
-	if value, ok := wuo.mutation.Description(); ok {
-		_spec.SetField(wordlist.FieldDescription, field.TypeString, value)
-	}
-	if wuo.mutation.DescriptionCleared() {
-		_spec.ClearField(wordlist.FieldDescription, field.TypeString)
-	}
-	if value, ok := wuo.mutation.IsLocked(); ok {
-		_spec.SetField(wordlist.FieldIsLocked, field.TypeBool, value)
-	}
-	if value, ok := wuo.mutation.CreatedAt(); ok {
-		_spec.SetField(wordlist.FieldCreatedAt, field.TypeTime, value)
-	}
-	if value, ok := wuo.mutation.UpdatedAt(); ok {
-		_spec.SetField(wordlist.FieldUpdatedAt, field.TypeTime, value)
-	}
-	if wuo.mutation.CreatorCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   wordlist.CreatorTable,
-			Columns: []string{wordlist.CreatorColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := wuo.mutation.CreatorIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   wordlist.CreatorTable,
-			Columns: []string{wordlist.CreatorColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if wuo.mutation.TargetsCleared() {
 		edge := &sqlgraph.EdgeSpec{

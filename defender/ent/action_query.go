@@ -8,7 +8,6 @@ import (
 	"defly-defender/ent/action"
 	"defly-defender/ent/predicate"
 	"defly-defender/ent/rule"
-	"defly-defender/ent/user"
 	"fmt"
 	"math"
 
@@ -22,12 +21,11 @@ import (
 // ActionQuery is the builder for querying Action entities.
 type ActionQuery struct {
 	config
-	ctx         *QueryContext
-	order       []action.OrderOption
-	inters      []Interceptor
-	predicates  []predicate.Action
-	withCreator *UserQuery
-	withRules   *RuleQuery
+	ctx        *QueryContext
+	order      []action.OrderOption
+	inters     []Interceptor
+	predicates []predicate.Action
+	withRules  *RuleQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -62,28 +60,6 @@ func (aq *ActionQuery) Unique(unique bool) *ActionQuery {
 func (aq *ActionQuery) Order(o ...action.OrderOption) *ActionQuery {
 	aq.order = append(aq.order, o...)
 	return aq
-}
-
-// QueryCreator chains the current query on the "creator" edge.
-func (aq *ActionQuery) QueryCreator() *UserQuery {
-	query := (&UserClient{config: aq.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := aq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := aq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(action.Table, action.FieldID, selector),
-			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, action.CreatorTable, action.CreatorColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(aq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
 }
 
 // QueryRules chains the current query on the "rules" edge.
@@ -295,28 +271,16 @@ func (aq *ActionQuery) Clone() *ActionQuery {
 		return nil
 	}
 	return &ActionQuery{
-		config:      aq.config,
-		ctx:         aq.ctx.Clone(),
-		order:       append([]action.OrderOption{}, aq.order...),
-		inters:      append([]Interceptor{}, aq.inters...),
-		predicates:  append([]predicate.Action{}, aq.predicates...),
-		withCreator: aq.withCreator.Clone(),
-		withRules:   aq.withRules.Clone(),
+		config:     aq.config,
+		ctx:        aq.ctx.Clone(),
+		order:      append([]action.OrderOption{}, aq.order...),
+		inters:     append([]Interceptor{}, aq.inters...),
+		predicates: append([]predicate.Action{}, aq.predicates...),
+		withRules:  aq.withRules.Clone(),
 		// clone intermediate query.
 		sql:  aq.sql.Clone(),
 		path: aq.path,
 	}
-}
-
-// WithCreator tells the query-builder to eager-load the nodes that are connected to
-// the "creator" edge. The optional arguments are used to configure the query builder of the edge.
-func (aq *ActionQuery) WithCreator(opts ...func(*UserQuery)) *ActionQuery {
-	query := (&UserClient{config: aq.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	aq.withCreator = query
-	return aq
 }
 
 // WithRules tells the query-builder to eager-load the nodes that are connected to
@@ -408,8 +372,7 @@ func (aq *ActionQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Actio
 	var (
 		nodes       = []*Action{}
 		_spec       = aq.querySpec()
-		loadedTypes = [2]bool{
-			aq.withCreator != nil,
+		loadedTypes = [1]bool{
 			aq.withRules != nil,
 		}
 	)
@@ -431,12 +394,6 @@ func (aq *ActionQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Actio
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	if query := aq.withCreator; query != nil {
-		if err := aq.loadCreator(ctx, query, nodes, nil,
-			func(n *Action, e *User) { n.Edges.Creator = e }); err != nil {
-			return nil, err
-		}
-	}
 	if query := aq.withRules; query != nil {
 		if err := aq.loadRules(ctx, query, nodes,
 			func(n *Action) { n.Edges.Rules = []*Rule{} },
@@ -447,38 +404,6 @@ func (aq *ActionQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Actio
 	return nodes, nil
 }
 
-func (aq *ActionQuery) loadCreator(ctx context.Context, query *UserQuery, nodes []*Action, init func(*Action), assign func(*Action, *User)) error {
-	ids := make([]uuid.UUID, 0, len(nodes))
-	nodeids := make(map[uuid.UUID][]*Action)
-	for i := range nodes {
-		if nodes[i].CreatedBy == nil {
-			continue
-		}
-		fk := *nodes[i].CreatedBy
-		if _, ok := nodeids[fk]; !ok {
-			ids = append(ids, fk)
-		}
-		nodeids[fk] = append(nodeids[fk], nodes[i])
-	}
-	if len(ids) == 0 {
-		return nil
-	}
-	query.Where(user.IDIn(ids...))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		nodes, ok := nodeids[n.ID]
-		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "created_by" returned %v`, n.ID)
-		}
-		for i := range nodes {
-			assign(nodes[i], n)
-		}
-	}
-	return nil
-}
 func (aq *ActionQuery) loadRules(ctx context.Context, query *RuleQuery, nodes []*Action, init func(*Action), assign func(*Action, *Rule)) error {
 	edgeIDs := make([]driver.Value, len(nodes))
 	byID := make(map[uuid.UUID]*Action)
@@ -565,9 +490,6 @@ func (aq *ActionQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != action.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
-		}
-		if aq.withCreator != nil {
-			_spec.Node.AddColumnOnce(action.FieldCreatedBy)
 		}
 	}
 	if ps := aq.predicates; len(ps) > 0 {

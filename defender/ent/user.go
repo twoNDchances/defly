@@ -6,7 +6,6 @@ import (
 	"defly-defender/ent/user"
 	"fmt"
 	"strings"
-	"time"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
@@ -26,10 +25,6 @@ type User struct {
 	IsActivated bool `json:"is_activated,omitempty"`
 	// IsRoot holds the value of the "is_root" field.
 	IsRoot bool `json:"is_root,omitempty"`
-	// CreatedAt holds the value of the "created_at" field.
-	CreatedAt time.Time `json:"created_at,omitempty"`
-	// UpdatedAt holds the value of the "updated_at" field.
-	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the UserQuery when eager-loading is set.
 	Edges        UserEdges `json:"edges"`
@@ -42,23 +37,9 @@ type UserEdges struct {
 	Groups []*Group `json:"groups,omitempty"`
 	// Permissions holds the value of the permissions edge.
 	Permissions []*Permission `json:"permissions,omitempty"`
-	// CreatedWordlists holds the value of the created_wordlists edge.
-	CreatedWordlists []*Wordlist `json:"created_wordlists,omitempty"`
-	// CreatedEngines holds the value of the created_engines edge.
-	CreatedEngines []*Engine `json:"created_engines,omitempty"`
-	// CreatedTargets holds the value of the created_targets edge.
-	CreatedTargets []*Target `json:"created_targets,omitempty"`
-	// CreatedActions holds the value of the created_actions edge.
-	CreatedActions []*Action `json:"created_actions,omitempty"`
-	// CreatedRules holds the value of the created_rules edge.
-	CreatedRules []*Rule `json:"created_rules,omitempty"`
-	// CreatedPrinciples holds the value of the created_principles edge.
-	CreatedPrinciples []*Principle `json:"created_principles,omitempty"`
-	// CreatedDecisions holds the value of the created_decisions edge.
-	CreatedDecisions []*Decision `json:"created_decisions,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [9]bool
+	loadedTypes [2]bool
 }
 
 // GroupsOrErr returns the Groups value or an error if the edge
@@ -79,69 +60,6 @@ func (e UserEdges) PermissionsOrErr() ([]*Permission, error) {
 	return nil, &NotLoadedError{edge: "permissions"}
 }
 
-// CreatedWordlistsOrErr returns the CreatedWordlists value or an error if the edge
-// was not loaded in eager-loading.
-func (e UserEdges) CreatedWordlistsOrErr() ([]*Wordlist, error) {
-	if e.loadedTypes[2] {
-		return e.CreatedWordlists, nil
-	}
-	return nil, &NotLoadedError{edge: "created_wordlists"}
-}
-
-// CreatedEnginesOrErr returns the CreatedEngines value or an error if the edge
-// was not loaded in eager-loading.
-func (e UserEdges) CreatedEnginesOrErr() ([]*Engine, error) {
-	if e.loadedTypes[3] {
-		return e.CreatedEngines, nil
-	}
-	return nil, &NotLoadedError{edge: "created_engines"}
-}
-
-// CreatedTargetsOrErr returns the CreatedTargets value or an error if the edge
-// was not loaded in eager-loading.
-func (e UserEdges) CreatedTargetsOrErr() ([]*Target, error) {
-	if e.loadedTypes[4] {
-		return e.CreatedTargets, nil
-	}
-	return nil, &NotLoadedError{edge: "created_targets"}
-}
-
-// CreatedActionsOrErr returns the CreatedActions value or an error if the edge
-// was not loaded in eager-loading.
-func (e UserEdges) CreatedActionsOrErr() ([]*Action, error) {
-	if e.loadedTypes[5] {
-		return e.CreatedActions, nil
-	}
-	return nil, &NotLoadedError{edge: "created_actions"}
-}
-
-// CreatedRulesOrErr returns the CreatedRules value or an error if the edge
-// was not loaded in eager-loading.
-func (e UserEdges) CreatedRulesOrErr() ([]*Rule, error) {
-	if e.loadedTypes[6] {
-		return e.CreatedRules, nil
-	}
-	return nil, &NotLoadedError{edge: "created_rules"}
-}
-
-// CreatedPrinciplesOrErr returns the CreatedPrinciples value or an error if the edge
-// was not loaded in eager-loading.
-func (e UserEdges) CreatedPrinciplesOrErr() ([]*Principle, error) {
-	if e.loadedTypes[7] {
-		return e.CreatedPrinciples, nil
-	}
-	return nil, &NotLoadedError{edge: "created_principles"}
-}
-
-// CreatedDecisionsOrErr returns the CreatedDecisions value or an error if the edge
-// was not loaded in eager-loading.
-func (e UserEdges) CreatedDecisionsOrErr() ([]*Decision, error) {
-	if e.loadedTypes[8] {
-		return e.CreatedDecisions, nil
-	}
-	return nil, &NotLoadedError{edge: "created_decisions"}
-}
-
 // scanValues returns the types for scanning values from sql.Rows.
 func (*User) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
@@ -151,8 +69,6 @@ func (*User) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullBool)
 		case user.FieldEmail:
 			values[i] = new(sql.NullString)
-		case user.FieldCreatedAt, user.FieldUpdatedAt:
-			values[i] = new(sql.NullTime)
 		case user.FieldID:
 			values[i] = new(uuid.UUID)
 		default:
@@ -200,18 +116,6 @@ func (u *User) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				u.IsRoot = value.Bool
 			}
-		case user.FieldCreatedAt:
-			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field created_at", values[i])
-			} else if value.Valid {
-				u.CreatedAt = value.Time
-			}
-		case user.FieldUpdatedAt:
-			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
-			} else if value.Valid {
-				u.UpdatedAt = value.Time
-			}
 		default:
 			u.selectValues.Set(columns[i], values[i])
 		}
@@ -233,41 +137,6 @@ func (u *User) QueryGroups() *GroupQuery {
 // QueryPermissions queries the "permissions" edge of the User entity.
 func (u *User) QueryPermissions() *PermissionQuery {
 	return NewUserClient(u.config).QueryPermissions(u)
-}
-
-// QueryCreatedWordlists queries the "created_wordlists" edge of the User entity.
-func (u *User) QueryCreatedWordlists() *WordlistQuery {
-	return NewUserClient(u.config).QueryCreatedWordlists(u)
-}
-
-// QueryCreatedEngines queries the "created_engines" edge of the User entity.
-func (u *User) QueryCreatedEngines() *EngineQuery {
-	return NewUserClient(u.config).QueryCreatedEngines(u)
-}
-
-// QueryCreatedTargets queries the "created_targets" edge of the User entity.
-func (u *User) QueryCreatedTargets() *TargetQuery {
-	return NewUserClient(u.config).QueryCreatedTargets(u)
-}
-
-// QueryCreatedActions queries the "created_actions" edge of the User entity.
-func (u *User) QueryCreatedActions() *ActionQuery {
-	return NewUserClient(u.config).QueryCreatedActions(u)
-}
-
-// QueryCreatedRules queries the "created_rules" edge of the User entity.
-func (u *User) QueryCreatedRules() *RuleQuery {
-	return NewUserClient(u.config).QueryCreatedRules(u)
-}
-
-// QueryCreatedPrinciples queries the "created_principles" edge of the User entity.
-func (u *User) QueryCreatedPrinciples() *PrincipleQuery {
-	return NewUserClient(u.config).QueryCreatedPrinciples(u)
-}
-
-// QueryCreatedDecisions queries the "created_decisions" edge of the User entity.
-func (u *User) QueryCreatedDecisions() *DecisionQuery {
-	return NewUserClient(u.config).QueryCreatedDecisions(u)
 }
 
 // Update returns a builder for updating this User.
@@ -304,12 +173,6 @@ func (u *User) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("is_root=")
 	builder.WriteString(fmt.Sprintf("%v", u.IsRoot))
-	builder.WriteString(", ")
-	builder.WriteString("created_at=")
-	builder.WriteString(u.CreatedAt.Format(time.ANSIC))
-	builder.WriteString(", ")
-	builder.WriteString("updated_at=")
-	builder.WriteString(u.UpdatedAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

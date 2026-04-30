@@ -4,11 +4,9 @@ package ent
 
 import (
 	"defly-defender/ent/action"
-	"defly-defender/ent/user"
 	"encoding/json"
 	"fmt"
 	"strings"
-	"time"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
@@ -26,16 +24,6 @@ type Action struct {
 	Type action.Type `json:"type,omitempty"`
 	// Configurations holds the value of the "configurations" field.
 	Configurations map[string]interface{} `json:"configurations,omitempty"`
-	// Description holds the value of the "description" field.
-	Description *string `json:"description,omitempty"`
-	// CreatedBy holds the value of the "created_by" field.
-	CreatedBy *uuid.UUID `json:"created_by,omitempty"`
-	// IsLocked holds the value of the "is_locked" field.
-	IsLocked bool `json:"is_locked,omitempty"`
-	// CreatedAt holds the value of the "created_at" field.
-	CreatedAt time.Time `json:"created_at,omitempty"`
-	// UpdatedAt holds the value of the "updated_at" field.
-	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the ActionQuery when eager-loading is set.
 	Edges        ActionEdges `json:"edges"`
@@ -44,30 +32,17 @@ type Action struct {
 
 // ActionEdges holds the relations/edges for other nodes in the graph.
 type ActionEdges struct {
-	// Creator holds the value of the creator edge.
-	Creator *User `json:"creator,omitempty"`
 	// Rules holds the value of the rules edge.
 	Rules []*Rule `json:"rules,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
-}
-
-// CreatorOrErr returns the Creator value or an error if the edge
-// was not loaded in eager-loading, or loaded but was not found.
-func (e ActionEdges) CreatorOrErr() (*User, error) {
-	if e.Creator != nil {
-		return e.Creator, nil
-	} else if e.loadedTypes[0] {
-		return nil, &NotFoundError{label: user.Label}
-	}
-	return nil, &NotLoadedError{edge: "creator"}
+	loadedTypes [1]bool
 }
 
 // RulesOrErr returns the Rules value or an error if the edge
 // was not loaded in eager-loading.
 func (e ActionEdges) RulesOrErr() ([]*Rule, error) {
-	if e.loadedTypes[1] {
+	if e.loadedTypes[0] {
 		return e.Rules, nil
 	}
 	return nil, &NotLoadedError{edge: "rules"}
@@ -78,16 +53,10 @@ func (*Action) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case action.FieldCreatedBy:
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case action.FieldConfigurations:
 			values[i] = new([]byte)
-		case action.FieldIsLocked:
-			values[i] = new(sql.NullBool)
-		case action.FieldName, action.FieldType, action.FieldDescription:
+		case action.FieldName, action.FieldType:
 			values[i] = new(sql.NullString)
-		case action.FieldCreatedAt, action.FieldUpdatedAt:
-			values[i] = new(sql.NullTime)
 		case action.FieldID:
 			values[i] = new(uuid.UUID)
 		default:
@@ -131,38 +100,6 @@ func (a *Action) assignValues(columns []string, values []any) error {
 					return fmt.Errorf("unmarshal field configurations: %w", err)
 				}
 			}
-		case action.FieldDescription:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field description", values[i])
-			} else if value.Valid {
-				a.Description = new(string)
-				*a.Description = value.String
-			}
-		case action.FieldCreatedBy:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field created_by", values[i])
-			} else if value.Valid {
-				a.CreatedBy = new(uuid.UUID)
-				*a.CreatedBy = *value.S.(*uuid.UUID)
-			}
-		case action.FieldIsLocked:
-			if value, ok := values[i].(*sql.NullBool); !ok {
-				return fmt.Errorf("unexpected type %T for field is_locked", values[i])
-			} else if value.Valid {
-				a.IsLocked = value.Bool
-			}
-		case action.FieldCreatedAt:
-			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field created_at", values[i])
-			} else if value.Valid {
-				a.CreatedAt = value.Time
-			}
-		case action.FieldUpdatedAt:
-			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
-			} else if value.Valid {
-				a.UpdatedAt = value.Time
-			}
 		default:
 			a.selectValues.Set(columns[i], values[i])
 		}
@@ -174,11 +111,6 @@ func (a *Action) assignValues(columns []string, values []any) error {
 // This includes values selected through modifiers, order, etc.
 func (a *Action) Value(name string) (ent.Value, error) {
 	return a.selectValues.Get(name)
-}
-
-// QueryCreator queries the "creator" edge of the Action entity.
-func (a *Action) QueryCreator() *UserQuery {
-	return NewActionClient(a.config).QueryCreator(a)
 }
 
 // QueryRules queries the "rules" edge of the Action entity.
@@ -217,25 +149,6 @@ func (a *Action) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("configurations=")
 	builder.WriteString(fmt.Sprintf("%v", a.Configurations))
-	builder.WriteString(", ")
-	if v := a.Description; v != nil {
-		builder.WriteString("description=")
-		builder.WriteString(*v)
-	}
-	builder.WriteString(", ")
-	if v := a.CreatedBy; v != nil {
-		builder.WriteString("created_by=")
-		builder.WriteString(fmt.Sprintf("%v", *v))
-	}
-	builder.WriteString(", ")
-	builder.WriteString("is_locked=")
-	builder.WriteString(fmt.Sprintf("%v", a.IsLocked))
-	builder.WriteString(", ")
-	builder.WriteString("created_at=")
-	builder.WriteString(a.CreatedAt.Format(time.ANSIC))
-	builder.WriteString(", ")
-	builder.WriteString("updated_at=")
-	builder.WriteString(a.UpdatedAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

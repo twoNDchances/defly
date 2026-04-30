@@ -6,10 +6,8 @@ import (
 	"context"
 	"defly-defender/ent/action"
 	"defly-defender/ent/rule"
-	"defly-defender/ent/user"
 	"errors"
 	"fmt"
-	"time"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -41,76 +39,6 @@ func (ac *ActionCreate) SetConfigurations(m map[string]interface{}) *ActionCreat
 	return ac
 }
 
-// SetDescription sets the "description" field.
-func (ac *ActionCreate) SetDescription(s string) *ActionCreate {
-	ac.mutation.SetDescription(s)
-	return ac
-}
-
-// SetNillableDescription sets the "description" field if the given value is not nil.
-func (ac *ActionCreate) SetNillableDescription(s *string) *ActionCreate {
-	if s != nil {
-		ac.SetDescription(*s)
-	}
-	return ac
-}
-
-// SetCreatedBy sets the "created_by" field.
-func (ac *ActionCreate) SetCreatedBy(u uuid.UUID) *ActionCreate {
-	ac.mutation.SetCreatedBy(u)
-	return ac
-}
-
-// SetNillableCreatedBy sets the "created_by" field if the given value is not nil.
-func (ac *ActionCreate) SetNillableCreatedBy(u *uuid.UUID) *ActionCreate {
-	if u != nil {
-		ac.SetCreatedBy(*u)
-	}
-	return ac
-}
-
-// SetIsLocked sets the "is_locked" field.
-func (ac *ActionCreate) SetIsLocked(b bool) *ActionCreate {
-	ac.mutation.SetIsLocked(b)
-	return ac
-}
-
-// SetNillableIsLocked sets the "is_locked" field if the given value is not nil.
-func (ac *ActionCreate) SetNillableIsLocked(b *bool) *ActionCreate {
-	if b != nil {
-		ac.SetIsLocked(*b)
-	}
-	return ac
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (ac *ActionCreate) SetCreatedAt(t time.Time) *ActionCreate {
-	ac.mutation.SetCreatedAt(t)
-	return ac
-}
-
-// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (ac *ActionCreate) SetNillableCreatedAt(t *time.Time) *ActionCreate {
-	if t != nil {
-		ac.SetCreatedAt(*t)
-	}
-	return ac
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (ac *ActionCreate) SetUpdatedAt(t time.Time) *ActionCreate {
-	ac.mutation.SetUpdatedAt(t)
-	return ac
-}
-
-// SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
-func (ac *ActionCreate) SetNillableUpdatedAt(t *time.Time) *ActionCreate {
-	if t != nil {
-		ac.SetUpdatedAt(*t)
-	}
-	return ac
-}
-
 // SetID sets the "id" field.
 func (ac *ActionCreate) SetID(u uuid.UUID) *ActionCreate {
 	ac.mutation.SetID(u)
@@ -123,25 +51,6 @@ func (ac *ActionCreate) SetNillableID(u *uuid.UUID) *ActionCreate {
 		ac.SetID(*u)
 	}
 	return ac
-}
-
-// SetCreatorID sets the "creator" edge to the User entity by ID.
-func (ac *ActionCreate) SetCreatorID(id uuid.UUID) *ActionCreate {
-	ac.mutation.SetCreatorID(id)
-	return ac
-}
-
-// SetNillableCreatorID sets the "creator" edge to the User entity by ID if the given value is not nil.
-func (ac *ActionCreate) SetNillableCreatorID(id *uuid.UUID) *ActionCreate {
-	if id != nil {
-		ac = ac.SetCreatorID(*id)
-	}
-	return ac
-}
-
-// SetCreator sets the "creator" edge to the User entity.
-func (ac *ActionCreate) SetCreator(u *User) *ActionCreate {
-	return ac.SetCreatorID(u.ID)
 }
 
 // AddRuleIDs adds the "rules" edge to the Rule entity by IDs.
@@ -194,18 +103,6 @@ func (ac *ActionCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (ac *ActionCreate) defaults() {
-	if _, ok := ac.mutation.IsLocked(); !ok {
-		v := action.DefaultIsLocked
-		ac.mutation.SetIsLocked(v)
-	}
-	if _, ok := ac.mutation.CreatedAt(); !ok {
-		v := action.DefaultCreatedAt()
-		ac.mutation.SetCreatedAt(v)
-	}
-	if _, ok := ac.mutation.UpdatedAt(); !ok {
-		v := action.DefaultUpdatedAt()
-		ac.mutation.SetUpdatedAt(v)
-	}
 	if _, ok := ac.mutation.ID(); !ok {
 		v := action.DefaultID()
 		ac.mutation.SetID(v)
@@ -229,15 +126,6 @@ func (ac *ActionCreate) check() error {
 		if err := action.TypeValidator(v); err != nil {
 			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "Action.type": %w`, err)}
 		}
-	}
-	if _, ok := ac.mutation.IsLocked(); !ok {
-		return &ValidationError{Name: "is_locked", err: errors.New(`ent: missing required field "Action.is_locked"`)}
-	}
-	if _, ok := ac.mutation.CreatedAt(); !ok {
-		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Action.created_at"`)}
-	}
-	if _, ok := ac.mutation.UpdatedAt(); !ok {
-		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "Action.updated_at"`)}
 	}
 	return nil
 }
@@ -285,39 +173,6 @@ func (ac *ActionCreate) createSpec() (*Action, *sqlgraph.CreateSpec) {
 	if value, ok := ac.mutation.Configurations(); ok {
 		_spec.SetField(action.FieldConfigurations, field.TypeJSON, value)
 		_node.Configurations = value
-	}
-	if value, ok := ac.mutation.Description(); ok {
-		_spec.SetField(action.FieldDescription, field.TypeString, value)
-		_node.Description = &value
-	}
-	if value, ok := ac.mutation.IsLocked(); ok {
-		_spec.SetField(action.FieldIsLocked, field.TypeBool, value)
-		_node.IsLocked = value
-	}
-	if value, ok := ac.mutation.CreatedAt(); ok {
-		_spec.SetField(action.FieldCreatedAt, field.TypeTime, value)
-		_node.CreatedAt = value
-	}
-	if value, ok := ac.mutation.UpdatedAt(); ok {
-		_spec.SetField(action.FieldUpdatedAt, field.TypeTime, value)
-		_node.UpdatedAt = value
-	}
-	if nodes := ac.mutation.CreatorIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   action.CreatorTable,
-			Columns: []string{action.CreatorColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_node.CreatedBy = &nodes[0]
-		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := ac.mutation.RulesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

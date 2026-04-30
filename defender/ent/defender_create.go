@@ -9,7 +9,6 @@ import (
 	"defly-defender/ent/principle"
 	"errors"
 	"fmt"
-	"time"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -26,20 +25,6 @@ type DefenderCreate struct {
 // SetName sets the "name" field.
 func (dc *DefenderCreate) SetName(s string) *DefenderCreate {
 	dc.mutation.SetName(s)
-	return dc
-}
-
-// SetProxyPort sets the "proxy_port" field.
-func (dc *DefenderCreate) SetProxyPort(i int) *DefenderCreate {
-	dc.mutation.SetProxyPort(i)
-	return dc
-}
-
-// SetNillableProxyPort sets the "proxy_port" field if the given value is not nil.
-func (dc *DefenderCreate) SetNillableProxyPort(i *int) *DefenderCreate {
-	if i != nil {
-		dc.SetProxyPort(*i)
-	}
 	return dc
 }
 
@@ -60,34 +45,6 @@ func (dc *DefenderCreate) SetNillableStatus(d *defender.Status) *DefenderCreate 
 // SetDetails sets the "details" field.
 func (dc *DefenderCreate) SetDetails(m map[string]interface{}) *DefenderCreate {
 	dc.mutation.SetDetails(m)
-	return dc
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (dc *DefenderCreate) SetCreatedAt(t time.Time) *DefenderCreate {
-	dc.mutation.SetCreatedAt(t)
-	return dc
-}
-
-// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (dc *DefenderCreate) SetNillableCreatedAt(t *time.Time) *DefenderCreate {
-	if t != nil {
-		dc.SetCreatedAt(*t)
-	}
-	return dc
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (dc *DefenderCreate) SetUpdatedAt(t time.Time) *DefenderCreate {
-	dc.mutation.SetUpdatedAt(t)
-	return dc
-}
-
-// SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
-func (dc *DefenderCreate) SetNillableUpdatedAt(t *time.Time) *DefenderCreate {
-	if t != nil {
-		dc.SetUpdatedAt(*t)
-	}
 	return dc
 }
 
@@ -170,14 +127,6 @@ func (dc *DefenderCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (dc *DefenderCreate) defaults() {
-	if _, ok := dc.mutation.CreatedAt(); !ok {
-		v := defender.DefaultCreatedAt()
-		dc.mutation.SetCreatedAt(v)
-	}
-	if _, ok := dc.mutation.UpdatedAt(); !ok {
-		v := defender.DefaultUpdatedAt()
-		dc.mutation.SetUpdatedAt(v)
-	}
 	if _, ok := dc.mutation.ID(); !ok {
 		v := defender.DefaultID()
 		dc.mutation.SetID(v)
@@ -198,12 +147,6 @@ func (dc *DefenderCreate) check() error {
 		if err := defender.StatusValidator(v); err != nil {
 			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "Defender.status": %w`, err)}
 		}
-	}
-	if _, ok := dc.mutation.CreatedAt(); !ok {
-		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Defender.created_at"`)}
-	}
-	if _, ok := dc.mutation.UpdatedAt(); !ok {
-		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "Defender.updated_at"`)}
 	}
 	return nil
 }
@@ -244,10 +187,6 @@ func (dc *DefenderCreate) createSpec() (*Defender, *sqlgraph.CreateSpec) {
 		_spec.SetField(defender.FieldName, field.TypeString, value)
 		_node.Name = value
 	}
-	if value, ok := dc.mutation.ProxyPort(); ok {
-		_spec.SetField(defender.FieldProxyPort, field.TypeInt, value)
-		_node.ProxyPort = &value
-	}
 	if value, ok := dc.mutation.Status(); ok {
 		_spec.SetField(defender.FieldStatus, field.TypeEnum, value)
 		_node.Status = &value
@@ -255,14 +194,6 @@ func (dc *DefenderCreate) createSpec() (*Defender, *sqlgraph.CreateSpec) {
 	if value, ok := dc.mutation.Details(); ok {
 		_spec.SetField(defender.FieldDetails, field.TypeJSON, value)
 		_node.Details = value
-	}
-	if value, ok := dc.mutation.CreatedAt(); ok {
-		_spec.SetField(defender.FieldCreatedAt, field.TypeTime, value)
-		_node.CreatedAt = value
-	}
-	if value, ok := dc.mutation.UpdatedAt(); ok {
-		_spec.SetField(defender.FieldUpdatedAt, field.TypeTime, value)
-		_node.UpdatedAt = value
 	}
 	if nodes := dc.mutation.PrinciplesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

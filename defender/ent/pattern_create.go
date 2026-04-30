@@ -8,7 +8,6 @@ import (
 	"defly-defender/ent/target"
 	"errors"
 	"fmt"
-	"time"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -43,48 +42,6 @@ func (pc *PatternCreate) SetType(pa pattern.Type) *PatternCreate {
 // SetDatatype sets the "datatype" field.
 func (pc *PatternCreate) SetDatatype(pa pattern.Datatype) *PatternCreate {
 	pc.mutation.SetDatatype(pa)
-	return pc
-}
-
-// SetDescription sets the "description" field.
-func (pc *PatternCreate) SetDescription(s string) *PatternCreate {
-	pc.mutation.SetDescription(s)
-	return pc
-}
-
-// SetNillableDescription sets the "description" field if the given value is not nil.
-func (pc *PatternCreate) SetNillableDescription(s *string) *PatternCreate {
-	if s != nil {
-		pc.SetDescription(*s)
-	}
-	return pc
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (pc *PatternCreate) SetCreatedAt(t time.Time) *PatternCreate {
-	pc.mutation.SetCreatedAt(t)
-	return pc
-}
-
-// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (pc *PatternCreate) SetNillableCreatedAt(t *time.Time) *PatternCreate {
-	if t != nil {
-		pc.SetCreatedAt(*t)
-	}
-	return pc
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (pc *PatternCreate) SetUpdatedAt(t time.Time) *PatternCreate {
-	pc.mutation.SetUpdatedAt(t)
-	return pc
-}
-
-// SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
-func (pc *PatternCreate) SetNillableUpdatedAt(t *time.Time) *PatternCreate {
-	if t != nil {
-		pc.SetUpdatedAt(*t)
-	}
 	return pc
 }
 
@@ -152,14 +109,6 @@ func (pc *PatternCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (pc *PatternCreate) defaults() {
-	if _, ok := pc.mutation.CreatedAt(); !ok {
-		v := pattern.DefaultCreatedAt()
-		pc.mutation.SetCreatedAt(v)
-	}
-	if _, ok := pc.mutation.UpdatedAt(); !ok {
-		v := pattern.DefaultUpdatedAt()
-		pc.mutation.SetUpdatedAt(v)
-	}
 	if _, ok := pc.mutation.ID(); !ok {
 		v := pattern.DefaultID()
 		pc.mutation.SetID(v)
@@ -194,12 +143,6 @@ func (pc *PatternCreate) check() error {
 		if err := pattern.DatatypeValidator(v); err != nil {
 			return &ValidationError{Name: "datatype", err: fmt.Errorf(`ent: validator failed for field "Pattern.datatype": %w`, err)}
 		}
-	}
-	if _, ok := pc.mutation.CreatedAt(); !ok {
-		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Pattern.created_at"`)}
-	}
-	if _, ok := pc.mutation.UpdatedAt(); !ok {
-		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "Pattern.updated_at"`)}
 	}
 	return nil
 }
@@ -251,18 +194,6 @@ func (pc *PatternCreate) createSpec() (*Pattern, *sqlgraph.CreateSpec) {
 	if value, ok := pc.mutation.Datatype(); ok {
 		_spec.SetField(pattern.FieldDatatype, field.TypeEnum, value)
 		_node.Datatype = value
-	}
-	if value, ok := pc.mutation.Description(); ok {
-		_spec.SetField(pattern.FieldDescription, field.TypeString, value)
-		_node.Description = &value
-	}
-	if value, ok := pc.mutation.CreatedAt(); ok {
-		_spec.SetField(pattern.FieldCreatedAt, field.TypeTime, value)
-		_node.CreatedAt = value
-	}
-	if value, ok := pc.mutation.UpdatedAt(); ok {
-		_spec.SetField(pattern.FieldUpdatedAt, field.TypeTime, value)
-		_node.UpdatedAt = value
 	}
 	if nodes := pc.mutation.TargetsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

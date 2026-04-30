@@ -3,12 +3,10 @@
 package ent
 
 import (
-	"defly-defender/ent/user"
 	"defly-defender/ent/wordlist"
 	"encoding/json"
 	"fmt"
 	"strings"
-	"time"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
@@ -30,16 +28,6 @@ type Wordlist struct {
 	WordJSON []string `json:"word_json,omitempty"`
 	// WordCount holds the value of the "word_count" field.
 	WordCount *int `json:"word_count,omitempty"`
-	// Description holds the value of the "description" field.
-	Description *string `json:"description,omitempty"`
-	// CreatedBy holds the value of the "created_by" field.
-	CreatedBy *uuid.UUID `json:"created_by,omitempty"`
-	// IsLocked holds the value of the "is_locked" field.
-	IsLocked bool `json:"is_locked,omitempty"`
-	// CreatedAt holds the value of the "created_at" field.
-	CreatedAt time.Time `json:"created_at,omitempty"`
-	// UpdatedAt holds the value of the "updated_at" field.
-	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the WordlistQuery when eager-loading is set.
 	Edges        WordlistEdges `json:"edges"`
@@ -48,32 +36,19 @@ type Wordlist struct {
 
 // WordlistEdges holds the relations/edges for other nodes in the graph.
 type WordlistEdges struct {
-	// Creator holds the value of the creator edge.
-	Creator *User `json:"creator,omitempty"`
 	// Targets holds the value of the targets edge.
 	Targets []*Target `json:"targets,omitempty"`
 	// Rules holds the value of the rules edge.
 	Rules []*Rule `json:"rules,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [3]bool
-}
-
-// CreatorOrErr returns the Creator value or an error if the edge
-// was not loaded in eager-loading, or loaded but was not found.
-func (e WordlistEdges) CreatorOrErr() (*User, error) {
-	if e.Creator != nil {
-		return e.Creator, nil
-	} else if e.loadedTypes[0] {
-		return nil, &NotFoundError{label: user.Label}
-	}
-	return nil, &NotLoadedError{edge: "creator"}
+	loadedTypes [2]bool
 }
 
 // TargetsOrErr returns the Targets value or an error if the edge
 // was not loaded in eager-loading.
 func (e WordlistEdges) TargetsOrErr() ([]*Target, error) {
-	if e.loadedTypes[1] {
+	if e.loadedTypes[0] {
 		return e.Targets, nil
 	}
 	return nil, &NotLoadedError{edge: "targets"}
@@ -82,7 +57,7 @@ func (e WordlistEdges) TargetsOrErr() ([]*Target, error) {
 // RulesOrErr returns the Rules value or an error if the edge
 // was not loaded in eager-loading.
 func (e WordlistEdges) RulesOrErr() ([]*Rule, error) {
-	if e.loadedTypes[2] {
+	if e.loadedTypes[1] {
 		return e.Rules, nil
 	}
 	return nil, &NotLoadedError{edge: "rules"}
@@ -93,18 +68,12 @@ func (*Wordlist) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case wordlist.FieldCreatedBy:
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case wordlist.FieldWordJSON:
 			values[i] = new([]byte)
-		case wordlist.FieldIsLocked:
-			values[i] = new(sql.NullBool)
 		case wordlist.FieldWordCount:
 			values[i] = new(sql.NullInt64)
-		case wordlist.FieldName, wordlist.FieldType, wordlist.FieldWordFile, wordlist.FieldDescription:
+		case wordlist.FieldName, wordlist.FieldType, wordlist.FieldWordFile:
 			values[i] = new(sql.NullString)
-		case wordlist.FieldCreatedAt, wordlist.FieldUpdatedAt:
-			values[i] = new(sql.NullTime)
 		case wordlist.FieldID:
 			values[i] = new(uuid.UUID)
 		default:
@@ -162,38 +131,6 @@ func (w *Wordlist) assignValues(columns []string, values []any) error {
 				w.WordCount = new(int)
 				*w.WordCount = int(value.Int64)
 			}
-		case wordlist.FieldDescription:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field description", values[i])
-			} else if value.Valid {
-				w.Description = new(string)
-				*w.Description = value.String
-			}
-		case wordlist.FieldCreatedBy:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field created_by", values[i])
-			} else if value.Valid {
-				w.CreatedBy = new(uuid.UUID)
-				*w.CreatedBy = *value.S.(*uuid.UUID)
-			}
-		case wordlist.FieldIsLocked:
-			if value, ok := values[i].(*sql.NullBool); !ok {
-				return fmt.Errorf("unexpected type %T for field is_locked", values[i])
-			} else if value.Valid {
-				w.IsLocked = value.Bool
-			}
-		case wordlist.FieldCreatedAt:
-			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field created_at", values[i])
-			} else if value.Valid {
-				w.CreatedAt = value.Time
-			}
-		case wordlist.FieldUpdatedAt:
-			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
-			} else if value.Valid {
-				w.UpdatedAt = value.Time
-			}
 		default:
 			w.selectValues.Set(columns[i], values[i])
 		}
@@ -205,11 +142,6 @@ func (w *Wordlist) assignValues(columns []string, values []any) error {
 // This includes values selected through modifiers, order, etc.
 func (w *Wordlist) Value(name string) (ent.Value, error) {
 	return w.selectValues.Get(name)
-}
-
-// QueryCreator queries the "creator" edge of the Wordlist entity.
-func (w *Wordlist) QueryCreator() *UserQuery {
-	return NewWordlistClient(w.config).QueryCreator(w)
 }
 
 // QueryTargets queries the "targets" edge of the Wordlist entity.
@@ -263,25 +195,6 @@ func (w *Wordlist) String() string {
 		builder.WriteString("word_count=")
 		builder.WriteString(fmt.Sprintf("%v", *v))
 	}
-	builder.WriteString(", ")
-	if v := w.Description; v != nil {
-		builder.WriteString("description=")
-		builder.WriteString(*v)
-	}
-	builder.WriteString(", ")
-	if v := w.CreatedBy; v != nil {
-		builder.WriteString("created_by=")
-		builder.WriteString(fmt.Sprintf("%v", *v))
-	}
-	builder.WriteString(", ")
-	builder.WriteString("is_locked=")
-	builder.WriteString(fmt.Sprintf("%v", w.IsLocked))
-	builder.WriteString(", ")
-	builder.WriteString("created_at=")
-	builder.WriteString(w.CreatedAt.Format(time.ANSIC))
-	builder.WriteString(", ")
-	builder.WriteString("updated_at=")
-	builder.WriteString(w.UpdatedAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

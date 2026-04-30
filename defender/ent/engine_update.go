@@ -7,10 +7,8 @@ import (
 	"defly-defender/ent/engine"
 	"defly-defender/ent/predicate"
 	"defly-defender/ent/target"
-	"defly-defender/ent/user"
 	"errors"
 	"fmt"
-	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -99,99 +97,6 @@ func (eu *EngineUpdate) SetNillableOutputDatatype(ed *engine.OutputDatatype) *En
 	return eu
 }
 
-// SetDescription sets the "description" field.
-func (eu *EngineUpdate) SetDescription(s string) *EngineUpdate {
-	eu.mutation.SetDescription(s)
-	return eu
-}
-
-// SetNillableDescription sets the "description" field if the given value is not nil.
-func (eu *EngineUpdate) SetNillableDescription(s *string) *EngineUpdate {
-	if s != nil {
-		eu.SetDescription(*s)
-	}
-	return eu
-}
-
-// ClearDescription clears the value of the "description" field.
-func (eu *EngineUpdate) ClearDescription() *EngineUpdate {
-	eu.mutation.ClearDescription()
-	return eu
-}
-
-// SetCreatedBy sets the "created_by" field.
-func (eu *EngineUpdate) SetCreatedBy(u uuid.UUID) *EngineUpdate {
-	eu.mutation.SetCreatedBy(u)
-	return eu
-}
-
-// SetNillableCreatedBy sets the "created_by" field if the given value is not nil.
-func (eu *EngineUpdate) SetNillableCreatedBy(u *uuid.UUID) *EngineUpdate {
-	if u != nil {
-		eu.SetCreatedBy(*u)
-	}
-	return eu
-}
-
-// ClearCreatedBy clears the value of the "created_by" field.
-func (eu *EngineUpdate) ClearCreatedBy() *EngineUpdate {
-	eu.mutation.ClearCreatedBy()
-	return eu
-}
-
-// SetIsLocked sets the "is_locked" field.
-func (eu *EngineUpdate) SetIsLocked(b bool) *EngineUpdate {
-	eu.mutation.SetIsLocked(b)
-	return eu
-}
-
-// SetNillableIsLocked sets the "is_locked" field if the given value is not nil.
-func (eu *EngineUpdate) SetNillableIsLocked(b *bool) *EngineUpdate {
-	if b != nil {
-		eu.SetIsLocked(*b)
-	}
-	return eu
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (eu *EngineUpdate) SetCreatedAt(t time.Time) *EngineUpdate {
-	eu.mutation.SetCreatedAt(t)
-	return eu
-}
-
-// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (eu *EngineUpdate) SetNillableCreatedAt(t *time.Time) *EngineUpdate {
-	if t != nil {
-		eu.SetCreatedAt(*t)
-	}
-	return eu
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (eu *EngineUpdate) SetUpdatedAt(t time.Time) *EngineUpdate {
-	eu.mutation.SetUpdatedAt(t)
-	return eu
-}
-
-// SetCreatorID sets the "creator" edge to the User entity by ID.
-func (eu *EngineUpdate) SetCreatorID(id uuid.UUID) *EngineUpdate {
-	eu.mutation.SetCreatorID(id)
-	return eu
-}
-
-// SetNillableCreatorID sets the "creator" edge to the User entity by ID if the given value is not nil.
-func (eu *EngineUpdate) SetNillableCreatorID(id *uuid.UUID) *EngineUpdate {
-	if id != nil {
-		eu = eu.SetCreatorID(*id)
-	}
-	return eu
-}
-
-// SetCreator sets the "creator" edge to the User entity.
-func (eu *EngineUpdate) SetCreator(u *User) *EngineUpdate {
-	return eu.SetCreatorID(u.ID)
-}
-
 // AddTargetIDs adds the "targets" edge to the Target entity by IDs.
 func (eu *EngineUpdate) AddTargetIDs(ids ...uuid.UUID) *EngineUpdate {
 	eu.mutation.AddTargetIDs(ids...)
@@ -210,12 +115,6 @@ func (eu *EngineUpdate) AddTargets(t ...*Target) *EngineUpdate {
 // Mutation returns the EngineMutation object of the builder.
 func (eu *EngineUpdate) Mutation() *EngineMutation {
 	return eu.mutation
-}
-
-// ClearCreator clears the "creator" edge to the User entity.
-func (eu *EngineUpdate) ClearCreator() *EngineUpdate {
-	eu.mutation.ClearCreator()
-	return eu
 }
 
 // ClearTargets clears all "targets" edges to the Target entity.
@@ -241,7 +140,6 @@ func (eu *EngineUpdate) RemoveTargets(t ...*Target) *EngineUpdate {
 
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (eu *EngineUpdate) Save(ctx context.Context) (int, error) {
-	eu.defaults()
 	return withHooks(ctx, eu.sqlSave, eu.mutation, eu.hooks)
 }
 
@@ -264,14 +162,6 @@ func (eu *EngineUpdate) Exec(ctx context.Context) error {
 func (eu *EngineUpdate) ExecX(ctx context.Context) {
 	if err := eu.Exec(ctx); err != nil {
 		panic(err)
-	}
-}
-
-// defaults sets the default values of the builder before save.
-func (eu *EngineUpdate) defaults() {
-	if _, ok := eu.mutation.UpdatedAt(); !ok {
-		v := engine.UpdateDefaultUpdatedAt()
-		eu.mutation.SetUpdatedAt(v)
 	}
 }
 
@@ -329,50 +219,6 @@ func (eu *EngineUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := eu.mutation.OutputDatatype(); ok {
 		_spec.SetField(engine.FieldOutputDatatype, field.TypeEnum, value)
-	}
-	if value, ok := eu.mutation.Description(); ok {
-		_spec.SetField(engine.FieldDescription, field.TypeString, value)
-	}
-	if eu.mutation.DescriptionCleared() {
-		_spec.ClearField(engine.FieldDescription, field.TypeString)
-	}
-	if value, ok := eu.mutation.IsLocked(); ok {
-		_spec.SetField(engine.FieldIsLocked, field.TypeBool, value)
-	}
-	if value, ok := eu.mutation.CreatedAt(); ok {
-		_spec.SetField(engine.FieldCreatedAt, field.TypeTime, value)
-	}
-	if value, ok := eu.mutation.UpdatedAt(); ok {
-		_spec.SetField(engine.FieldUpdatedAt, field.TypeTime, value)
-	}
-	if eu.mutation.CreatorCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   engine.CreatorTable,
-			Columns: []string{engine.CreatorColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := eu.mutation.CreatorIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   engine.CreatorTable,
-			Columns: []string{engine.CreatorColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if eu.mutation.TargetsCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -507,99 +353,6 @@ func (euo *EngineUpdateOne) SetNillableOutputDatatype(ed *engine.OutputDatatype)
 	return euo
 }
 
-// SetDescription sets the "description" field.
-func (euo *EngineUpdateOne) SetDescription(s string) *EngineUpdateOne {
-	euo.mutation.SetDescription(s)
-	return euo
-}
-
-// SetNillableDescription sets the "description" field if the given value is not nil.
-func (euo *EngineUpdateOne) SetNillableDescription(s *string) *EngineUpdateOne {
-	if s != nil {
-		euo.SetDescription(*s)
-	}
-	return euo
-}
-
-// ClearDescription clears the value of the "description" field.
-func (euo *EngineUpdateOne) ClearDescription() *EngineUpdateOne {
-	euo.mutation.ClearDescription()
-	return euo
-}
-
-// SetCreatedBy sets the "created_by" field.
-func (euo *EngineUpdateOne) SetCreatedBy(u uuid.UUID) *EngineUpdateOne {
-	euo.mutation.SetCreatedBy(u)
-	return euo
-}
-
-// SetNillableCreatedBy sets the "created_by" field if the given value is not nil.
-func (euo *EngineUpdateOne) SetNillableCreatedBy(u *uuid.UUID) *EngineUpdateOne {
-	if u != nil {
-		euo.SetCreatedBy(*u)
-	}
-	return euo
-}
-
-// ClearCreatedBy clears the value of the "created_by" field.
-func (euo *EngineUpdateOne) ClearCreatedBy() *EngineUpdateOne {
-	euo.mutation.ClearCreatedBy()
-	return euo
-}
-
-// SetIsLocked sets the "is_locked" field.
-func (euo *EngineUpdateOne) SetIsLocked(b bool) *EngineUpdateOne {
-	euo.mutation.SetIsLocked(b)
-	return euo
-}
-
-// SetNillableIsLocked sets the "is_locked" field if the given value is not nil.
-func (euo *EngineUpdateOne) SetNillableIsLocked(b *bool) *EngineUpdateOne {
-	if b != nil {
-		euo.SetIsLocked(*b)
-	}
-	return euo
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (euo *EngineUpdateOne) SetCreatedAt(t time.Time) *EngineUpdateOne {
-	euo.mutation.SetCreatedAt(t)
-	return euo
-}
-
-// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (euo *EngineUpdateOne) SetNillableCreatedAt(t *time.Time) *EngineUpdateOne {
-	if t != nil {
-		euo.SetCreatedAt(*t)
-	}
-	return euo
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (euo *EngineUpdateOne) SetUpdatedAt(t time.Time) *EngineUpdateOne {
-	euo.mutation.SetUpdatedAt(t)
-	return euo
-}
-
-// SetCreatorID sets the "creator" edge to the User entity by ID.
-func (euo *EngineUpdateOne) SetCreatorID(id uuid.UUID) *EngineUpdateOne {
-	euo.mutation.SetCreatorID(id)
-	return euo
-}
-
-// SetNillableCreatorID sets the "creator" edge to the User entity by ID if the given value is not nil.
-func (euo *EngineUpdateOne) SetNillableCreatorID(id *uuid.UUID) *EngineUpdateOne {
-	if id != nil {
-		euo = euo.SetCreatorID(*id)
-	}
-	return euo
-}
-
-// SetCreator sets the "creator" edge to the User entity.
-func (euo *EngineUpdateOne) SetCreator(u *User) *EngineUpdateOne {
-	return euo.SetCreatorID(u.ID)
-}
-
 // AddTargetIDs adds the "targets" edge to the Target entity by IDs.
 func (euo *EngineUpdateOne) AddTargetIDs(ids ...uuid.UUID) *EngineUpdateOne {
 	euo.mutation.AddTargetIDs(ids...)
@@ -618,12 +371,6 @@ func (euo *EngineUpdateOne) AddTargets(t ...*Target) *EngineUpdateOne {
 // Mutation returns the EngineMutation object of the builder.
 func (euo *EngineUpdateOne) Mutation() *EngineMutation {
 	return euo.mutation
-}
-
-// ClearCreator clears the "creator" edge to the User entity.
-func (euo *EngineUpdateOne) ClearCreator() *EngineUpdateOne {
-	euo.mutation.ClearCreator()
-	return euo
 }
 
 // ClearTargets clears all "targets" edges to the Target entity.
@@ -662,7 +409,6 @@ func (euo *EngineUpdateOne) Select(field string, fields ...string) *EngineUpdate
 
 // Save executes the query and returns the updated Engine entity.
 func (euo *EngineUpdateOne) Save(ctx context.Context) (*Engine, error) {
-	euo.defaults()
 	return withHooks(ctx, euo.sqlSave, euo.mutation, euo.hooks)
 }
 
@@ -685,14 +431,6 @@ func (euo *EngineUpdateOne) Exec(ctx context.Context) error {
 func (euo *EngineUpdateOne) ExecX(ctx context.Context) {
 	if err := euo.Exec(ctx); err != nil {
 		panic(err)
-	}
-}
-
-// defaults sets the default values of the builder before save.
-func (euo *EngineUpdateOne) defaults() {
-	if _, ok := euo.mutation.UpdatedAt(); !ok {
-		v := engine.UpdateDefaultUpdatedAt()
-		euo.mutation.SetUpdatedAt(v)
 	}
 }
 
@@ -767,50 +505,6 @@ func (euo *EngineUpdateOne) sqlSave(ctx context.Context) (_node *Engine, err err
 	}
 	if value, ok := euo.mutation.OutputDatatype(); ok {
 		_spec.SetField(engine.FieldOutputDatatype, field.TypeEnum, value)
-	}
-	if value, ok := euo.mutation.Description(); ok {
-		_spec.SetField(engine.FieldDescription, field.TypeString, value)
-	}
-	if euo.mutation.DescriptionCleared() {
-		_spec.ClearField(engine.FieldDescription, field.TypeString)
-	}
-	if value, ok := euo.mutation.IsLocked(); ok {
-		_spec.SetField(engine.FieldIsLocked, field.TypeBool, value)
-	}
-	if value, ok := euo.mutation.CreatedAt(); ok {
-		_spec.SetField(engine.FieldCreatedAt, field.TypeTime, value)
-	}
-	if value, ok := euo.mutation.UpdatedAt(); ok {
-		_spec.SetField(engine.FieldUpdatedAt, field.TypeTime, value)
-	}
-	if euo.mutation.CreatorCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   engine.CreatorTable,
-			Columns: []string{engine.CreatorColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := euo.mutation.CreatorIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   engine.CreatorTable,
-			Columns: []string{engine.CreatorColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if euo.mutation.TargetsCleared() {
 		edge := &sqlgraph.EdgeSpec{

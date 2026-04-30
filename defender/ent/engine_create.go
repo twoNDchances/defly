@@ -6,10 +6,8 @@ import (
 	"context"
 	"defly-defender/ent/engine"
 	"defly-defender/ent/target"
-	"defly-defender/ent/user"
 	"errors"
 	"fmt"
-	"time"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -53,76 +51,6 @@ func (ec *EngineCreate) SetOutputDatatype(ed engine.OutputDatatype) *EngineCreat
 	return ec
 }
 
-// SetDescription sets the "description" field.
-func (ec *EngineCreate) SetDescription(s string) *EngineCreate {
-	ec.mutation.SetDescription(s)
-	return ec
-}
-
-// SetNillableDescription sets the "description" field if the given value is not nil.
-func (ec *EngineCreate) SetNillableDescription(s *string) *EngineCreate {
-	if s != nil {
-		ec.SetDescription(*s)
-	}
-	return ec
-}
-
-// SetCreatedBy sets the "created_by" field.
-func (ec *EngineCreate) SetCreatedBy(u uuid.UUID) *EngineCreate {
-	ec.mutation.SetCreatedBy(u)
-	return ec
-}
-
-// SetNillableCreatedBy sets the "created_by" field if the given value is not nil.
-func (ec *EngineCreate) SetNillableCreatedBy(u *uuid.UUID) *EngineCreate {
-	if u != nil {
-		ec.SetCreatedBy(*u)
-	}
-	return ec
-}
-
-// SetIsLocked sets the "is_locked" field.
-func (ec *EngineCreate) SetIsLocked(b bool) *EngineCreate {
-	ec.mutation.SetIsLocked(b)
-	return ec
-}
-
-// SetNillableIsLocked sets the "is_locked" field if the given value is not nil.
-func (ec *EngineCreate) SetNillableIsLocked(b *bool) *EngineCreate {
-	if b != nil {
-		ec.SetIsLocked(*b)
-	}
-	return ec
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (ec *EngineCreate) SetCreatedAt(t time.Time) *EngineCreate {
-	ec.mutation.SetCreatedAt(t)
-	return ec
-}
-
-// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (ec *EngineCreate) SetNillableCreatedAt(t *time.Time) *EngineCreate {
-	if t != nil {
-		ec.SetCreatedAt(*t)
-	}
-	return ec
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (ec *EngineCreate) SetUpdatedAt(t time.Time) *EngineCreate {
-	ec.mutation.SetUpdatedAt(t)
-	return ec
-}
-
-// SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
-func (ec *EngineCreate) SetNillableUpdatedAt(t *time.Time) *EngineCreate {
-	if t != nil {
-		ec.SetUpdatedAt(*t)
-	}
-	return ec
-}
-
 // SetID sets the "id" field.
 func (ec *EngineCreate) SetID(u uuid.UUID) *EngineCreate {
 	ec.mutation.SetID(u)
@@ -135,25 +63,6 @@ func (ec *EngineCreate) SetNillableID(u *uuid.UUID) *EngineCreate {
 		ec.SetID(*u)
 	}
 	return ec
-}
-
-// SetCreatorID sets the "creator" edge to the User entity by ID.
-func (ec *EngineCreate) SetCreatorID(id uuid.UUID) *EngineCreate {
-	ec.mutation.SetCreatorID(id)
-	return ec
-}
-
-// SetNillableCreatorID sets the "creator" edge to the User entity by ID if the given value is not nil.
-func (ec *EngineCreate) SetNillableCreatorID(id *uuid.UUID) *EngineCreate {
-	if id != nil {
-		ec = ec.SetCreatorID(*id)
-	}
-	return ec
-}
-
-// SetCreator sets the "creator" edge to the User entity.
-func (ec *EngineCreate) SetCreator(u *User) *EngineCreate {
-	return ec.SetCreatorID(u.ID)
 }
 
 // AddTargetIDs adds the "targets" edge to the Target entity by IDs.
@@ -206,18 +115,6 @@ func (ec *EngineCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (ec *EngineCreate) defaults() {
-	if _, ok := ec.mutation.IsLocked(); !ok {
-		v := engine.DefaultIsLocked
-		ec.mutation.SetIsLocked(v)
-	}
-	if _, ok := ec.mutation.CreatedAt(); !ok {
-		v := engine.DefaultCreatedAt()
-		ec.mutation.SetCreatedAt(v)
-	}
-	if _, ok := ec.mutation.UpdatedAt(); !ok {
-		v := engine.DefaultUpdatedAt()
-		ec.mutation.SetUpdatedAt(v)
-	}
 	if _, ok := ec.mutation.ID(); !ok {
 		v := engine.DefaultID()
 		ec.mutation.SetID(v)
@@ -257,15 +154,6 @@ func (ec *EngineCreate) check() error {
 		if err := engine.OutputDatatypeValidator(v); err != nil {
 			return &ValidationError{Name: "output_datatype", err: fmt.Errorf(`ent: validator failed for field "Engine.output_datatype": %w`, err)}
 		}
-	}
-	if _, ok := ec.mutation.IsLocked(); !ok {
-		return &ValidationError{Name: "is_locked", err: errors.New(`ent: missing required field "Engine.is_locked"`)}
-	}
-	if _, ok := ec.mutation.CreatedAt(); !ok {
-		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Engine.created_at"`)}
-	}
-	if _, ok := ec.mutation.UpdatedAt(); !ok {
-		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "Engine.updated_at"`)}
 	}
 	return nil
 }
@@ -321,39 +209,6 @@ func (ec *EngineCreate) createSpec() (*Engine, *sqlgraph.CreateSpec) {
 	if value, ok := ec.mutation.OutputDatatype(); ok {
 		_spec.SetField(engine.FieldOutputDatatype, field.TypeEnum, value)
 		_node.OutputDatatype = value
-	}
-	if value, ok := ec.mutation.Description(); ok {
-		_spec.SetField(engine.FieldDescription, field.TypeString, value)
-		_node.Description = &value
-	}
-	if value, ok := ec.mutation.IsLocked(); ok {
-		_spec.SetField(engine.FieldIsLocked, field.TypeBool, value)
-		_node.IsLocked = value
-	}
-	if value, ok := ec.mutation.CreatedAt(); ok {
-		_spec.SetField(engine.FieldCreatedAt, field.TypeTime, value)
-		_node.CreatedAt = value
-	}
-	if value, ok := ec.mutation.UpdatedAt(); ok {
-		_spec.SetField(engine.FieldUpdatedAt, field.TypeTime, value)
-		_node.UpdatedAt = value
-	}
-	if nodes := ec.mutation.CreatorIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   engine.CreatorTable,
-			Columns: []string{engine.CreatorColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_node.CreatedBy = &nodes[0]
-		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := ec.mutation.TargetsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

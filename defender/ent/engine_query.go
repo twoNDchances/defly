@@ -8,7 +8,6 @@ import (
 	"defly-defender/ent/engine"
 	"defly-defender/ent/predicate"
 	"defly-defender/ent/target"
-	"defly-defender/ent/user"
 	"fmt"
 	"math"
 
@@ -26,7 +25,6 @@ type EngineQuery struct {
 	order       []engine.OrderOption
 	inters      []Interceptor
 	predicates  []predicate.Engine
-	withCreator *UserQuery
 	withTargets *TargetQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -62,28 +60,6 @@ func (eq *EngineQuery) Unique(unique bool) *EngineQuery {
 func (eq *EngineQuery) Order(o ...engine.OrderOption) *EngineQuery {
 	eq.order = append(eq.order, o...)
 	return eq
-}
-
-// QueryCreator chains the current query on the "creator" edge.
-func (eq *EngineQuery) QueryCreator() *UserQuery {
-	query := (&UserClient{config: eq.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := eq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := eq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(engine.Table, engine.FieldID, selector),
-			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, engine.CreatorTable, engine.CreatorColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(eq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
 }
 
 // QueryTargets chains the current query on the "targets" edge.
@@ -300,23 +276,11 @@ func (eq *EngineQuery) Clone() *EngineQuery {
 		order:       append([]engine.OrderOption{}, eq.order...),
 		inters:      append([]Interceptor{}, eq.inters...),
 		predicates:  append([]predicate.Engine{}, eq.predicates...),
-		withCreator: eq.withCreator.Clone(),
 		withTargets: eq.withTargets.Clone(),
 		// clone intermediate query.
 		sql:  eq.sql.Clone(),
 		path: eq.path,
 	}
-}
-
-// WithCreator tells the query-builder to eager-load the nodes that are connected to
-// the "creator" edge. The optional arguments are used to configure the query builder of the edge.
-func (eq *EngineQuery) WithCreator(opts ...func(*UserQuery)) *EngineQuery {
-	query := (&UserClient{config: eq.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	eq.withCreator = query
-	return eq
 }
 
 // WithTargets tells the query-builder to eager-load the nodes that are connected to
@@ -408,8 +372,7 @@ func (eq *EngineQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Engin
 	var (
 		nodes       = []*Engine{}
 		_spec       = eq.querySpec()
-		loadedTypes = [2]bool{
-			eq.withCreator != nil,
+		loadedTypes = [1]bool{
 			eq.withTargets != nil,
 		}
 	)
@@ -431,12 +394,6 @@ func (eq *EngineQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Engin
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	if query := eq.withCreator; query != nil {
-		if err := eq.loadCreator(ctx, query, nodes, nil,
-			func(n *Engine, e *User) { n.Edges.Creator = e }); err != nil {
-			return nil, err
-		}
-	}
 	if query := eq.withTargets; query != nil {
 		if err := eq.loadTargets(ctx, query, nodes,
 			func(n *Engine) { n.Edges.Targets = []*Target{} },
@@ -447,38 +404,6 @@ func (eq *EngineQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Engin
 	return nodes, nil
 }
 
-func (eq *EngineQuery) loadCreator(ctx context.Context, query *UserQuery, nodes []*Engine, init func(*Engine), assign func(*Engine, *User)) error {
-	ids := make([]uuid.UUID, 0, len(nodes))
-	nodeids := make(map[uuid.UUID][]*Engine)
-	for i := range nodes {
-		if nodes[i].CreatedBy == nil {
-			continue
-		}
-		fk := *nodes[i].CreatedBy
-		if _, ok := nodeids[fk]; !ok {
-			ids = append(ids, fk)
-		}
-		nodeids[fk] = append(nodeids[fk], nodes[i])
-	}
-	if len(ids) == 0 {
-		return nil
-	}
-	query.Where(user.IDIn(ids...))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		nodes, ok := nodeids[n.ID]
-		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "created_by" returned %v`, n.ID)
-		}
-		for i := range nodes {
-			assign(nodes[i], n)
-		}
-	}
-	return nil
-}
 func (eq *EngineQuery) loadTargets(ctx context.Context, query *TargetQuery, nodes []*Engine, init func(*Engine), assign func(*Engine, *Target)) error {
 	edgeIDs := make([]driver.Value, len(nodes))
 	byID := make(map[uuid.UUID]*Engine)
@@ -565,9 +490,6 @@ func (eq *EngineQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != engine.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
-		}
-		if eq.withCreator != nil {
-			_spec.Node.AddColumnOnce(engine.FieldCreatedBy)
 		}
 	}
 	if ps := eq.predicates; len(ps) > 0 {

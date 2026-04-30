@@ -3,9 +3,6 @@
 package principle
 
 import (
-	"fmt"
-	"time"
-
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
@@ -22,35 +19,12 @@ const (
 	FieldLevel = "level"
 	// FieldPhase holds the string denoting the phase field in the database.
 	FieldPhase = "phase"
-	// FieldValidationStatus holds the string denoting the validation_status field in the database.
-	FieldValidationStatus = "validation_status"
-	// FieldValidationDetails holds the string denoting the validation_details field in the database.
-	FieldValidationDetails = "validation_details"
-	// FieldDescription holds the string denoting the description field in the database.
-	FieldDescription = "description"
-	// FieldCreatedBy holds the string denoting the created_by field in the database.
-	FieldCreatedBy = "created_by"
-	// FieldIsLocked holds the string denoting the is_locked field in the database.
-	FieldIsLocked = "is_locked"
-	// FieldCreatedAt holds the string denoting the created_at field in the database.
-	FieldCreatedAt = "created_at"
-	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
-	FieldUpdatedAt = "updated_at"
-	// EdgeCreator holds the string denoting the creator edge name in mutations.
-	EdgeCreator = "creator"
 	// EdgeRules holds the string denoting the rules edge name in mutations.
 	EdgeRules = "rules"
 	// EdgeDefenders holds the string denoting the defenders edge name in mutations.
 	EdgeDefenders = "defenders"
 	// Table holds the table name of the principle in the database.
 	Table = "principles"
-	// CreatorTable is the table that holds the creator relation/edge.
-	CreatorTable = "principles"
-	// CreatorInverseTable is the table name for the User entity.
-	// It exists in this package in order to avoid circular dependency with the "user" package.
-	CreatorInverseTable = "users"
-	// CreatorColumn is the table column denoting the creator relation/edge.
-	CreatorColumn = "created_by"
 	// RulesTable is the table that holds the rules relation/edge. The primary key declared below.
 	RulesTable = "principles_rules"
 	// RulesInverseTable is the table name for the Rule entity.
@@ -69,13 +43,6 @@ var Columns = []string{
 	FieldName,
 	FieldLevel,
 	FieldPhase,
-	FieldValidationStatus,
-	FieldValidationDetails,
-	FieldDescription,
-	FieldCreatedBy,
-	FieldIsLocked,
-	FieldCreatedAt,
-	FieldUpdatedAt,
 }
 
 var (
@@ -102,42 +69,9 @@ var (
 	NameValidator func(string) error
 	// DefaultLevel holds the default value on creation for the "level" field.
 	DefaultLevel uint64
-	// DefaultIsLocked holds the default value on creation for the "is_locked" field.
-	DefaultIsLocked bool
-	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
-	DefaultCreatedAt func() time.Time
-	// DefaultUpdatedAt holds the default value on creation for the "updated_at" field.
-	DefaultUpdatedAt func() time.Time
-	// UpdateDefaultUpdatedAt holds the default value on update for the "updated_at" field.
-	UpdateDefaultUpdatedAt func() time.Time
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
-
-// ValidationStatus defines the type for the "validation_status" enum field.
-type ValidationStatus string
-
-// ValidationStatus values.
-const (
-	ValidationStatusPending    ValidationStatus = "pending"
-	ValidationStatusValidating ValidationStatus = "validating"
-	ValidationStatusFailed     ValidationStatus = "failed"
-	ValidationStatusPassed     ValidationStatus = "passed"
-)
-
-func (vs ValidationStatus) String() string {
-	return string(vs)
-}
-
-// ValidationStatusValidator is a validator for the "validation_status" field enum values. It is called by the builders before save.
-func ValidationStatusValidator(vs ValidationStatus) error {
-	switch vs {
-	case ValidationStatusPending, ValidationStatusValidating, ValidationStatusFailed, ValidationStatusPassed:
-		return nil
-	default:
-		return fmt.Errorf("principle: invalid enum value for validation_status field: %q", vs)
-	}
-}
 
 // OrderOption defines the ordering options for the Principle queries.
 type OrderOption func(*sql.Selector)
@@ -160,43 +94,6 @@ func ByLevel(opts ...sql.OrderTermOption) OrderOption {
 // ByPhase orders the results by the phase field.
 func ByPhase(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldPhase, opts...).ToFunc()
-}
-
-// ByValidationStatus orders the results by the validation_status field.
-func ByValidationStatus(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldValidationStatus, opts...).ToFunc()
-}
-
-// ByDescription orders the results by the description field.
-func ByDescription(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldDescription, opts...).ToFunc()
-}
-
-// ByCreatedBy orders the results by the created_by field.
-func ByCreatedBy(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldCreatedBy, opts...).ToFunc()
-}
-
-// ByIsLocked orders the results by the is_locked field.
-func ByIsLocked(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldIsLocked, opts...).ToFunc()
-}
-
-// ByCreatedAt orders the results by the created_at field.
-func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldCreatedAt, opts...).ToFunc()
-}
-
-// ByUpdatedAt orders the results by the updated_at field.
-func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldUpdatedAt, opts...).ToFunc()
-}
-
-// ByCreatorField orders the results by creator field.
-func ByCreatorField(field string, opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newCreatorStep(), sql.OrderByField(field, opts...))
-	}
 }
 
 // ByRulesCount orders the results by rules count.
@@ -225,13 +122,6 @@ func ByDefenders(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newDefendersStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
-}
-func newCreatorStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(CreatorInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, true, CreatorTable, CreatorColumn),
-	)
 }
 func newRulesStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(

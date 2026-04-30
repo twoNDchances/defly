@@ -8,10 +8,8 @@ import (
 	"defly-defender/ent/predicate"
 	"defly-defender/ent/principle"
 	"defly-defender/ent/rule"
-	"defly-defender/ent/user"
 	"errors"
 	"fmt"
-	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -88,131 +86,6 @@ func (pu *PrincipleUpdate) AddPhase(i int) *PrincipleUpdate {
 	return pu
 }
 
-// SetValidationStatus sets the "validation_status" field.
-func (pu *PrincipleUpdate) SetValidationStatus(ps principle.ValidationStatus) *PrincipleUpdate {
-	pu.mutation.SetValidationStatus(ps)
-	return pu
-}
-
-// SetNillableValidationStatus sets the "validation_status" field if the given value is not nil.
-func (pu *PrincipleUpdate) SetNillableValidationStatus(ps *principle.ValidationStatus) *PrincipleUpdate {
-	if ps != nil {
-		pu.SetValidationStatus(*ps)
-	}
-	return pu
-}
-
-// ClearValidationStatus clears the value of the "validation_status" field.
-func (pu *PrincipleUpdate) ClearValidationStatus() *PrincipleUpdate {
-	pu.mutation.ClearValidationStatus()
-	return pu
-}
-
-// SetValidationDetails sets the "validation_details" field.
-func (pu *PrincipleUpdate) SetValidationDetails(m map[string]interface{}) *PrincipleUpdate {
-	pu.mutation.SetValidationDetails(m)
-	return pu
-}
-
-// ClearValidationDetails clears the value of the "validation_details" field.
-func (pu *PrincipleUpdate) ClearValidationDetails() *PrincipleUpdate {
-	pu.mutation.ClearValidationDetails()
-	return pu
-}
-
-// SetDescription sets the "description" field.
-func (pu *PrincipleUpdate) SetDescription(s string) *PrincipleUpdate {
-	pu.mutation.SetDescription(s)
-	return pu
-}
-
-// SetNillableDescription sets the "description" field if the given value is not nil.
-func (pu *PrincipleUpdate) SetNillableDescription(s *string) *PrincipleUpdate {
-	if s != nil {
-		pu.SetDescription(*s)
-	}
-	return pu
-}
-
-// ClearDescription clears the value of the "description" field.
-func (pu *PrincipleUpdate) ClearDescription() *PrincipleUpdate {
-	pu.mutation.ClearDescription()
-	return pu
-}
-
-// SetCreatedBy sets the "created_by" field.
-func (pu *PrincipleUpdate) SetCreatedBy(u uuid.UUID) *PrincipleUpdate {
-	pu.mutation.SetCreatedBy(u)
-	return pu
-}
-
-// SetNillableCreatedBy sets the "created_by" field if the given value is not nil.
-func (pu *PrincipleUpdate) SetNillableCreatedBy(u *uuid.UUID) *PrincipleUpdate {
-	if u != nil {
-		pu.SetCreatedBy(*u)
-	}
-	return pu
-}
-
-// ClearCreatedBy clears the value of the "created_by" field.
-func (pu *PrincipleUpdate) ClearCreatedBy() *PrincipleUpdate {
-	pu.mutation.ClearCreatedBy()
-	return pu
-}
-
-// SetIsLocked sets the "is_locked" field.
-func (pu *PrincipleUpdate) SetIsLocked(b bool) *PrincipleUpdate {
-	pu.mutation.SetIsLocked(b)
-	return pu
-}
-
-// SetNillableIsLocked sets the "is_locked" field if the given value is not nil.
-func (pu *PrincipleUpdate) SetNillableIsLocked(b *bool) *PrincipleUpdate {
-	if b != nil {
-		pu.SetIsLocked(*b)
-	}
-	return pu
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (pu *PrincipleUpdate) SetCreatedAt(t time.Time) *PrincipleUpdate {
-	pu.mutation.SetCreatedAt(t)
-	return pu
-}
-
-// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (pu *PrincipleUpdate) SetNillableCreatedAt(t *time.Time) *PrincipleUpdate {
-	if t != nil {
-		pu.SetCreatedAt(*t)
-	}
-	return pu
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (pu *PrincipleUpdate) SetUpdatedAt(t time.Time) *PrincipleUpdate {
-	pu.mutation.SetUpdatedAt(t)
-	return pu
-}
-
-// SetCreatorID sets the "creator" edge to the User entity by ID.
-func (pu *PrincipleUpdate) SetCreatorID(id uuid.UUID) *PrincipleUpdate {
-	pu.mutation.SetCreatorID(id)
-	return pu
-}
-
-// SetNillableCreatorID sets the "creator" edge to the User entity by ID if the given value is not nil.
-func (pu *PrincipleUpdate) SetNillableCreatorID(id *uuid.UUID) *PrincipleUpdate {
-	if id != nil {
-		pu = pu.SetCreatorID(*id)
-	}
-	return pu
-}
-
-// SetCreator sets the "creator" edge to the User entity.
-func (pu *PrincipleUpdate) SetCreator(u *User) *PrincipleUpdate {
-	return pu.SetCreatorID(u.ID)
-}
-
 // AddRuleIDs adds the "rules" edge to the Rule entity by IDs.
 func (pu *PrincipleUpdate) AddRuleIDs(ids ...uuid.UUID) *PrincipleUpdate {
 	pu.mutation.AddRuleIDs(ids...)
@@ -246,12 +119,6 @@ func (pu *PrincipleUpdate) AddDefenders(d ...*Defender) *PrincipleUpdate {
 // Mutation returns the PrincipleMutation object of the builder.
 func (pu *PrincipleUpdate) Mutation() *PrincipleMutation {
 	return pu.mutation
-}
-
-// ClearCreator clears the "creator" edge to the User entity.
-func (pu *PrincipleUpdate) ClearCreator() *PrincipleUpdate {
-	pu.mutation.ClearCreator()
-	return pu
 }
 
 // ClearRules clears all "rules" edges to the Rule entity.
@@ -298,7 +165,6 @@ func (pu *PrincipleUpdate) RemoveDefenders(d ...*Defender) *PrincipleUpdate {
 
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (pu *PrincipleUpdate) Save(ctx context.Context) (int, error) {
-	pu.defaults()
 	return withHooks(ctx, pu.sqlSave, pu.mutation, pu.hooks)
 }
 
@@ -324,24 +190,11 @@ func (pu *PrincipleUpdate) ExecX(ctx context.Context) {
 	}
 }
 
-// defaults sets the default values of the builder before save.
-func (pu *PrincipleUpdate) defaults() {
-	if _, ok := pu.mutation.UpdatedAt(); !ok {
-		v := principle.UpdateDefaultUpdatedAt()
-		pu.mutation.SetUpdatedAt(v)
-	}
-}
-
 // check runs all checks and user-defined validators on the builder.
 func (pu *PrincipleUpdate) check() error {
 	if v, ok := pu.mutation.Name(); ok {
 		if err := principle.NameValidator(v); err != nil {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "Principle.name": %w`, err)}
-		}
-	}
-	if v, ok := pu.mutation.ValidationStatus(); ok {
-		if err := principle.ValidationStatusValidator(v); err != nil {
-			return &ValidationError{Name: "validation_status", err: fmt.Errorf(`ent: validator failed for field "Principle.validation_status": %w`, err)}
 		}
 	}
 	return nil
@@ -373,62 +226,6 @@ func (pu *PrincipleUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := pu.mutation.AddedPhase(); ok {
 		_spec.AddField(principle.FieldPhase, field.TypeInt, value)
-	}
-	if value, ok := pu.mutation.ValidationStatus(); ok {
-		_spec.SetField(principle.FieldValidationStatus, field.TypeEnum, value)
-	}
-	if pu.mutation.ValidationStatusCleared() {
-		_spec.ClearField(principle.FieldValidationStatus, field.TypeEnum)
-	}
-	if value, ok := pu.mutation.ValidationDetails(); ok {
-		_spec.SetField(principle.FieldValidationDetails, field.TypeJSON, value)
-	}
-	if pu.mutation.ValidationDetailsCleared() {
-		_spec.ClearField(principle.FieldValidationDetails, field.TypeJSON)
-	}
-	if value, ok := pu.mutation.Description(); ok {
-		_spec.SetField(principle.FieldDescription, field.TypeString, value)
-	}
-	if pu.mutation.DescriptionCleared() {
-		_spec.ClearField(principle.FieldDescription, field.TypeString)
-	}
-	if value, ok := pu.mutation.IsLocked(); ok {
-		_spec.SetField(principle.FieldIsLocked, field.TypeBool, value)
-	}
-	if value, ok := pu.mutation.CreatedAt(); ok {
-		_spec.SetField(principle.FieldCreatedAt, field.TypeTime, value)
-	}
-	if value, ok := pu.mutation.UpdatedAt(); ok {
-		_spec.SetField(principle.FieldUpdatedAt, field.TypeTime, value)
-	}
-	if pu.mutation.CreatorCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   principle.CreatorTable,
-			Columns: []string{principle.CreatorColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := pu.mutation.CreatorIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   principle.CreatorTable,
-			Columns: []string{principle.CreatorColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if pu.mutation.RulesCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -596,131 +393,6 @@ func (puo *PrincipleUpdateOne) AddPhase(i int) *PrincipleUpdateOne {
 	return puo
 }
 
-// SetValidationStatus sets the "validation_status" field.
-func (puo *PrincipleUpdateOne) SetValidationStatus(ps principle.ValidationStatus) *PrincipleUpdateOne {
-	puo.mutation.SetValidationStatus(ps)
-	return puo
-}
-
-// SetNillableValidationStatus sets the "validation_status" field if the given value is not nil.
-func (puo *PrincipleUpdateOne) SetNillableValidationStatus(ps *principle.ValidationStatus) *PrincipleUpdateOne {
-	if ps != nil {
-		puo.SetValidationStatus(*ps)
-	}
-	return puo
-}
-
-// ClearValidationStatus clears the value of the "validation_status" field.
-func (puo *PrincipleUpdateOne) ClearValidationStatus() *PrincipleUpdateOne {
-	puo.mutation.ClearValidationStatus()
-	return puo
-}
-
-// SetValidationDetails sets the "validation_details" field.
-func (puo *PrincipleUpdateOne) SetValidationDetails(m map[string]interface{}) *PrincipleUpdateOne {
-	puo.mutation.SetValidationDetails(m)
-	return puo
-}
-
-// ClearValidationDetails clears the value of the "validation_details" field.
-func (puo *PrincipleUpdateOne) ClearValidationDetails() *PrincipleUpdateOne {
-	puo.mutation.ClearValidationDetails()
-	return puo
-}
-
-// SetDescription sets the "description" field.
-func (puo *PrincipleUpdateOne) SetDescription(s string) *PrincipleUpdateOne {
-	puo.mutation.SetDescription(s)
-	return puo
-}
-
-// SetNillableDescription sets the "description" field if the given value is not nil.
-func (puo *PrincipleUpdateOne) SetNillableDescription(s *string) *PrincipleUpdateOne {
-	if s != nil {
-		puo.SetDescription(*s)
-	}
-	return puo
-}
-
-// ClearDescription clears the value of the "description" field.
-func (puo *PrincipleUpdateOne) ClearDescription() *PrincipleUpdateOne {
-	puo.mutation.ClearDescription()
-	return puo
-}
-
-// SetCreatedBy sets the "created_by" field.
-func (puo *PrincipleUpdateOne) SetCreatedBy(u uuid.UUID) *PrincipleUpdateOne {
-	puo.mutation.SetCreatedBy(u)
-	return puo
-}
-
-// SetNillableCreatedBy sets the "created_by" field if the given value is not nil.
-func (puo *PrincipleUpdateOne) SetNillableCreatedBy(u *uuid.UUID) *PrincipleUpdateOne {
-	if u != nil {
-		puo.SetCreatedBy(*u)
-	}
-	return puo
-}
-
-// ClearCreatedBy clears the value of the "created_by" field.
-func (puo *PrincipleUpdateOne) ClearCreatedBy() *PrincipleUpdateOne {
-	puo.mutation.ClearCreatedBy()
-	return puo
-}
-
-// SetIsLocked sets the "is_locked" field.
-func (puo *PrincipleUpdateOne) SetIsLocked(b bool) *PrincipleUpdateOne {
-	puo.mutation.SetIsLocked(b)
-	return puo
-}
-
-// SetNillableIsLocked sets the "is_locked" field if the given value is not nil.
-func (puo *PrincipleUpdateOne) SetNillableIsLocked(b *bool) *PrincipleUpdateOne {
-	if b != nil {
-		puo.SetIsLocked(*b)
-	}
-	return puo
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (puo *PrincipleUpdateOne) SetCreatedAt(t time.Time) *PrincipleUpdateOne {
-	puo.mutation.SetCreatedAt(t)
-	return puo
-}
-
-// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (puo *PrincipleUpdateOne) SetNillableCreatedAt(t *time.Time) *PrincipleUpdateOne {
-	if t != nil {
-		puo.SetCreatedAt(*t)
-	}
-	return puo
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (puo *PrincipleUpdateOne) SetUpdatedAt(t time.Time) *PrincipleUpdateOne {
-	puo.mutation.SetUpdatedAt(t)
-	return puo
-}
-
-// SetCreatorID sets the "creator" edge to the User entity by ID.
-func (puo *PrincipleUpdateOne) SetCreatorID(id uuid.UUID) *PrincipleUpdateOne {
-	puo.mutation.SetCreatorID(id)
-	return puo
-}
-
-// SetNillableCreatorID sets the "creator" edge to the User entity by ID if the given value is not nil.
-func (puo *PrincipleUpdateOne) SetNillableCreatorID(id *uuid.UUID) *PrincipleUpdateOne {
-	if id != nil {
-		puo = puo.SetCreatorID(*id)
-	}
-	return puo
-}
-
-// SetCreator sets the "creator" edge to the User entity.
-func (puo *PrincipleUpdateOne) SetCreator(u *User) *PrincipleUpdateOne {
-	return puo.SetCreatorID(u.ID)
-}
-
 // AddRuleIDs adds the "rules" edge to the Rule entity by IDs.
 func (puo *PrincipleUpdateOne) AddRuleIDs(ids ...uuid.UUID) *PrincipleUpdateOne {
 	puo.mutation.AddRuleIDs(ids...)
@@ -754,12 +426,6 @@ func (puo *PrincipleUpdateOne) AddDefenders(d ...*Defender) *PrincipleUpdateOne 
 // Mutation returns the PrincipleMutation object of the builder.
 func (puo *PrincipleUpdateOne) Mutation() *PrincipleMutation {
 	return puo.mutation
-}
-
-// ClearCreator clears the "creator" edge to the User entity.
-func (puo *PrincipleUpdateOne) ClearCreator() *PrincipleUpdateOne {
-	puo.mutation.ClearCreator()
-	return puo
 }
 
 // ClearRules clears all "rules" edges to the Rule entity.
@@ -819,7 +485,6 @@ func (puo *PrincipleUpdateOne) Select(field string, fields ...string) *Principle
 
 // Save executes the query and returns the updated Principle entity.
 func (puo *PrincipleUpdateOne) Save(ctx context.Context) (*Principle, error) {
-	puo.defaults()
 	return withHooks(ctx, puo.sqlSave, puo.mutation, puo.hooks)
 }
 
@@ -845,24 +510,11 @@ func (puo *PrincipleUpdateOne) ExecX(ctx context.Context) {
 	}
 }
 
-// defaults sets the default values of the builder before save.
-func (puo *PrincipleUpdateOne) defaults() {
-	if _, ok := puo.mutation.UpdatedAt(); !ok {
-		v := principle.UpdateDefaultUpdatedAt()
-		puo.mutation.SetUpdatedAt(v)
-	}
-}
-
 // check runs all checks and user-defined validators on the builder.
 func (puo *PrincipleUpdateOne) check() error {
 	if v, ok := puo.mutation.Name(); ok {
 		if err := principle.NameValidator(v); err != nil {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "Principle.name": %w`, err)}
-		}
-	}
-	if v, ok := puo.mutation.ValidationStatus(); ok {
-		if err := principle.ValidationStatusValidator(v); err != nil {
-			return &ValidationError{Name: "validation_status", err: fmt.Errorf(`ent: validator failed for field "Principle.validation_status": %w`, err)}
 		}
 	}
 	return nil
@@ -911,62 +563,6 @@ func (puo *PrincipleUpdateOne) sqlSave(ctx context.Context) (_node *Principle, e
 	}
 	if value, ok := puo.mutation.AddedPhase(); ok {
 		_spec.AddField(principle.FieldPhase, field.TypeInt, value)
-	}
-	if value, ok := puo.mutation.ValidationStatus(); ok {
-		_spec.SetField(principle.FieldValidationStatus, field.TypeEnum, value)
-	}
-	if puo.mutation.ValidationStatusCleared() {
-		_spec.ClearField(principle.FieldValidationStatus, field.TypeEnum)
-	}
-	if value, ok := puo.mutation.ValidationDetails(); ok {
-		_spec.SetField(principle.FieldValidationDetails, field.TypeJSON, value)
-	}
-	if puo.mutation.ValidationDetailsCleared() {
-		_spec.ClearField(principle.FieldValidationDetails, field.TypeJSON)
-	}
-	if value, ok := puo.mutation.Description(); ok {
-		_spec.SetField(principle.FieldDescription, field.TypeString, value)
-	}
-	if puo.mutation.DescriptionCleared() {
-		_spec.ClearField(principle.FieldDescription, field.TypeString)
-	}
-	if value, ok := puo.mutation.IsLocked(); ok {
-		_spec.SetField(principle.FieldIsLocked, field.TypeBool, value)
-	}
-	if value, ok := puo.mutation.CreatedAt(); ok {
-		_spec.SetField(principle.FieldCreatedAt, field.TypeTime, value)
-	}
-	if value, ok := puo.mutation.UpdatedAt(); ok {
-		_spec.SetField(principle.FieldUpdatedAt, field.TypeTime, value)
-	}
-	if puo.mutation.CreatorCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   principle.CreatorTable,
-			Columns: []string{principle.CreatorColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := puo.mutation.CreatorIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   principle.CreatorTable,
-			Columns: []string{principle.CreatorColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if puo.mutation.RulesCleared() {
 		edge := &sqlgraph.EdgeSpec{

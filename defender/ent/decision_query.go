@@ -8,7 +8,6 @@ import (
 	"defly-defender/ent/decision"
 	"defly-defender/ent/defender"
 	"defly-defender/ent/predicate"
-	"defly-defender/ent/user"
 	"fmt"
 	"math"
 
@@ -26,7 +25,6 @@ type DecisionQuery struct {
 	order         []decision.OrderOption
 	inters        []Interceptor
 	predicates    []predicate.Decision
-	withCreator   *UserQuery
 	withDefenders *DefenderQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -62,28 +60,6 @@ func (dq *DecisionQuery) Unique(unique bool) *DecisionQuery {
 func (dq *DecisionQuery) Order(o ...decision.OrderOption) *DecisionQuery {
 	dq.order = append(dq.order, o...)
 	return dq
-}
-
-// QueryCreator chains the current query on the "creator" edge.
-func (dq *DecisionQuery) QueryCreator() *UserQuery {
-	query := (&UserClient{config: dq.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := dq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := dq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(decision.Table, decision.FieldID, selector),
-			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, decision.CreatorTable, decision.CreatorColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(dq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
 }
 
 // QueryDefenders chains the current query on the "defenders" edge.
@@ -300,23 +276,11 @@ func (dq *DecisionQuery) Clone() *DecisionQuery {
 		order:         append([]decision.OrderOption{}, dq.order...),
 		inters:        append([]Interceptor{}, dq.inters...),
 		predicates:    append([]predicate.Decision{}, dq.predicates...),
-		withCreator:   dq.withCreator.Clone(),
 		withDefenders: dq.withDefenders.Clone(),
 		// clone intermediate query.
 		sql:  dq.sql.Clone(),
 		path: dq.path,
 	}
-}
-
-// WithCreator tells the query-builder to eager-load the nodes that are connected to
-// the "creator" edge. The optional arguments are used to configure the query builder of the edge.
-func (dq *DecisionQuery) WithCreator(opts ...func(*UserQuery)) *DecisionQuery {
-	query := (&UserClient{config: dq.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	dq.withCreator = query
-	return dq
 }
 
 // WithDefenders tells the query-builder to eager-load the nodes that are connected to
@@ -408,8 +372,7 @@ func (dq *DecisionQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Dec
 	var (
 		nodes       = []*Decision{}
 		_spec       = dq.querySpec()
-		loadedTypes = [2]bool{
-			dq.withCreator != nil,
+		loadedTypes = [1]bool{
 			dq.withDefenders != nil,
 		}
 	)
@@ -431,12 +394,6 @@ func (dq *DecisionQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Dec
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	if query := dq.withCreator; query != nil {
-		if err := dq.loadCreator(ctx, query, nodes, nil,
-			func(n *Decision, e *User) { n.Edges.Creator = e }); err != nil {
-			return nil, err
-		}
-	}
 	if query := dq.withDefenders; query != nil {
 		if err := dq.loadDefenders(ctx, query, nodes,
 			func(n *Decision) { n.Edges.Defenders = []*Defender{} },
@@ -447,38 +404,6 @@ func (dq *DecisionQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Dec
 	return nodes, nil
 }
 
-func (dq *DecisionQuery) loadCreator(ctx context.Context, query *UserQuery, nodes []*Decision, init func(*Decision), assign func(*Decision, *User)) error {
-	ids := make([]uuid.UUID, 0, len(nodes))
-	nodeids := make(map[uuid.UUID][]*Decision)
-	for i := range nodes {
-		if nodes[i].CreatedBy == nil {
-			continue
-		}
-		fk := *nodes[i].CreatedBy
-		if _, ok := nodeids[fk]; !ok {
-			ids = append(ids, fk)
-		}
-		nodeids[fk] = append(nodeids[fk], nodes[i])
-	}
-	if len(ids) == 0 {
-		return nil
-	}
-	query.Where(user.IDIn(ids...))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		nodes, ok := nodeids[n.ID]
-		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "created_by" returned %v`, n.ID)
-		}
-		for i := range nodes {
-			assign(nodes[i], n)
-		}
-	}
-	return nil
-}
 func (dq *DecisionQuery) loadDefenders(ctx context.Context, query *DefenderQuery, nodes []*Decision, init func(*Decision), assign func(*Decision, *Defender)) error {
 	edgeIDs := make([]driver.Value, len(nodes))
 	byID := make(map[uuid.UUID]*Decision)
@@ -565,9 +490,6 @@ func (dq *DecisionQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != decision.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
-		}
-		if dq.withCreator != nil {
-			_spec.Node.AddColumnOnce(decision.FieldCreatedBy)
 		}
 	}
 	if ps := dq.predicates; len(ps) > 0 {

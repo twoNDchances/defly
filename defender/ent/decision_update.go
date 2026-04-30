@@ -7,10 +7,8 @@ import (
 	"defly-defender/ent/decision"
 	"defly-defender/ent/defender"
 	"defly-defender/ent/predicate"
-	"defly-defender/ent/user"
 	"errors"
 	"fmt"
-	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -120,99 +118,6 @@ func (du *DecisionUpdate) ClearConfigurations() *DecisionUpdate {
 	return du
 }
 
-// SetDescription sets the "description" field.
-func (du *DecisionUpdate) SetDescription(s string) *DecisionUpdate {
-	du.mutation.SetDescription(s)
-	return du
-}
-
-// SetNillableDescription sets the "description" field if the given value is not nil.
-func (du *DecisionUpdate) SetNillableDescription(s *string) *DecisionUpdate {
-	if s != nil {
-		du.SetDescription(*s)
-	}
-	return du
-}
-
-// ClearDescription clears the value of the "description" field.
-func (du *DecisionUpdate) ClearDescription() *DecisionUpdate {
-	du.mutation.ClearDescription()
-	return du
-}
-
-// SetCreatedBy sets the "created_by" field.
-func (du *DecisionUpdate) SetCreatedBy(u uuid.UUID) *DecisionUpdate {
-	du.mutation.SetCreatedBy(u)
-	return du
-}
-
-// SetNillableCreatedBy sets the "created_by" field if the given value is not nil.
-func (du *DecisionUpdate) SetNillableCreatedBy(u *uuid.UUID) *DecisionUpdate {
-	if u != nil {
-		du.SetCreatedBy(*u)
-	}
-	return du
-}
-
-// ClearCreatedBy clears the value of the "created_by" field.
-func (du *DecisionUpdate) ClearCreatedBy() *DecisionUpdate {
-	du.mutation.ClearCreatedBy()
-	return du
-}
-
-// SetIsLocked sets the "is_locked" field.
-func (du *DecisionUpdate) SetIsLocked(b bool) *DecisionUpdate {
-	du.mutation.SetIsLocked(b)
-	return du
-}
-
-// SetNillableIsLocked sets the "is_locked" field if the given value is not nil.
-func (du *DecisionUpdate) SetNillableIsLocked(b *bool) *DecisionUpdate {
-	if b != nil {
-		du.SetIsLocked(*b)
-	}
-	return du
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (du *DecisionUpdate) SetCreatedAt(t time.Time) *DecisionUpdate {
-	du.mutation.SetCreatedAt(t)
-	return du
-}
-
-// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (du *DecisionUpdate) SetNillableCreatedAt(t *time.Time) *DecisionUpdate {
-	if t != nil {
-		du.SetCreatedAt(*t)
-	}
-	return du
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (du *DecisionUpdate) SetUpdatedAt(t time.Time) *DecisionUpdate {
-	du.mutation.SetUpdatedAt(t)
-	return du
-}
-
-// SetCreatorID sets the "creator" edge to the User entity by ID.
-func (du *DecisionUpdate) SetCreatorID(id uuid.UUID) *DecisionUpdate {
-	du.mutation.SetCreatorID(id)
-	return du
-}
-
-// SetNillableCreatorID sets the "creator" edge to the User entity by ID if the given value is not nil.
-func (du *DecisionUpdate) SetNillableCreatorID(id *uuid.UUID) *DecisionUpdate {
-	if id != nil {
-		du = du.SetCreatorID(*id)
-	}
-	return du
-}
-
-// SetCreator sets the "creator" edge to the User entity.
-func (du *DecisionUpdate) SetCreator(u *User) *DecisionUpdate {
-	return du.SetCreatorID(u.ID)
-}
-
 // AddDefenderIDs adds the "defenders" edge to the Defender entity by IDs.
 func (du *DecisionUpdate) AddDefenderIDs(ids ...uuid.UUID) *DecisionUpdate {
 	du.mutation.AddDefenderIDs(ids...)
@@ -231,12 +136,6 @@ func (du *DecisionUpdate) AddDefenders(d ...*Defender) *DecisionUpdate {
 // Mutation returns the DecisionMutation object of the builder.
 func (du *DecisionUpdate) Mutation() *DecisionMutation {
 	return du.mutation
-}
-
-// ClearCreator clears the "creator" edge to the User entity.
-func (du *DecisionUpdate) ClearCreator() *DecisionUpdate {
-	du.mutation.ClearCreator()
-	return du
 }
 
 // ClearDefenders clears all "defenders" edges to the Defender entity.
@@ -262,7 +161,6 @@ func (du *DecisionUpdate) RemoveDefenders(d ...*Defender) *DecisionUpdate {
 
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (du *DecisionUpdate) Save(ctx context.Context) (int, error) {
-	du.defaults()
 	return withHooks(ctx, du.sqlSave, du.mutation, du.hooks)
 }
 
@@ -285,14 +183,6 @@ func (du *DecisionUpdate) Exec(ctx context.Context) error {
 func (du *DecisionUpdate) ExecX(ctx context.Context) {
 	if err := du.Exec(ctx); err != nil {
 		panic(err)
-	}
-}
-
-// defaults sets the default values of the builder before save.
-func (du *DecisionUpdate) defaults() {
-	if _, ok := du.mutation.UpdatedAt(); !ok {
-		v := decision.UpdateDefaultUpdatedAt()
-		du.mutation.SetUpdatedAt(v)
 	}
 }
 
@@ -356,50 +246,6 @@ func (du *DecisionUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if du.mutation.ConfigurationsCleared() {
 		_spec.ClearField(decision.FieldConfigurations, field.TypeJSON)
-	}
-	if value, ok := du.mutation.Description(); ok {
-		_spec.SetField(decision.FieldDescription, field.TypeString, value)
-	}
-	if du.mutation.DescriptionCleared() {
-		_spec.ClearField(decision.FieldDescription, field.TypeString)
-	}
-	if value, ok := du.mutation.IsLocked(); ok {
-		_spec.SetField(decision.FieldIsLocked, field.TypeBool, value)
-	}
-	if value, ok := du.mutation.CreatedAt(); ok {
-		_spec.SetField(decision.FieldCreatedAt, field.TypeTime, value)
-	}
-	if value, ok := du.mutation.UpdatedAt(); ok {
-		_spec.SetField(decision.FieldUpdatedAt, field.TypeTime, value)
-	}
-	if du.mutation.CreatorCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   decision.CreatorTable,
-			Columns: []string{decision.CreatorColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := du.mutation.CreatorIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   decision.CreatorTable,
-			Columns: []string{decision.CreatorColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if du.mutation.DefendersCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -555,99 +401,6 @@ func (duo *DecisionUpdateOne) ClearConfigurations() *DecisionUpdateOne {
 	return duo
 }
 
-// SetDescription sets the "description" field.
-func (duo *DecisionUpdateOne) SetDescription(s string) *DecisionUpdateOne {
-	duo.mutation.SetDescription(s)
-	return duo
-}
-
-// SetNillableDescription sets the "description" field if the given value is not nil.
-func (duo *DecisionUpdateOne) SetNillableDescription(s *string) *DecisionUpdateOne {
-	if s != nil {
-		duo.SetDescription(*s)
-	}
-	return duo
-}
-
-// ClearDescription clears the value of the "description" field.
-func (duo *DecisionUpdateOne) ClearDescription() *DecisionUpdateOne {
-	duo.mutation.ClearDescription()
-	return duo
-}
-
-// SetCreatedBy sets the "created_by" field.
-func (duo *DecisionUpdateOne) SetCreatedBy(u uuid.UUID) *DecisionUpdateOne {
-	duo.mutation.SetCreatedBy(u)
-	return duo
-}
-
-// SetNillableCreatedBy sets the "created_by" field if the given value is not nil.
-func (duo *DecisionUpdateOne) SetNillableCreatedBy(u *uuid.UUID) *DecisionUpdateOne {
-	if u != nil {
-		duo.SetCreatedBy(*u)
-	}
-	return duo
-}
-
-// ClearCreatedBy clears the value of the "created_by" field.
-func (duo *DecisionUpdateOne) ClearCreatedBy() *DecisionUpdateOne {
-	duo.mutation.ClearCreatedBy()
-	return duo
-}
-
-// SetIsLocked sets the "is_locked" field.
-func (duo *DecisionUpdateOne) SetIsLocked(b bool) *DecisionUpdateOne {
-	duo.mutation.SetIsLocked(b)
-	return duo
-}
-
-// SetNillableIsLocked sets the "is_locked" field if the given value is not nil.
-func (duo *DecisionUpdateOne) SetNillableIsLocked(b *bool) *DecisionUpdateOne {
-	if b != nil {
-		duo.SetIsLocked(*b)
-	}
-	return duo
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (duo *DecisionUpdateOne) SetCreatedAt(t time.Time) *DecisionUpdateOne {
-	duo.mutation.SetCreatedAt(t)
-	return duo
-}
-
-// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (duo *DecisionUpdateOne) SetNillableCreatedAt(t *time.Time) *DecisionUpdateOne {
-	if t != nil {
-		duo.SetCreatedAt(*t)
-	}
-	return duo
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (duo *DecisionUpdateOne) SetUpdatedAt(t time.Time) *DecisionUpdateOne {
-	duo.mutation.SetUpdatedAt(t)
-	return duo
-}
-
-// SetCreatorID sets the "creator" edge to the User entity by ID.
-func (duo *DecisionUpdateOne) SetCreatorID(id uuid.UUID) *DecisionUpdateOne {
-	duo.mutation.SetCreatorID(id)
-	return duo
-}
-
-// SetNillableCreatorID sets the "creator" edge to the User entity by ID if the given value is not nil.
-func (duo *DecisionUpdateOne) SetNillableCreatorID(id *uuid.UUID) *DecisionUpdateOne {
-	if id != nil {
-		duo = duo.SetCreatorID(*id)
-	}
-	return duo
-}
-
-// SetCreator sets the "creator" edge to the User entity.
-func (duo *DecisionUpdateOne) SetCreator(u *User) *DecisionUpdateOne {
-	return duo.SetCreatorID(u.ID)
-}
-
 // AddDefenderIDs adds the "defenders" edge to the Defender entity by IDs.
 func (duo *DecisionUpdateOne) AddDefenderIDs(ids ...uuid.UUID) *DecisionUpdateOne {
 	duo.mutation.AddDefenderIDs(ids...)
@@ -666,12 +419,6 @@ func (duo *DecisionUpdateOne) AddDefenders(d ...*Defender) *DecisionUpdateOne {
 // Mutation returns the DecisionMutation object of the builder.
 func (duo *DecisionUpdateOne) Mutation() *DecisionMutation {
 	return duo.mutation
-}
-
-// ClearCreator clears the "creator" edge to the User entity.
-func (duo *DecisionUpdateOne) ClearCreator() *DecisionUpdateOne {
-	duo.mutation.ClearCreator()
-	return duo
 }
 
 // ClearDefenders clears all "defenders" edges to the Defender entity.
@@ -710,7 +457,6 @@ func (duo *DecisionUpdateOne) Select(field string, fields ...string) *DecisionUp
 
 // Save executes the query and returns the updated Decision entity.
 func (duo *DecisionUpdateOne) Save(ctx context.Context) (*Decision, error) {
-	duo.defaults()
 	return withHooks(ctx, duo.sqlSave, duo.mutation, duo.hooks)
 }
 
@@ -733,14 +479,6 @@ func (duo *DecisionUpdateOne) Exec(ctx context.Context) error {
 func (duo *DecisionUpdateOne) ExecX(ctx context.Context) {
 	if err := duo.Exec(ctx); err != nil {
 		panic(err)
-	}
-}
-
-// defaults sets the default values of the builder before save.
-func (duo *DecisionUpdateOne) defaults() {
-	if _, ok := duo.mutation.UpdatedAt(); !ok {
-		v := decision.UpdateDefaultUpdatedAt()
-		duo.mutation.SetUpdatedAt(v)
 	}
 }
 
@@ -821,50 +559,6 @@ func (duo *DecisionUpdateOne) sqlSave(ctx context.Context) (_node *Decision, err
 	}
 	if duo.mutation.ConfigurationsCleared() {
 		_spec.ClearField(decision.FieldConfigurations, field.TypeJSON)
-	}
-	if value, ok := duo.mutation.Description(); ok {
-		_spec.SetField(decision.FieldDescription, field.TypeString, value)
-	}
-	if duo.mutation.DescriptionCleared() {
-		_spec.ClearField(decision.FieldDescription, field.TypeString)
-	}
-	if value, ok := duo.mutation.IsLocked(); ok {
-		_spec.SetField(decision.FieldIsLocked, field.TypeBool, value)
-	}
-	if value, ok := duo.mutation.CreatedAt(); ok {
-		_spec.SetField(decision.FieldCreatedAt, field.TypeTime, value)
-	}
-	if value, ok := duo.mutation.UpdatedAt(); ok {
-		_spec.SetField(decision.FieldUpdatedAt, field.TypeTime, value)
-	}
-	if duo.mutation.CreatorCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   decision.CreatorTable,
-			Columns: []string{decision.CreatorColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := duo.mutation.CreatorIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   decision.CreatorTable,
-			Columns: []string{decision.CreatorColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if duo.mutation.DefendersCleared() {
 		edge := &sqlgraph.EdgeSpec{

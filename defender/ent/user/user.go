@@ -3,8 +3,6 @@
 package user
 
 import (
-	"time"
-
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
@@ -23,28 +21,10 @@ const (
 	FieldIsActivated = "is_activated"
 	// FieldIsRoot holds the string denoting the is_root field in the database.
 	FieldIsRoot = "is_root"
-	// FieldCreatedAt holds the string denoting the created_at field in the database.
-	FieldCreatedAt = "created_at"
-	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
-	FieldUpdatedAt = "updated_at"
 	// EdgeGroups holds the string denoting the groups edge name in mutations.
 	EdgeGroups = "groups"
 	// EdgePermissions holds the string denoting the permissions edge name in mutations.
 	EdgePermissions = "permissions"
-	// EdgeCreatedWordlists holds the string denoting the created_wordlists edge name in mutations.
-	EdgeCreatedWordlists = "created_wordlists"
-	// EdgeCreatedEngines holds the string denoting the created_engines edge name in mutations.
-	EdgeCreatedEngines = "created_engines"
-	// EdgeCreatedTargets holds the string denoting the created_targets edge name in mutations.
-	EdgeCreatedTargets = "created_targets"
-	// EdgeCreatedActions holds the string denoting the created_actions edge name in mutations.
-	EdgeCreatedActions = "created_actions"
-	// EdgeCreatedRules holds the string denoting the created_rules edge name in mutations.
-	EdgeCreatedRules = "created_rules"
-	// EdgeCreatedPrinciples holds the string denoting the created_principles edge name in mutations.
-	EdgeCreatedPrinciples = "created_principles"
-	// EdgeCreatedDecisions holds the string denoting the created_decisions edge name in mutations.
-	EdgeCreatedDecisions = "created_decisions"
 	// Table holds the table name of the user in the database.
 	Table = "users"
 	// GroupsTable is the table that holds the groups relation/edge. The primary key declared below.
@@ -57,55 +37,6 @@ const (
 	// PermissionsInverseTable is the table name for the Permission entity.
 	// It exists in this package in order to avoid circular dependency with the "permission" package.
 	PermissionsInverseTable = "permissions"
-	// CreatedWordlistsTable is the table that holds the created_wordlists relation/edge.
-	CreatedWordlistsTable = "wordlists"
-	// CreatedWordlistsInverseTable is the table name for the Wordlist entity.
-	// It exists in this package in order to avoid circular dependency with the "wordlist" package.
-	CreatedWordlistsInverseTable = "wordlists"
-	// CreatedWordlistsColumn is the table column denoting the created_wordlists relation/edge.
-	CreatedWordlistsColumn = "created_by"
-	// CreatedEnginesTable is the table that holds the created_engines relation/edge.
-	CreatedEnginesTable = "engines"
-	// CreatedEnginesInverseTable is the table name for the Engine entity.
-	// It exists in this package in order to avoid circular dependency with the "engine" package.
-	CreatedEnginesInverseTable = "engines"
-	// CreatedEnginesColumn is the table column denoting the created_engines relation/edge.
-	CreatedEnginesColumn = "created_by"
-	// CreatedTargetsTable is the table that holds the created_targets relation/edge.
-	CreatedTargetsTable = "targets"
-	// CreatedTargetsInverseTable is the table name for the Target entity.
-	// It exists in this package in order to avoid circular dependency with the "target" package.
-	CreatedTargetsInverseTable = "targets"
-	// CreatedTargetsColumn is the table column denoting the created_targets relation/edge.
-	CreatedTargetsColumn = "created_by"
-	// CreatedActionsTable is the table that holds the created_actions relation/edge.
-	CreatedActionsTable = "actions"
-	// CreatedActionsInverseTable is the table name for the Action entity.
-	// It exists in this package in order to avoid circular dependency with the "action" package.
-	CreatedActionsInverseTable = "actions"
-	// CreatedActionsColumn is the table column denoting the created_actions relation/edge.
-	CreatedActionsColumn = "created_by"
-	// CreatedRulesTable is the table that holds the created_rules relation/edge.
-	CreatedRulesTable = "rules"
-	// CreatedRulesInverseTable is the table name for the Rule entity.
-	// It exists in this package in order to avoid circular dependency with the "rule" package.
-	CreatedRulesInverseTable = "rules"
-	// CreatedRulesColumn is the table column denoting the created_rules relation/edge.
-	CreatedRulesColumn = "created_by"
-	// CreatedPrinciplesTable is the table that holds the created_principles relation/edge.
-	CreatedPrinciplesTable = "principles"
-	// CreatedPrinciplesInverseTable is the table name for the Principle entity.
-	// It exists in this package in order to avoid circular dependency with the "principle" package.
-	CreatedPrinciplesInverseTable = "principles"
-	// CreatedPrinciplesColumn is the table column denoting the created_principles relation/edge.
-	CreatedPrinciplesColumn = "created_by"
-	// CreatedDecisionsTable is the table that holds the created_decisions relation/edge.
-	CreatedDecisionsTable = "decisions"
-	// CreatedDecisionsInverseTable is the table name for the Decision entity.
-	// It exists in this package in order to avoid circular dependency with the "decision" package.
-	CreatedDecisionsInverseTable = "decisions"
-	// CreatedDecisionsColumn is the table column denoting the created_decisions relation/edge.
-	CreatedDecisionsColumn = "created_by"
 )
 
 // Columns holds all SQL columns for user fields.
@@ -115,8 +46,6 @@ var Columns = []string{
 	FieldIsVerified,
 	FieldIsActivated,
 	FieldIsRoot,
-	FieldCreatedAt,
-	FieldUpdatedAt,
 }
 
 var (
@@ -147,12 +76,6 @@ var (
 	DefaultIsActivated bool
 	// DefaultIsRoot holds the default value on creation for the "is_root" field.
 	DefaultIsRoot bool
-	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
-	DefaultCreatedAt func() time.Time
-	// DefaultUpdatedAt holds the default value on creation for the "updated_at" field.
-	DefaultUpdatedAt func() time.Time
-	// UpdateDefaultUpdatedAt holds the default value on update for the "updated_at" field.
-	UpdateDefaultUpdatedAt func() time.Time
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
@@ -185,16 +108,6 @@ func ByIsRoot(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldIsRoot, opts...).ToFunc()
 }
 
-// ByCreatedAt orders the results by the created_at field.
-func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldCreatedAt, opts...).ToFunc()
-}
-
-// ByUpdatedAt orders the results by the updated_at field.
-func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldUpdatedAt, opts...).ToFunc()
-}
-
 // ByGroupsCount orders the results by groups count.
 func ByGroupsCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -222,104 +135,6 @@ func ByPermissions(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newPermissionsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
-
-// ByCreatedWordlistsCount orders the results by created_wordlists count.
-func ByCreatedWordlistsCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newCreatedWordlistsStep(), opts...)
-	}
-}
-
-// ByCreatedWordlists orders the results by created_wordlists terms.
-func ByCreatedWordlists(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newCreatedWordlistsStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
-
-// ByCreatedEnginesCount orders the results by created_engines count.
-func ByCreatedEnginesCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newCreatedEnginesStep(), opts...)
-	}
-}
-
-// ByCreatedEngines orders the results by created_engines terms.
-func ByCreatedEngines(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newCreatedEnginesStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
-
-// ByCreatedTargetsCount orders the results by created_targets count.
-func ByCreatedTargetsCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newCreatedTargetsStep(), opts...)
-	}
-}
-
-// ByCreatedTargets orders the results by created_targets terms.
-func ByCreatedTargets(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newCreatedTargetsStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
-
-// ByCreatedActionsCount orders the results by created_actions count.
-func ByCreatedActionsCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newCreatedActionsStep(), opts...)
-	}
-}
-
-// ByCreatedActions orders the results by created_actions terms.
-func ByCreatedActions(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newCreatedActionsStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
-
-// ByCreatedRulesCount orders the results by created_rules count.
-func ByCreatedRulesCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newCreatedRulesStep(), opts...)
-	}
-}
-
-// ByCreatedRules orders the results by created_rules terms.
-func ByCreatedRules(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newCreatedRulesStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
-
-// ByCreatedPrinciplesCount orders the results by created_principles count.
-func ByCreatedPrinciplesCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newCreatedPrinciplesStep(), opts...)
-	}
-}
-
-// ByCreatedPrinciples orders the results by created_principles terms.
-func ByCreatedPrinciples(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newCreatedPrinciplesStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
-
-// ByCreatedDecisionsCount orders the results by created_decisions count.
-func ByCreatedDecisionsCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newCreatedDecisionsStep(), opts...)
-	}
-}
-
-// ByCreatedDecisions orders the results by created_decisions terms.
-func ByCreatedDecisions(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newCreatedDecisionsStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
 func newGroupsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -332,54 +147,5 @@ func newPermissionsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(PermissionsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2M, false, PermissionsTable, PermissionsPrimaryKey...),
-	)
-}
-func newCreatedWordlistsStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(CreatedWordlistsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, false, CreatedWordlistsTable, CreatedWordlistsColumn),
-	)
-}
-func newCreatedEnginesStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(CreatedEnginesInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, false, CreatedEnginesTable, CreatedEnginesColumn),
-	)
-}
-func newCreatedTargetsStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(CreatedTargetsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, false, CreatedTargetsTable, CreatedTargetsColumn),
-	)
-}
-func newCreatedActionsStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(CreatedActionsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, false, CreatedActionsTable, CreatedActionsColumn),
-	)
-}
-func newCreatedRulesStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(CreatedRulesInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, false, CreatedRulesTable, CreatedRulesColumn),
-	)
-}
-func newCreatedPrinciplesStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(CreatedPrinciplesInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, false, CreatedPrinciplesTable, CreatedPrinciplesColumn),
-	)
-}
-func newCreatedDecisionsStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(CreatedDecisionsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, false, CreatedDecisionsTable, CreatedDecisionsColumn),
 	)
 }

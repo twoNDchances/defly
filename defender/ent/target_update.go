@@ -9,11 +9,9 @@ import (
 	"defly-defender/ent/predicate"
 	"defly-defender/ent/rule"
 	"defly-defender/ent/target"
-	"defly-defender/ent/user"
 	"defly-defender/ent/wordlist"
 	"errors"
 	"fmt"
-	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -97,26 +95,6 @@ func (tu *TargetUpdate) SetNillableDatatype(t *target.Datatype) *TargetUpdate {
 	return tu
 }
 
-// SetDescription sets the "description" field.
-func (tu *TargetUpdate) SetDescription(s string) *TargetUpdate {
-	tu.mutation.SetDescription(s)
-	return tu
-}
-
-// SetNillableDescription sets the "description" field if the given value is not nil.
-func (tu *TargetUpdate) SetNillableDescription(s *string) *TargetUpdate {
-	if s != nil {
-		tu.SetDescription(*s)
-	}
-	return tu
-}
-
-// ClearDescription clears the value of the "description" field.
-func (tu *TargetUpdate) ClearDescription() *TargetUpdate {
-	tu.mutation.ClearDescription()
-	return tu
-}
-
 // SetPatternID sets the "pattern_id" field.
 func (tu *TargetUpdate) SetPatternID(u uuid.UUID) *TargetUpdate {
 	tu.mutation.SetPatternID(u)
@@ -157,60 +135,6 @@ func (tu *TargetUpdate) ClearWordlistID() *TargetUpdate {
 	return tu
 }
 
-// SetCreatedBy sets the "created_by" field.
-func (tu *TargetUpdate) SetCreatedBy(u uuid.UUID) *TargetUpdate {
-	tu.mutation.SetCreatedBy(u)
-	return tu
-}
-
-// SetNillableCreatedBy sets the "created_by" field if the given value is not nil.
-func (tu *TargetUpdate) SetNillableCreatedBy(u *uuid.UUID) *TargetUpdate {
-	if u != nil {
-		tu.SetCreatedBy(*u)
-	}
-	return tu
-}
-
-// ClearCreatedBy clears the value of the "created_by" field.
-func (tu *TargetUpdate) ClearCreatedBy() *TargetUpdate {
-	tu.mutation.ClearCreatedBy()
-	return tu
-}
-
-// SetIsLocked sets the "is_locked" field.
-func (tu *TargetUpdate) SetIsLocked(b bool) *TargetUpdate {
-	tu.mutation.SetIsLocked(b)
-	return tu
-}
-
-// SetNillableIsLocked sets the "is_locked" field if the given value is not nil.
-func (tu *TargetUpdate) SetNillableIsLocked(b *bool) *TargetUpdate {
-	if b != nil {
-		tu.SetIsLocked(*b)
-	}
-	return tu
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (tu *TargetUpdate) SetCreatedAt(t time.Time) *TargetUpdate {
-	tu.mutation.SetCreatedAt(t)
-	return tu
-}
-
-// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (tu *TargetUpdate) SetNillableCreatedAt(t *time.Time) *TargetUpdate {
-	if t != nil {
-		tu.SetCreatedAt(*t)
-	}
-	return tu
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (tu *TargetUpdate) SetUpdatedAt(t time.Time) *TargetUpdate {
-	tu.mutation.SetUpdatedAt(t)
-	return tu
-}
-
 // SetPattern sets the "pattern" edge to the Pattern entity.
 func (tu *TargetUpdate) SetPattern(p *Pattern) *TargetUpdate {
 	return tu.SetPatternID(p.ID)
@@ -219,25 +143,6 @@ func (tu *TargetUpdate) SetPattern(p *Pattern) *TargetUpdate {
 // SetWordlist sets the "wordlist" edge to the Wordlist entity.
 func (tu *TargetUpdate) SetWordlist(w *Wordlist) *TargetUpdate {
 	return tu.SetWordlistID(w.ID)
-}
-
-// SetCreatorID sets the "creator" edge to the User entity by ID.
-func (tu *TargetUpdate) SetCreatorID(id uuid.UUID) *TargetUpdate {
-	tu.mutation.SetCreatorID(id)
-	return tu
-}
-
-// SetNillableCreatorID sets the "creator" edge to the User entity by ID if the given value is not nil.
-func (tu *TargetUpdate) SetNillableCreatorID(id *uuid.UUID) *TargetUpdate {
-	if id != nil {
-		tu = tu.SetCreatorID(*id)
-	}
-	return tu
-}
-
-// SetCreator sets the "creator" edge to the User entity.
-func (tu *TargetUpdate) SetCreator(u *User) *TargetUpdate {
-	return tu.SetCreatorID(u.ID)
 }
 
 // AddEngineIDs adds the "engines" edge to the Engine entity by IDs.
@@ -287,12 +192,6 @@ func (tu *TargetUpdate) ClearWordlist() *TargetUpdate {
 	return tu
 }
 
-// ClearCreator clears the "creator" edge to the User entity.
-func (tu *TargetUpdate) ClearCreator() *TargetUpdate {
-	tu.mutation.ClearCreator()
-	return tu
-}
-
 // ClearEngines clears all "engines" edges to the Engine entity.
 func (tu *TargetUpdate) ClearEngines() *TargetUpdate {
 	tu.mutation.ClearEngines()
@@ -337,7 +236,6 @@ func (tu *TargetUpdate) RemoveRules(r ...*Rule) *TargetUpdate {
 
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (tu *TargetUpdate) Save(ctx context.Context) (int, error) {
-	tu.defaults()
 	return withHooks(ctx, tu.sqlSave, tu.mutation, tu.hooks)
 }
 
@@ -360,14 +258,6 @@ func (tu *TargetUpdate) Exec(ctx context.Context) error {
 func (tu *TargetUpdate) ExecX(ctx context.Context) {
 	if err := tu.Exec(ctx); err != nil {
 		panic(err)
-	}
-}
-
-// defaults sets the default values of the builder before save.
-func (tu *TargetUpdate) defaults() {
-	if _, ok := tu.mutation.UpdatedAt(); !ok {
-		v := target.UpdateDefaultUpdatedAt()
-		tu.mutation.SetUpdatedAt(v)
 	}
 }
 
@@ -417,21 +307,6 @@ func (tu *TargetUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := tu.mutation.Datatype(); ok {
 		_spec.SetField(target.FieldDatatype, field.TypeEnum, value)
-	}
-	if value, ok := tu.mutation.Description(); ok {
-		_spec.SetField(target.FieldDescription, field.TypeString, value)
-	}
-	if tu.mutation.DescriptionCleared() {
-		_spec.ClearField(target.FieldDescription, field.TypeString)
-	}
-	if value, ok := tu.mutation.IsLocked(); ok {
-		_spec.SetField(target.FieldIsLocked, field.TypeBool, value)
-	}
-	if value, ok := tu.mutation.CreatedAt(); ok {
-		_spec.SetField(target.FieldCreatedAt, field.TypeTime, value)
-	}
-	if value, ok := tu.mutation.UpdatedAt(); ok {
-		_spec.SetField(target.FieldUpdatedAt, field.TypeTime, value)
 	}
 	if tu.mutation.PatternCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -484,35 +359,6 @@ func (tu *TargetUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(wordlist.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if tu.mutation.CreatorCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   target.CreatorTable,
-			Columns: []string{target.CreatorColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := tu.mutation.CreatorIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   target.CreatorTable,
-			Columns: []string{target.CreatorColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -693,26 +539,6 @@ func (tuo *TargetUpdateOne) SetNillableDatatype(t *target.Datatype) *TargetUpdat
 	return tuo
 }
 
-// SetDescription sets the "description" field.
-func (tuo *TargetUpdateOne) SetDescription(s string) *TargetUpdateOne {
-	tuo.mutation.SetDescription(s)
-	return tuo
-}
-
-// SetNillableDescription sets the "description" field if the given value is not nil.
-func (tuo *TargetUpdateOne) SetNillableDescription(s *string) *TargetUpdateOne {
-	if s != nil {
-		tuo.SetDescription(*s)
-	}
-	return tuo
-}
-
-// ClearDescription clears the value of the "description" field.
-func (tuo *TargetUpdateOne) ClearDescription() *TargetUpdateOne {
-	tuo.mutation.ClearDescription()
-	return tuo
-}
-
 // SetPatternID sets the "pattern_id" field.
 func (tuo *TargetUpdateOne) SetPatternID(u uuid.UUID) *TargetUpdateOne {
 	tuo.mutation.SetPatternID(u)
@@ -753,60 +579,6 @@ func (tuo *TargetUpdateOne) ClearWordlistID() *TargetUpdateOne {
 	return tuo
 }
 
-// SetCreatedBy sets the "created_by" field.
-func (tuo *TargetUpdateOne) SetCreatedBy(u uuid.UUID) *TargetUpdateOne {
-	tuo.mutation.SetCreatedBy(u)
-	return tuo
-}
-
-// SetNillableCreatedBy sets the "created_by" field if the given value is not nil.
-func (tuo *TargetUpdateOne) SetNillableCreatedBy(u *uuid.UUID) *TargetUpdateOne {
-	if u != nil {
-		tuo.SetCreatedBy(*u)
-	}
-	return tuo
-}
-
-// ClearCreatedBy clears the value of the "created_by" field.
-func (tuo *TargetUpdateOne) ClearCreatedBy() *TargetUpdateOne {
-	tuo.mutation.ClearCreatedBy()
-	return tuo
-}
-
-// SetIsLocked sets the "is_locked" field.
-func (tuo *TargetUpdateOne) SetIsLocked(b bool) *TargetUpdateOne {
-	tuo.mutation.SetIsLocked(b)
-	return tuo
-}
-
-// SetNillableIsLocked sets the "is_locked" field if the given value is not nil.
-func (tuo *TargetUpdateOne) SetNillableIsLocked(b *bool) *TargetUpdateOne {
-	if b != nil {
-		tuo.SetIsLocked(*b)
-	}
-	return tuo
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (tuo *TargetUpdateOne) SetCreatedAt(t time.Time) *TargetUpdateOne {
-	tuo.mutation.SetCreatedAt(t)
-	return tuo
-}
-
-// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (tuo *TargetUpdateOne) SetNillableCreatedAt(t *time.Time) *TargetUpdateOne {
-	if t != nil {
-		tuo.SetCreatedAt(*t)
-	}
-	return tuo
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (tuo *TargetUpdateOne) SetUpdatedAt(t time.Time) *TargetUpdateOne {
-	tuo.mutation.SetUpdatedAt(t)
-	return tuo
-}
-
 // SetPattern sets the "pattern" edge to the Pattern entity.
 func (tuo *TargetUpdateOne) SetPattern(p *Pattern) *TargetUpdateOne {
 	return tuo.SetPatternID(p.ID)
@@ -815,25 +587,6 @@ func (tuo *TargetUpdateOne) SetPattern(p *Pattern) *TargetUpdateOne {
 // SetWordlist sets the "wordlist" edge to the Wordlist entity.
 func (tuo *TargetUpdateOne) SetWordlist(w *Wordlist) *TargetUpdateOne {
 	return tuo.SetWordlistID(w.ID)
-}
-
-// SetCreatorID sets the "creator" edge to the User entity by ID.
-func (tuo *TargetUpdateOne) SetCreatorID(id uuid.UUID) *TargetUpdateOne {
-	tuo.mutation.SetCreatorID(id)
-	return tuo
-}
-
-// SetNillableCreatorID sets the "creator" edge to the User entity by ID if the given value is not nil.
-func (tuo *TargetUpdateOne) SetNillableCreatorID(id *uuid.UUID) *TargetUpdateOne {
-	if id != nil {
-		tuo = tuo.SetCreatorID(*id)
-	}
-	return tuo
-}
-
-// SetCreator sets the "creator" edge to the User entity.
-func (tuo *TargetUpdateOne) SetCreator(u *User) *TargetUpdateOne {
-	return tuo.SetCreatorID(u.ID)
 }
 
 // AddEngineIDs adds the "engines" edge to the Engine entity by IDs.
@@ -880,12 +633,6 @@ func (tuo *TargetUpdateOne) ClearPattern() *TargetUpdateOne {
 // ClearWordlist clears the "wordlist" edge to the Wordlist entity.
 func (tuo *TargetUpdateOne) ClearWordlist() *TargetUpdateOne {
 	tuo.mutation.ClearWordlist()
-	return tuo
-}
-
-// ClearCreator clears the "creator" edge to the User entity.
-func (tuo *TargetUpdateOne) ClearCreator() *TargetUpdateOne {
-	tuo.mutation.ClearCreator()
 	return tuo
 }
 
@@ -946,7 +693,6 @@ func (tuo *TargetUpdateOne) Select(field string, fields ...string) *TargetUpdate
 
 // Save executes the query and returns the updated Target entity.
 func (tuo *TargetUpdateOne) Save(ctx context.Context) (*Target, error) {
-	tuo.defaults()
 	return withHooks(ctx, tuo.sqlSave, tuo.mutation, tuo.hooks)
 }
 
@@ -969,14 +715,6 @@ func (tuo *TargetUpdateOne) Exec(ctx context.Context) error {
 func (tuo *TargetUpdateOne) ExecX(ctx context.Context) {
 	if err := tuo.Exec(ctx); err != nil {
 		panic(err)
-	}
-}
-
-// defaults sets the default values of the builder before save.
-func (tuo *TargetUpdateOne) defaults() {
-	if _, ok := tuo.mutation.UpdatedAt(); !ok {
-		v := target.UpdateDefaultUpdatedAt()
-		tuo.mutation.SetUpdatedAt(v)
 	}
 }
 
@@ -1044,21 +782,6 @@ func (tuo *TargetUpdateOne) sqlSave(ctx context.Context) (_node *Target, err err
 	if value, ok := tuo.mutation.Datatype(); ok {
 		_spec.SetField(target.FieldDatatype, field.TypeEnum, value)
 	}
-	if value, ok := tuo.mutation.Description(); ok {
-		_spec.SetField(target.FieldDescription, field.TypeString, value)
-	}
-	if tuo.mutation.DescriptionCleared() {
-		_spec.ClearField(target.FieldDescription, field.TypeString)
-	}
-	if value, ok := tuo.mutation.IsLocked(); ok {
-		_spec.SetField(target.FieldIsLocked, field.TypeBool, value)
-	}
-	if value, ok := tuo.mutation.CreatedAt(); ok {
-		_spec.SetField(target.FieldCreatedAt, field.TypeTime, value)
-	}
-	if value, ok := tuo.mutation.UpdatedAt(); ok {
-		_spec.SetField(target.FieldUpdatedAt, field.TypeTime, value)
-	}
 	if tuo.mutation.PatternCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -1110,35 +833,6 @@ func (tuo *TargetUpdateOne) sqlSave(ctx context.Context) (_node *Target, err err
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(wordlist.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if tuo.mutation.CreatorCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   target.CreatorTable,
-			Columns: []string{target.CreatorColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := tuo.mutation.CreatorIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   target.CreatorTable,
-			Columns: []string{target.CreatorColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

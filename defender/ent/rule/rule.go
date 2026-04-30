@@ -3,8 +3,6 @@
 package rule
 
 import (
-	"time"
-
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
@@ -29,22 +27,10 @@ const (
 	FieldConfigurations = "configurations"
 	// FieldWordlistID holds the string denoting the wordlist_id field in the database.
 	FieldWordlistID = "wordlist_id"
-	// FieldDescription holds the string denoting the description field in the database.
-	FieldDescription = "description"
-	// FieldCreatedBy holds the string denoting the created_by field in the database.
-	FieldCreatedBy = "created_by"
-	// FieldIsLocked holds the string denoting the is_locked field in the database.
-	FieldIsLocked = "is_locked"
-	// FieldCreatedAt holds the string denoting the created_at field in the database.
-	FieldCreatedAt = "created_at"
-	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
-	FieldUpdatedAt = "updated_at"
 	// EdgeTarget holds the string denoting the target edge name in mutations.
 	EdgeTarget = "target"
 	// EdgeWordlist holds the string denoting the wordlist edge name in mutations.
 	EdgeWordlist = "wordlist"
-	// EdgeCreator holds the string denoting the creator edge name in mutations.
-	EdgeCreator = "creator"
 	// EdgeActions holds the string denoting the actions edge name in mutations.
 	EdgeActions = "actions"
 	// EdgePrinciples holds the string denoting the principles edge name in mutations.
@@ -65,13 +51,6 @@ const (
 	WordlistInverseTable = "wordlists"
 	// WordlistColumn is the table column denoting the wordlist relation/edge.
 	WordlistColumn = "wordlist_id"
-	// CreatorTable is the table that holds the creator relation/edge.
-	CreatorTable = "rules"
-	// CreatorInverseTable is the table name for the User entity.
-	// It exists in this package in order to avoid circular dependency with the "user" package.
-	CreatorInverseTable = "users"
-	// CreatorColumn is the table column denoting the creator relation/edge.
-	CreatorColumn = "created_by"
 	// ActionsTable is the table that holds the actions relation/edge. The primary key declared below.
 	ActionsTable = "rules_actions"
 	// ActionsInverseTable is the table name for the Action entity.
@@ -94,11 +73,6 @@ var Columns = []string{
 	FieldIsInversed,
 	FieldConfigurations,
 	FieldWordlistID,
-	FieldDescription,
-	FieldCreatedBy,
-	FieldIsLocked,
-	FieldCreatedAt,
-	FieldUpdatedAt,
 }
 
 var (
@@ -127,14 +101,6 @@ var (
 	ComparatorValidator func(string) error
 	// DefaultIsInversed holds the default value on creation for the "is_inversed" field.
 	DefaultIsInversed bool
-	// DefaultIsLocked holds the default value on creation for the "is_locked" field.
-	DefaultIsLocked bool
-	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
-	DefaultCreatedAt func() time.Time
-	// DefaultUpdatedAt holds the default value on creation for the "updated_at" field.
-	DefaultUpdatedAt func() time.Time
-	// UpdateDefaultUpdatedAt holds the default value on update for the "updated_at" field.
-	UpdateDefaultUpdatedAt func() time.Time
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
@@ -177,31 +143,6 @@ func ByWordlistID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldWordlistID, opts...).ToFunc()
 }
 
-// ByDescription orders the results by the description field.
-func ByDescription(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldDescription, opts...).ToFunc()
-}
-
-// ByCreatedBy orders the results by the created_by field.
-func ByCreatedBy(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldCreatedBy, opts...).ToFunc()
-}
-
-// ByIsLocked orders the results by the is_locked field.
-func ByIsLocked(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldIsLocked, opts...).ToFunc()
-}
-
-// ByCreatedAt orders the results by the created_at field.
-func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldCreatedAt, opts...).ToFunc()
-}
-
-// ByUpdatedAt orders the results by the updated_at field.
-func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldUpdatedAt, opts...).ToFunc()
-}
-
 // ByTargetField orders the results by target field.
 func ByTargetField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -213,13 +154,6 @@ func ByTargetField(field string, opts ...sql.OrderTermOption) OrderOption {
 func ByWordlistField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newWordlistStep(), sql.OrderByField(field, opts...))
-	}
-}
-
-// ByCreatorField orders the results by creator field.
-func ByCreatorField(field string, opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newCreatorStep(), sql.OrderByField(field, opts...))
 	}
 }
 
@@ -262,13 +196,6 @@ func newWordlistStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(WordlistInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, true, WordlistTable, WordlistColumn),
-	)
-}
-func newCreatorStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(CreatorInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, true, CreatorTable, CreatorColumn),
 	)
 }
 func newActionsStep() *sqlgraph.Step {

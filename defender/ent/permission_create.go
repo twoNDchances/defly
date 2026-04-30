@@ -9,7 +9,6 @@ import (
 	"defly-defender/ent/user"
 	"errors"
 	"fmt"
-	"time"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -32,34 +31,6 @@ func (pc *PermissionCreate) SetAppliedFor(s string) *PermissionCreate {
 // SetAction sets the "action" field.
 func (pc *PermissionCreate) SetAction(s string) *PermissionCreate {
 	pc.mutation.SetAction(s)
-	return pc
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (pc *PermissionCreate) SetCreatedAt(t time.Time) *PermissionCreate {
-	pc.mutation.SetCreatedAt(t)
-	return pc
-}
-
-// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (pc *PermissionCreate) SetNillableCreatedAt(t *time.Time) *PermissionCreate {
-	if t != nil {
-		pc.SetCreatedAt(*t)
-	}
-	return pc
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (pc *PermissionCreate) SetUpdatedAt(t time.Time) *PermissionCreate {
-	pc.mutation.SetUpdatedAt(t)
-	return pc
-}
-
-// SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
-func (pc *PermissionCreate) SetNillableUpdatedAt(t *time.Time) *PermissionCreate {
-	if t != nil {
-		pc.SetUpdatedAt(*t)
-	}
 	return pc
 }
 
@@ -142,14 +113,6 @@ func (pc *PermissionCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (pc *PermissionCreate) defaults() {
-	if _, ok := pc.mutation.CreatedAt(); !ok {
-		v := permission.DefaultCreatedAt()
-		pc.mutation.SetCreatedAt(v)
-	}
-	if _, ok := pc.mutation.UpdatedAt(); !ok {
-		v := permission.DefaultUpdatedAt()
-		pc.mutation.SetUpdatedAt(v)
-	}
 	if _, ok := pc.mutation.ID(); !ok {
 		v := permission.DefaultID()
 		pc.mutation.SetID(v)
@@ -173,12 +136,6 @@ func (pc *PermissionCreate) check() error {
 		if err := permission.ActionValidator(v); err != nil {
 			return &ValidationError{Name: "action", err: fmt.Errorf(`ent: validator failed for field "Permission.action": %w`, err)}
 		}
-	}
-	if _, ok := pc.mutation.CreatedAt(); !ok {
-		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Permission.created_at"`)}
-	}
-	if _, ok := pc.mutation.UpdatedAt(); !ok {
-		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "Permission.updated_at"`)}
 	}
 	return nil
 }
@@ -222,14 +179,6 @@ func (pc *PermissionCreate) createSpec() (*Permission, *sqlgraph.CreateSpec) {
 	if value, ok := pc.mutation.Action(); ok {
 		_spec.SetField(permission.FieldAction, field.TypeString, value)
 		_node.Action = value
-	}
-	if value, ok := pc.mutation.CreatedAt(); ok {
-		_spec.SetField(permission.FieldCreatedAt, field.TypeTime, value)
-		_node.CreatedAt = value
-	}
-	if value, ok := pc.mutation.UpdatedAt(); ok {
-		_spec.SetField(permission.FieldUpdatedAt, field.TypeTime, value)
-		_node.UpdatedAt = value
 	}
 	if nodes := pc.mutation.UsersIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

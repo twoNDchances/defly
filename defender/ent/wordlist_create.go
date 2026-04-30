@@ -6,11 +6,9 @@ import (
 	"context"
 	"defly-defender/ent/rule"
 	"defly-defender/ent/target"
-	"defly-defender/ent/user"
 	"defly-defender/ent/wordlist"
 	"errors"
 	"fmt"
-	"time"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -70,76 +68,6 @@ func (wc *WordlistCreate) SetNillableWordCount(i *int) *WordlistCreate {
 	return wc
 }
 
-// SetDescription sets the "description" field.
-func (wc *WordlistCreate) SetDescription(s string) *WordlistCreate {
-	wc.mutation.SetDescription(s)
-	return wc
-}
-
-// SetNillableDescription sets the "description" field if the given value is not nil.
-func (wc *WordlistCreate) SetNillableDescription(s *string) *WordlistCreate {
-	if s != nil {
-		wc.SetDescription(*s)
-	}
-	return wc
-}
-
-// SetCreatedBy sets the "created_by" field.
-func (wc *WordlistCreate) SetCreatedBy(u uuid.UUID) *WordlistCreate {
-	wc.mutation.SetCreatedBy(u)
-	return wc
-}
-
-// SetNillableCreatedBy sets the "created_by" field if the given value is not nil.
-func (wc *WordlistCreate) SetNillableCreatedBy(u *uuid.UUID) *WordlistCreate {
-	if u != nil {
-		wc.SetCreatedBy(*u)
-	}
-	return wc
-}
-
-// SetIsLocked sets the "is_locked" field.
-func (wc *WordlistCreate) SetIsLocked(b bool) *WordlistCreate {
-	wc.mutation.SetIsLocked(b)
-	return wc
-}
-
-// SetNillableIsLocked sets the "is_locked" field if the given value is not nil.
-func (wc *WordlistCreate) SetNillableIsLocked(b *bool) *WordlistCreate {
-	if b != nil {
-		wc.SetIsLocked(*b)
-	}
-	return wc
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (wc *WordlistCreate) SetCreatedAt(t time.Time) *WordlistCreate {
-	wc.mutation.SetCreatedAt(t)
-	return wc
-}
-
-// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (wc *WordlistCreate) SetNillableCreatedAt(t *time.Time) *WordlistCreate {
-	if t != nil {
-		wc.SetCreatedAt(*t)
-	}
-	return wc
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (wc *WordlistCreate) SetUpdatedAt(t time.Time) *WordlistCreate {
-	wc.mutation.SetUpdatedAt(t)
-	return wc
-}
-
-// SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
-func (wc *WordlistCreate) SetNillableUpdatedAt(t *time.Time) *WordlistCreate {
-	if t != nil {
-		wc.SetUpdatedAt(*t)
-	}
-	return wc
-}
-
 // SetID sets the "id" field.
 func (wc *WordlistCreate) SetID(u uuid.UUID) *WordlistCreate {
 	wc.mutation.SetID(u)
@@ -152,25 +80,6 @@ func (wc *WordlistCreate) SetNillableID(u *uuid.UUID) *WordlistCreate {
 		wc.SetID(*u)
 	}
 	return wc
-}
-
-// SetCreatorID sets the "creator" edge to the User entity by ID.
-func (wc *WordlistCreate) SetCreatorID(id uuid.UUID) *WordlistCreate {
-	wc.mutation.SetCreatorID(id)
-	return wc
-}
-
-// SetNillableCreatorID sets the "creator" edge to the User entity by ID if the given value is not nil.
-func (wc *WordlistCreate) SetNillableCreatorID(id *uuid.UUID) *WordlistCreate {
-	if id != nil {
-		wc = wc.SetCreatorID(*id)
-	}
-	return wc
-}
-
-// SetCreator sets the "creator" edge to the User entity.
-func (wc *WordlistCreate) SetCreator(u *User) *WordlistCreate {
-	return wc.SetCreatorID(u.ID)
 }
 
 // AddTargetIDs adds the "targets" edge to the Target entity by IDs.
@@ -238,18 +147,6 @@ func (wc *WordlistCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (wc *WordlistCreate) defaults() {
-	if _, ok := wc.mutation.IsLocked(); !ok {
-		v := wordlist.DefaultIsLocked
-		wc.mutation.SetIsLocked(v)
-	}
-	if _, ok := wc.mutation.CreatedAt(); !ok {
-		v := wordlist.DefaultCreatedAt()
-		wc.mutation.SetCreatedAt(v)
-	}
-	if _, ok := wc.mutation.UpdatedAt(); !ok {
-		v := wordlist.DefaultUpdatedAt()
-		wc.mutation.SetUpdatedAt(v)
-	}
 	if _, ok := wc.mutation.ID(); !ok {
 		v := wordlist.DefaultID()
 		wc.mutation.SetID(v)
@@ -273,15 +170,6 @@ func (wc *WordlistCreate) check() error {
 		if err := wordlist.TypeValidator(v); err != nil {
 			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "Wordlist.type": %w`, err)}
 		}
-	}
-	if _, ok := wc.mutation.IsLocked(); !ok {
-		return &ValidationError{Name: "is_locked", err: errors.New(`ent: missing required field "Wordlist.is_locked"`)}
-	}
-	if _, ok := wc.mutation.CreatedAt(); !ok {
-		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Wordlist.created_at"`)}
-	}
-	if _, ok := wc.mutation.UpdatedAt(); !ok {
-		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "Wordlist.updated_at"`)}
 	}
 	return nil
 }
@@ -337,39 +225,6 @@ func (wc *WordlistCreate) createSpec() (*Wordlist, *sqlgraph.CreateSpec) {
 	if value, ok := wc.mutation.WordCount(); ok {
 		_spec.SetField(wordlist.FieldWordCount, field.TypeInt, value)
 		_node.WordCount = &value
-	}
-	if value, ok := wc.mutation.Description(); ok {
-		_spec.SetField(wordlist.FieldDescription, field.TypeString, value)
-		_node.Description = &value
-	}
-	if value, ok := wc.mutation.IsLocked(); ok {
-		_spec.SetField(wordlist.FieldIsLocked, field.TypeBool, value)
-		_node.IsLocked = value
-	}
-	if value, ok := wc.mutation.CreatedAt(); ok {
-		_spec.SetField(wordlist.FieldCreatedAt, field.TypeTime, value)
-		_node.CreatedAt = value
-	}
-	if value, ok := wc.mutation.UpdatedAt(); ok {
-		_spec.SetField(wordlist.FieldUpdatedAt, field.TypeTime, value)
-		_node.UpdatedAt = value
-	}
-	if nodes := wc.mutation.CreatorIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   wordlist.CreatorTable,
-			Columns: []string{wordlist.CreatorColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_node.CreatedBy = &nodes[0]
-		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := wc.mutation.TargetsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

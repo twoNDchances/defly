@@ -5,11 +5,9 @@ package ent
 import (
 	"defly-defender/ent/pattern"
 	"defly-defender/ent/target"
-	"defly-defender/ent/user"
 	"defly-defender/ent/wordlist"
 	"fmt"
 	"strings"
-	"time"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
@@ -29,20 +27,10 @@ type Target struct {
 	Type target.Type `json:"type,omitempty"`
 	// Datatype holds the value of the "datatype" field.
 	Datatype target.Datatype `json:"datatype,omitempty"`
-	// Description holds the value of the "description" field.
-	Description *string `json:"description,omitempty"`
 	// PatternID holds the value of the "pattern_id" field.
 	PatternID *uuid.UUID `json:"pattern_id,omitempty"`
 	// WordlistID holds the value of the "wordlist_id" field.
 	WordlistID *uuid.UUID `json:"wordlist_id,omitempty"`
-	// CreatedBy holds the value of the "created_by" field.
-	CreatedBy *uuid.UUID `json:"created_by,omitempty"`
-	// IsLocked holds the value of the "is_locked" field.
-	IsLocked bool `json:"is_locked,omitempty"`
-	// CreatedAt holds the value of the "created_at" field.
-	CreatedAt time.Time `json:"created_at,omitempty"`
-	// UpdatedAt holds the value of the "updated_at" field.
-	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the TargetQuery when eager-loading is set.
 	Edges        TargetEdges `json:"edges"`
@@ -55,15 +43,13 @@ type TargetEdges struct {
 	Pattern *Pattern `json:"pattern,omitempty"`
 	// Wordlist holds the value of the wordlist edge.
 	Wordlist *Wordlist `json:"wordlist,omitempty"`
-	// Creator holds the value of the creator edge.
-	Creator *User `json:"creator,omitempty"`
 	// Engines holds the value of the engines edge.
 	Engines []*Engine `json:"engines,omitempty"`
 	// Rules holds the value of the rules edge.
 	Rules []*Rule `json:"rules,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [5]bool
+	loadedTypes [4]bool
 }
 
 // PatternOrErr returns the Pattern value or an error if the edge
@@ -88,21 +74,10 @@ func (e TargetEdges) WordlistOrErr() (*Wordlist, error) {
 	return nil, &NotLoadedError{edge: "wordlist"}
 }
 
-// CreatorOrErr returns the Creator value or an error if the edge
-// was not loaded in eager-loading, or loaded but was not found.
-func (e TargetEdges) CreatorOrErr() (*User, error) {
-	if e.Creator != nil {
-		return e.Creator, nil
-	} else if e.loadedTypes[2] {
-		return nil, &NotFoundError{label: user.Label}
-	}
-	return nil, &NotLoadedError{edge: "creator"}
-}
-
 // EnginesOrErr returns the Engines value or an error if the edge
 // was not loaded in eager-loading.
 func (e TargetEdges) EnginesOrErr() ([]*Engine, error) {
-	if e.loadedTypes[3] {
+	if e.loadedTypes[2] {
 		return e.Engines, nil
 	}
 	return nil, &NotLoadedError{edge: "engines"}
@@ -111,7 +86,7 @@ func (e TargetEdges) EnginesOrErr() ([]*Engine, error) {
 // RulesOrErr returns the Rules value or an error if the edge
 // was not loaded in eager-loading.
 func (e TargetEdges) RulesOrErr() ([]*Rule, error) {
-	if e.loadedTypes[4] {
+	if e.loadedTypes[3] {
 		return e.Rules, nil
 	}
 	return nil, &NotLoadedError{edge: "rules"}
@@ -122,16 +97,12 @@ func (*Target) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case target.FieldPatternID, target.FieldWordlistID, target.FieldCreatedBy:
+		case target.FieldPatternID, target.FieldWordlistID:
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
-		case target.FieldIsLocked:
-			values[i] = new(sql.NullBool)
 		case target.FieldPhase:
 			values[i] = new(sql.NullInt64)
-		case target.FieldName, target.FieldType, target.FieldDatatype, target.FieldDescription:
+		case target.FieldName, target.FieldType, target.FieldDatatype:
 			values[i] = new(sql.NullString)
-		case target.FieldCreatedAt, target.FieldUpdatedAt:
-			values[i] = new(sql.NullTime)
 		case target.FieldID:
 			values[i] = new(uuid.UUID)
 		default:
@@ -179,13 +150,6 @@ func (t *Target) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				t.Datatype = target.Datatype(value.String)
 			}
-		case target.FieldDescription:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field description", values[i])
-			} else if value.Valid {
-				t.Description = new(string)
-				*t.Description = value.String
-			}
 		case target.FieldPatternID:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field pattern_id", values[i])
@@ -199,31 +163,6 @@ func (t *Target) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				t.WordlistID = new(uuid.UUID)
 				*t.WordlistID = *value.S.(*uuid.UUID)
-			}
-		case target.FieldCreatedBy:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field created_by", values[i])
-			} else if value.Valid {
-				t.CreatedBy = new(uuid.UUID)
-				*t.CreatedBy = *value.S.(*uuid.UUID)
-			}
-		case target.FieldIsLocked:
-			if value, ok := values[i].(*sql.NullBool); !ok {
-				return fmt.Errorf("unexpected type %T for field is_locked", values[i])
-			} else if value.Valid {
-				t.IsLocked = value.Bool
-			}
-		case target.FieldCreatedAt:
-			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field created_at", values[i])
-			} else if value.Valid {
-				t.CreatedAt = value.Time
-			}
-		case target.FieldUpdatedAt:
-			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
-			} else if value.Valid {
-				t.UpdatedAt = value.Time
 			}
 		default:
 			t.selectValues.Set(columns[i], values[i])
@@ -246,11 +185,6 @@ func (t *Target) QueryPattern() *PatternQuery {
 // QueryWordlist queries the "wordlist" edge of the Target entity.
 func (t *Target) QueryWordlist() *WordlistQuery {
 	return NewTargetClient(t.config).QueryWordlist(t)
-}
-
-// QueryCreator queries the "creator" edge of the Target entity.
-func (t *Target) QueryCreator() *UserQuery {
-	return NewTargetClient(t.config).QueryCreator(t)
 }
 
 // QueryEngines queries the "engines" edge of the Target entity.
@@ -298,11 +232,6 @@ func (t *Target) String() string {
 	builder.WriteString("datatype=")
 	builder.WriteString(fmt.Sprintf("%v", t.Datatype))
 	builder.WriteString(", ")
-	if v := t.Description; v != nil {
-		builder.WriteString("description=")
-		builder.WriteString(*v)
-	}
-	builder.WriteString(", ")
 	if v := t.PatternID; v != nil {
 		builder.WriteString("pattern_id=")
 		builder.WriteString(fmt.Sprintf("%v", *v))
@@ -312,20 +241,6 @@ func (t *Target) String() string {
 		builder.WriteString("wordlist_id=")
 		builder.WriteString(fmt.Sprintf("%v", *v))
 	}
-	builder.WriteString(", ")
-	if v := t.CreatedBy; v != nil {
-		builder.WriteString("created_by=")
-		builder.WriteString(fmt.Sprintf("%v", *v))
-	}
-	builder.WriteString(", ")
-	builder.WriteString("is_locked=")
-	builder.WriteString(fmt.Sprintf("%v", t.IsLocked))
-	builder.WriteString(", ")
-	builder.WriteString("created_at=")
-	builder.WriteString(t.CreatedAt.Format(time.ANSIC))
-	builder.WriteString(", ")
-	builder.WriteString("updated_at=")
-	builder.WriteString(t.UpdatedAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

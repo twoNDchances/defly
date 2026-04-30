@@ -10,7 +10,6 @@ import (
 	"defly-defender/ent/user"
 	"errors"
 	"fmt"
-	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -42,26 +41,6 @@ func (gu *GroupUpdate) SetNillableName(s *string) *GroupUpdate {
 	if s != nil {
 		gu.SetName(*s)
 	}
-	return gu
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (gu *GroupUpdate) SetCreatedAt(t time.Time) *GroupUpdate {
-	gu.mutation.SetCreatedAt(t)
-	return gu
-}
-
-// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (gu *GroupUpdate) SetNillableCreatedAt(t *time.Time) *GroupUpdate {
-	if t != nil {
-		gu.SetCreatedAt(*t)
-	}
-	return gu
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (gu *GroupUpdate) SetUpdatedAt(t time.Time) *GroupUpdate {
-	gu.mutation.SetUpdatedAt(t)
 	return gu
 }
 
@@ -144,7 +123,6 @@ func (gu *GroupUpdate) RemovePermissions(p ...*Permission) *GroupUpdate {
 
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (gu *GroupUpdate) Save(ctx context.Context) (int, error) {
-	gu.defaults()
 	return withHooks(ctx, gu.sqlSave, gu.mutation, gu.hooks)
 }
 
@@ -167,14 +145,6 @@ func (gu *GroupUpdate) Exec(ctx context.Context) error {
 func (gu *GroupUpdate) ExecX(ctx context.Context) {
 	if err := gu.Exec(ctx); err != nil {
 		panic(err)
-	}
-}
-
-// defaults sets the default values of the builder before save.
-func (gu *GroupUpdate) defaults() {
-	if _, ok := gu.mutation.UpdatedAt(); !ok {
-		v := group.UpdateDefaultUpdatedAt()
-		gu.mutation.SetUpdatedAt(v)
 	}
 }
 
@@ -202,12 +172,6 @@ func (gu *GroupUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := gu.mutation.Name(); ok {
 		_spec.SetField(group.FieldName, field.TypeString, value)
-	}
-	if value, ok := gu.mutation.CreatedAt(); ok {
-		_spec.SetField(group.FieldCreatedAt, field.TypeTime, value)
-	}
-	if value, ok := gu.mutation.UpdatedAt(); ok {
-		_spec.SetField(group.FieldUpdatedAt, field.TypeTime, value)
 	}
 	if gu.mutation.UsersCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -333,26 +297,6 @@ func (guo *GroupUpdateOne) SetNillableName(s *string) *GroupUpdateOne {
 	return guo
 }
 
-// SetCreatedAt sets the "created_at" field.
-func (guo *GroupUpdateOne) SetCreatedAt(t time.Time) *GroupUpdateOne {
-	guo.mutation.SetCreatedAt(t)
-	return guo
-}
-
-// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (guo *GroupUpdateOne) SetNillableCreatedAt(t *time.Time) *GroupUpdateOne {
-	if t != nil {
-		guo.SetCreatedAt(*t)
-	}
-	return guo
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (guo *GroupUpdateOne) SetUpdatedAt(t time.Time) *GroupUpdateOne {
-	guo.mutation.SetUpdatedAt(t)
-	return guo
-}
-
 // AddUserIDs adds the "users" edge to the User entity by IDs.
 func (guo *GroupUpdateOne) AddUserIDs(ids ...uuid.UUID) *GroupUpdateOne {
 	guo.mutation.AddUserIDs(ids...)
@@ -445,7 +389,6 @@ func (guo *GroupUpdateOne) Select(field string, fields ...string) *GroupUpdateOn
 
 // Save executes the query and returns the updated Group entity.
 func (guo *GroupUpdateOne) Save(ctx context.Context) (*Group, error) {
-	guo.defaults()
 	return withHooks(ctx, guo.sqlSave, guo.mutation, guo.hooks)
 }
 
@@ -468,14 +411,6 @@ func (guo *GroupUpdateOne) Exec(ctx context.Context) error {
 func (guo *GroupUpdateOne) ExecX(ctx context.Context) {
 	if err := guo.Exec(ctx); err != nil {
 		panic(err)
-	}
-}
-
-// defaults sets the default values of the builder before save.
-func (guo *GroupUpdateOne) defaults() {
-	if _, ok := guo.mutation.UpdatedAt(); !ok {
-		v := group.UpdateDefaultUpdatedAt()
-		guo.mutation.SetUpdatedAt(v)
 	}
 }
 
@@ -520,12 +455,6 @@ func (guo *GroupUpdateOne) sqlSave(ctx context.Context) (_node *Group, err error
 	}
 	if value, ok := guo.mutation.Name(); ok {
 		_spec.SetField(group.FieldName, field.TypeString, value)
-	}
-	if value, ok := guo.mutation.CreatedAt(); ok {
-		_spec.SetField(group.FieldCreatedAt, field.TypeTime, value)
-	}
-	if value, ok := guo.mutation.UpdatedAt(); ok {
-		_spec.SetField(group.FieldUpdatedAt, field.TypeTime, value)
 	}
 	if guo.mutation.UsersCleared() {
 		edge := &sqlgraph.EdgeSpec{

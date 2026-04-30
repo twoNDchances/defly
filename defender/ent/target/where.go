@@ -4,7 +4,6 @@ package target
 
 import (
 	"defly-defender/ent/predicate"
-	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -66,11 +65,6 @@ func Phase(v int) predicate.Target {
 	return predicate.Target(sql.FieldEQ(FieldPhase, v))
 }
 
-// Description applies equality check predicate on the "description" field. It's identical to DescriptionEQ.
-func Description(v string) predicate.Target {
-	return predicate.Target(sql.FieldEQ(FieldDescription, v))
-}
-
 // PatternID applies equality check predicate on the "pattern_id" field. It's identical to PatternIDEQ.
 func PatternID(v uuid.UUID) predicate.Target {
 	return predicate.Target(sql.FieldEQ(FieldPatternID, v))
@@ -79,26 +73,6 @@ func PatternID(v uuid.UUID) predicate.Target {
 // WordlistID applies equality check predicate on the "wordlist_id" field. It's identical to WordlistIDEQ.
 func WordlistID(v uuid.UUID) predicate.Target {
 	return predicate.Target(sql.FieldEQ(FieldWordlistID, v))
-}
-
-// CreatedBy applies equality check predicate on the "created_by" field. It's identical to CreatedByEQ.
-func CreatedBy(v uuid.UUID) predicate.Target {
-	return predicate.Target(sql.FieldEQ(FieldCreatedBy, v))
-}
-
-// IsLocked applies equality check predicate on the "is_locked" field. It's identical to IsLockedEQ.
-func IsLocked(v bool) predicate.Target {
-	return predicate.Target(sql.FieldEQ(FieldIsLocked, v))
-}
-
-// CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
-func CreatedAt(v time.Time) predicate.Target {
-	return predicate.Target(sql.FieldEQ(FieldCreatedAt, v))
-}
-
-// UpdatedAt applies equality check predicate on the "updated_at" field. It's identical to UpdatedAtEQ.
-func UpdatedAt(v time.Time) predicate.Target {
-	return predicate.Target(sql.FieldEQ(FieldUpdatedAt, v))
 }
 
 // NameEQ applies the EQ predicate on the "name" field.
@@ -246,81 +220,6 @@ func DatatypeNotIn(vs ...Datatype) predicate.Target {
 	return predicate.Target(sql.FieldNotIn(FieldDatatype, vs...))
 }
 
-// DescriptionEQ applies the EQ predicate on the "description" field.
-func DescriptionEQ(v string) predicate.Target {
-	return predicate.Target(sql.FieldEQ(FieldDescription, v))
-}
-
-// DescriptionNEQ applies the NEQ predicate on the "description" field.
-func DescriptionNEQ(v string) predicate.Target {
-	return predicate.Target(sql.FieldNEQ(FieldDescription, v))
-}
-
-// DescriptionIn applies the In predicate on the "description" field.
-func DescriptionIn(vs ...string) predicate.Target {
-	return predicate.Target(sql.FieldIn(FieldDescription, vs...))
-}
-
-// DescriptionNotIn applies the NotIn predicate on the "description" field.
-func DescriptionNotIn(vs ...string) predicate.Target {
-	return predicate.Target(sql.FieldNotIn(FieldDescription, vs...))
-}
-
-// DescriptionGT applies the GT predicate on the "description" field.
-func DescriptionGT(v string) predicate.Target {
-	return predicate.Target(sql.FieldGT(FieldDescription, v))
-}
-
-// DescriptionGTE applies the GTE predicate on the "description" field.
-func DescriptionGTE(v string) predicate.Target {
-	return predicate.Target(sql.FieldGTE(FieldDescription, v))
-}
-
-// DescriptionLT applies the LT predicate on the "description" field.
-func DescriptionLT(v string) predicate.Target {
-	return predicate.Target(sql.FieldLT(FieldDescription, v))
-}
-
-// DescriptionLTE applies the LTE predicate on the "description" field.
-func DescriptionLTE(v string) predicate.Target {
-	return predicate.Target(sql.FieldLTE(FieldDescription, v))
-}
-
-// DescriptionContains applies the Contains predicate on the "description" field.
-func DescriptionContains(v string) predicate.Target {
-	return predicate.Target(sql.FieldContains(FieldDescription, v))
-}
-
-// DescriptionHasPrefix applies the HasPrefix predicate on the "description" field.
-func DescriptionHasPrefix(v string) predicate.Target {
-	return predicate.Target(sql.FieldHasPrefix(FieldDescription, v))
-}
-
-// DescriptionHasSuffix applies the HasSuffix predicate on the "description" field.
-func DescriptionHasSuffix(v string) predicate.Target {
-	return predicate.Target(sql.FieldHasSuffix(FieldDescription, v))
-}
-
-// DescriptionIsNil applies the IsNil predicate on the "description" field.
-func DescriptionIsNil() predicate.Target {
-	return predicate.Target(sql.FieldIsNull(FieldDescription))
-}
-
-// DescriptionNotNil applies the NotNil predicate on the "description" field.
-func DescriptionNotNil() predicate.Target {
-	return predicate.Target(sql.FieldNotNull(FieldDescription))
-}
-
-// DescriptionEqualFold applies the EqualFold predicate on the "description" field.
-func DescriptionEqualFold(v string) predicate.Target {
-	return predicate.Target(sql.FieldEqualFold(FieldDescription, v))
-}
-
-// DescriptionContainsFold applies the ContainsFold predicate on the "description" field.
-func DescriptionContainsFold(v string) predicate.Target {
-	return predicate.Target(sql.FieldContainsFold(FieldDescription, v))
-}
-
 // PatternIDEQ applies the EQ predicate on the "pattern_id" field.
 func PatternIDEQ(v uuid.UUID) predicate.Target {
 	return predicate.Target(sql.FieldEQ(FieldPatternID, v))
@@ -381,126 +280,6 @@ func WordlistIDNotNil() predicate.Target {
 	return predicate.Target(sql.FieldNotNull(FieldWordlistID))
 }
 
-// CreatedByEQ applies the EQ predicate on the "created_by" field.
-func CreatedByEQ(v uuid.UUID) predicate.Target {
-	return predicate.Target(sql.FieldEQ(FieldCreatedBy, v))
-}
-
-// CreatedByNEQ applies the NEQ predicate on the "created_by" field.
-func CreatedByNEQ(v uuid.UUID) predicate.Target {
-	return predicate.Target(sql.FieldNEQ(FieldCreatedBy, v))
-}
-
-// CreatedByIn applies the In predicate on the "created_by" field.
-func CreatedByIn(vs ...uuid.UUID) predicate.Target {
-	return predicate.Target(sql.FieldIn(FieldCreatedBy, vs...))
-}
-
-// CreatedByNotIn applies the NotIn predicate on the "created_by" field.
-func CreatedByNotIn(vs ...uuid.UUID) predicate.Target {
-	return predicate.Target(sql.FieldNotIn(FieldCreatedBy, vs...))
-}
-
-// CreatedByIsNil applies the IsNil predicate on the "created_by" field.
-func CreatedByIsNil() predicate.Target {
-	return predicate.Target(sql.FieldIsNull(FieldCreatedBy))
-}
-
-// CreatedByNotNil applies the NotNil predicate on the "created_by" field.
-func CreatedByNotNil() predicate.Target {
-	return predicate.Target(sql.FieldNotNull(FieldCreatedBy))
-}
-
-// IsLockedEQ applies the EQ predicate on the "is_locked" field.
-func IsLockedEQ(v bool) predicate.Target {
-	return predicate.Target(sql.FieldEQ(FieldIsLocked, v))
-}
-
-// IsLockedNEQ applies the NEQ predicate on the "is_locked" field.
-func IsLockedNEQ(v bool) predicate.Target {
-	return predicate.Target(sql.FieldNEQ(FieldIsLocked, v))
-}
-
-// CreatedAtEQ applies the EQ predicate on the "created_at" field.
-func CreatedAtEQ(v time.Time) predicate.Target {
-	return predicate.Target(sql.FieldEQ(FieldCreatedAt, v))
-}
-
-// CreatedAtNEQ applies the NEQ predicate on the "created_at" field.
-func CreatedAtNEQ(v time.Time) predicate.Target {
-	return predicate.Target(sql.FieldNEQ(FieldCreatedAt, v))
-}
-
-// CreatedAtIn applies the In predicate on the "created_at" field.
-func CreatedAtIn(vs ...time.Time) predicate.Target {
-	return predicate.Target(sql.FieldIn(FieldCreatedAt, vs...))
-}
-
-// CreatedAtNotIn applies the NotIn predicate on the "created_at" field.
-func CreatedAtNotIn(vs ...time.Time) predicate.Target {
-	return predicate.Target(sql.FieldNotIn(FieldCreatedAt, vs...))
-}
-
-// CreatedAtGT applies the GT predicate on the "created_at" field.
-func CreatedAtGT(v time.Time) predicate.Target {
-	return predicate.Target(sql.FieldGT(FieldCreatedAt, v))
-}
-
-// CreatedAtGTE applies the GTE predicate on the "created_at" field.
-func CreatedAtGTE(v time.Time) predicate.Target {
-	return predicate.Target(sql.FieldGTE(FieldCreatedAt, v))
-}
-
-// CreatedAtLT applies the LT predicate on the "created_at" field.
-func CreatedAtLT(v time.Time) predicate.Target {
-	return predicate.Target(sql.FieldLT(FieldCreatedAt, v))
-}
-
-// CreatedAtLTE applies the LTE predicate on the "created_at" field.
-func CreatedAtLTE(v time.Time) predicate.Target {
-	return predicate.Target(sql.FieldLTE(FieldCreatedAt, v))
-}
-
-// UpdatedAtEQ applies the EQ predicate on the "updated_at" field.
-func UpdatedAtEQ(v time.Time) predicate.Target {
-	return predicate.Target(sql.FieldEQ(FieldUpdatedAt, v))
-}
-
-// UpdatedAtNEQ applies the NEQ predicate on the "updated_at" field.
-func UpdatedAtNEQ(v time.Time) predicate.Target {
-	return predicate.Target(sql.FieldNEQ(FieldUpdatedAt, v))
-}
-
-// UpdatedAtIn applies the In predicate on the "updated_at" field.
-func UpdatedAtIn(vs ...time.Time) predicate.Target {
-	return predicate.Target(sql.FieldIn(FieldUpdatedAt, vs...))
-}
-
-// UpdatedAtNotIn applies the NotIn predicate on the "updated_at" field.
-func UpdatedAtNotIn(vs ...time.Time) predicate.Target {
-	return predicate.Target(sql.FieldNotIn(FieldUpdatedAt, vs...))
-}
-
-// UpdatedAtGT applies the GT predicate on the "updated_at" field.
-func UpdatedAtGT(v time.Time) predicate.Target {
-	return predicate.Target(sql.FieldGT(FieldUpdatedAt, v))
-}
-
-// UpdatedAtGTE applies the GTE predicate on the "updated_at" field.
-func UpdatedAtGTE(v time.Time) predicate.Target {
-	return predicate.Target(sql.FieldGTE(FieldUpdatedAt, v))
-}
-
-// UpdatedAtLT applies the LT predicate on the "updated_at" field.
-func UpdatedAtLT(v time.Time) predicate.Target {
-	return predicate.Target(sql.FieldLT(FieldUpdatedAt, v))
-}
-
-// UpdatedAtLTE applies the LTE predicate on the "updated_at" field.
-func UpdatedAtLTE(v time.Time) predicate.Target {
-	return predicate.Target(sql.FieldLTE(FieldUpdatedAt, v))
-}
-
 // HasPattern applies the HasEdge predicate on the "pattern" edge.
 func HasPattern() predicate.Target {
 	return predicate.Target(func(s *sql.Selector) {
@@ -539,29 +318,6 @@ func HasWordlist() predicate.Target {
 func HasWordlistWith(preds ...predicate.Wordlist) predicate.Target {
 	return predicate.Target(func(s *sql.Selector) {
 		step := newWordlistStep()
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
-// HasCreator applies the HasEdge predicate on the "creator" edge.
-func HasCreator() predicate.Target {
-	return predicate.Target(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, CreatorTable, CreatorColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasCreatorWith applies the HasEdge predicate on the "creator" edge with a given conditions (other predicates).
-func HasCreatorWith(preds ...predicate.User) predicate.Target {
-	return predicate.Target(func(s *sql.Selector) {
-		step := newCreatorStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

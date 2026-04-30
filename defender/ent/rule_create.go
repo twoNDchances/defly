@@ -8,11 +8,9 @@ import (
 	"defly-defender/ent/principle"
 	"defly-defender/ent/rule"
 	"defly-defender/ent/target"
-	"defly-defender/ent/user"
 	"defly-defender/ent/wordlist"
 	"errors"
 	"fmt"
-	"time"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -92,76 +90,6 @@ func (rc *RuleCreate) SetNillableWordlistID(u *uuid.UUID) *RuleCreate {
 	return rc
 }
 
-// SetDescription sets the "description" field.
-func (rc *RuleCreate) SetDescription(s string) *RuleCreate {
-	rc.mutation.SetDescription(s)
-	return rc
-}
-
-// SetNillableDescription sets the "description" field if the given value is not nil.
-func (rc *RuleCreate) SetNillableDescription(s *string) *RuleCreate {
-	if s != nil {
-		rc.SetDescription(*s)
-	}
-	return rc
-}
-
-// SetCreatedBy sets the "created_by" field.
-func (rc *RuleCreate) SetCreatedBy(u uuid.UUID) *RuleCreate {
-	rc.mutation.SetCreatedBy(u)
-	return rc
-}
-
-// SetNillableCreatedBy sets the "created_by" field if the given value is not nil.
-func (rc *RuleCreate) SetNillableCreatedBy(u *uuid.UUID) *RuleCreate {
-	if u != nil {
-		rc.SetCreatedBy(*u)
-	}
-	return rc
-}
-
-// SetIsLocked sets the "is_locked" field.
-func (rc *RuleCreate) SetIsLocked(b bool) *RuleCreate {
-	rc.mutation.SetIsLocked(b)
-	return rc
-}
-
-// SetNillableIsLocked sets the "is_locked" field if the given value is not nil.
-func (rc *RuleCreate) SetNillableIsLocked(b *bool) *RuleCreate {
-	if b != nil {
-		rc.SetIsLocked(*b)
-	}
-	return rc
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (rc *RuleCreate) SetCreatedAt(t time.Time) *RuleCreate {
-	rc.mutation.SetCreatedAt(t)
-	return rc
-}
-
-// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (rc *RuleCreate) SetNillableCreatedAt(t *time.Time) *RuleCreate {
-	if t != nil {
-		rc.SetCreatedAt(*t)
-	}
-	return rc
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (rc *RuleCreate) SetUpdatedAt(t time.Time) *RuleCreate {
-	rc.mutation.SetUpdatedAt(t)
-	return rc
-}
-
-// SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
-func (rc *RuleCreate) SetNillableUpdatedAt(t *time.Time) *RuleCreate {
-	if t != nil {
-		rc.SetUpdatedAt(*t)
-	}
-	return rc
-}
-
 // SetID sets the "id" field.
 func (rc *RuleCreate) SetID(u uuid.UUID) *RuleCreate {
 	rc.mutation.SetID(u)
@@ -184,25 +112,6 @@ func (rc *RuleCreate) SetTarget(t *Target) *RuleCreate {
 // SetWordlist sets the "wordlist" edge to the Wordlist entity.
 func (rc *RuleCreate) SetWordlist(w *Wordlist) *RuleCreate {
 	return rc.SetWordlistID(w.ID)
-}
-
-// SetCreatorID sets the "creator" edge to the User entity by ID.
-func (rc *RuleCreate) SetCreatorID(id uuid.UUID) *RuleCreate {
-	rc.mutation.SetCreatorID(id)
-	return rc
-}
-
-// SetNillableCreatorID sets the "creator" edge to the User entity by ID if the given value is not nil.
-func (rc *RuleCreate) SetNillableCreatorID(id *uuid.UUID) *RuleCreate {
-	if id != nil {
-		rc = rc.SetCreatorID(*id)
-	}
-	return rc
-}
-
-// SetCreator sets the "creator" edge to the User entity.
-func (rc *RuleCreate) SetCreator(u *User) *RuleCreate {
-	return rc.SetCreatorID(u.ID)
 }
 
 // AddActionIDs adds the "actions" edge to the Action entity by IDs.
@@ -274,18 +183,6 @@ func (rc *RuleCreate) defaults() {
 		v := rule.DefaultIsInversed
 		rc.mutation.SetIsInversed(v)
 	}
-	if _, ok := rc.mutation.IsLocked(); !ok {
-		v := rule.DefaultIsLocked
-		rc.mutation.SetIsLocked(v)
-	}
-	if _, ok := rc.mutation.CreatedAt(); !ok {
-		v := rule.DefaultCreatedAt()
-		rc.mutation.SetCreatedAt(v)
-	}
-	if _, ok := rc.mutation.UpdatedAt(); !ok {
-		v := rule.DefaultUpdatedAt()
-		rc.mutation.SetUpdatedAt(v)
-	}
 	if _, ok := rc.mutation.ID(); !ok {
 		v := rule.DefaultID()
 		rc.mutation.SetID(v)
@@ -315,15 +212,6 @@ func (rc *RuleCreate) check() error {
 	}
 	if _, ok := rc.mutation.IsInversed(); !ok {
 		return &ValidationError{Name: "is_inversed", err: errors.New(`ent: missing required field "Rule.is_inversed"`)}
-	}
-	if _, ok := rc.mutation.IsLocked(); !ok {
-		return &ValidationError{Name: "is_locked", err: errors.New(`ent: missing required field "Rule.is_locked"`)}
-	}
-	if _, ok := rc.mutation.CreatedAt(); !ok {
-		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Rule.created_at"`)}
-	}
-	if _, ok := rc.mutation.UpdatedAt(); !ok {
-		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "Rule.updated_at"`)}
 	}
 	return nil
 }
@@ -380,22 +268,6 @@ func (rc *RuleCreate) createSpec() (*Rule, *sqlgraph.CreateSpec) {
 		_spec.SetField(rule.FieldConfigurations, field.TypeJSON, value)
 		_node.Configurations = value
 	}
-	if value, ok := rc.mutation.Description(); ok {
-		_spec.SetField(rule.FieldDescription, field.TypeString, value)
-		_node.Description = &value
-	}
-	if value, ok := rc.mutation.IsLocked(); ok {
-		_spec.SetField(rule.FieldIsLocked, field.TypeBool, value)
-		_node.IsLocked = value
-	}
-	if value, ok := rc.mutation.CreatedAt(); ok {
-		_spec.SetField(rule.FieldCreatedAt, field.TypeTime, value)
-		_node.CreatedAt = value
-	}
-	if value, ok := rc.mutation.UpdatedAt(); ok {
-		_spec.SetField(rule.FieldUpdatedAt, field.TypeTime, value)
-		_node.UpdatedAt = value
-	}
 	if nodes := rc.mutation.TargetIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -428,23 +300,6 @@ func (rc *RuleCreate) createSpec() (*Rule, *sqlgraph.CreateSpec) {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.WordlistID = &nodes[0]
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := rc.mutation.CreatorIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   rule.CreatorTable,
-			Columns: []string{rule.CreatorColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_node.CreatedBy = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := rc.mutation.ActionsIDs(); len(nodes) > 0 {

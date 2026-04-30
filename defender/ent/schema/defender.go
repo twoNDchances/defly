@@ -1,8 +1,6 @@
 package schema
 
 import (
-	"time"
-
 	"entgo.io/ent"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
@@ -17,11 +15,8 @@ func (Defender) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.String("name").Unique().NotEmpty(),
-		field.Int("proxy_port").Optional().Nillable(),
 		field.Enum("status").Values("normal", "abnormal").Optional().Nillable(),
 		field.JSON("details", map[string]any{}).Optional(),
-		field.Time("created_at").Default(time.Now),
-		field.Time("updated_at").Default(time.Now).UpdateDefault(time.Now),
 	}
 }
 

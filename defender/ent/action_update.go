@@ -7,10 +7,8 @@ import (
 	"defly-defender/ent/action"
 	"defly-defender/ent/predicate"
 	"defly-defender/ent/rule"
-	"defly-defender/ent/user"
 	"errors"
 	"fmt"
-	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -71,99 +69,6 @@ func (au *ActionUpdate) ClearConfigurations() *ActionUpdate {
 	return au
 }
 
-// SetDescription sets the "description" field.
-func (au *ActionUpdate) SetDescription(s string) *ActionUpdate {
-	au.mutation.SetDescription(s)
-	return au
-}
-
-// SetNillableDescription sets the "description" field if the given value is not nil.
-func (au *ActionUpdate) SetNillableDescription(s *string) *ActionUpdate {
-	if s != nil {
-		au.SetDescription(*s)
-	}
-	return au
-}
-
-// ClearDescription clears the value of the "description" field.
-func (au *ActionUpdate) ClearDescription() *ActionUpdate {
-	au.mutation.ClearDescription()
-	return au
-}
-
-// SetCreatedBy sets the "created_by" field.
-func (au *ActionUpdate) SetCreatedBy(u uuid.UUID) *ActionUpdate {
-	au.mutation.SetCreatedBy(u)
-	return au
-}
-
-// SetNillableCreatedBy sets the "created_by" field if the given value is not nil.
-func (au *ActionUpdate) SetNillableCreatedBy(u *uuid.UUID) *ActionUpdate {
-	if u != nil {
-		au.SetCreatedBy(*u)
-	}
-	return au
-}
-
-// ClearCreatedBy clears the value of the "created_by" field.
-func (au *ActionUpdate) ClearCreatedBy() *ActionUpdate {
-	au.mutation.ClearCreatedBy()
-	return au
-}
-
-// SetIsLocked sets the "is_locked" field.
-func (au *ActionUpdate) SetIsLocked(b bool) *ActionUpdate {
-	au.mutation.SetIsLocked(b)
-	return au
-}
-
-// SetNillableIsLocked sets the "is_locked" field if the given value is not nil.
-func (au *ActionUpdate) SetNillableIsLocked(b *bool) *ActionUpdate {
-	if b != nil {
-		au.SetIsLocked(*b)
-	}
-	return au
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (au *ActionUpdate) SetCreatedAt(t time.Time) *ActionUpdate {
-	au.mutation.SetCreatedAt(t)
-	return au
-}
-
-// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (au *ActionUpdate) SetNillableCreatedAt(t *time.Time) *ActionUpdate {
-	if t != nil {
-		au.SetCreatedAt(*t)
-	}
-	return au
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (au *ActionUpdate) SetUpdatedAt(t time.Time) *ActionUpdate {
-	au.mutation.SetUpdatedAt(t)
-	return au
-}
-
-// SetCreatorID sets the "creator" edge to the User entity by ID.
-func (au *ActionUpdate) SetCreatorID(id uuid.UUID) *ActionUpdate {
-	au.mutation.SetCreatorID(id)
-	return au
-}
-
-// SetNillableCreatorID sets the "creator" edge to the User entity by ID if the given value is not nil.
-func (au *ActionUpdate) SetNillableCreatorID(id *uuid.UUID) *ActionUpdate {
-	if id != nil {
-		au = au.SetCreatorID(*id)
-	}
-	return au
-}
-
-// SetCreator sets the "creator" edge to the User entity.
-func (au *ActionUpdate) SetCreator(u *User) *ActionUpdate {
-	return au.SetCreatorID(u.ID)
-}
-
 // AddRuleIDs adds the "rules" edge to the Rule entity by IDs.
 func (au *ActionUpdate) AddRuleIDs(ids ...uuid.UUID) *ActionUpdate {
 	au.mutation.AddRuleIDs(ids...)
@@ -182,12 +87,6 @@ func (au *ActionUpdate) AddRules(r ...*Rule) *ActionUpdate {
 // Mutation returns the ActionMutation object of the builder.
 func (au *ActionUpdate) Mutation() *ActionMutation {
 	return au.mutation
-}
-
-// ClearCreator clears the "creator" edge to the User entity.
-func (au *ActionUpdate) ClearCreator() *ActionUpdate {
-	au.mutation.ClearCreator()
-	return au
 }
 
 // ClearRules clears all "rules" edges to the Rule entity.
@@ -213,7 +112,6 @@ func (au *ActionUpdate) RemoveRules(r ...*Rule) *ActionUpdate {
 
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (au *ActionUpdate) Save(ctx context.Context) (int, error) {
-	au.defaults()
 	return withHooks(ctx, au.sqlSave, au.mutation, au.hooks)
 }
 
@@ -236,14 +134,6 @@ func (au *ActionUpdate) Exec(ctx context.Context) error {
 func (au *ActionUpdate) ExecX(ctx context.Context) {
 	if err := au.Exec(ctx); err != nil {
 		panic(err)
-	}
-}
-
-// defaults sets the default values of the builder before save.
-func (au *ActionUpdate) defaults() {
-	if _, ok := au.mutation.UpdatedAt(); !ok {
-		v := action.UpdateDefaultUpdatedAt()
-		au.mutation.SetUpdatedAt(v)
 	}
 }
 
@@ -285,50 +175,6 @@ func (au *ActionUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if au.mutation.ConfigurationsCleared() {
 		_spec.ClearField(action.FieldConfigurations, field.TypeJSON)
-	}
-	if value, ok := au.mutation.Description(); ok {
-		_spec.SetField(action.FieldDescription, field.TypeString, value)
-	}
-	if au.mutation.DescriptionCleared() {
-		_spec.ClearField(action.FieldDescription, field.TypeString)
-	}
-	if value, ok := au.mutation.IsLocked(); ok {
-		_spec.SetField(action.FieldIsLocked, field.TypeBool, value)
-	}
-	if value, ok := au.mutation.CreatedAt(); ok {
-		_spec.SetField(action.FieldCreatedAt, field.TypeTime, value)
-	}
-	if value, ok := au.mutation.UpdatedAt(); ok {
-		_spec.SetField(action.FieldUpdatedAt, field.TypeTime, value)
-	}
-	if au.mutation.CreatorCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   action.CreatorTable,
-			Columns: []string{action.CreatorColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := au.mutation.CreatorIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   action.CreatorTable,
-			Columns: []string{action.CreatorColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if au.mutation.RulesCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -435,99 +281,6 @@ func (auo *ActionUpdateOne) ClearConfigurations() *ActionUpdateOne {
 	return auo
 }
 
-// SetDescription sets the "description" field.
-func (auo *ActionUpdateOne) SetDescription(s string) *ActionUpdateOne {
-	auo.mutation.SetDescription(s)
-	return auo
-}
-
-// SetNillableDescription sets the "description" field if the given value is not nil.
-func (auo *ActionUpdateOne) SetNillableDescription(s *string) *ActionUpdateOne {
-	if s != nil {
-		auo.SetDescription(*s)
-	}
-	return auo
-}
-
-// ClearDescription clears the value of the "description" field.
-func (auo *ActionUpdateOne) ClearDescription() *ActionUpdateOne {
-	auo.mutation.ClearDescription()
-	return auo
-}
-
-// SetCreatedBy sets the "created_by" field.
-func (auo *ActionUpdateOne) SetCreatedBy(u uuid.UUID) *ActionUpdateOne {
-	auo.mutation.SetCreatedBy(u)
-	return auo
-}
-
-// SetNillableCreatedBy sets the "created_by" field if the given value is not nil.
-func (auo *ActionUpdateOne) SetNillableCreatedBy(u *uuid.UUID) *ActionUpdateOne {
-	if u != nil {
-		auo.SetCreatedBy(*u)
-	}
-	return auo
-}
-
-// ClearCreatedBy clears the value of the "created_by" field.
-func (auo *ActionUpdateOne) ClearCreatedBy() *ActionUpdateOne {
-	auo.mutation.ClearCreatedBy()
-	return auo
-}
-
-// SetIsLocked sets the "is_locked" field.
-func (auo *ActionUpdateOne) SetIsLocked(b bool) *ActionUpdateOne {
-	auo.mutation.SetIsLocked(b)
-	return auo
-}
-
-// SetNillableIsLocked sets the "is_locked" field if the given value is not nil.
-func (auo *ActionUpdateOne) SetNillableIsLocked(b *bool) *ActionUpdateOne {
-	if b != nil {
-		auo.SetIsLocked(*b)
-	}
-	return auo
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (auo *ActionUpdateOne) SetCreatedAt(t time.Time) *ActionUpdateOne {
-	auo.mutation.SetCreatedAt(t)
-	return auo
-}
-
-// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (auo *ActionUpdateOne) SetNillableCreatedAt(t *time.Time) *ActionUpdateOne {
-	if t != nil {
-		auo.SetCreatedAt(*t)
-	}
-	return auo
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (auo *ActionUpdateOne) SetUpdatedAt(t time.Time) *ActionUpdateOne {
-	auo.mutation.SetUpdatedAt(t)
-	return auo
-}
-
-// SetCreatorID sets the "creator" edge to the User entity by ID.
-func (auo *ActionUpdateOne) SetCreatorID(id uuid.UUID) *ActionUpdateOne {
-	auo.mutation.SetCreatorID(id)
-	return auo
-}
-
-// SetNillableCreatorID sets the "creator" edge to the User entity by ID if the given value is not nil.
-func (auo *ActionUpdateOne) SetNillableCreatorID(id *uuid.UUID) *ActionUpdateOne {
-	if id != nil {
-		auo = auo.SetCreatorID(*id)
-	}
-	return auo
-}
-
-// SetCreator sets the "creator" edge to the User entity.
-func (auo *ActionUpdateOne) SetCreator(u *User) *ActionUpdateOne {
-	return auo.SetCreatorID(u.ID)
-}
-
 // AddRuleIDs adds the "rules" edge to the Rule entity by IDs.
 func (auo *ActionUpdateOne) AddRuleIDs(ids ...uuid.UUID) *ActionUpdateOne {
 	auo.mutation.AddRuleIDs(ids...)
@@ -546,12 +299,6 @@ func (auo *ActionUpdateOne) AddRules(r ...*Rule) *ActionUpdateOne {
 // Mutation returns the ActionMutation object of the builder.
 func (auo *ActionUpdateOne) Mutation() *ActionMutation {
 	return auo.mutation
-}
-
-// ClearCreator clears the "creator" edge to the User entity.
-func (auo *ActionUpdateOne) ClearCreator() *ActionUpdateOne {
-	auo.mutation.ClearCreator()
-	return auo
 }
 
 // ClearRules clears all "rules" edges to the Rule entity.
@@ -590,7 +337,6 @@ func (auo *ActionUpdateOne) Select(field string, fields ...string) *ActionUpdate
 
 // Save executes the query and returns the updated Action entity.
 func (auo *ActionUpdateOne) Save(ctx context.Context) (*Action, error) {
-	auo.defaults()
 	return withHooks(ctx, auo.sqlSave, auo.mutation, auo.hooks)
 }
 
@@ -613,14 +359,6 @@ func (auo *ActionUpdateOne) Exec(ctx context.Context) error {
 func (auo *ActionUpdateOne) ExecX(ctx context.Context) {
 	if err := auo.Exec(ctx); err != nil {
 		panic(err)
-	}
-}
-
-// defaults sets the default values of the builder before save.
-func (auo *ActionUpdateOne) defaults() {
-	if _, ok := auo.mutation.UpdatedAt(); !ok {
-		v := action.UpdateDefaultUpdatedAt()
-		auo.mutation.SetUpdatedAt(v)
 	}
 }
 
@@ -679,50 +417,6 @@ func (auo *ActionUpdateOne) sqlSave(ctx context.Context) (_node *Action, err err
 	}
 	if auo.mutation.ConfigurationsCleared() {
 		_spec.ClearField(action.FieldConfigurations, field.TypeJSON)
-	}
-	if value, ok := auo.mutation.Description(); ok {
-		_spec.SetField(action.FieldDescription, field.TypeString, value)
-	}
-	if auo.mutation.DescriptionCleared() {
-		_spec.ClearField(action.FieldDescription, field.TypeString)
-	}
-	if value, ok := auo.mutation.IsLocked(); ok {
-		_spec.SetField(action.FieldIsLocked, field.TypeBool, value)
-	}
-	if value, ok := auo.mutation.CreatedAt(); ok {
-		_spec.SetField(action.FieldCreatedAt, field.TypeTime, value)
-	}
-	if value, ok := auo.mutation.UpdatedAt(); ok {
-		_spec.SetField(action.FieldUpdatedAt, field.TypeTime, value)
-	}
-	if auo.mutation.CreatorCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   action.CreatorTable,
-			Columns: []string{action.CreatorColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := auo.mutation.CreatorIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   action.CreatorTable,
-			Columns: []string{action.CreatorColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if auo.mutation.RulesCleared() {
 		edge := &sqlgraph.EdgeSpec{

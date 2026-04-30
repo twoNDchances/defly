@@ -9,11 +9,9 @@ import (
 	"defly-defender/ent/principle"
 	"defly-defender/ent/rule"
 	"defly-defender/ent/target"
-	"defly-defender/ent/user"
 	"defly-defender/ent/wordlist"
 	"errors"
 	"fmt"
-	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -149,80 +147,6 @@ func (ru *RuleUpdate) ClearWordlistID() *RuleUpdate {
 	return ru
 }
 
-// SetDescription sets the "description" field.
-func (ru *RuleUpdate) SetDescription(s string) *RuleUpdate {
-	ru.mutation.SetDescription(s)
-	return ru
-}
-
-// SetNillableDescription sets the "description" field if the given value is not nil.
-func (ru *RuleUpdate) SetNillableDescription(s *string) *RuleUpdate {
-	if s != nil {
-		ru.SetDescription(*s)
-	}
-	return ru
-}
-
-// ClearDescription clears the value of the "description" field.
-func (ru *RuleUpdate) ClearDescription() *RuleUpdate {
-	ru.mutation.ClearDescription()
-	return ru
-}
-
-// SetCreatedBy sets the "created_by" field.
-func (ru *RuleUpdate) SetCreatedBy(u uuid.UUID) *RuleUpdate {
-	ru.mutation.SetCreatedBy(u)
-	return ru
-}
-
-// SetNillableCreatedBy sets the "created_by" field if the given value is not nil.
-func (ru *RuleUpdate) SetNillableCreatedBy(u *uuid.UUID) *RuleUpdate {
-	if u != nil {
-		ru.SetCreatedBy(*u)
-	}
-	return ru
-}
-
-// ClearCreatedBy clears the value of the "created_by" field.
-func (ru *RuleUpdate) ClearCreatedBy() *RuleUpdate {
-	ru.mutation.ClearCreatedBy()
-	return ru
-}
-
-// SetIsLocked sets the "is_locked" field.
-func (ru *RuleUpdate) SetIsLocked(b bool) *RuleUpdate {
-	ru.mutation.SetIsLocked(b)
-	return ru
-}
-
-// SetNillableIsLocked sets the "is_locked" field if the given value is not nil.
-func (ru *RuleUpdate) SetNillableIsLocked(b *bool) *RuleUpdate {
-	if b != nil {
-		ru.SetIsLocked(*b)
-	}
-	return ru
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (ru *RuleUpdate) SetCreatedAt(t time.Time) *RuleUpdate {
-	ru.mutation.SetCreatedAt(t)
-	return ru
-}
-
-// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (ru *RuleUpdate) SetNillableCreatedAt(t *time.Time) *RuleUpdate {
-	if t != nil {
-		ru.SetCreatedAt(*t)
-	}
-	return ru
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (ru *RuleUpdate) SetUpdatedAt(t time.Time) *RuleUpdate {
-	ru.mutation.SetUpdatedAt(t)
-	return ru
-}
-
 // SetTarget sets the "target" edge to the Target entity.
 func (ru *RuleUpdate) SetTarget(t *Target) *RuleUpdate {
 	return ru.SetTargetID(t.ID)
@@ -231,25 +155,6 @@ func (ru *RuleUpdate) SetTarget(t *Target) *RuleUpdate {
 // SetWordlist sets the "wordlist" edge to the Wordlist entity.
 func (ru *RuleUpdate) SetWordlist(w *Wordlist) *RuleUpdate {
 	return ru.SetWordlistID(w.ID)
-}
-
-// SetCreatorID sets the "creator" edge to the User entity by ID.
-func (ru *RuleUpdate) SetCreatorID(id uuid.UUID) *RuleUpdate {
-	ru.mutation.SetCreatorID(id)
-	return ru
-}
-
-// SetNillableCreatorID sets the "creator" edge to the User entity by ID if the given value is not nil.
-func (ru *RuleUpdate) SetNillableCreatorID(id *uuid.UUID) *RuleUpdate {
-	if id != nil {
-		ru = ru.SetCreatorID(*id)
-	}
-	return ru
-}
-
-// SetCreator sets the "creator" edge to the User entity.
-func (ru *RuleUpdate) SetCreator(u *User) *RuleUpdate {
-	return ru.SetCreatorID(u.ID)
 }
 
 // AddActionIDs adds the "actions" edge to the Action entity by IDs.
@@ -299,12 +204,6 @@ func (ru *RuleUpdate) ClearWordlist() *RuleUpdate {
 	return ru
 }
 
-// ClearCreator clears the "creator" edge to the User entity.
-func (ru *RuleUpdate) ClearCreator() *RuleUpdate {
-	ru.mutation.ClearCreator()
-	return ru
-}
-
 // ClearActions clears all "actions" edges to the Action entity.
 func (ru *RuleUpdate) ClearActions() *RuleUpdate {
 	ru.mutation.ClearActions()
@@ -349,7 +248,6 @@ func (ru *RuleUpdate) RemovePrinciples(p ...*Principle) *RuleUpdate {
 
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (ru *RuleUpdate) Save(ctx context.Context) (int, error) {
-	ru.defaults()
 	return withHooks(ctx, ru.sqlSave, ru.mutation, ru.hooks)
 }
 
@@ -372,14 +270,6 @@ func (ru *RuleUpdate) Exec(ctx context.Context) error {
 func (ru *RuleUpdate) ExecX(ctx context.Context) {
 	if err := ru.Exec(ctx); err != nil {
 		panic(err)
-	}
-}
-
-// defaults sets the default values of the builder before save.
-func (ru *RuleUpdate) defaults() {
-	if _, ok := ru.mutation.UpdatedAt(); !ok {
-		v := rule.UpdateDefaultUpdatedAt()
-		ru.mutation.SetUpdatedAt(v)
 	}
 }
 
@@ -430,21 +320,6 @@ func (ru *RuleUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if ru.mutation.ConfigurationsCleared() {
 		_spec.ClearField(rule.FieldConfigurations, field.TypeJSON)
-	}
-	if value, ok := ru.mutation.Description(); ok {
-		_spec.SetField(rule.FieldDescription, field.TypeString, value)
-	}
-	if ru.mutation.DescriptionCleared() {
-		_spec.ClearField(rule.FieldDescription, field.TypeString)
-	}
-	if value, ok := ru.mutation.IsLocked(); ok {
-		_spec.SetField(rule.FieldIsLocked, field.TypeBool, value)
-	}
-	if value, ok := ru.mutation.CreatedAt(); ok {
-		_spec.SetField(rule.FieldCreatedAt, field.TypeTime, value)
-	}
-	if value, ok := ru.mutation.UpdatedAt(); ok {
-		_spec.SetField(rule.FieldUpdatedAt, field.TypeTime, value)
 	}
 	if ru.mutation.TargetCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -497,35 +372,6 @@ func (ru *RuleUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(wordlist.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if ru.mutation.CreatorCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   rule.CreatorTable,
-			Columns: []string{rule.CreatorColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := ru.mutation.CreatorIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   rule.CreatorTable,
-			Columns: []string{rule.CreatorColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -758,80 +604,6 @@ func (ruo *RuleUpdateOne) ClearWordlistID() *RuleUpdateOne {
 	return ruo
 }
 
-// SetDescription sets the "description" field.
-func (ruo *RuleUpdateOne) SetDescription(s string) *RuleUpdateOne {
-	ruo.mutation.SetDescription(s)
-	return ruo
-}
-
-// SetNillableDescription sets the "description" field if the given value is not nil.
-func (ruo *RuleUpdateOne) SetNillableDescription(s *string) *RuleUpdateOne {
-	if s != nil {
-		ruo.SetDescription(*s)
-	}
-	return ruo
-}
-
-// ClearDescription clears the value of the "description" field.
-func (ruo *RuleUpdateOne) ClearDescription() *RuleUpdateOne {
-	ruo.mutation.ClearDescription()
-	return ruo
-}
-
-// SetCreatedBy sets the "created_by" field.
-func (ruo *RuleUpdateOne) SetCreatedBy(u uuid.UUID) *RuleUpdateOne {
-	ruo.mutation.SetCreatedBy(u)
-	return ruo
-}
-
-// SetNillableCreatedBy sets the "created_by" field if the given value is not nil.
-func (ruo *RuleUpdateOne) SetNillableCreatedBy(u *uuid.UUID) *RuleUpdateOne {
-	if u != nil {
-		ruo.SetCreatedBy(*u)
-	}
-	return ruo
-}
-
-// ClearCreatedBy clears the value of the "created_by" field.
-func (ruo *RuleUpdateOne) ClearCreatedBy() *RuleUpdateOne {
-	ruo.mutation.ClearCreatedBy()
-	return ruo
-}
-
-// SetIsLocked sets the "is_locked" field.
-func (ruo *RuleUpdateOne) SetIsLocked(b bool) *RuleUpdateOne {
-	ruo.mutation.SetIsLocked(b)
-	return ruo
-}
-
-// SetNillableIsLocked sets the "is_locked" field if the given value is not nil.
-func (ruo *RuleUpdateOne) SetNillableIsLocked(b *bool) *RuleUpdateOne {
-	if b != nil {
-		ruo.SetIsLocked(*b)
-	}
-	return ruo
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (ruo *RuleUpdateOne) SetCreatedAt(t time.Time) *RuleUpdateOne {
-	ruo.mutation.SetCreatedAt(t)
-	return ruo
-}
-
-// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (ruo *RuleUpdateOne) SetNillableCreatedAt(t *time.Time) *RuleUpdateOne {
-	if t != nil {
-		ruo.SetCreatedAt(*t)
-	}
-	return ruo
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (ruo *RuleUpdateOne) SetUpdatedAt(t time.Time) *RuleUpdateOne {
-	ruo.mutation.SetUpdatedAt(t)
-	return ruo
-}
-
 // SetTarget sets the "target" edge to the Target entity.
 func (ruo *RuleUpdateOne) SetTarget(t *Target) *RuleUpdateOne {
 	return ruo.SetTargetID(t.ID)
@@ -840,25 +612,6 @@ func (ruo *RuleUpdateOne) SetTarget(t *Target) *RuleUpdateOne {
 // SetWordlist sets the "wordlist" edge to the Wordlist entity.
 func (ruo *RuleUpdateOne) SetWordlist(w *Wordlist) *RuleUpdateOne {
 	return ruo.SetWordlistID(w.ID)
-}
-
-// SetCreatorID sets the "creator" edge to the User entity by ID.
-func (ruo *RuleUpdateOne) SetCreatorID(id uuid.UUID) *RuleUpdateOne {
-	ruo.mutation.SetCreatorID(id)
-	return ruo
-}
-
-// SetNillableCreatorID sets the "creator" edge to the User entity by ID if the given value is not nil.
-func (ruo *RuleUpdateOne) SetNillableCreatorID(id *uuid.UUID) *RuleUpdateOne {
-	if id != nil {
-		ruo = ruo.SetCreatorID(*id)
-	}
-	return ruo
-}
-
-// SetCreator sets the "creator" edge to the User entity.
-func (ruo *RuleUpdateOne) SetCreator(u *User) *RuleUpdateOne {
-	return ruo.SetCreatorID(u.ID)
 }
 
 // AddActionIDs adds the "actions" edge to the Action entity by IDs.
@@ -905,12 +658,6 @@ func (ruo *RuleUpdateOne) ClearTarget() *RuleUpdateOne {
 // ClearWordlist clears the "wordlist" edge to the Wordlist entity.
 func (ruo *RuleUpdateOne) ClearWordlist() *RuleUpdateOne {
 	ruo.mutation.ClearWordlist()
-	return ruo
-}
-
-// ClearCreator clears the "creator" edge to the User entity.
-func (ruo *RuleUpdateOne) ClearCreator() *RuleUpdateOne {
-	ruo.mutation.ClearCreator()
 	return ruo
 }
 
@@ -971,7 +718,6 @@ func (ruo *RuleUpdateOne) Select(field string, fields ...string) *RuleUpdateOne 
 
 // Save executes the query and returns the updated Rule entity.
 func (ruo *RuleUpdateOne) Save(ctx context.Context) (*Rule, error) {
-	ruo.defaults()
 	return withHooks(ctx, ruo.sqlSave, ruo.mutation, ruo.hooks)
 }
 
@@ -994,14 +740,6 @@ func (ruo *RuleUpdateOne) Exec(ctx context.Context) error {
 func (ruo *RuleUpdateOne) ExecX(ctx context.Context) {
 	if err := ruo.Exec(ctx); err != nil {
 		panic(err)
-	}
-}
-
-// defaults sets the default values of the builder before save.
-func (ruo *RuleUpdateOne) defaults() {
-	if _, ok := ruo.mutation.UpdatedAt(); !ok {
-		v := rule.UpdateDefaultUpdatedAt()
-		ruo.mutation.SetUpdatedAt(v)
 	}
 }
 
@@ -1070,21 +808,6 @@ func (ruo *RuleUpdateOne) sqlSave(ctx context.Context) (_node *Rule, err error) 
 	if ruo.mutation.ConfigurationsCleared() {
 		_spec.ClearField(rule.FieldConfigurations, field.TypeJSON)
 	}
-	if value, ok := ruo.mutation.Description(); ok {
-		_spec.SetField(rule.FieldDescription, field.TypeString, value)
-	}
-	if ruo.mutation.DescriptionCleared() {
-		_spec.ClearField(rule.FieldDescription, field.TypeString)
-	}
-	if value, ok := ruo.mutation.IsLocked(); ok {
-		_spec.SetField(rule.FieldIsLocked, field.TypeBool, value)
-	}
-	if value, ok := ruo.mutation.CreatedAt(); ok {
-		_spec.SetField(rule.FieldCreatedAt, field.TypeTime, value)
-	}
-	if value, ok := ruo.mutation.UpdatedAt(); ok {
-		_spec.SetField(rule.FieldUpdatedAt, field.TypeTime, value)
-	}
 	if ruo.mutation.TargetCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -1136,35 +859,6 @@ func (ruo *RuleUpdateOne) sqlSave(ctx context.Context) (_node *Rule, err error) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(wordlist.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if ruo.mutation.CreatorCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   rule.CreatorTable,
-			Columns: []string{rule.CreatorColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := ruo.mutation.CreatorIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   rule.CreatorTable,
-			Columns: []string{rule.CreatorColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

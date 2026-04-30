@@ -16,7 +16,6 @@ import (
 	"defly-defender/ent/target"
 	"defly-defender/ent/user"
 	"defly-defender/ent/wordlist"
-	"time"
 
 	"github.com/google/uuid"
 )
@@ -31,20 +30,6 @@ func init() {
 	actionDescName := actionFields[1].Descriptor()
 	// action.NameValidator is a validator for the "name" field. It is called by the builders before save.
 	action.NameValidator = actionDescName.Validators[0].(func(string) error)
-	// actionDescIsLocked is the schema descriptor for is_locked field.
-	actionDescIsLocked := actionFields[6].Descriptor()
-	// action.DefaultIsLocked holds the default value on creation for the is_locked field.
-	action.DefaultIsLocked = actionDescIsLocked.Default.(bool)
-	// actionDescCreatedAt is the schema descriptor for created_at field.
-	actionDescCreatedAt := actionFields[7].Descriptor()
-	// action.DefaultCreatedAt holds the default value on creation for the created_at field.
-	action.DefaultCreatedAt = actionDescCreatedAt.Default.(func() time.Time)
-	// actionDescUpdatedAt is the schema descriptor for updated_at field.
-	actionDescUpdatedAt := actionFields[8].Descriptor()
-	// action.DefaultUpdatedAt holds the default value on creation for the updated_at field.
-	action.DefaultUpdatedAt = actionDescUpdatedAt.Default.(func() time.Time)
-	// action.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
-	action.UpdateDefaultUpdatedAt = actionDescUpdatedAt.UpdateDefault.(func() time.Time)
 	// actionDescID is the schema descriptor for id field.
 	actionDescID := actionFields[0].Descriptor()
 	// action.DefaultID holds the default value on creation for the id field.
@@ -55,20 +40,6 @@ func init() {
 	decisionDescName := decisionFields[1].Descriptor()
 	// decision.NameValidator is a validator for the "name" field. It is called by the builders before save.
 	decision.NameValidator = decisionDescName.Validators[0].(func(string) error)
-	// decisionDescIsLocked is the schema descriptor for is_locked field.
-	decisionDescIsLocked := decisionFields[9].Descriptor()
-	// decision.DefaultIsLocked holds the default value on creation for the is_locked field.
-	decision.DefaultIsLocked = decisionDescIsLocked.Default.(bool)
-	// decisionDescCreatedAt is the schema descriptor for created_at field.
-	decisionDescCreatedAt := decisionFields[10].Descriptor()
-	// decision.DefaultCreatedAt holds the default value on creation for the created_at field.
-	decision.DefaultCreatedAt = decisionDescCreatedAt.Default.(func() time.Time)
-	// decisionDescUpdatedAt is the schema descriptor for updated_at field.
-	decisionDescUpdatedAt := decisionFields[11].Descriptor()
-	// decision.DefaultUpdatedAt holds the default value on creation for the updated_at field.
-	decision.DefaultUpdatedAt = decisionDescUpdatedAt.Default.(func() time.Time)
-	// decision.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
-	decision.UpdateDefaultUpdatedAt = decisionDescUpdatedAt.UpdateDefault.(func() time.Time)
 	// decisionDescID is the schema descriptor for id field.
 	decisionDescID := decisionFields[0].Descriptor()
 	// decision.DefaultID holds the default value on creation for the id field.
@@ -79,16 +50,6 @@ func init() {
 	defenderDescName := defenderFields[1].Descriptor()
 	// defender.NameValidator is a validator for the "name" field. It is called by the builders before save.
 	defender.NameValidator = defenderDescName.Validators[0].(func(string) error)
-	// defenderDescCreatedAt is the schema descriptor for created_at field.
-	defenderDescCreatedAt := defenderFields[5].Descriptor()
-	// defender.DefaultCreatedAt holds the default value on creation for the created_at field.
-	defender.DefaultCreatedAt = defenderDescCreatedAt.Default.(func() time.Time)
-	// defenderDescUpdatedAt is the schema descriptor for updated_at field.
-	defenderDescUpdatedAt := defenderFields[6].Descriptor()
-	// defender.DefaultUpdatedAt holds the default value on creation for the updated_at field.
-	defender.DefaultUpdatedAt = defenderDescUpdatedAt.Default.(func() time.Time)
-	// defender.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
-	defender.UpdateDefaultUpdatedAt = defenderDescUpdatedAt.UpdateDefault.(func() time.Time)
 	// defenderDescID is the schema descriptor for id field.
 	defenderDescID := defenderFields[0].Descriptor()
 	// defender.DefaultID holds the default value on creation for the id field.
@@ -103,20 +64,6 @@ func init() {
 	engineDescType := engineFields[3].Descriptor()
 	// engine.TypeValidator is a validator for the "type" field. It is called by the builders before save.
 	engine.TypeValidator = engineDescType.Validators[0].(func(string) error)
-	// engineDescIsLocked is the schema descriptor for is_locked field.
-	engineDescIsLocked := engineFields[8].Descriptor()
-	// engine.DefaultIsLocked holds the default value on creation for the is_locked field.
-	engine.DefaultIsLocked = engineDescIsLocked.Default.(bool)
-	// engineDescCreatedAt is the schema descriptor for created_at field.
-	engineDescCreatedAt := engineFields[9].Descriptor()
-	// engine.DefaultCreatedAt holds the default value on creation for the created_at field.
-	engine.DefaultCreatedAt = engineDescCreatedAt.Default.(func() time.Time)
-	// engineDescUpdatedAt is the schema descriptor for updated_at field.
-	engineDescUpdatedAt := engineFields[10].Descriptor()
-	// engine.DefaultUpdatedAt holds the default value on creation for the updated_at field.
-	engine.DefaultUpdatedAt = engineDescUpdatedAt.Default.(func() time.Time)
-	// engine.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
-	engine.UpdateDefaultUpdatedAt = engineDescUpdatedAt.UpdateDefault.(func() time.Time)
 	// engineDescID is the schema descriptor for id field.
 	engineDescID := engineFields[0].Descriptor()
 	// engine.DefaultID holds the default value on creation for the id field.
@@ -127,16 +74,6 @@ func init() {
 	groupDescName := groupFields[1].Descriptor()
 	// group.NameValidator is a validator for the "name" field. It is called by the builders before save.
 	group.NameValidator = groupDescName.Validators[0].(func(string) error)
-	// groupDescCreatedAt is the schema descriptor for created_at field.
-	groupDescCreatedAt := groupFields[2].Descriptor()
-	// group.DefaultCreatedAt holds the default value on creation for the created_at field.
-	group.DefaultCreatedAt = groupDescCreatedAt.Default.(func() time.Time)
-	// groupDescUpdatedAt is the schema descriptor for updated_at field.
-	groupDescUpdatedAt := groupFields[3].Descriptor()
-	// group.DefaultUpdatedAt holds the default value on creation for the updated_at field.
-	group.DefaultUpdatedAt = groupDescUpdatedAt.Default.(func() time.Time)
-	// group.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
-	group.UpdateDefaultUpdatedAt = groupDescUpdatedAt.UpdateDefault.(func() time.Time)
 	// groupDescID is the schema descriptor for id field.
 	groupDescID := groupFields[0].Descriptor()
 	// group.DefaultID holds the default value on creation for the id field.
@@ -147,16 +84,6 @@ func init() {
 	patternDescName := patternFields[1].Descriptor()
 	// pattern.NameValidator is a validator for the "name" field. It is called by the builders before save.
 	pattern.NameValidator = patternDescName.Validators[0].(func(string) error)
-	// patternDescCreatedAt is the schema descriptor for created_at field.
-	patternDescCreatedAt := patternFields[6].Descriptor()
-	// pattern.DefaultCreatedAt holds the default value on creation for the created_at field.
-	pattern.DefaultCreatedAt = patternDescCreatedAt.Default.(func() time.Time)
-	// patternDescUpdatedAt is the schema descriptor for updated_at field.
-	patternDescUpdatedAt := patternFields[7].Descriptor()
-	// pattern.DefaultUpdatedAt holds the default value on creation for the updated_at field.
-	pattern.DefaultUpdatedAt = patternDescUpdatedAt.Default.(func() time.Time)
-	// pattern.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
-	pattern.UpdateDefaultUpdatedAt = patternDescUpdatedAt.UpdateDefault.(func() time.Time)
 	// patternDescID is the schema descriptor for id field.
 	patternDescID := patternFields[0].Descriptor()
 	// pattern.DefaultID holds the default value on creation for the id field.
@@ -171,16 +98,6 @@ func init() {
 	permissionDescAction := permissionFields[2].Descriptor()
 	// permission.ActionValidator is a validator for the "action" field. It is called by the builders before save.
 	permission.ActionValidator = permissionDescAction.Validators[0].(func(string) error)
-	// permissionDescCreatedAt is the schema descriptor for created_at field.
-	permissionDescCreatedAt := permissionFields[3].Descriptor()
-	// permission.DefaultCreatedAt holds the default value on creation for the created_at field.
-	permission.DefaultCreatedAt = permissionDescCreatedAt.Default.(func() time.Time)
-	// permissionDescUpdatedAt is the schema descriptor for updated_at field.
-	permissionDescUpdatedAt := permissionFields[4].Descriptor()
-	// permission.DefaultUpdatedAt holds the default value on creation for the updated_at field.
-	permission.DefaultUpdatedAt = permissionDescUpdatedAt.Default.(func() time.Time)
-	// permission.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
-	permission.UpdateDefaultUpdatedAt = permissionDescUpdatedAt.UpdateDefault.(func() time.Time)
 	// permissionDescID is the schema descriptor for id field.
 	permissionDescID := permissionFields[0].Descriptor()
 	// permission.DefaultID holds the default value on creation for the id field.
@@ -195,20 +112,6 @@ func init() {
 	principleDescLevel := principleFields[2].Descriptor()
 	// principle.DefaultLevel holds the default value on creation for the level field.
 	principle.DefaultLevel = principleDescLevel.Default.(uint64)
-	// principleDescIsLocked is the schema descriptor for is_locked field.
-	principleDescIsLocked := principleFields[8].Descriptor()
-	// principle.DefaultIsLocked holds the default value on creation for the is_locked field.
-	principle.DefaultIsLocked = principleDescIsLocked.Default.(bool)
-	// principleDescCreatedAt is the schema descriptor for created_at field.
-	principleDescCreatedAt := principleFields[9].Descriptor()
-	// principle.DefaultCreatedAt holds the default value on creation for the created_at field.
-	principle.DefaultCreatedAt = principleDescCreatedAt.Default.(func() time.Time)
-	// principleDescUpdatedAt is the schema descriptor for updated_at field.
-	principleDescUpdatedAt := principleFields[10].Descriptor()
-	// principle.DefaultUpdatedAt holds the default value on creation for the updated_at field.
-	principle.DefaultUpdatedAt = principleDescUpdatedAt.Default.(func() time.Time)
-	// principle.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
-	principle.UpdateDefaultUpdatedAt = principleDescUpdatedAt.UpdateDefault.(func() time.Time)
 	// principleDescID is the schema descriptor for id field.
 	principleDescID := principleFields[0].Descriptor()
 	// principle.DefaultID holds the default value on creation for the id field.
@@ -227,20 +130,6 @@ func init() {
 	ruleDescIsInversed := ruleFields[5].Descriptor()
 	// rule.DefaultIsInversed holds the default value on creation for the is_inversed field.
 	rule.DefaultIsInversed = ruleDescIsInversed.Default.(bool)
-	// ruleDescIsLocked is the schema descriptor for is_locked field.
-	ruleDescIsLocked := ruleFields[10].Descriptor()
-	// rule.DefaultIsLocked holds the default value on creation for the is_locked field.
-	rule.DefaultIsLocked = ruleDescIsLocked.Default.(bool)
-	// ruleDescCreatedAt is the schema descriptor for created_at field.
-	ruleDescCreatedAt := ruleFields[11].Descriptor()
-	// rule.DefaultCreatedAt holds the default value on creation for the created_at field.
-	rule.DefaultCreatedAt = ruleDescCreatedAt.Default.(func() time.Time)
-	// ruleDescUpdatedAt is the schema descriptor for updated_at field.
-	ruleDescUpdatedAt := ruleFields[12].Descriptor()
-	// rule.DefaultUpdatedAt holds the default value on creation for the updated_at field.
-	rule.DefaultUpdatedAt = ruleDescUpdatedAt.Default.(func() time.Time)
-	// rule.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
-	rule.UpdateDefaultUpdatedAt = ruleDescUpdatedAt.UpdateDefault.(func() time.Time)
 	// ruleDescID is the schema descriptor for id field.
 	ruleDescID := ruleFields[0].Descriptor()
 	// rule.DefaultID holds the default value on creation for the id field.
@@ -251,20 +140,6 @@ func init() {
 	targetDescName := targetFields[1].Descriptor()
 	// target.NameValidator is a validator for the "name" field. It is called by the builders before save.
 	target.NameValidator = targetDescName.Validators[0].(func(string) error)
-	// targetDescIsLocked is the schema descriptor for is_locked field.
-	targetDescIsLocked := targetFields[9].Descriptor()
-	// target.DefaultIsLocked holds the default value on creation for the is_locked field.
-	target.DefaultIsLocked = targetDescIsLocked.Default.(bool)
-	// targetDescCreatedAt is the schema descriptor for created_at field.
-	targetDescCreatedAt := targetFields[10].Descriptor()
-	// target.DefaultCreatedAt holds the default value on creation for the created_at field.
-	target.DefaultCreatedAt = targetDescCreatedAt.Default.(func() time.Time)
-	// targetDescUpdatedAt is the schema descriptor for updated_at field.
-	targetDescUpdatedAt := targetFields[11].Descriptor()
-	// target.DefaultUpdatedAt holds the default value on creation for the updated_at field.
-	target.DefaultUpdatedAt = targetDescUpdatedAt.Default.(func() time.Time)
-	// target.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
-	target.UpdateDefaultUpdatedAt = targetDescUpdatedAt.UpdateDefault.(func() time.Time)
 	// targetDescID is the schema descriptor for id field.
 	targetDescID := targetFields[0].Descriptor()
 	// target.DefaultID holds the default value on creation for the id field.
@@ -287,16 +162,6 @@ func init() {
 	userDescIsRoot := userFields[4].Descriptor()
 	// user.DefaultIsRoot holds the default value on creation for the is_root field.
 	user.DefaultIsRoot = userDescIsRoot.Default.(bool)
-	// userDescCreatedAt is the schema descriptor for created_at field.
-	userDescCreatedAt := userFields[5].Descriptor()
-	// user.DefaultCreatedAt holds the default value on creation for the created_at field.
-	user.DefaultCreatedAt = userDescCreatedAt.Default.(func() time.Time)
-	// userDescUpdatedAt is the schema descriptor for updated_at field.
-	userDescUpdatedAt := userFields[6].Descriptor()
-	// user.DefaultUpdatedAt holds the default value on creation for the updated_at field.
-	user.DefaultUpdatedAt = userDescUpdatedAt.Default.(func() time.Time)
-	// user.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
-	user.UpdateDefaultUpdatedAt = userDescUpdatedAt.UpdateDefault.(func() time.Time)
 	// userDescID is the schema descriptor for id field.
 	userDescID := userFields[0].Descriptor()
 	// user.DefaultID holds the default value on creation for the id field.
@@ -307,20 +172,6 @@ func init() {
 	wordlistDescName := wordlistFields[1].Descriptor()
 	// wordlist.NameValidator is a validator for the "name" field. It is called by the builders before save.
 	wordlist.NameValidator = wordlistDescName.Validators[0].(func(string) error)
-	// wordlistDescIsLocked is the schema descriptor for is_locked field.
-	wordlistDescIsLocked := wordlistFields[8].Descriptor()
-	// wordlist.DefaultIsLocked holds the default value on creation for the is_locked field.
-	wordlist.DefaultIsLocked = wordlistDescIsLocked.Default.(bool)
-	// wordlistDescCreatedAt is the schema descriptor for created_at field.
-	wordlistDescCreatedAt := wordlistFields[9].Descriptor()
-	// wordlist.DefaultCreatedAt holds the default value on creation for the created_at field.
-	wordlist.DefaultCreatedAt = wordlistDescCreatedAt.Default.(func() time.Time)
-	// wordlistDescUpdatedAt is the schema descriptor for updated_at field.
-	wordlistDescUpdatedAt := wordlistFields[10].Descriptor()
-	// wordlist.DefaultUpdatedAt holds the default value on creation for the updated_at field.
-	wordlist.DefaultUpdatedAt = wordlistDescUpdatedAt.Default.(func() time.Time)
-	// wordlist.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
-	wordlist.UpdateDefaultUpdatedAt = wordlistDescUpdatedAt.UpdateDefault.(func() time.Time)
 	// wordlistDescID is the schema descriptor for id field.
 	wordlistDescID := wordlistFields[0].Descriptor()
 	// wordlist.DefaultID holds the default value on creation for the id field.

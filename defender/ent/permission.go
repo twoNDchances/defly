@@ -6,7 +6,6 @@ import (
 	"defly-defender/ent/permission"
 	"fmt"
 	"strings"
-	"time"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
@@ -22,10 +21,6 @@ type Permission struct {
 	AppliedFor string `json:"applied_for,omitempty"`
 	// Action holds the value of the "action" field.
 	Action string `json:"action,omitempty"`
-	// CreatedAt holds the value of the "created_at" field.
-	CreatedAt time.Time `json:"created_at,omitempty"`
-	// UpdatedAt holds the value of the "updated_at" field.
-	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the PermissionQuery when eager-loading is set.
 	Edges        PermissionEdges `json:"edges"`
@@ -68,8 +63,6 @@ func (*Permission) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case permission.FieldAppliedFor, permission.FieldAction:
 			values[i] = new(sql.NullString)
-		case permission.FieldCreatedAt, permission.FieldUpdatedAt:
-			values[i] = new(sql.NullTime)
 		case permission.FieldID:
 			values[i] = new(uuid.UUID)
 		default:
@@ -104,18 +97,6 @@ func (pe *Permission) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field action", values[i])
 			} else if value.Valid {
 				pe.Action = value.String
-			}
-		case permission.FieldCreatedAt:
-			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field created_at", values[i])
-			} else if value.Valid {
-				pe.CreatedAt = value.Time
-			}
-		case permission.FieldUpdatedAt:
-			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
-			} else if value.Valid {
-				pe.UpdatedAt = value.Time
 			}
 		default:
 			pe.selectValues.Set(columns[i], values[i])
@@ -168,12 +149,6 @@ func (pe *Permission) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("action=")
 	builder.WriteString(pe.Action)
-	builder.WriteString(", ")
-	builder.WriteString("created_at=")
-	builder.WriteString(pe.CreatedAt.Format(time.ANSIC))
-	builder.WriteString(", ")
-	builder.WriteString("updated_at=")
-	builder.WriteString(pe.UpdatedAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

@@ -15,25 +15,12 @@ var (
 		{Name: "name", Type: field.TypeString, Unique: true},
 		{Name: "type", Type: field.TypeEnum, Enums: []string{"allow", "deny", "log", "request", "report", "suspect", "setter", "score", "level"}},
 		{Name: "configurations", Type: field.TypeJSON, Nullable: true},
-		{Name: "description", Type: field.TypeString, Nullable: true, Size: 2147483647},
-		{Name: "is_locked", Type: field.TypeBool, Default: false},
-		{Name: "created_at", Type: field.TypeTime},
-		{Name: "updated_at", Type: field.TypeTime},
-		{Name: "created_by", Type: field.TypeUUID, Nullable: true},
 	}
 	// ActionsTable holds the schema information for the "actions" table.
 	ActionsTable = &schema.Table{
 		Name:       "actions",
 		Columns:    ActionsColumns,
 		PrimaryKey: []*schema.Column{ActionsColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "actions_users_created_actions",
-				Columns:    []*schema.Column{ActionsColumns[8]},
-				RefColumns: []*schema.Column{UsersColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-		},
 	}
 	// DecisionsColumns holds the columns for the "decisions" table.
 	DecisionsColumns = []*schema.Column{
@@ -44,35 +31,19 @@ var (
 		{Name: "score", Type: field.TypeFloat64},
 		{Name: "action", Type: field.TypeEnum, Enums: []string{"allow", "deny", "rewrite_headers", "rewrite_body", "redirect", "cancel", "rewrite", "save", "erase_cookies", "force_no_cache"}},
 		{Name: "configurations", Type: field.TypeJSON, Nullable: true},
-		{Name: "description", Type: field.TypeString, Nullable: true, Size: 2147483647},
-		{Name: "is_locked", Type: field.TypeBool, Default: false},
-		{Name: "created_at", Type: field.TypeTime},
-		{Name: "updated_at", Type: field.TypeTime},
-		{Name: "created_by", Type: field.TypeUUID, Nullable: true},
 	}
 	// DecisionsTable holds the schema information for the "decisions" table.
 	DecisionsTable = &schema.Table{
 		Name:       "decisions",
 		Columns:    DecisionsColumns,
 		PrimaryKey: []*schema.Column{DecisionsColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "decisions_users_created_decisions",
-				Columns:    []*schema.Column{DecisionsColumns[11]},
-				RefColumns: []*schema.Column{UsersColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-		},
 	}
 	// DefendersColumns holds the columns for the "defenders" table.
 	DefendersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "name", Type: field.TypeString, Unique: true},
-		{Name: "proxy_port", Type: field.TypeInt, Nullable: true},
 		{Name: "status", Type: field.TypeEnum, Nullable: true, Enums: []string{"normal", "abnormal"}},
 		{Name: "details", Type: field.TypeJSON, Nullable: true},
-		{Name: "created_at", Type: field.TypeTime},
-		{Name: "updated_at", Type: field.TypeTime},
 	}
 	// DefendersTable holds the schema information for the "defenders" table.
 	DefendersTable = &schema.Table{
@@ -88,32 +59,17 @@ var (
 		{Name: "type", Type: field.TypeString},
 		{Name: "configurations", Type: field.TypeJSON, Nullable: true},
 		{Name: "output_datatype", Type: field.TypeEnum, Enums: []string{"array", "number", "string"}},
-		{Name: "description", Type: field.TypeString, Nullable: true, Size: 2147483647},
-		{Name: "is_locked", Type: field.TypeBool, Default: false},
-		{Name: "created_at", Type: field.TypeTime},
-		{Name: "updated_at", Type: field.TypeTime},
-		{Name: "created_by", Type: field.TypeUUID, Nullable: true},
 	}
 	// EnginesTable holds the schema information for the "engines" table.
 	EnginesTable = &schema.Table{
 		Name:       "engines",
 		Columns:    EnginesColumns,
 		PrimaryKey: []*schema.Column{EnginesColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "engines_users_created_engines",
-				Columns:    []*schema.Column{EnginesColumns[10]},
-				RefColumns: []*schema.Column{UsersColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-		},
 	}
 	// GroupsColumns holds the columns for the "groups" table.
 	GroupsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "name", Type: field.TypeString},
-		{Name: "created_at", Type: field.TypeTime},
-		{Name: "updated_at", Type: field.TypeTime},
 	}
 	// GroupsTable holds the schema information for the "groups" table.
 	GroupsTable = &schema.Table{
@@ -128,9 +84,6 @@ var (
 		{Name: "phase", Type: field.TypeInt},
 		{Name: "type", Type: field.TypeEnum, Enums: []string{"full", "header", "meta", "query", "body", "file"}},
 		{Name: "datatype", Type: field.TypeEnum, Enums: []string{"array", "number", "string"}},
-		{Name: "description", Type: field.TypeString, Nullable: true, Size: 2147483647},
-		{Name: "created_at", Type: field.TypeTime},
-		{Name: "updated_at", Type: field.TypeTime},
 	}
 	// PatternsTable holds the schema information for the "patterns" table.
 	PatternsTable = &schema.Table{
@@ -143,8 +96,6 @@ var (
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "applied_for", Type: field.TypeString},
 		{Name: "action", Type: field.TypeString},
-		{Name: "created_at", Type: field.TypeTime},
-		{Name: "updated_at", Type: field.TypeTime},
 	}
 	// PermissionsTable holds the schema information for the "permissions" table.
 	PermissionsTable = &schema.Table{
@@ -158,27 +109,12 @@ var (
 		{Name: "name", Type: field.TypeString, Unique: true},
 		{Name: "level", Type: field.TypeUint64, Default: 1},
 		{Name: "phase", Type: field.TypeInt},
-		{Name: "validation_status", Type: field.TypeEnum, Nullable: true, Enums: []string{"pending", "validating", "failed", "passed"}},
-		{Name: "validation_details", Type: field.TypeJSON, Nullable: true},
-		{Name: "description", Type: field.TypeString, Nullable: true, Size: 2147483647},
-		{Name: "is_locked", Type: field.TypeBool, Default: false},
-		{Name: "created_at", Type: field.TypeTime},
-		{Name: "updated_at", Type: field.TypeTime},
-		{Name: "created_by", Type: field.TypeUUID, Nullable: true},
 	}
 	// PrinciplesTable holds the schema information for the "principles" table.
 	PrinciplesTable = &schema.Table{
 		Name:       "principles",
 		Columns:    PrinciplesColumns,
 		PrimaryKey: []*schema.Column{PrinciplesColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "principles_users_created_principles",
-				Columns:    []*schema.Column{PrinciplesColumns[10]},
-				RefColumns: []*schema.Column{UsersColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-		},
 	}
 	// RulesColumns holds the columns for the "rules" table.
 	RulesColumns = []*schema.Column{
@@ -188,12 +124,7 @@ var (
 		{Name: "comparator", Type: field.TypeString},
 		{Name: "is_inversed", Type: field.TypeBool, Default: false},
 		{Name: "configurations", Type: field.TypeJSON, Nullable: true},
-		{Name: "description", Type: field.TypeString, Nullable: true, Size: 2147483647},
-		{Name: "is_locked", Type: field.TypeBool, Default: false},
-		{Name: "created_at", Type: field.TypeTime},
-		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "target_id", Type: field.TypeUUID, Nullable: true},
-		{Name: "created_by", Type: field.TypeUUID, Nullable: true},
 		{Name: "wordlist_id", Type: field.TypeUUID, Nullable: true},
 	}
 	// RulesTable holds the schema information for the "rules" table.
@@ -204,19 +135,13 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "rules_targets_rules",
-				Columns:    []*schema.Column{RulesColumns[10]},
+				Columns:    []*schema.Column{RulesColumns[6]},
 				RefColumns: []*schema.Column{TargetsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
-				Symbol:     "rules_users_created_rules",
-				Columns:    []*schema.Column{RulesColumns[11]},
-				RefColumns: []*schema.Column{UsersColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-			{
 				Symbol:     "rules_wordlists_rules",
-				Columns:    []*schema.Column{RulesColumns[12]},
+				Columns:    []*schema.Column{RulesColumns[7]},
 				RefColumns: []*schema.Column{WordlistsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -229,12 +154,7 @@ var (
 		{Name: "phase", Type: field.TypeInt},
 		{Name: "type", Type: field.TypeEnum, Enums: []string{"getter", "full", "header", "meta", "query", "body", "file"}},
 		{Name: "datatype", Type: field.TypeEnum, Enums: []string{"array", "number", "string"}},
-		{Name: "description", Type: field.TypeString, Nullable: true, Size: 2147483647},
-		{Name: "is_locked", Type: field.TypeBool, Default: false},
-		{Name: "created_at", Type: field.TypeTime},
-		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "pattern_id", Type: field.TypeUUID, Nullable: true},
-		{Name: "created_by", Type: field.TypeUUID, Nullable: true},
 		{Name: "wordlist_id", Type: field.TypeUUID, Nullable: true},
 	}
 	// TargetsTable holds the schema information for the "targets" table.
@@ -245,19 +165,13 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "targets_patterns_targets",
-				Columns:    []*schema.Column{TargetsColumns[9]},
+				Columns:    []*schema.Column{TargetsColumns[5]},
 				RefColumns: []*schema.Column{PatternsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
-				Symbol:     "targets_users_created_targets",
-				Columns:    []*schema.Column{TargetsColumns[10]},
-				RefColumns: []*schema.Column{UsersColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-			{
 				Symbol:     "targets_wordlists_targets",
-				Columns:    []*schema.Column{TargetsColumns[11]},
+				Columns:    []*schema.Column{TargetsColumns[6]},
 				RefColumns: []*schema.Column{WordlistsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -270,8 +184,6 @@ var (
 		{Name: "is_verified", Type: field.TypeBool, Default: false},
 		{Name: "is_activated", Type: field.TypeBool, Default: true},
 		{Name: "is_root", Type: field.TypeBool, Default: false},
-		{Name: "created_at", Type: field.TypeTime},
-		{Name: "updated_at", Type: field.TypeTime},
 	}
 	// UsersTable holds the schema information for the "users" table.
 	UsersTable = &schema.Table{
@@ -287,25 +199,12 @@ var (
 		{Name: "word_file", Type: field.TypeString, Nullable: true, Size: 2147483647},
 		{Name: "word_json", Type: field.TypeJSON, Nullable: true},
 		{Name: "word_count", Type: field.TypeInt, Nullable: true},
-		{Name: "description", Type: field.TypeString, Nullable: true, Size: 2147483647},
-		{Name: "is_locked", Type: field.TypeBool, Default: false},
-		{Name: "created_at", Type: field.TypeTime},
-		{Name: "updated_at", Type: field.TypeTime},
-		{Name: "created_by", Type: field.TypeUUID, Nullable: true},
 	}
 	// WordlistsTable holds the schema information for the "wordlists" table.
 	WordlistsTable = &schema.Table{
 		Name:       "wordlists",
 		Columns:    WordlistsColumns,
 		PrimaryKey: []*schema.Column{WordlistsColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "wordlists_users_created_wordlists",
-				Columns:    []*schema.Column{WordlistsColumns[10]},
-				RefColumns: []*schema.Column{UsersColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-		},
 	}
 	// RulesActionsColumns holds the columns for the "rules_actions" table.
 	RulesActionsColumns = []*schema.Column{
@@ -533,20 +432,13 @@ var (
 )
 
 func init() {
-	ActionsTable.ForeignKeys[0].RefTable = UsersTable
-	DecisionsTable.ForeignKeys[0].RefTable = UsersTable
-	EnginesTable.ForeignKeys[0].RefTable = UsersTable
-	PrinciplesTable.ForeignKeys[0].RefTable = UsersTable
 	PrinciplesTable.Annotation = &entsql.Annotation{
 		Table: "principles",
 	}
 	RulesTable.ForeignKeys[0].RefTable = TargetsTable
-	RulesTable.ForeignKeys[1].RefTable = UsersTable
-	RulesTable.ForeignKeys[2].RefTable = WordlistsTable
+	RulesTable.ForeignKeys[1].RefTable = WordlistsTable
 	TargetsTable.ForeignKeys[0].RefTable = PatternsTable
-	TargetsTable.ForeignKeys[1].RefTable = UsersTable
-	TargetsTable.ForeignKeys[2].RefTable = WordlistsTable
-	WordlistsTable.ForeignKeys[0].RefTable = UsersTable
+	TargetsTable.ForeignKeys[1].RefTable = WordlistsTable
 	RulesActionsTable.ForeignKeys[0].RefTable = ActionsTable
 	RulesActionsTable.ForeignKeys[1].RefTable = RulesTable
 	DefendersPrinciplesTable.ForeignKeys[0].RefTable = DefendersTable

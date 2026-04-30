@@ -4,11 +4,8 @@ package ent
 
 import (
 	"defly-defender/ent/principle"
-	"defly-defender/ent/user"
-	"encoding/json"
 	"fmt"
 	"strings"
-	"time"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
@@ -26,20 +23,6 @@ type Principle struct {
 	Level uint64 `json:"level,omitempty"`
 	// Phase holds the value of the "phase" field.
 	Phase int `json:"phase,omitempty"`
-	// ValidationStatus holds the value of the "validation_status" field.
-	ValidationStatus *principle.ValidationStatus `json:"validation_status,omitempty"`
-	// ValidationDetails holds the value of the "validation_details" field.
-	ValidationDetails map[string]interface{} `json:"validation_details,omitempty"`
-	// Description holds the value of the "description" field.
-	Description *string `json:"description,omitempty"`
-	// CreatedBy holds the value of the "created_by" field.
-	CreatedBy *uuid.UUID `json:"created_by,omitempty"`
-	// IsLocked holds the value of the "is_locked" field.
-	IsLocked bool `json:"is_locked,omitempty"`
-	// CreatedAt holds the value of the "created_at" field.
-	CreatedAt time.Time `json:"created_at,omitempty"`
-	// UpdatedAt holds the value of the "updated_at" field.
-	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the PrincipleQuery when eager-loading is set.
 	Edges        PrincipleEdges `json:"edges"`
@@ -48,32 +31,19 @@ type Principle struct {
 
 // PrincipleEdges holds the relations/edges for other nodes in the graph.
 type PrincipleEdges struct {
-	// Creator holds the value of the creator edge.
-	Creator *User `json:"creator,omitempty"`
 	// Rules holds the value of the rules edge.
 	Rules []*Rule `json:"rules,omitempty"`
 	// Defenders holds the value of the defenders edge.
 	Defenders []*Defender `json:"defenders,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [3]bool
-}
-
-// CreatorOrErr returns the Creator value or an error if the edge
-// was not loaded in eager-loading, or loaded but was not found.
-func (e PrincipleEdges) CreatorOrErr() (*User, error) {
-	if e.Creator != nil {
-		return e.Creator, nil
-	} else if e.loadedTypes[0] {
-		return nil, &NotFoundError{label: user.Label}
-	}
-	return nil, &NotLoadedError{edge: "creator"}
+	loadedTypes [2]bool
 }
 
 // RulesOrErr returns the Rules value or an error if the edge
 // was not loaded in eager-loading.
 func (e PrincipleEdges) RulesOrErr() ([]*Rule, error) {
-	if e.loadedTypes[1] {
+	if e.loadedTypes[0] {
 		return e.Rules, nil
 	}
 	return nil, &NotLoadedError{edge: "rules"}
@@ -82,7 +52,7 @@ func (e PrincipleEdges) RulesOrErr() ([]*Rule, error) {
 // DefendersOrErr returns the Defenders value or an error if the edge
 // was not loaded in eager-loading.
 func (e PrincipleEdges) DefendersOrErr() ([]*Defender, error) {
-	if e.loadedTypes[2] {
+	if e.loadedTypes[1] {
 		return e.Defenders, nil
 	}
 	return nil, &NotLoadedError{edge: "defenders"}
@@ -93,18 +63,10 @@ func (*Principle) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case principle.FieldCreatedBy:
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
-		case principle.FieldValidationDetails:
-			values[i] = new([]byte)
-		case principle.FieldIsLocked:
-			values[i] = new(sql.NullBool)
 		case principle.FieldLevel, principle.FieldPhase:
 			values[i] = new(sql.NullInt64)
-		case principle.FieldName, principle.FieldValidationStatus, principle.FieldDescription:
+		case principle.FieldName:
 			values[i] = new(sql.NullString)
-		case principle.FieldCreatedAt, principle.FieldUpdatedAt:
-			values[i] = new(sql.NullTime)
 		case principle.FieldID:
 			values[i] = new(uuid.UUID)
 		default:
@@ -146,53 +108,6 @@ func (pr *Principle) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				pr.Phase = int(value.Int64)
 			}
-		case principle.FieldValidationStatus:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field validation_status", values[i])
-			} else if value.Valid {
-				pr.ValidationStatus = new(principle.ValidationStatus)
-				*pr.ValidationStatus = principle.ValidationStatus(value.String)
-			}
-		case principle.FieldValidationDetails:
-			if value, ok := values[i].(*[]byte); !ok {
-				return fmt.Errorf("unexpected type %T for field validation_details", values[i])
-			} else if value != nil && len(*value) > 0 {
-				if err := json.Unmarshal(*value, &pr.ValidationDetails); err != nil {
-					return fmt.Errorf("unmarshal field validation_details: %w", err)
-				}
-			}
-		case principle.FieldDescription:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field description", values[i])
-			} else if value.Valid {
-				pr.Description = new(string)
-				*pr.Description = value.String
-			}
-		case principle.FieldCreatedBy:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field created_by", values[i])
-			} else if value.Valid {
-				pr.CreatedBy = new(uuid.UUID)
-				*pr.CreatedBy = *value.S.(*uuid.UUID)
-			}
-		case principle.FieldIsLocked:
-			if value, ok := values[i].(*sql.NullBool); !ok {
-				return fmt.Errorf("unexpected type %T for field is_locked", values[i])
-			} else if value.Valid {
-				pr.IsLocked = value.Bool
-			}
-		case principle.FieldCreatedAt:
-			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field created_at", values[i])
-			} else if value.Valid {
-				pr.CreatedAt = value.Time
-			}
-		case principle.FieldUpdatedAt:
-			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
-			} else if value.Valid {
-				pr.UpdatedAt = value.Time
-			}
 		default:
 			pr.selectValues.Set(columns[i], values[i])
 		}
@@ -204,11 +119,6 @@ func (pr *Principle) assignValues(columns []string, values []any) error {
 // This includes values selected through modifiers, order, etc.
 func (pr *Principle) Value(name string) (ent.Value, error) {
 	return pr.selectValues.Get(name)
-}
-
-// QueryCreator queries the "creator" edge of the Principle entity.
-func (pr *Principle) QueryCreator() *UserQuery {
-	return NewPrincipleClient(pr.config).QueryCreator(pr)
 }
 
 // QueryRules queries the "rules" edge of the Principle entity.
@@ -252,33 +162,6 @@ func (pr *Principle) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("phase=")
 	builder.WriteString(fmt.Sprintf("%v", pr.Phase))
-	builder.WriteString(", ")
-	if v := pr.ValidationStatus; v != nil {
-		builder.WriteString("validation_status=")
-		builder.WriteString(fmt.Sprintf("%v", *v))
-	}
-	builder.WriteString(", ")
-	builder.WriteString("validation_details=")
-	builder.WriteString(fmt.Sprintf("%v", pr.ValidationDetails))
-	builder.WriteString(", ")
-	if v := pr.Description; v != nil {
-		builder.WriteString("description=")
-		builder.WriteString(*v)
-	}
-	builder.WriteString(", ")
-	if v := pr.CreatedBy; v != nil {
-		builder.WriteString("created_by=")
-		builder.WriteString(fmt.Sprintf("%v", *v))
-	}
-	builder.WriteString(", ")
-	builder.WriteString("is_locked=")
-	builder.WriteString(fmt.Sprintf("%v", pr.IsLocked))
-	builder.WriteString(", ")
-	builder.WriteString("created_at=")
-	builder.WriteString(pr.CreatedAt.Format(time.ANSIC))
-	builder.WriteString(", ")
-	builder.WriteString("updated_at=")
-	builder.WriteString(pr.UpdatedAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

@@ -8,11 +8,9 @@ import (
 	"defly-defender/ent/pattern"
 	"defly-defender/ent/rule"
 	"defly-defender/ent/target"
-	"defly-defender/ent/user"
 	"defly-defender/ent/wordlist"
 	"errors"
 	"fmt"
-	"time"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -50,20 +48,6 @@ func (tc *TargetCreate) SetDatatype(t target.Datatype) *TargetCreate {
 	return tc
 }
 
-// SetDescription sets the "description" field.
-func (tc *TargetCreate) SetDescription(s string) *TargetCreate {
-	tc.mutation.SetDescription(s)
-	return tc
-}
-
-// SetNillableDescription sets the "description" field if the given value is not nil.
-func (tc *TargetCreate) SetNillableDescription(s *string) *TargetCreate {
-	if s != nil {
-		tc.SetDescription(*s)
-	}
-	return tc
-}
-
 // SetPatternID sets the "pattern_id" field.
 func (tc *TargetCreate) SetPatternID(u uuid.UUID) *TargetCreate {
 	tc.mutation.SetPatternID(u)
@@ -92,62 +76,6 @@ func (tc *TargetCreate) SetNillableWordlistID(u *uuid.UUID) *TargetCreate {
 	return tc
 }
 
-// SetCreatedBy sets the "created_by" field.
-func (tc *TargetCreate) SetCreatedBy(u uuid.UUID) *TargetCreate {
-	tc.mutation.SetCreatedBy(u)
-	return tc
-}
-
-// SetNillableCreatedBy sets the "created_by" field if the given value is not nil.
-func (tc *TargetCreate) SetNillableCreatedBy(u *uuid.UUID) *TargetCreate {
-	if u != nil {
-		tc.SetCreatedBy(*u)
-	}
-	return tc
-}
-
-// SetIsLocked sets the "is_locked" field.
-func (tc *TargetCreate) SetIsLocked(b bool) *TargetCreate {
-	tc.mutation.SetIsLocked(b)
-	return tc
-}
-
-// SetNillableIsLocked sets the "is_locked" field if the given value is not nil.
-func (tc *TargetCreate) SetNillableIsLocked(b *bool) *TargetCreate {
-	if b != nil {
-		tc.SetIsLocked(*b)
-	}
-	return tc
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (tc *TargetCreate) SetCreatedAt(t time.Time) *TargetCreate {
-	tc.mutation.SetCreatedAt(t)
-	return tc
-}
-
-// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (tc *TargetCreate) SetNillableCreatedAt(t *time.Time) *TargetCreate {
-	if t != nil {
-		tc.SetCreatedAt(*t)
-	}
-	return tc
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (tc *TargetCreate) SetUpdatedAt(t time.Time) *TargetCreate {
-	tc.mutation.SetUpdatedAt(t)
-	return tc
-}
-
-// SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
-func (tc *TargetCreate) SetNillableUpdatedAt(t *time.Time) *TargetCreate {
-	if t != nil {
-		tc.SetUpdatedAt(*t)
-	}
-	return tc
-}
-
 // SetID sets the "id" field.
 func (tc *TargetCreate) SetID(u uuid.UUID) *TargetCreate {
 	tc.mutation.SetID(u)
@@ -170,25 +98,6 @@ func (tc *TargetCreate) SetPattern(p *Pattern) *TargetCreate {
 // SetWordlist sets the "wordlist" edge to the Wordlist entity.
 func (tc *TargetCreate) SetWordlist(w *Wordlist) *TargetCreate {
 	return tc.SetWordlistID(w.ID)
-}
-
-// SetCreatorID sets the "creator" edge to the User entity by ID.
-func (tc *TargetCreate) SetCreatorID(id uuid.UUID) *TargetCreate {
-	tc.mutation.SetCreatorID(id)
-	return tc
-}
-
-// SetNillableCreatorID sets the "creator" edge to the User entity by ID if the given value is not nil.
-func (tc *TargetCreate) SetNillableCreatorID(id *uuid.UUID) *TargetCreate {
-	if id != nil {
-		tc = tc.SetCreatorID(*id)
-	}
-	return tc
-}
-
-// SetCreator sets the "creator" edge to the User entity.
-func (tc *TargetCreate) SetCreator(u *User) *TargetCreate {
-	return tc.SetCreatorID(u.ID)
 }
 
 // AddEngineIDs adds the "engines" edge to the Engine entity by IDs.
@@ -256,18 +165,6 @@ func (tc *TargetCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (tc *TargetCreate) defaults() {
-	if _, ok := tc.mutation.IsLocked(); !ok {
-		v := target.DefaultIsLocked
-		tc.mutation.SetIsLocked(v)
-	}
-	if _, ok := tc.mutation.CreatedAt(); !ok {
-		v := target.DefaultCreatedAt()
-		tc.mutation.SetCreatedAt(v)
-	}
-	if _, ok := tc.mutation.UpdatedAt(); !ok {
-		v := target.DefaultUpdatedAt()
-		tc.mutation.SetUpdatedAt(v)
-	}
 	if _, ok := tc.mutation.ID(); !ok {
 		v := target.DefaultID()
 		tc.mutation.SetID(v)
@@ -302,15 +199,6 @@ func (tc *TargetCreate) check() error {
 		if err := target.DatatypeValidator(v); err != nil {
 			return &ValidationError{Name: "datatype", err: fmt.Errorf(`ent: validator failed for field "Target.datatype": %w`, err)}
 		}
-	}
-	if _, ok := tc.mutation.IsLocked(); !ok {
-		return &ValidationError{Name: "is_locked", err: errors.New(`ent: missing required field "Target.is_locked"`)}
-	}
-	if _, ok := tc.mutation.CreatedAt(); !ok {
-		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Target.created_at"`)}
-	}
-	if _, ok := tc.mutation.UpdatedAt(); !ok {
-		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "Target.updated_at"`)}
 	}
 	return nil
 }
@@ -363,22 +251,6 @@ func (tc *TargetCreate) createSpec() (*Target, *sqlgraph.CreateSpec) {
 		_spec.SetField(target.FieldDatatype, field.TypeEnum, value)
 		_node.Datatype = value
 	}
-	if value, ok := tc.mutation.Description(); ok {
-		_spec.SetField(target.FieldDescription, field.TypeString, value)
-		_node.Description = &value
-	}
-	if value, ok := tc.mutation.IsLocked(); ok {
-		_spec.SetField(target.FieldIsLocked, field.TypeBool, value)
-		_node.IsLocked = value
-	}
-	if value, ok := tc.mutation.CreatedAt(); ok {
-		_spec.SetField(target.FieldCreatedAt, field.TypeTime, value)
-		_node.CreatedAt = value
-	}
-	if value, ok := tc.mutation.UpdatedAt(); ok {
-		_spec.SetField(target.FieldUpdatedAt, field.TypeTime, value)
-		_node.UpdatedAt = value
-	}
 	if nodes := tc.mutation.PatternIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -411,23 +283,6 @@ func (tc *TargetCreate) createSpec() (*Target, *sqlgraph.CreateSpec) {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.WordlistID = &nodes[0]
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := tc.mutation.CreatorIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   target.CreatorTable,
-			Columns: []string{target.CreatorColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_node.CreatedBy = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := tc.mutation.EnginesIDs(); len(nodes) > 0 {

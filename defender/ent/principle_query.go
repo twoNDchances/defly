@@ -9,7 +9,6 @@ import (
 	"defly-defender/ent/predicate"
 	"defly-defender/ent/principle"
 	"defly-defender/ent/rule"
-	"defly-defender/ent/user"
 	"fmt"
 	"math"
 
@@ -27,7 +26,6 @@ type PrincipleQuery struct {
 	order         []principle.OrderOption
 	inters        []Interceptor
 	predicates    []predicate.Principle
-	withCreator   *UserQuery
 	withRules     *RuleQuery
 	withDefenders *DefenderQuery
 	// intermediate query (i.e. traversal path).
@@ -64,28 +62,6 @@ func (pq *PrincipleQuery) Unique(unique bool) *PrincipleQuery {
 func (pq *PrincipleQuery) Order(o ...principle.OrderOption) *PrincipleQuery {
 	pq.order = append(pq.order, o...)
 	return pq
-}
-
-// QueryCreator chains the current query on the "creator" edge.
-func (pq *PrincipleQuery) QueryCreator() *UserQuery {
-	query := (&UserClient{config: pq.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := pq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := pq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(principle.Table, principle.FieldID, selector),
-			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, principle.CreatorTable, principle.CreatorColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(pq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
 }
 
 // QueryRules chains the current query on the "rules" edge.
@@ -324,24 +300,12 @@ func (pq *PrincipleQuery) Clone() *PrincipleQuery {
 		order:         append([]principle.OrderOption{}, pq.order...),
 		inters:        append([]Interceptor{}, pq.inters...),
 		predicates:    append([]predicate.Principle{}, pq.predicates...),
-		withCreator:   pq.withCreator.Clone(),
 		withRules:     pq.withRules.Clone(),
 		withDefenders: pq.withDefenders.Clone(),
 		// clone intermediate query.
 		sql:  pq.sql.Clone(),
 		path: pq.path,
 	}
-}
-
-// WithCreator tells the query-builder to eager-load the nodes that are connected to
-// the "creator" edge. The optional arguments are used to configure the query builder of the edge.
-func (pq *PrincipleQuery) WithCreator(opts ...func(*UserQuery)) *PrincipleQuery {
-	query := (&UserClient{config: pq.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	pq.withCreator = query
-	return pq
 }
 
 // WithRules tells the query-builder to eager-load the nodes that are connected to
@@ -444,8 +408,7 @@ func (pq *PrincipleQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Pr
 	var (
 		nodes       = []*Principle{}
 		_spec       = pq.querySpec()
-		loadedTypes = [3]bool{
-			pq.withCreator != nil,
+		loadedTypes = [2]bool{
 			pq.withRules != nil,
 			pq.withDefenders != nil,
 		}
@@ -468,12 +431,6 @@ func (pq *PrincipleQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Pr
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	if query := pq.withCreator; query != nil {
-		if err := pq.loadCreator(ctx, query, nodes, nil,
-			func(n *Principle, e *User) { n.Edges.Creator = e }); err != nil {
-			return nil, err
-		}
-	}
 	if query := pq.withRules; query != nil {
 		if err := pq.loadRules(ctx, query, nodes,
 			func(n *Principle) { n.Edges.Rules = []*Rule{} },
@@ -491,38 +448,6 @@ func (pq *PrincipleQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Pr
 	return nodes, nil
 }
 
-func (pq *PrincipleQuery) loadCreator(ctx context.Context, query *UserQuery, nodes []*Principle, init func(*Principle), assign func(*Principle, *User)) error {
-	ids := make([]uuid.UUID, 0, len(nodes))
-	nodeids := make(map[uuid.UUID][]*Principle)
-	for i := range nodes {
-		if nodes[i].CreatedBy == nil {
-			continue
-		}
-		fk := *nodes[i].CreatedBy
-		if _, ok := nodeids[fk]; !ok {
-			ids = append(ids, fk)
-		}
-		nodeids[fk] = append(nodeids[fk], nodes[i])
-	}
-	if len(ids) == 0 {
-		return nil
-	}
-	query.Where(user.IDIn(ids...))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		nodes, ok := nodeids[n.ID]
-		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "created_by" returned %v`, n.ID)
-		}
-		for i := range nodes {
-			assign(nodes[i], n)
-		}
-	}
-	return nil
-}
 func (pq *PrincipleQuery) loadRules(ctx context.Context, query *RuleQuery, nodes []*Principle, init func(*Principle), assign func(*Principle, *Rule)) error {
 	edgeIDs := make([]driver.Value, len(nodes))
 	byID := make(map[uuid.UUID]*Principle)
@@ -670,9 +595,6 @@ func (pq *PrincipleQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != principle.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
-		}
-		if pq.withCreator != nil {
-			_spec.Node.AddColumnOnce(principle.FieldCreatedBy)
 		}
 	}
 	if ps := pq.predicates; len(ps) > 0 {

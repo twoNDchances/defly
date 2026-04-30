@@ -6,10 +6,8 @@ import (
 	"context"
 	"defly-defender/ent/decision"
 	"defly-defender/ent/defender"
-	"defly-defender/ent/user"
 	"errors"
 	"fmt"
-	"time"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -59,76 +57,6 @@ func (dc *DecisionCreate) SetConfigurations(m map[string]interface{}) *DecisionC
 	return dc
 }
 
-// SetDescription sets the "description" field.
-func (dc *DecisionCreate) SetDescription(s string) *DecisionCreate {
-	dc.mutation.SetDescription(s)
-	return dc
-}
-
-// SetNillableDescription sets the "description" field if the given value is not nil.
-func (dc *DecisionCreate) SetNillableDescription(s *string) *DecisionCreate {
-	if s != nil {
-		dc.SetDescription(*s)
-	}
-	return dc
-}
-
-// SetCreatedBy sets the "created_by" field.
-func (dc *DecisionCreate) SetCreatedBy(u uuid.UUID) *DecisionCreate {
-	dc.mutation.SetCreatedBy(u)
-	return dc
-}
-
-// SetNillableCreatedBy sets the "created_by" field if the given value is not nil.
-func (dc *DecisionCreate) SetNillableCreatedBy(u *uuid.UUID) *DecisionCreate {
-	if u != nil {
-		dc.SetCreatedBy(*u)
-	}
-	return dc
-}
-
-// SetIsLocked sets the "is_locked" field.
-func (dc *DecisionCreate) SetIsLocked(b bool) *DecisionCreate {
-	dc.mutation.SetIsLocked(b)
-	return dc
-}
-
-// SetNillableIsLocked sets the "is_locked" field if the given value is not nil.
-func (dc *DecisionCreate) SetNillableIsLocked(b *bool) *DecisionCreate {
-	if b != nil {
-		dc.SetIsLocked(*b)
-	}
-	return dc
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (dc *DecisionCreate) SetCreatedAt(t time.Time) *DecisionCreate {
-	dc.mutation.SetCreatedAt(t)
-	return dc
-}
-
-// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (dc *DecisionCreate) SetNillableCreatedAt(t *time.Time) *DecisionCreate {
-	if t != nil {
-		dc.SetCreatedAt(*t)
-	}
-	return dc
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (dc *DecisionCreate) SetUpdatedAt(t time.Time) *DecisionCreate {
-	dc.mutation.SetUpdatedAt(t)
-	return dc
-}
-
-// SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
-func (dc *DecisionCreate) SetNillableUpdatedAt(t *time.Time) *DecisionCreate {
-	if t != nil {
-		dc.SetUpdatedAt(*t)
-	}
-	return dc
-}
-
 // SetID sets the "id" field.
 func (dc *DecisionCreate) SetID(u uuid.UUID) *DecisionCreate {
 	dc.mutation.SetID(u)
@@ -141,25 +69,6 @@ func (dc *DecisionCreate) SetNillableID(u *uuid.UUID) *DecisionCreate {
 		dc.SetID(*u)
 	}
 	return dc
-}
-
-// SetCreatorID sets the "creator" edge to the User entity by ID.
-func (dc *DecisionCreate) SetCreatorID(id uuid.UUID) *DecisionCreate {
-	dc.mutation.SetCreatorID(id)
-	return dc
-}
-
-// SetNillableCreatorID sets the "creator" edge to the User entity by ID if the given value is not nil.
-func (dc *DecisionCreate) SetNillableCreatorID(id *uuid.UUID) *DecisionCreate {
-	if id != nil {
-		dc = dc.SetCreatorID(*id)
-	}
-	return dc
-}
-
-// SetCreator sets the "creator" edge to the User entity.
-func (dc *DecisionCreate) SetCreator(u *User) *DecisionCreate {
-	return dc.SetCreatorID(u.ID)
 }
 
 // AddDefenderIDs adds the "defenders" edge to the Defender entity by IDs.
@@ -212,18 +121,6 @@ func (dc *DecisionCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (dc *DecisionCreate) defaults() {
-	if _, ok := dc.mutation.IsLocked(); !ok {
-		v := decision.DefaultIsLocked
-		dc.mutation.SetIsLocked(v)
-	}
-	if _, ok := dc.mutation.CreatedAt(); !ok {
-		v := decision.DefaultCreatedAt()
-		dc.mutation.SetCreatedAt(v)
-	}
-	if _, ok := dc.mutation.UpdatedAt(); !ok {
-		v := decision.DefaultUpdatedAt()
-		dc.mutation.SetUpdatedAt(v)
-	}
 	if _, ok := dc.mutation.ID(); !ok {
 		v := decision.DefaultID()
 		dc.mutation.SetID(v)
@@ -266,15 +163,6 @@ func (dc *DecisionCreate) check() error {
 		if err := decision.ActionValidator(v); err != nil {
 			return &ValidationError{Name: "action", err: fmt.Errorf(`ent: validator failed for field "Decision.action": %w`, err)}
 		}
-	}
-	if _, ok := dc.mutation.IsLocked(); !ok {
-		return &ValidationError{Name: "is_locked", err: errors.New(`ent: missing required field "Decision.is_locked"`)}
-	}
-	if _, ok := dc.mutation.CreatedAt(); !ok {
-		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Decision.created_at"`)}
-	}
-	if _, ok := dc.mutation.UpdatedAt(); !ok {
-		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "Decision.updated_at"`)}
 	}
 	return nil
 }
@@ -334,39 +222,6 @@ func (dc *DecisionCreate) createSpec() (*Decision, *sqlgraph.CreateSpec) {
 	if value, ok := dc.mutation.Configurations(); ok {
 		_spec.SetField(decision.FieldConfigurations, field.TypeJSON, value)
 		_node.Configurations = value
-	}
-	if value, ok := dc.mutation.Description(); ok {
-		_spec.SetField(decision.FieldDescription, field.TypeString, value)
-		_node.Description = &value
-	}
-	if value, ok := dc.mutation.IsLocked(); ok {
-		_spec.SetField(decision.FieldIsLocked, field.TypeBool, value)
-		_node.IsLocked = value
-	}
-	if value, ok := dc.mutation.CreatedAt(); ok {
-		_spec.SetField(decision.FieldCreatedAt, field.TypeTime, value)
-		_node.CreatedAt = value
-	}
-	if value, ok := dc.mutation.UpdatedAt(); ok {
-		_spec.SetField(decision.FieldUpdatedAt, field.TypeTime, value)
-		_node.UpdatedAt = value
-	}
-	if nodes := dc.mutation.CreatorIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   decision.CreatorTable,
-			Columns: []string{decision.CreatorColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_node.CreatedBy = &nodes[0]
-		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := dc.mutation.DefendersIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

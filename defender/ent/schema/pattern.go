@@ -1,8 +1,6 @@
 package schema
 
 import (
-	"time"
-
 	"entgo.io/ent"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
@@ -20,9 +18,6 @@ func (Pattern) Fields() []ent.Field {
 		field.Int("phase"),
 		field.Enum("type").Values("full", "header", "meta", "query", "body", "file"),
 		field.Enum("datatype").Values("array", "number", "string"),
-		field.Text("description").Optional().Nillable(),
-		field.Time("created_at").Default(time.Now),
-		field.Time("updated_at").Default(time.Now).UpdateDefault(time.Now),
 	}
 }
 

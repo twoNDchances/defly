@@ -1,8 +1,6 @@
 package schema
 
 import (
-	"time"
-
 	"entgo.io/ent"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
@@ -39,17 +37,11 @@ func (Decision) Fields() []ent.Field {
 			"force_no_cache",
 		),
 		field.JSON("configurations", map[string]any{}).Optional(),
-		field.Text("description").Optional().Nillable(),
-		field.UUID("created_by", uuid.UUID{}).Optional().Nillable(),
-		field.Bool("is_locked").Default(false),
-		field.Time("created_at").Default(time.Now),
-		field.Time("updated_at").Default(time.Now).UpdateDefault(time.Now),
 	}
 }
 
 func (Decision) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.From("creator", User.Type).Ref("created_decisions").Field("created_by").Unique(),
 		edge.From("defenders", Defender.Type).Ref("decisions"),
 	}
 }

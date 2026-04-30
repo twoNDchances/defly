@@ -20,7 +20,6 @@ import (
 	"errors"
 	"fmt"
 	"sync"
-	"time"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
@@ -59,13 +58,7 @@ type ActionMutation struct {
 	name           *string
 	_type          *action.Type
 	configurations *map[string]interface{}
-	description    *string
-	is_locked      *bool
-	created_at     *time.Time
-	updated_at     *time.Time
 	clearedFields  map[string]struct{}
-	creator        *uuid.UUID
-	clearedcreator bool
 	rules          map[uuid.UUID]struct{}
 	removedrules   map[uuid.UUID]struct{}
 	clearedrules   bool
@@ -299,252 +292,6 @@ func (m *ActionMutation) ResetConfigurations() {
 	delete(m.clearedFields, action.FieldConfigurations)
 }
 
-// SetDescription sets the "description" field.
-func (m *ActionMutation) SetDescription(s string) {
-	m.description = &s
-}
-
-// Description returns the value of the "description" field in the mutation.
-func (m *ActionMutation) Description() (r string, exists bool) {
-	v := m.description
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldDescription returns the old "description" field's value of the Action entity.
-// If the Action object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ActionMutation) OldDescription(ctx context.Context) (v *string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldDescription is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldDescription requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldDescription: %w", err)
-	}
-	return oldValue.Description, nil
-}
-
-// ClearDescription clears the value of the "description" field.
-func (m *ActionMutation) ClearDescription() {
-	m.description = nil
-	m.clearedFields[action.FieldDescription] = struct{}{}
-}
-
-// DescriptionCleared returns if the "description" field was cleared in this mutation.
-func (m *ActionMutation) DescriptionCleared() bool {
-	_, ok := m.clearedFields[action.FieldDescription]
-	return ok
-}
-
-// ResetDescription resets all changes to the "description" field.
-func (m *ActionMutation) ResetDescription() {
-	m.description = nil
-	delete(m.clearedFields, action.FieldDescription)
-}
-
-// SetCreatedBy sets the "created_by" field.
-func (m *ActionMutation) SetCreatedBy(u uuid.UUID) {
-	m.creator = &u
-}
-
-// CreatedBy returns the value of the "created_by" field in the mutation.
-func (m *ActionMutation) CreatedBy() (r uuid.UUID, exists bool) {
-	v := m.creator
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldCreatedBy returns the old "created_by" field's value of the Action entity.
-// If the Action object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ActionMutation) OldCreatedBy(ctx context.Context) (v *uuid.UUID, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldCreatedBy is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldCreatedBy requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldCreatedBy: %w", err)
-	}
-	return oldValue.CreatedBy, nil
-}
-
-// ClearCreatedBy clears the value of the "created_by" field.
-func (m *ActionMutation) ClearCreatedBy() {
-	m.creator = nil
-	m.clearedFields[action.FieldCreatedBy] = struct{}{}
-}
-
-// CreatedByCleared returns if the "created_by" field was cleared in this mutation.
-func (m *ActionMutation) CreatedByCleared() bool {
-	_, ok := m.clearedFields[action.FieldCreatedBy]
-	return ok
-}
-
-// ResetCreatedBy resets all changes to the "created_by" field.
-func (m *ActionMutation) ResetCreatedBy() {
-	m.creator = nil
-	delete(m.clearedFields, action.FieldCreatedBy)
-}
-
-// SetIsLocked sets the "is_locked" field.
-func (m *ActionMutation) SetIsLocked(b bool) {
-	m.is_locked = &b
-}
-
-// IsLocked returns the value of the "is_locked" field in the mutation.
-func (m *ActionMutation) IsLocked() (r bool, exists bool) {
-	v := m.is_locked
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldIsLocked returns the old "is_locked" field's value of the Action entity.
-// If the Action object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ActionMutation) OldIsLocked(ctx context.Context) (v bool, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldIsLocked is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldIsLocked requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldIsLocked: %w", err)
-	}
-	return oldValue.IsLocked, nil
-}
-
-// ResetIsLocked resets all changes to the "is_locked" field.
-func (m *ActionMutation) ResetIsLocked() {
-	m.is_locked = nil
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (m *ActionMutation) SetCreatedAt(t time.Time) {
-	m.created_at = &t
-}
-
-// CreatedAt returns the value of the "created_at" field in the mutation.
-func (m *ActionMutation) CreatedAt() (r time.Time, exists bool) {
-	v := m.created_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldCreatedAt returns the old "created_at" field's value of the Action entity.
-// If the Action object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ActionMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
-	}
-	return oldValue.CreatedAt, nil
-}
-
-// ResetCreatedAt resets all changes to the "created_at" field.
-func (m *ActionMutation) ResetCreatedAt() {
-	m.created_at = nil
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (m *ActionMutation) SetUpdatedAt(t time.Time) {
-	m.updated_at = &t
-}
-
-// UpdatedAt returns the value of the "updated_at" field in the mutation.
-func (m *ActionMutation) UpdatedAt() (r time.Time, exists bool) {
-	v := m.updated_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldUpdatedAt returns the old "updated_at" field's value of the Action entity.
-// If the Action object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ActionMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
-	}
-	return oldValue.UpdatedAt, nil
-}
-
-// ResetUpdatedAt resets all changes to the "updated_at" field.
-func (m *ActionMutation) ResetUpdatedAt() {
-	m.updated_at = nil
-}
-
-// SetCreatorID sets the "creator" edge to the User entity by id.
-func (m *ActionMutation) SetCreatorID(id uuid.UUID) {
-	m.creator = &id
-}
-
-// ClearCreator clears the "creator" edge to the User entity.
-func (m *ActionMutation) ClearCreator() {
-	m.clearedcreator = true
-	m.clearedFields[action.FieldCreatedBy] = struct{}{}
-}
-
-// CreatorCleared reports if the "creator" edge to the User entity was cleared.
-func (m *ActionMutation) CreatorCleared() bool {
-	return m.CreatedByCleared() || m.clearedcreator
-}
-
-// CreatorID returns the "creator" edge ID in the mutation.
-func (m *ActionMutation) CreatorID() (id uuid.UUID, exists bool) {
-	if m.creator != nil {
-		return *m.creator, true
-	}
-	return
-}
-
-// CreatorIDs returns the "creator" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// CreatorID instead. It exists only for internal usage by the builders.
-func (m *ActionMutation) CreatorIDs() (ids []uuid.UUID) {
-	if id := m.creator; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetCreator resets all changes to the "creator" edge.
-func (m *ActionMutation) ResetCreator() {
-	m.creator = nil
-	m.clearedcreator = false
-}
-
 // AddRuleIDs adds the "rules" edge to the Rule entity by ids.
 func (m *ActionMutation) AddRuleIDs(ids ...uuid.UUID) {
 	if m.rules == nil {
@@ -633,7 +380,7 @@ func (m *ActionMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *ActionMutation) Fields() []string {
-	fields := make([]string, 0, 8)
+	fields := make([]string, 0, 3)
 	if m.name != nil {
 		fields = append(fields, action.FieldName)
 	}
@@ -642,21 +389,6 @@ func (m *ActionMutation) Fields() []string {
 	}
 	if m.configurations != nil {
 		fields = append(fields, action.FieldConfigurations)
-	}
-	if m.description != nil {
-		fields = append(fields, action.FieldDescription)
-	}
-	if m.creator != nil {
-		fields = append(fields, action.FieldCreatedBy)
-	}
-	if m.is_locked != nil {
-		fields = append(fields, action.FieldIsLocked)
-	}
-	if m.created_at != nil {
-		fields = append(fields, action.FieldCreatedAt)
-	}
-	if m.updated_at != nil {
-		fields = append(fields, action.FieldUpdatedAt)
 	}
 	return fields
 }
@@ -672,16 +404,6 @@ func (m *ActionMutation) Field(name string) (ent.Value, bool) {
 		return m.GetType()
 	case action.FieldConfigurations:
 		return m.Configurations()
-	case action.FieldDescription:
-		return m.Description()
-	case action.FieldCreatedBy:
-		return m.CreatedBy()
-	case action.FieldIsLocked:
-		return m.IsLocked()
-	case action.FieldCreatedAt:
-		return m.CreatedAt()
-	case action.FieldUpdatedAt:
-		return m.UpdatedAt()
 	}
 	return nil, false
 }
@@ -697,16 +419,6 @@ func (m *ActionMutation) OldField(ctx context.Context, name string) (ent.Value, 
 		return m.OldType(ctx)
 	case action.FieldConfigurations:
 		return m.OldConfigurations(ctx)
-	case action.FieldDescription:
-		return m.OldDescription(ctx)
-	case action.FieldCreatedBy:
-		return m.OldCreatedBy(ctx)
-	case action.FieldIsLocked:
-		return m.OldIsLocked(ctx)
-	case action.FieldCreatedAt:
-		return m.OldCreatedAt(ctx)
-	case action.FieldUpdatedAt:
-		return m.OldUpdatedAt(ctx)
 	}
 	return nil, fmt.Errorf("unknown Action field %s", name)
 }
@@ -736,41 +448,6 @@ func (m *ActionMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetConfigurations(v)
-		return nil
-	case action.FieldDescription:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetDescription(v)
-		return nil
-	case action.FieldCreatedBy:
-		v, ok := value.(uuid.UUID)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetCreatedBy(v)
-		return nil
-	case action.FieldIsLocked:
-		v, ok := value.(bool)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetIsLocked(v)
-		return nil
-	case action.FieldCreatedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetCreatedAt(v)
-		return nil
-	case action.FieldUpdatedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetUpdatedAt(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Action field %s", name)
@@ -805,12 +482,6 @@ func (m *ActionMutation) ClearedFields() []string {
 	if m.FieldCleared(action.FieldConfigurations) {
 		fields = append(fields, action.FieldConfigurations)
 	}
-	if m.FieldCleared(action.FieldDescription) {
-		fields = append(fields, action.FieldDescription)
-	}
-	if m.FieldCleared(action.FieldCreatedBy) {
-		fields = append(fields, action.FieldCreatedBy)
-	}
 	return fields
 }
 
@@ -827,12 +498,6 @@ func (m *ActionMutation) ClearField(name string) error {
 	switch name {
 	case action.FieldConfigurations:
 		m.ClearConfigurations()
-		return nil
-	case action.FieldDescription:
-		m.ClearDescription()
-		return nil
-	case action.FieldCreatedBy:
-		m.ClearCreatedBy()
 		return nil
 	}
 	return fmt.Errorf("unknown Action nullable field %s", name)
@@ -851,31 +516,13 @@ func (m *ActionMutation) ResetField(name string) error {
 	case action.FieldConfigurations:
 		m.ResetConfigurations()
 		return nil
-	case action.FieldDescription:
-		m.ResetDescription()
-		return nil
-	case action.FieldCreatedBy:
-		m.ResetCreatedBy()
-		return nil
-	case action.FieldIsLocked:
-		m.ResetIsLocked()
-		return nil
-	case action.FieldCreatedAt:
-		m.ResetCreatedAt()
-		return nil
-	case action.FieldUpdatedAt:
-		m.ResetUpdatedAt()
-		return nil
 	}
 	return fmt.Errorf("unknown Action field %s", name)
 }
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *ActionMutation) AddedEdges() []string {
-	edges := make([]string, 0, 2)
-	if m.creator != nil {
-		edges = append(edges, action.EdgeCreator)
-	}
+	edges := make([]string, 0, 1)
 	if m.rules != nil {
 		edges = append(edges, action.EdgeRules)
 	}
@@ -886,10 +533,6 @@ func (m *ActionMutation) AddedEdges() []string {
 // name in this mutation.
 func (m *ActionMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case action.EdgeCreator:
-		if id := m.creator; id != nil {
-			return []ent.Value{*id}
-		}
 	case action.EdgeRules:
 		ids := make([]ent.Value, 0, len(m.rules))
 		for id := range m.rules {
@@ -902,7 +545,7 @@ func (m *ActionMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *ActionMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 1)
 	if m.removedrules != nil {
 		edges = append(edges, action.EdgeRules)
 	}
@@ -925,10 +568,7 @@ func (m *ActionMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *ActionMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 2)
-	if m.clearedcreator {
-		edges = append(edges, action.EdgeCreator)
-	}
+	edges := make([]string, 0, 1)
 	if m.clearedrules {
 		edges = append(edges, action.EdgeRules)
 	}
@@ -939,8 +579,6 @@ func (m *ActionMutation) ClearedEdges() []string {
 // was cleared in this mutation.
 func (m *ActionMutation) EdgeCleared(name string) bool {
 	switch name {
-	case action.EdgeCreator:
-		return m.clearedcreator
 	case action.EdgeRules:
 		return m.clearedrules
 	}
@@ -951,9 +589,6 @@ func (m *ActionMutation) EdgeCleared(name string) bool {
 // if that edge is not defined in the schema.
 func (m *ActionMutation) ClearEdge(name string) error {
 	switch name {
-	case action.EdgeCreator:
-		m.ClearCreator()
-		return nil
 	}
 	return fmt.Errorf("unknown Action unique edge %s", name)
 }
@@ -962,9 +597,6 @@ func (m *ActionMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *ActionMutation) ResetEdge(name string) error {
 	switch name {
-	case action.EdgeCreator:
-		m.ResetCreator()
-		return nil
 	case action.EdgeRules:
 		m.ResetRules()
 		return nil
@@ -985,13 +617,7 @@ type DecisionMutation struct {
 	addscore         *float64
 	action           *decision.Action
 	configurations   *map[string]interface{}
-	description      *string
-	is_locked        *bool
-	created_at       *time.Time
-	updated_at       *time.Time
 	clearedFields    map[string]struct{}
-	creator          *uuid.UUID
-	clearedcreator   bool
 	defenders        map[uuid.UUID]struct{}
 	removeddefenders map[uuid.UUID]struct{}
 	cleareddefenders bool
@@ -1353,252 +979,6 @@ func (m *DecisionMutation) ResetConfigurations() {
 	delete(m.clearedFields, decision.FieldConfigurations)
 }
 
-// SetDescription sets the "description" field.
-func (m *DecisionMutation) SetDescription(s string) {
-	m.description = &s
-}
-
-// Description returns the value of the "description" field in the mutation.
-func (m *DecisionMutation) Description() (r string, exists bool) {
-	v := m.description
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldDescription returns the old "description" field's value of the Decision entity.
-// If the Decision object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *DecisionMutation) OldDescription(ctx context.Context) (v *string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldDescription is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldDescription requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldDescription: %w", err)
-	}
-	return oldValue.Description, nil
-}
-
-// ClearDescription clears the value of the "description" field.
-func (m *DecisionMutation) ClearDescription() {
-	m.description = nil
-	m.clearedFields[decision.FieldDescription] = struct{}{}
-}
-
-// DescriptionCleared returns if the "description" field was cleared in this mutation.
-func (m *DecisionMutation) DescriptionCleared() bool {
-	_, ok := m.clearedFields[decision.FieldDescription]
-	return ok
-}
-
-// ResetDescription resets all changes to the "description" field.
-func (m *DecisionMutation) ResetDescription() {
-	m.description = nil
-	delete(m.clearedFields, decision.FieldDescription)
-}
-
-// SetCreatedBy sets the "created_by" field.
-func (m *DecisionMutation) SetCreatedBy(u uuid.UUID) {
-	m.creator = &u
-}
-
-// CreatedBy returns the value of the "created_by" field in the mutation.
-func (m *DecisionMutation) CreatedBy() (r uuid.UUID, exists bool) {
-	v := m.creator
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldCreatedBy returns the old "created_by" field's value of the Decision entity.
-// If the Decision object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *DecisionMutation) OldCreatedBy(ctx context.Context) (v *uuid.UUID, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldCreatedBy is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldCreatedBy requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldCreatedBy: %w", err)
-	}
-	return oldValue.CreatedBy, nil
-}
-
-// ClearCreatedBy clears the value of the "created_by" field.
-func (m *DecisionMutation) ClearCreatedBy() {
-	m.creator = nil
-	m.clearedFields[decision.FieldCreatedBy] = struct{}{}
-}
-
-// CreatedByCleared returns if the "created_by" field was cleared in this mutation.
-func (m *DecisionMutation) CreatedByCleared() bool {
-	_, ok := m.clearedFields[decision.FieldCreatedBy]
-	return ok
-}
-
-// ResetCreatedBy resets all changes to the "created_by" field.
-func (m *DecisionMutation) ResetCreatedBy() {
-	m.creator = nil
-	delete(m.clearedFields, decision.FieldCreatedBy)
-}
-
-// SetIsLocked sets the "is_locked" field.
-func (m *DecisionMutation) SetIsLocked(b bool) {
-	m.is_locked = &b
-}
-
-// IsLocked returns the value of the "is_locked" field in the mutation.
-func (m *DecisionMutation) IsLocked() (r bool, exists bool) {
-	v := m.is_locked
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldIsLocked returns the old "is_locked" field's value of the Decision entity.
-// If the Decision object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *DecisionMutation) OldIsLocked(ctx context.Context) (v bool, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldIsLocked is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldIsLocked requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldIsLocked: %w", err)
-	}
-	return oldValue.IsLocked, nil
-}
-
-// ResetIsLocked resets all changes to the "is_locked" field.
-func (m *DecisionMutation) ResetIsLocked() {
-	m.is_locked = nil
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (m *DecisionMutation) SetCreatedAt(t time.Time) {
-	m.created_at = &t
-}
-
-// CreatedAt returns the value of the "created_at" field in the mutation.
-func (m *DecisionMutation) CreatedAt() (r time.Time, exists bool) {
-	v := m.created_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldCreatedAt returns the old "created_at" field's value of the Decision entity.
-// If the Decision object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *DecisionMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
-	}
-	return oldValue.CreatedAt, nil
-}
-
-// ResetCreatedAt resets all changes to the "created_at" field.
-func (m *DecisionMutation) ResetCreatedAt() {
-	m.created_at = nil
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (m *DecisionMutation) SetUpdatedAt(t time.Time) {
-	m.updated_at = &t
-}
-
-// UpdatedAt returns the value of the "updated_at" field in the mutation.
-func (m *DecisionMutation) UpdatedAt() (r time.Time, exists bool) {
-	v := m.updated_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldUpdatedAt returns the old "updated_at" field's value of the Decision entity.
-// If the Decision object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *DecisionMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
-	}
-	return oldValue.UpdatedAt, nil
-}
-
-// ResetUpdatedAt resets all changes to the "updated_at" field.
-func (m *DecisionMutation) ResetUpdatedAt() {
-	m.updated_at = nil
-}
-
-// SetCreatorID sets the "creator" edge to the User entity by id.
-func (m *DecisionMutation) SetCreatorID(id uuid.UUID) {
-	m.creator = &id
-}
-
-// ClearCreator clears the "creator" edge to the User entity.
-func (m *DecisionMutation) ClearCreator() {
-	m.clearedcreator = true
-	m.clearedFields[decision.FieldCreatedBy] = struct{}{}
-}
-
-// CreatorCleared reports if the "creator" edge to the User entity was cleared.
-func (m *DecisionMutation) CreatorCleared() bool {
-	return m.CreatedByCleared() || m.clearedcreator
-}
-
-// CreatorID returns the "creator" edge ID in the mutation.
-func (m *DecisionMutation) CreatorID() (id uuid.UUID, exists bool) {
-	if m.creator != nil {
-		return *m.creator, true
-	}
-	return
-}
-
-// CreatorIDs returns the "creator" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// CreatorID instead. It exists only for internal usage by the builders.
-func (m *DecisionMutation) CreatorIDs() (ids []uuid.UUID) {
-	if id := m.creator; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetCreator resets all changes to the "creator" edge.
-func (m *DecisionMutation) ResetCreator() {
-	m.creator = nil
-	m.clearedcreator = false
-}
-
 // AddDefenderIDs adds the "defenders" edge to the Defender entity by ids.
 func (m *DecisionMutation) AddDefenderIDs(ids ...uuid.UUID) {
 	if m.defenders == nil {
@@ -1687,7 +1067,7 @@ func (m *DecisionMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *DecisionMutation) Fields() []string {
-	fields := make([]string, 0, 11)
+	fields := make([]string, 0, 6)
 	if m.name != nil {
 		fields = append(fields, decision.FieldName)
 	}
@@ -1705,21 +1085,6 @@ func (m *DecisionMutation) Fields() []string {
 	}
 	if m.configurations != nil {
 		fields = append(fields, decision.FieldConfigurations)
-	}
-	if m.description != nil {
-		fields = append(fields, decision.FieldDescription)
-	}
-	if m.creator != nil {
-		fields = append(fields, decision.FieldCreatedBy)
-	}
-	if m.is_locked != nil {
-		fields = append(fields, decision.FieldIsLocked)
-	}
-	if m.created_at != nil {
-		fields = append(fields, decision.FieldCreatedAt)
-	}
-	if m.updated_at != nil {
-		fields = append(fields, decision.FieldUpdatedAt)
 	}
 	return fields
 }
@@ -1741,16 +1106,6 @@ func (m *DecisionMutation) Field(name string) (ent.Value, bool) {
 		return m.Action()
 	case decision.FieldConfigurations:
 		return m.Configurations()
-	case decision.FieldDescription:
-		return m.Description()
-	case decision.FieldCreatedBy:
-		return m.CreatedBy()
-	case decision.FieldIsLocked:
-		return m.IsLocked()
-	case decision.FieldCreatedAt:
-		return m.CreatedAt()
-	case decision.FieldUpdatedAt:
-		return m.UpdatedAt()
 	}
 	return nil, false
 }
@@ -1772,16 +1127,6 @@ func (m *DecisionMutation) OldField(ctx context.Context, name string) (ent.Value
 		return m.OldAction(ctx)
 	case decision.FieldConfigurations:
 		return m.OldConfigurations(ctx)
-	case decision.FieldDescription:
-		return m.OldDescription(ctx)
-	case decision.FieldCreatedBy:
-		return m.OldCreatedBy(ctx)
-	case decision.FieldIsLocked:
-		return m.OldIsLocked(ctx)
-	case decision.FieldCreatedAt:
-		return m.OldCreatedAt(ctx)
-	case decision.FieldUpdatedAt:
-		return m.OldUpdatedAt(ctx)
 	}
 	return nil, fmt.Errorf("unknown Decision field %s", name)
 }
@@ -1833,41 +1178,6 @@ func (m *DecisionMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetConfigurations(v)
 		return nil
-	case decision.FieldDescription:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetDescription(v)
-		return nil
-	case decision.FieldCreatedBy:
-		v, ok := value.(uuid.UUID)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetCreatedBy(v)
-		return nil
-	case decision.FieldIsLocked:
-		v, ok := value.(bool)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetIsLocked(v)
-		return nil
-	case decision.FieldCreatedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetCreatedAt(v)
-		return nil
-	case decision.FieldUpdatedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetUpdatedAt(v)
-		return nil
 	}
 	return fmt.Errorf("unknown Decision field %s", name)
 }
@@ -1916,12 +1226,6 @@ func (m *DecisionMutation) ClearedFields() []string {
 	if m.FieldCleared(decision.FieldConfigurations) {
 		fields = append(fields, decision.FieldConfigurations)
 	}
-	if m.FieldCleared(decision.FieldDescription) {
-		fields = append(fields, decision.FieldDescription)
-	}
-	if m.FieldCleared(decision.FieldCreatedBy) {
-		fields = append(fields, decision.FieldCreatedBy)
-	}
 	return fields
 }
 
@@ -1938,12 +1242,6 @@ func (m *DecisionMutation) ClearField(name string) error {
 	switch name {
 	case decision.FieldConfigurations:
 		m.ClearConfigurations()
-		return nil
-	case decision.FieldDescription:
-		m.ClearDescription()
-		return nil
-	case decision.FieldCreatedBy:
-		m.ClearCreatedBy()
 		return nil
 	}
 	return fmt.Errorf("unknown Decision nullable field %s", name)
@@ -1971,31 +1269,13 @@ func (m *DecisionMutation) ResetField(name string) error {
 	case decision.FieldConfigurations:
 		m.ResetConfigurations()
 		return nil
-	case decision.FieldDescription:
-		m.ResetDescription()
-		return nil
-	case decision.FieldCreatedBy:
-		m.ResetCreatedBy()
-		return nil
-	case decision.FieldIsLocked:
-		m.ResetIsLocked()
-		return nil
-	case decision.FieldCreatedAt:
-		m.ResetCreatedAt()
-		return nil
-	case decision.FieldUpdatedAt:
-		m.ResetUpdatedAt()
-		return nil
 	}
 	return fmt.Errorf("unknown Decision field %s", name)
 }
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *DecisionMutation) AddedEdges() []string {
-	edges := make([]string, 0, 2)
-	if m.creator != nil {
-		edges = append(edges, decision.EdgeCreator)
-	}
+	edges := make([]string, 0, 1)
 	if m.defenders != nil {
 		edges = append(edges, decision.EdgeDefenders)
 	}
@@ -2006,10 +1286,6 @@ func (m *DecisionMutation) AddedEdges() []string {
 // name in this mutation.
 func (m *DecisionMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case decision.EdgeCreator:
-		if id := m.creator; id != nil {
-			return []ent.Value{*id}
-		}
 	case decision.EdgeDefenders:
 		ids := make([]ent.Value, 0, len(m.defenders))
 		for id := range m.defenders {
@@ -2022,7 +1298,7 @@ func (m *DecisionMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *DecisionMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 1)
 	if m.removeddefenders != nil {
 		edges = append(edges, decision.EdgeDefenders)
 	}
@@ -2045,10 +1321,7 @@ func (m *DecisionMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *DecisionMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 2)
-	if m.clearedcreator {
-		edges = append(edges, decision.EdgeCreator)
-	}
+	edges := make([]string, 0, 1)
 	if m.cleareddefenders {
 		edges = append(edges, decision.EdgeDefenders)
 	}
@@ -2059,8 +1332,6 @@ func (m *DecisionMutation) ClearedEdges() []string {
 // was cleared in this mutation.
 func (m *DecisionMutation) EdgeCleared(name string) bool {
 	switch name {
-	case decision.EdgeCreator:
-		return m.clearedcreator
 	case decision.EdgeDefenders:
 		return m.cleareddefenders
 	}
@@ -2071,9 +1342,6 @@ func (m *DecisionMutation) EdgeCleared(name string) bool {
 // if that edge is not defined in the schema.
 func (m *DecisionMutation) ClearEdge(name string) error {
 	switch name {
-	case decision.EdgeCreator:
-		m.ClearCreator()
-		return nil
 	}
 	return fmt.Errorf("unknown Decision unique edge %s", name)
 }
@@ -2082,9 +1350,6 @@ func (m *DecisionMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *DecisionMutation) ResetEdge(name string) error {
 	switch name {
-	case decision.EdgeCreator:
-		m.ResetCreator()
-		return nil
 	case decision.EdgeDefenders:
 		m.ResetDefenders()
 		return nil
@@ -2099,12 +1364,8 @@ type DefenderMutation struct {
 	typ               string
 	id                *uuid.UUID
 	name              *string
-	proxy_port        *int
-	addproxy_port     *int
 	status            *defender.Status
 	details           *map[string]interface{}
-	created_at        *time.Time
-	updated_at        *time.Time
 	clearedFields     map[string]struct{}
 	principles        map[uuid.UUID]struct{}
 	removedprinciples map[uuid.UUID]struct{}
@@ -2257,76 +1518,6 @@ func (m *DefenderMutation) ResetName() {
 	m.name = nil
 }
 
-// SetProxyPort sets the "proxy_port" field.
-func (m *DefenderMutation) SetProxyPort(i int) {
-	m.proxy_port = &i
-	m.addproxy_port = nil
-}
-
-// ProxyPort returns the value of the "proxy_port" field in the mutation.
-func (m *DefenderMutation) ProxyPort() (r int, exists bool) {
-	v := m.proxy_port
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldProxyPort returns the old "proxy_port" field's value of the Defender entity.
-// If the Defender object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *DefenderMutation) OldProxyPort(ctx context.Context) (v *int, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldProxyPort is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldProxyPort requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldProxyPort: %w", err)
-	}
-	return oldValue.ProxyPort, nil
-}
-
-// AddProxyPort adds i to the "proxy_port" field.
-func (m *DefenderMutation) AddProxyPort(i int) {
-	if m.addproxy_port != nil {
-		*m.addproxy_port += i
-	} else {
-		m.addproxy_port = &i
-	}
-}
-
-// AddedProxyPort returns the value that was added to the "proxy_port" field in this mutation.
-func (m *DefenderMutation) AddedProxyPort() (r int, exists bool) {
-	v := m.addproxy_port
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// ClearProxyPort clears the value of the "proxy_port" field.
-func (m *DefenderMutation) ClearProxyPort() {
-	m.proxy_port = nil
-	m.addproxy_port = nil
-	m.clearedFields[defender.FieldProxyPort] = struct{}{}
-}
-
-// ProxyPortCleared returns if the "proxy_port" field was cleared in this mutation.
-func (m *DefenderMutation) ProxyPortCleared() bool {
-	_, ok := m.clearedFields[defender.FieldProxyPort]
-	return ok
-}
-
-// ResetProxyPort resets all changes to the "proxy_port" field.
-func (m *DefenderMutation) ResetProxyPort() {
-	m.proxy_port = nil
-	m.addproxy_port = nil
-	delete(m.clearedFields, defender.FieldProxyPort)
-}
-
 // SetStatus sets the "status" field.
 func (m *DefenderMutation) SetStatus(d defender.Status) {
 	m.status = &d
@@ -2423,78 +1614,6 @@ func (m *DefenderMutation) DetailsCleared() bool {
 func (m *DefenderMutation) ResetDetails() {
 	m.details = nil
 	delete(m.clearedFields, defender.FieldDetails)
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (m *DefenderMutation) SetCreatedAt(t time.Time) {
-	m.created_at = &t
-}
-
-// CreatedAt returns the value of the "created_at" field in the mutation.
-func (m *DefenderMutation) CreatedAt() (r time.Time, exists bool) {
-	v := m.created_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldCreatedAt returns the old "created_at" field's value of the Defender entity.
-// If the Defender object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *DefenderMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
-	}
-	return oldValue.CreatedAt, nil
-}
-
-// ResetCreatedAt resets all changes to the "created_at" field.
-func (m *DefenderMutation) ResetCreatedAt() {
-	m.created_at = nil
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (m *DefenderMutation) SetUpdatedAt(t time.Time) {
-	m.updated_at = &t
-}
-
-// UpdatedAt returns the value of the "updated_at" field in the mutation.
-func (m *DefenderMutation) UpdatedAt() (r time.Time, exists bool) {
-	v := m.updated_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldUpdatedAt returns the old "updated_at" field's value of the Defender entity.
-// If the Defender object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *DefenderMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
-	}
-	return oldValue.UpdatedAt, nil
-}
-
-// ResetUpdatedAt resets all changes to the "updated_at" field.
-func (m *DefenderMutation) ResetUpdatedAt() {
-	m.updated_at = nil
 }
 
 // AddPrincipleIDs adds the "principles" edge to the Principle entity by ids.
@@ -2639,24 +1758,15 @@ func (m *DefenderMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *DefenderMutation) Fields() []string {
-	fields := make([]string, 0, 6)
+	fields := make([]string, 0, 3)
 	if m.name != nil {
 		fields = append(fields, defender.FieldName)
-	}
-	if m.proxy_port != nil {
-		fields = append(fields, defender.FieldProxyPort)
 	}
 	if m.status != nil {
 		fields = append(fields, defender.FieldStatus)
 	}
 	if m.details != nil {
 		fields = append(fields, defender.FieldDetails)
-	}
-	if m.created_at != nil {
-		fields = append(fields, defender.FieldCreatedAt)
-	}
-	if m.updated_at != nil {
-		fields = append(fields, defender.FieldUpdatedAt)
 	}
 	return fields
 }
@@ -2668,16 +1778,10 @@ func (m *DefenderMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case defender.FieldName:
 		return m.Name()
-	case defender.FieldProxyPort:
-		return m.ProxyPort()
 	case defender.FieldStatus:
 		return m.Status()
 	case defender.FieldDetails:
 		return m.Details()
-	case defender.FieldCreatedAt:
-		return m.CreatedAt()
-	case defender.FieldUpdatedAt:
-		return m.UpdatedAt()
 	}
 	return nil, false
 }
@@ -2689,16 +1793,10 @@ func (m *DefenderMutation) OldField(ctx context.Context, name string) (ent.Value
 	switch name {
 	case defender.FieldName:
 		return m.OldName(ctx)
-	case defender.FieldProxyPort:
-		return m.OldProxyPort(ctx)
 	case defender.FieldStatus:
 		return m.OldStatus(ctx)
 	case defender.FieldDetails:
 		return m.OldDetails(ctx)
-	case defender.FieldCreatedAt:
-		return m.OldCreatedAt(ctx)
-	case defender.FieldUpdatedAt:
-		return m.OldUpdatedAt(ctx)
 	}
 	return nil, fmt.Errorf("unknown Defender field %s", name)
 }
@@ -2715,13 +1813,6 @@ func (m *DefenderMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetName(v)
 		return nil
-	case defender.FieldProxyPort:
-		v, ok := value.(int)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetProxyPort(v)
-		return nil
 	case defender.FieldStatus:
 		v, ok := value.(defender.Status)
 		if !ok {
@@ -2736,20 +1827,6 @@ func (m *DefenderMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetDetails(v)
 		return nil
-	case defender.FieldCreatedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetCreatedAt(v)
-		return nil
-	case defender.FieldUpdatedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetUpdatedAt(v)
-		return nil
 	}
 	return fmt.Errorf("unknown Defender field %s", name)
 }
@@ -2757,21 +1834,13 @@ func (m *DefenderMutation) SetField(name string, value ent.Value) error {
 // AddedFields returns all numeric fields that were incremented/decremented during
 // this mutation.
 func (m *DefenderMutation) AddedFields() []string {
-	var fields []string
-	if m.addproxy_port != nil {
-		fields = append(fields, defender.FieldProxyPort)
-	}
-	return fields
+	return nil
 }
 
 // AddedField returns the numeric value that was incremented/decremented on a field
 // with the given name. The second boolean return value indicates that this field
 // was not set, or was not defined in the schema.
 func (m *DefenderMutation) AddedField(name string) (ent.Value, bool) {
-	switch name {
-	case defender.FieldProxyPort:
-		return m.AddedProxyPort()
-	}
 	return nil, false
 }
 
@@ -2780,13 +1849,6 @@ func (m *DefenderMutation) AddedField(name string) (ent.Value, bool) {
 // type.
 func (m *DefenderMutation) AddField(name string, value ent.Value) error {
 	switch name {
-	case defender.FieldProxyPort:
-		v, ok := value.(int)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.AddProxyPort(v)
-		return nil
 	}
 	return fmt.Errorf("unknown Defender numeric field %s", name)
 }
@@ -2795,9 +1857,6 @@ func (m *DefenderMutation) AddField(name string, value ent.Value) error {
 // mutation.
 func (m *DefenderMutation) ClearedFields() []string {
 	var fields []string
-	if m.FieldCleared(defender.FieldProxyPort) {
-		fields = append(fields, defender.FieldProxyPort)
-	}
 	if m.FieldCleared(defender.FieldStatus) {
 		fields = append(fields, defender.FieldStatus)
 	}
@@ -2818,9 +1877,6 @@ func (m *DefenderMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *DefenderMutation) ClearField(name string) error {
 	switch name {
-	case defender.FieldProxyPort:
-		m.ClearProxyPort()
-		return nil
 	case defender.FieldStatus:
 		m.ClearStatus()
 		return nil
@@ -2838,20 +1894,11 @@ func (m *DefenderMutation) ResetField(name string) error {
 	case defender.FieldName:
 		m.ResetName()
 		return nil
-	case defender.FieldProxyPort:
-		m.ResetProxyPort()
-		return nil
 	case defender.FieldStatus:
 		m.ResetStatus()
 		return nil
 	case defender.FieldDetails:
 		m.ResetDetails()
-		return nil
-	case defender.FieldCreatedAt:
-		m.ResetCreatedAt()
-		return nil
-	case defender.FieldUpdatedAt:
-		m.ResetUpdatedAt()
 		return nil
 	}
 	return fmt.Errorf("unknown Defender field %s", name)
@@ -2978,13 +2025,7 @@ type EngineMutation struct {
 	_type           *string
 	configurations  *map[string]interface{}
 	output_datatype *engine.OutputDatatype
-	description     *string
-	is_locked       *bool
-	created_at      *time.Time
-	updated_at      *time.Time
 	clearedFields   map[string]struct{}
-	creator         *uuid.UUID
-	clearedcreator  bool
 	targets         map[uuid.UUID]struct{}
 	removedtargets  map[uuid.UUID]struct{}
 	clearedtargets  bool
@@ -3290,252 +2331,6 @@ func (m *EngineMutation) ResetOutputDatatype() {
 	m.output_datatype = nil
 }
 
-// SetDescription sets the "description" field.
-func (m *EngineMutation) SetDescription(s string) {
-	m.description = &s
-}
-
-// Description returns the value of the "description" field in the mutation.
-func (m *EngineMutation) Description() (r string, exists bool) {
-	v := m.description
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldDescription returns the old "description" field's value of the Engine entity.
-// If the Engine object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *EngineMutation) OldDescription(ctx context.Context) (v *string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldDescription is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldDescription requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldDescription: %w", err)
-	}
-	return oldValue.Description, nil
-}
-
-// ClearDescription clears the value of the "description" field.
-func (m *EngineMutation) ClearDescription() {
-	m.description = nil
-	m.clearedFields[engine.FieldDescription] = struct{}{}
-}
-
-// DescriptionCleared returns if the "description" field was cleared in this mutation.
-func (m *EngineMutation) DescriptionCleared() bool {
-	_, ok := m.clearedFields[engine.FieldDescription]
-	return ok
-}
-
-// ResetDescription resets all changes to the "description" field.
-func (m *EngineMutation) ResetDescription() {
-	m.description = nil
-	delete(m.clearedFields, engine.FieldDescription)
-}
-
-// SetCreatedBy sets the "created_by" field.
-func (m *EngineMutation) SetCreatedBy(u uuid.UUID) {
-	m.creator = &u
-}
-
-// CreatedBy returns the value of the "created_by" field in the mutation.
-func (m *EngineMutation) CreatedBy() (r uuid.UUID, exists bool) {
-	v := m.creator
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldCreatedBy returns the old "created_by" field's value of the Engine entity.
-// If the Engine object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *EngineMutation) OldCreatedBy(ctx context.Context) (v *uuid.UUID, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldCreatedBy is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldCreatedBy requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldCreatedBy: %w", err)
-	}
-	return oldValue.CreatedBy, nil
-}
-
-// ClearCreatedBy clears the value of the "created_by" field.
-func (m *EngineMutation) ClearCreatedBy() {
-	m.creator = nil
-	m.clearedFields[engine.FieldCreatedBy] = struct{}{}
-}
-
-// CreatedByCleared returns if the "created_by" field was cleared in this mutation.
-func (m *EngineMutation) CreatedByCleared() bool {
-	_, ok := m.clearedFields[engine.FieldCreatedBy]
-	return ok
-}
-
-// ResetCreatedBy resets all changes to the "created_by" field.
-func (m *EngineMutation) ResetCreatedBy() {
-	m.creator = nil
-	delete(m.clearedFields, engine.FieldCreatedBy)
-}
-
-// SetIsLocked sets the "is_locked" field.
-func (m *EngineMutation) SetIsLocked(b bool) {
-	m.is_locked = &b
-}
-
-// IsLocked returns the value of the "is_locked" field in the mutation.
-func (m *EngineMutation) IsLocked() (r bool, exists bool) {
-	v := m.is_locked
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldIsLocked returns the old "is_locked" field's value of the Engine entity.
-// If the Engine object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *EngineMutation) OldIsLocked(ctx context.Context) (v bool, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldIsLocked is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldIsLocked requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldIsLocked: %w", err)
-	}
-	return oldValue.IsLocked, nil
-}
-
-// ResetIsLocked resets all changes to the "is_locked" field.
-func (m *EngineMutation) ResetIsLocked() {
-	m.is_locked = nil
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (m *EngineMutation) SetCreatedAt(t time.Time) {
-	m.created_at = &t
-}
-
-// CreatedAt returns the value of the "created_at" field in the mutation.
-func (m *EngineMutation) CreatedAt() (r time.Time, exists bool) {
-	v := m.created_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldCreatedAt returns the old "created_at" field's value of the Engine entity.
-// If the Engine object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *EngineMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
-	}
-	return oldValue.CreatedAt, nil
-}
-
-// ResetCreatedAt resets all changes to the "created_at" field.
-func (m *EngineMutation) ResetCreatedAt() {
-	m.created_at = nil
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (m *EngineMutation) SetUpdatedAt(t time.Time) {
-	m.updated_at = &t
-}
-
-// UpdatedAt returns the value of the "updated_at" field in the mutation.
-func (m *EngineMutation) UpdatedAt() (r time.Time, exists bool) {
-	v := m.updated_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldUpdatedAt returns the old "updated_at" field's value of the Engine entity.
-// If the Engine object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *EngineMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
-	}
-	return oldValue.UpdatedAt, nil
-}
-
-// ResetUpdatedAt resets all changes to the "updated_at" field.
-func (m *EngineMutation) ResetUpdatedAt() {
-	m.updated_at = nil
-}
-
-// SetCreatorID sets the "creator" edge to the User entity by id.
-func (m *EngineMutation) SetCreatorID(id uuid.UUID) {
-	m.creator = &id
-}
-
-// ClearCreator clears the "creator" edge to the User entity.
-func (m *EngineMutation) ClearCreator() {
-	m.clearedcreator = true
-	m.clearedFields[engine.FieldCreatedBy] = struct{}{}
-}
-
-// CreatorCleared reports if the "creator" edge to the User entity was cleared.
-func (m *EngineMutation) CreatorCleared() bool {
-	return m.CreatedByCleared() || m.clearedcreator
-}
-
-// CreatorID returns the "creator" edge ID in the mutation.
-func (m *EngineMutation) CreatorID() (id uuid.UUID, exists bool) {
-	if m.creator != nil {
-		return *m.creator, true
-	}
-	return
-}
-
-// CreatorIDs returns the "creator" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// CreatorID instead. It exists only for internal usage by the builders.
-func (m *EngineMutation) CreatorIDs() (ids []uuid.UUID) {
-	if id := m.creator; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetCreator resets all changes to the "creator" edge.
-func (m *EngineMutation) ResetCreator() {
-	m.creator = nil
-	m.clearedcreator = false
-}
-
 // AddTargetIDs adds the "targets" edge to the Target entity by ids.
 func (m *EngineMutation) AddTargetIDs(ids ...uuid.UUID) {
 	if m.targets == nil {
@@ -3624,7 +2419,7 @@ func (m *EngineMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *EngineMutation) Fields() []string {
-	fields := make([]string, 0, 10)
+	fields := make([]string, 0, 5)
 	if m.name != nil {
 		fields = append(fields, engine.FieldName)
 	}
@@ -3639,21 +2434,6 @@ func (m *EngineMutation) Fields() []string {
 	}
 	if m.output_datatype != nil {
 		fields = append(fields, engine.FieldOutputDatatype)
-	}
-	if m.description != nil {
-		fields = append(fields, engine.FieldDescription)
-	}
-	if m.creator != nil {
-		fields = append(fields, engine.FieldCreatedBy)
-	}
-	if m.is_locked != nil {
-		fields = append(fields, engine.FieldIsLocked)
-	}
-	if m.created_at != nil {
-		fields = append(fields, engine.FieldCreatedAt)
-	}
-	if m.updated_at != nil {
-		fields = append(fields, engine.FieldUpdatedAt)
 	}
 	return fields
 }
@@ -3673,16 +2453,6 @@ func (m *EngineMutation) Field(name string) (ent.Value, bool) {
 		return m.Configurations()
 	case engine.FieldOutputDatatype:
 		return m.OutputDatatype()
-	case engine.FieldDescription:
-		return m.Description()
-	case engine.FieldCreatedBy:
-		return m.CreatedBy()
-	case engine.FieldIsLocked:
-		return m.IsLocked()
-	case engine.FieldCreatedAt:
-		return m.CreatedAt()
-	case engine.FieldUpdatedAt:
-		return m.UpdatedAt()
 	}
 	return nil, false
 }
@@ -3702,16 +2472,6 @@ func (m *EngineMutation) OldField(ctx context.Context, name string) (ent.Value, 
 		return m.OldConfigurations(ctx)
 	case engine.FieldOutputDatatype:
 		return m.OldOutputDatatype(ctx)
-	case engine.FieldDescription:
-		return m.OldDescription(ctx)
-	case engine.FieldCreatedBy:
-		return m.OldCreatedBy(ctx)
-	case engine.FieldIsLocked:
-		return m.OldIsLocked(ctx)
-	case engine.FieldCreatedAt:
-		return m.OldCreatedAt(ctx)
-	case engine.FieldUpdatedAt:
-		return m.OldUpdatedAt(ctx)
 	}
 	return nil, fmt.Errorf("unknown Engine field %s", name)
 }
@@ -3756,41 +2516,6 @@ func (m *EngineMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetOutputDatatype(v)
 		return nil
-	case engine.FieldDescription:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetDescription(v)
-		return nil
-	case engine.FieldCreatedBy:
-		v, ok := value.(uuid.UUID)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetCreatedBy(v)
-		return nil
-	case engine.FieldIsLocked:
-		v, ok := value.(bool)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetIsLocked(v)
-		return nil
-	case engine.FieldCreatedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetCreatedAt(v)
-		return nil
-	case engine.FieldUpdatedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetUpdatedAt(v)
-		return nil
 	}
 	return fmt.Errorf("unknown Engine field %s", name)
 }
@@ -3824,12 +2549,6 @@ func (m *EngineMutation) ClearedFields() []string {
 	if m.FieldCleared(engine.FieldConfigurations) {
 		fields = append(fields, engine.FieldConfigurations)
 	}
-	if m.FieldCleared(engine.FieldDescription) {
-		fields = append(fields, engine.FieldDescription)
-	}
-	if m.FieldCleared(engine.FieldCreatedBy) {
-		fields = append(fields, engine.FieldCreatedBy)
-	}
 	return fields
 }
 
@@ -3846,12 +2565,6 @@ func (m *EngineMutation) ClearField(name string) error {
 	switch name {
 	case engine.FieldConfigurations:
 		m.ClearConfigurations()
-		return nil
-	case engine.FieldDescription:
-		m.ClearDescription()
-		return nil
-	case engine.FieldCreatedBy:
-		m.ClearCreatedBy()
 		return nil
 	}
 	return fmt.Errorf("unknown Engine nullable field %s", name)
@@ -3876,31 +2589,13 @@ func (m *EngineMutation) ResetField(name string) error {
 	case engine.FieldOutputDatatype:
 		m.ResetOutputDatatype()
 		return nil
-	case engine.FieldDescription:
-		m.ResetDescription()
-		return nil
-	case engine.FieldCreatedBy:
-		m.ResetCreatedBy()
-		return nil
-	case engine.FieldIsLocked:
-		m.ResetIsLocked()
-		return nil
-	case engine.FieldCreatedAt:
-		m.ResetCreatedAt()
-		return nil
-	case engine.FieldUpdatedAt:
-		m.ResetUpdatedAt()
-		return nil
 	}
 	return fmt.Errorf("unknown Engine field %s", name)
 }
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *EngineMutation) AddedEdges() []string {
-	edges := make([]string, 0, 2)
-	if m.creator != nil {
-		edges = append(edges, engine.EdgeCreator)
-	}
+	edges := make([]string, 0, 1)
 	if m.targets != nil {
 		edges = append(edges, engine.EdgeTargets)
 	}
@@ -3911,10 +2606,6 @@ func (m *EngineMutation) AddedEdges() []string {
 // name in this mutation.
 func (m *EngineMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case engine.EdgeCreator:
-		if id := m.creator; id != nil {
-			return []ent.Value{*id}
-		}
 	case engine.EdgeTargets:
 		ids := make([]ent.Value, 0, len(m.targets))
 		for id := range m.targets {
@@ -3927,7 +2618,7 @@ func (m *EngineMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *EngineMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 1)
 	if m.removedtargets != nil {
 		edges = append(edges, engine.EdgeTargets)
 	}
@@ -3950,10 +2641,7 @@ func (m *EngineMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *EngineMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 2)
-	if m.clearedcreator {
-		edges = append(edges, engine.EdgeCreator)
-	}
+	edges := make([]string, 0, 1)
 	if m.clearedtargets {
 		edges = append(edges, engine.EdgeTargets)
 	}
@@ -3964,8 +2652,6 @@ func (m *EngineMutation) ClearedEdges() []string {
 // was cleared in this mutation.
 func (m *EngineMutation) EdgeCleared(name string) bool {
 	switch name {
-	case engine.EdgeCreator:
-		return m.clearedcreator
 	case engine.EdgeTargets:
 		return m.clearedtargets
 	}
@@ -3976,9 +2662,6 @@ func (m *EngineMutation) EdgeCleared(name string) bool {
 // if that edge is not defined in the schema.
 func (m *EngineMutation) ClearEdge(name string) error {
 	switch name {
-	case engine.EdgeCreator:
-		m.ClearCreator()
-		return nil
 	}
 	return fmt.Errorf("unknown Engine unique edge %s", name)
 }
@@ -3987,9 +2670,6 @@ func (m *EngineMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *EngineMutation) ResetEdge(name string) error {
 	switch name {
-	case engine.EdgeCreator:
-		m.ResetCreator()
-		return nil
 	case engine.EdgeTargets:
 		m.ResetTargets()
 		return nil
@@ -4004,8 +2684,6 @@ type GroupMutation struct {
 	typ                string
 	id                 *uuid.UUID
 	name               *string
-	created_at         *time.Time
-	updated_at         *time.Time
 	clearedFields      map[string]struct{}
 	users              map[uuid.UUID]struct{}
 	removedusers       map[uuid.UUID]struct{}
@@ -4158,78 +2836,6 @@ func (m *GroupMutation) ResetName() {
 	m.name = nil
 }
 
-// SetCreatedAt sets the "created_at" field.
-func (m *GroupMutation) SetCreatedAt(t time.Time) {
-	m.created_at = &t
-}
-
-// CreatedAt returns the value of the "created_at" field in the mutation.
-func (m *GroupMutation) CreatedAt() (r time.Time, exists bool) {
-	v := m.created_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldCreatedAt returns the old "created_at" field's value of the Group entity.
-// If the Group object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *GroupMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
-	}
-	return oldValue.CreatedAt, nil
-}
-
-// ResetCreatedAt resets all changes to the "created_at" field.
-func (m *GroupMutation) ResetCreatedAt() {
-	m.created_at = nil
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (m *GroupMutation) SetUpdatedAt(t time.Time) {
-	m.updated_at = &t
-}
-
-// UpdatedAt returns the value of the "updated_at" field in the mutation.
-func (m *GroupMutation) UpdatedAt() (r time.Time, exists bool) {
-	v := m.updated_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldUpdatedAt returns the old "updated_at" field's value of the Group entity.
-// If the Group object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *GroupMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
-	}
-	return oldValue.UpdatedAt, nil
-}
-
-// ResetUpdatedAt resets all changes to the "updated_at" field.
-func (m *GroupMutation) ResetUpdatedAt() {
-	m.updated_at = nil
-}
-
 // AddUserIDs adds the "users" edge to the User entity by ids.
 func (m *GroupMutation) AddUserIDs(ids ...uuid.UUID) {
 	if m.users == nil {
@@ -4372,15 +2978,9 @@ func (m *GroupMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *GroupMutation) Fields() []string {
-	fields := make([]string, 0, 3)
+	fields := make([]string, 0, 1)
 	if m.name != nil {
 		fields = append(fields, group.FieldName)
-	}
-	if m.created_at != nil {
-		fields = append(fields, group.FieldCreatedAt)
-	}
-	if m.updated_at != nil {
-		fields = append(fields, group.FieldUpdatedAt)
 	}
 	return fields
 }
@@ -4392,10 +2992,6 @@ func (m *GroupMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case group.FieldName:
 		return m.Name()
-	case group.FieldCreatedAt:
-		return m.CreatedAt()
-	case group.FieldUpdatedAt:
-		return m.UpdatedAt()
 	}
 	return nil, false
 }
@@ -4407,10 +3003,6 @@ func (m *GroupMutation) OldField(ctx context.Context, name string) (ent.Value, e
 	switch name {
 	case group.FieldName:
 		return m.OldName(ctx)
-	case group.FieldCreatedAt:
-		return m.OldCreatedAt(ctx)
-	case group.FieldUpdatedAt:
-		return m.OldUpdatedAt(ctx)
 	}
 	return nil, fmt.Errorf("unknown Group field %s", name)
 }
@@ -4426,20 +3018,6 @@ func (m *GroupMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetName(v)
-		return nil
-	case group.FieldCreatedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetCreatedAt(v)
-		return nil
-	case group.FieldUpdatedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetUpdatedAt(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Group field %s", name)
@@ -4492,12 +3070,6 @@ func (m *GroupMutation) ResetField(name string) error {
 	switch name {
 	case group.FieldName:
 		m.ResetName()
-		return nil
-	case group.FieldCreatedAt:
-		m.ResetCreatedAt()
-		return nil
-	case group.FieldUpdatedAt:
-		m.ResetUpdatedAt()
 		return nil
 	}
 	return fmt.Errorf("unknown Group field %s", name)
@@ -4624,9 +3196,6 @@ type PatternMutation struct {
 	addphase       *int
 	_type          *pattern.Type
 	datatype       *pattern.Datatype
-	description    *string
-	created_at     *time.Time
-	updated_at     *time.Time
 	clearedFields  map[string]struct{}
 	targets        map[uuid.UUID]struct{}
 	removedtargets map[uuid.UUID]struct{}
@@ -4904,127 +3473,6 @@ func (m *PatternMutation) ResetDatatype() {
 	m.datatype = nil
 }
 
-// SetDescription sets the "description" field.
-func (m *PatternMutation) SetDescription(s string) {
-	m.description = &s
-}
-
-// Description returns the value of the "description" field in the mutation.
-func (m *PatternMutation) Description() (r string, exists bool) {
-	v := m.description
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldDescription returns the old "description" field's value of the Pattern entity.
-// If the Pattern object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *PatternMutation) OldDescription(ctx context.Context) (v *string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldDescription is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldDescription requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldDescription: %w", err)
-	}
-	return oldValue.Description, nil
-}
-
-// ClearDescription clears the value of the "description" field.
-func (m *PatternMutation) ClearDescription() {
-	m.description = nil
-	m.clearedFields[pattern.FieldDescription] = struct{}{}
-}
-
-// DescriptionCleared returns if the "description" field was cleared in this mutation.
-func (m *PatternMutation) DescriptionCleared() bool {
-	_, ok := m.clearedFields[pattern.FieldDescription]
-	return ok
-}
-
-// ResetDescription resets all changes to the "description" field.
-func (m *PatternMutation) ResetDescription() {
-	m.description = nil
-	delete(m.clearedFields, pattern.FieldDescription)
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (m *PatternMutation) SetCreatedAt(t time.Time) {
-	m.created_at = &t
-}
-
-// CreatedAt returns the value of the "created_at" field in the mutation.
-func (m *PatternMutation) CreatedAt() (r time.Time, exists bool) {
-	v := m.created_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldCreatedAt returns the old "created_at" field's value of the Pattern entity.
-// If the Pattern object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *PatternMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
-	}
-	return oldValue.CreatedAt, nil
-}
-
-// ResetCreatedAt resets all changes to the "created_at" field.
-func (m *PatternMutation) ResetCreatedAt() {
-	m.created_at = nil
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (m *PatternMutation) SetUpdatedAt(t time.Time) {
-	m.updated_at = &t
-}
-
-// UpdatedAt returns the value of the "updated_at" field in the mutation.
-func (m *PatternMutation) UpdatedAt() (r time.Time, exists bool) {
-	v := m.updated_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldUpdatedAt returns the old "updated_at" field's value of the Pattern entity.
-// If the Pattern object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *PatternMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
-	}
-	return oldValue.UpdatedAt, nil
-}
-
-// ResetUpdatedAt resets all changes to the "updated_at" field.
-func (m *PatternMutation) ResetUpdatedAt() {
-	m.updated_at = nil
-}
-
 // AddTargetIDs adds the "targets" edge to the Target entity by ids.
 func (m *PatternMutation) AddTargetIDs(ids ...uuid.UUID) {
 	if m.targets == nil {
@@ -5113,7 +3561,7 @@ func (m *PatternMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *PatternMutation) Fields() []string {
-	fields := make([]string, 0, 7)
+	fields := make([]string, 0, 4)
 	if m.name != nil {
 		fields = append(fields, pattern.FieldName)
 	}
@@ -5125,15 +3573,6 @@ func (m *PatternMutation) Fields() []string {
 	}
 	if m.datatype != nil {
 		fields = append(fields, pattern.FieldDatatype)
-	}
-	if m.description != nil {
-		fields = append(fields, pattern.FieldDescription)
-	}
-	if m.created_at != nil {
-		fields = append(fields, pattern.FieldCreatedAt)
-	}
-	if m.updated_at != nil {
-		fields = append(fields, pattern.FieldUpdatedAt)
 	}
 	return fields
 }
@@ -5151,12 +3590,6 @@ func (m *PatternMutation) Field(name string) (ent.Value, bool) {
 		return m.GetType()
 	case pattern.FieldDatatype:
 		return m.Datatype()
-	case pattern.FieldDescription:
-		return m.Description()
-	case pattern.FieldCreatedAt:
-		return m.CreatedAt()
-	case pattern.FieldUpdatedAt:
-		return m.UpdatedAt()
 	}
 	return nil, false
 }
@@ -5174,12 +3607,6 @@ func (m *PatternMutation) OldField(ctx context.Context, name string) (ent.Value,
 		return m.OldType(ctx)
 	case pattern.FieldDatatype:
 		return m.OldDatatype(ctx)
-	case pattern.FieldDescription:
-		return m.OldDescription(ctx)
-	case pattern.FieldCreatedAt:
-		return m.OldCreatedAt(ctx)
-	case pattern.FieldUpdatedAt:
-		return m.OldUpdatedAt(ctx)
 	}
 	return nil, fmt.Errorf("unknown Pattern field %s", name)
 }
@@ -5216,27 +3643,6 @@ func (m *PatternMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetDatatype(v)
-		return nil
-	case pattern.FieldDescription:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetDescription(v)
-		return nil
-	case pattern.FieldCreatedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetCreatedAt(v)
-		return nil
-	case pattern.FieldUpdatedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetUpdatedAt(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Pattern field %s", name)
@@ -5282,11 +3688,7 @@ func (m *PatternMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *PatternMutation) ClearedFields() []string {
-	var fields []string
-	if m.FieldCleared(pattern.FieldDescription) {
-		fields = append(fields, pattern.FieldDescription)
-	}
-	return fields
+	return nil
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -5299,11 +3701,6 @@ func (m *PatternMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *PatternMutation) ClearField(name string) error {
-	switch name {
-	case pattern.FieldDescription:
-		m.ClearDescription()
-		return nil
-	}
 	return fmt.Errorf("unknown Pattern nullable field %s", name)
 }
 
@@ -5322,15 +3719,6 @@ func (m *PatternMutation) ResetField(name string) error {
 		return nil
 	case pattern.FieldDatatype:
 		m.ResetDatatype()
-		return nil
-	case pattern.FieldDescription:
-		m.ResetDescription()
-		return nil
-	case pattern.FieldCreatedAt:
-		m.ResetCreatedAt()
-		return nil
-	case pattern.FieldUpdatedAt:
-		m.ResetUpdatedAt()
 		return nil
 	}
 	return fmt.Errorf("unknown Pattern field %s", name)
@@ -5428,8 +3816,6 @@ type PermissionMutation struct {
 	id            *uuid.UUID
 	applied_for   *string
 	action        *string
-	created_at    *time.Time
-	updated_at    *time.Time
 	clearedFields map[string]struct{}
 	users         map[uuid.UUID]struct{}
 	removedusers  map[uuid.UUID]struct{}
@@ -5618,78 +4004,6 @@ func (m *PermissionMutation) ResetAction() {
 	m.action = nil
 }
 
-// SetCreatedAt sets the "created_at" field.
-func (m *PermissionMutation) SetCreatedAt(t time.Time) {
-	m.created_at = &t
-}
-
-// CreatedAt returns the value of the "created_at" field in the mutation.
-func (m *PermissionMutation) CreatedAt() (r time.Time, exists bool) {
-	v := m.created_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldCreatedAt returns the old "created_at" field's value of the Permission entity.
-// If the Permission object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *PermissionMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
-	}
-	return oldValue.CreatedAt, nil
-}
-
-// ResetCreatedAt resets all changes to the "created_at" field.
-func (m *PermissionMutation) ResetCreatedAt() {
-	m.created_at = nil
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (m *PermissionMutation) SetUpdatedAt(t time.Time) {
-	m.updated_at = &t
-}
-
-// UpdatedAt returns the value of the "updated_at" field in the mutation.
-func (m *PermissionMutation) UpdatedAt() (r time.Time, exists bool) {
-	v := m.updated_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldUpdatedAt returns the old "updated_at" field's value of the Permission entity.
-// If the Permission object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *PermissionMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
-	}
-	return oldValue.UpdatedAt, nil
-}
-
-// ResetUpdatedAt resets all changes to the "updated_at" field.
-func (m *PermissionMutation) ResetUpdatedAt() {
-	m.updated_at = nil
-}
-
 // AddUserIDs adds the "users" edge to the User entity by ids.
 func (m *PermissionMutation) AddUserIDs(ids ...uuid.UUID) {
 	if m.users == nil {
@@ -5832,18 +4146,12 @@ func (m *PermissionMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *PermissionMutation) Fields() []string {
-	fields := make([]string, 0, 4)
+	fields := make([]string, 0, 2)
 	if m.applied_for != nil {
 		fields = append(fields, permission.FieldAppliedFor)
 	}
 	if m.action != nil {
 		fields = append(fields, permission.FieldAction)
-	}
-	if m.created_at != nil {
-		fields = append(fields, permission.FieldCreatedAt)
-	}
-	if m.updated_at != nil {
-		fields = append(fields, permission.FieldUpdatedAt)
 	}
 	return fields
 }
@@ -5857,10 +4165,6 @@ func (m *PermissionMutation) Field(name string) (ent.Value, bool) {
 		return m.AppliedFor()
 	case permission.FieldAction:
 		return m.Action()
-	case permission.FieldCreatedAt:
-		return m.CreatedAt()
-	case permission.FieldUpdatedAt:
-		return m.UpdatedAt()
 	}
 	return nil, false
 }
@@ -5874,10 +4178,6 @@ func (m *PermissionMutation) OldField(ctx context.Context, name string) (ent.Val
 		return m.OldAppliedFor(ctx)
 	case permission.FieldAction:
 		return m.OldAction(ctx)
-	case permission.FieldCreatedAt:
-		return m.OldCreatedAt(ctx)
-	case permission.FieldUpdatedAt:
-		return m.OldUpdatedAt(ctx)
 	}
 	return nil, fmt.Errorf("unknown Permission field %s", name)
 }
@@ -5900,20 +4200,6 @@ func (m *PermissionMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetAction(v)
-		return nil
-	case permission.FieldCreatedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetCreatedAt(v)
-		return nil
-	case permission.FieldUpdatedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetUpdatedAt(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Permission field %s", name)
@@ -5969,12 +4255,6 @@ func (m *PermissionMutation) ResetField(name string) error {
 		return nil
 	case permission.FieldAction:
 		m.ResetAction()
-		return nil
-	case permission.FieldCreatedAt:
-		m.ResetCreatedAt()
-		return nil
-	case permission.FieldUpdatedAt:
-		m.ResetUpdatedAt()
 		return nil
 	}
 	return fmt.Errorf("unknown Permission field %s", name)
@@ -6093,32 +4373,24 @@ func (m *PermissionMutation) ResetEdge(name string) error {
 // PrincipleMutation represents an operation that mutates the Principle nodes in the graph.
 type PrincipleMutation struct {
 	config
-	op                 Op
-	typ                string
-	id                 *uuid.UUID
-	name               *string
-	level              *uint64
-	addlevel           *int64
-	phase              *int
-	addphase           *int
-	validation_status  *principle.ValidationStatus
-	validation_details *map[string]interface{}
-	description        *string
-	is_locked          *bool
-	created_at         *time.Time
-	updated_at         *time.Time
-	clearedFields      map[string]struct{}
-	creator            *uuid.UUID
-	clearedcreator     bool
-	rules              map[uuid.UUID]struct{}
-	removedrules       map[uuid.UUID]struct{}
-	clearedrules       bool
-	defenders          map[uuid.UUID]struct{}
-	removeddefenders   map[uuid.UUID]struct{}
-	cleareddefenders   bool
-	done               bool
-	oldValue           func(context.Context) (*Principle, error)
-	predicates         []predicate.Principle
+	op               Op
+	typ              string
+	id               *uuid.UUID
+	name             *string
+	level            *uint64
+	addlevel         *int64
+	phase            *int
+	addphase         *int
+	clearedFields    map[string]struct{}
+	rules            map[uuid.UUID]struct{}
+	removedrules     map[uuid.UUID]struct{}
+	clearedrules     bool
+	defenders        map[uuid.UUID]struct{}
+	removeddefenders map[uuid.UUID]struct{}
+	cleareddefenders bool
+	done             bool
+	oldValue         func(context.Context) (*Principle, error)
+	predicates       []predicate.Principle
 }
 
 var _ ent.Mutation = (*PrincipleMutation)(nil)
@@ -6373,350 +4645,6 @@ func (m *PrincipleMutation) ResetPhase() {
 	m.addphase = nil
 }
 
-// SetValidationStatus sets the "validation_status" field.
-func (m *PrincipleMutation) SetValidationStatus(ps principle.ValidationStatus) {
-	m.validation_status = &ps
-}
-
-// ValidationStatus returns the value of the "validation_status" field in the mutation.
-func (m *PrincipleMutation) ValidationStatus() (r principle.ValidationStatus, exists bool) {
-	v := m.validation_status
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldValidationStatus returns the old "validation_status" field's value of the Principle entity.
-// If the Principle object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *PrincipleMutation) OldValidationStatus(ctx context.Context) (v *principle.ValidationStatus, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldValidationStatus is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldValidationStatus requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldValidationStatus: %w", err)
-	}
-	return oldValue.ValidationStatus, nil
-}
-
-// ClearValidationStatus clears the value of the "validation_status" field.
-func (m *PrincipleMutation) ClearValidationStatus() {
-	m.validation_status = nil
-	m.clearedFields[principle.FieldValidationStatus] = struct{}{}
-}
-
-// ValidationStatusCleared returns if the "validation_status" field was cleared in this mutation.
-func (m *PrincipleMutation) ValidationStatusCleared() bool {
-	_, ok := m.clearedFields[principle.FieldValidationStatus]
-	return ok
-}
-
-// ResetValidationStatus resets all changes to the "validation_status" field.
-func (m *PrincipleMutation) ResetValidationStatus() {
-	m.validation_status = nil
-	delete(m.clearedFields, principle.FieldValidationStatus)
-}
-
-// SetValidationDetails sets the "validation_details" field.
-func (m *PrincipleMutation) SetValidationDetails(value map[string]interface{}) {
-	m.validation_details = &value
-}
-
-// ValidationDetails returns the value of the "validation_details" field in the mutation.
-func (m *PrincipleMutation) ValidationDetails() (r map[string]interface{}, exists bool) {
-	v := m.validation_details
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldValidationDetails returns the old "validation_details" field's value of the Principle entity.
-// If the Principle object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *PrincipleMutation) OldValidationDetails(ctx context.Context) (v map[string]interface{}, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldValidationDetails is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldValidationDetails requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldValidationDetails: %w", err)
-	}
-	return oldValue.ValidationDetails, nil
-}
-
-// ClearValidationDetails clears the value of the "validation_details" field.
-func (m *PrincipleMutation) ClearValidationDetails() {
-	m.validation_details = nil
-	m.clearedFields[principle.FieldValidationDetails] = struct{}{}
-}
-
-// ValidationDetailsCleared returns if the "validation_details" field was cleared in this mutation.
-func (m *PrincipleMutation) ValidationDetailsCleared() bool {
-	_, ok := m.clearedFields[principle.FieldValidationDetails]
-	return ok
-}
-
-// ResetValidationDetails resets all changes to the "validation_details" field.
-func (m *PrincipleMutation) ResetValidationDetails() {
-	m.validation_details = nil
-	delete(m.clearedFields, principle.FieldValidationDetails)
-}
-
-// SetDescription sets the "description" field.
-func (m *PrincipleMutation) SetDescription(s string) {
-	m.description = &s
-}
-
-// Description returns the value of the "description" field in the mutation.
-func (m *PrincipleMutation) Description() (r string, exists bool) {
-	v := m.description
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldDescription returns the old "description" field's value of the Principle entity.
-// If the Principle object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *PrincipleMutation) OldDescription(ctx context.Context) (v *string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldDescription is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldDescription requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldDescription: %w", err)
-	}
-	return oldValue.Description, nil
-}
-
-// ClearDescription clears the value of the "description" field.
-func (m *PrincipleMutation) ClearDescription() {
-	m.description = nil
-	m.clearedFields[principle.FieldDescription] = struct{}{}
-}
-
-// DescriptionCleared returns if the "description" field was cleared in this mutation.
-func (m *PrincipleMutation) DescriptionCleared() bool {
-	_, ok := m.clearedFields[principle.FieldDescription]
-	return ok
-}
-
-// ResetDescription resets all changes to the "description" field.
-func (m *PrincipleMutation) ResetDescription() {
-	m.description = nil
-	delete(m.clearedFields, principle.FieldDescription)
-}
-
-// SetCreatedBy sets the "created_by" field.
-func (m *PrincipleMutation) SetCreatedBy(u uuid.UUID) {
-	m.creator = &u
-}
-
-// CreatedBy returns the value of the "created_by" field in the mutation.
-func (m *PrincipleMutation) CreatedBy() (r uuid.UUID, exists bool) {
-	v := m.creator
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldCreatedBy returns the old "created_by" field's value of the Principle entity.
-// If the Principle object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *PrincipleMutation) OldCreatedBy(ctx context.Context) (v *uuid.UUID, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldCreatedBy is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldCreatedBy requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldCreatedBy: %w", err)
-	}
-	return oldValue.CreatedBy, nil
-}
-
-// ClearCreatedBy clears the value of the "created_by" field.
-func (m *PrincipleMutation) ClearCreatedBy() {
-	m.creator = nil
-	m.clearedFields[principle.FieldCreatedBy] = struct{}{}
-}
-
-// CreatedByCleared returns if the "created_by" field was cleared in this mutation.
-func (m *PrincipleMutation) CreatedByCleared() bool {
-	_, ok := m.clearedFields[principle.FieldCreatedBy]
-	return ok
-}
-
-// ResetCreatedBy resets all changes to the "created_by" field.
-func (m *PrincipleMutation) ResetCreatedBy() {
-	m.creator = nil
-	delete(m.clearedFields, principle.FieldCreatedBy)
-}
-
-// SetIsLocked sets the "is_locked" field.
-func (m *PrincipleMutation) SetIsLocked(b bool) {
-	m.is_locked = &b
-}
-
-// IsLocked returns the value of the "is_locked" field in the mutation.
-func (m *PrincipleMutation) IsLocked() (r bool, exists bool) {
-	v := m.is_locked
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldIsLocked returns the old "is_locked" field's value of the Principle entity.
-// If the Principle object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *PrincipleMutation) OldIsLocked(ctx context.Context) (v bool, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldIsLocked is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldIsLocked requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldIsLocked: %w", err)
-	}
-	return oldValue.IsLocked, nil
-}
-
-// ResetIsLocked resets all changes to the "is_locked" field.
-func (m *PrincipleMutation) ResetIsLocked() {
-	m.is_locked = nil
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (m *PrincipleMutation) SetCreatedAt(t time.Time) {
-	m.created_at = &t
-}
-
-// CreatedAt returns the value of the "created_at" field in the mutation.
-func (m *PrincipleMutation) CreatedAt() (r time.Time, exists bool) {
-	v := m.created_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldCreatedAt returns the old "created_at" field's value of the Principle entity.
-// If the Principle object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *PrincipleMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
-	}
-	return oldValue.CreatedAt, nil
-}
-
-// ResetCreatedAt resets all changes to the "created_at" field.
-func (m *PrincipleMutation) ResetCreatedAt() {
-	m.created_at = nil
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (m *PrincipleMutation) SetUpdatedAt(t time.Time) {
-	m.updated_at = &t
-}
-
-// UpdatedAt returns the value of the "updated_at" field in the mutation.
-func (m *PrincipleMutation) UpdatedAt() (r time.Time, exists bool) {
-	v := m.updated_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldUpdatedAt returns the old "updated_at" field's value of the Principle entity.
-// If the Principle object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *PrincipleMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
-	}
-	return oldValue.UpdatedAt, nil
-}
-
-// ResetUpdatedAt resets all changes to the "updated_at" field.
-func (m *PrincipleMutation) ResetUpdatedAt() {
-	m.updated_at = nil
-}
-
-// SetCreatorID sets the "creator" edge to the User entity by id.
-func (m *PrincipleMutation) SetCreatorID(id uuid.UUID) {
-	m.creator = &id
-}
-
-// ClearCreator clears the "creator" edge to the User entity.
-func (m *PrincipleMutation) ClearCreator() {
-	m.clearedcreator = true
-	m.clearedFields[principle.FieldCreatedBy] = struct{}{}
-}
-
-// CreatorCleared reports if the "creator" edge to the User entity was cleared.
-func (m *PrincipleMutation) CreatorCleared() bool {
-	return m.CreatedByCleared() || m.clearedcreator
-}
-
-// CreatorID returns the "creator" edge ID in the mutation.
-func (m *PrincipleMutation) CreatorID() (id uuid.UUID, exists bool) {
-	if m.creator != nil {
-		return *m.creator, true
-	}
-	return
-}
-
-// CreatorIDs returns the "creator" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// CreatorID instead. It exists only for internal usage by the builders.
-func (m *PrincipleMutation) CreatorIDs() (ids []uuid.UUID) {
-	if id := m.creator; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetCreator resets all changes to the "creator" edge.
-func (m *PrincipleMutation) ResetCreator() {
-	m.creator = nil
-	m.clearedcreator = false
-}
-
 // AddRuleIDs adds the "rules" edge to the Rule entity by ids.
 func (m *PrincipleMutation) AddRuleIDs(ids ...uuid.UUID) {
 	if m.rules == nil {
@@ -6859,7 +4787,7 @@ func (m *PrincipleMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *PrincipleMutation) Fields() []string {
-	fields := make([]string, 0, 10)
+	fields := make([]string, 0, 3)
 	if m.name != nil {
 		fields = append(fields, principle.FieldName)
 	}
@@ -6868,27 +4796,6 @@ func (m *PrincipleMutation) Fields() []string {
 	}
 	if m.phase != nil {
 		fields = append(fields, principle.FieldPhase)
-	}
-	if m.validation_status != nil {
-		fields = append(fields, principle.FieldValidationStatus)
-	}
-	if m.validation_details != nil {
-		fields = append(fields, principle.FieldValidationDetails)
-	}
-	if m.description != nil {
-		fields = append(fields, principle.FieldDescription)
-	}
-	if m.creator != nil {
-		fields = append(fields, principle.FieldCreatedBy)
-	}
-	if m.is_locked != nil {
-		fields = append(fields, principle.FieldIsLocked)
-	}
-	if m.created_at != nil {
-		fields = append(fields, principle.FieldCreatedAt)
-	}
-	if m.updated_at != nil {
-		fields = append(fields, principle.FieldUpdatedAt)
 	}
 	return fields
 }
@@ -6904,20 +4811,6 @@ func (m *PrincipleMutation) Field(name string) (ent.Value, bool) {
 		return m.Level()
 	case principle.FieldPhase:
 		return m.Phase()
-	case principle.FieldValidationStatus:
-		return m.ValidationStatus()
-	case principle.FieldValidationDetails:
-		return m.ValidationDetails()
-	case principle.FieldDescription:
-		return m.Description()
-	case principle.FieldCreatedBy:
-		return m.CreatedBy()
-	case principle.FieldIsLocked:
-		return m.IsLocked()
-	case principle.FieldCreatedAt:
-		return m.CreatedAt()
-	case principle.FieldUpdatedAt:
-		return m.UpdatedAt()
 	}
 	return nil, false
 }
@@ -6933,20 +4826,6 @@ func (m *PrincipleMutation) OldField(ctx context.Context, name string) (ent.Valu
 		return m.OldLevel(ctx)
 	case principle.FieldPhase:
 		return m.OldPhase(ctx)
-	case principle.FieldValidationStatus:
-		return m.OldValidationStatus(ctx)
-	case principle.FieldValidationDetails:
-		return m.OldValidationDetails(ctx)
-	case principle.FieldDescription:
-		return m.OldDescription(ctx)
-	case principle.FieldCreatedBy:
-		return m.OldCreatedBy(ctx)
-	case principle.FieldIsLocked:
-		return m.OldIsLocked(ctx)
-	case principle.FieldCreatedAt:
-		return m.OldCreatedAt(ctx)
-	case principle.FieldUpdatedAt:
-		return m.OldUpdatedAt(ctx)
 	}
 	return nil, fmt.Errorf("unknown Principle field %s", name)
 }
@@ -6976,55 +4855,6 @@ func (m *PrincipleMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetPhase(v)
-		return nil
-	case principle.FieldValidationStatus:
-		v, ok := value.(principle.ValidationStatus)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetValidationStatus(v)
-		return nil
-	case principle.FieldValidationDetails:
-		v, ok := value.(map[string]interface{})
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetValidationDetails(v)
-		return nil
-	case principle.FieldDescription:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetDescription(v)
-		return nil
-	case principle.FieldCreatedBy:
-		v, ok := value.(uuid.UUID)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetCreatedBy(v)
-		return nil
-	case principle.FieldIsLocked:
-		v, ok := value.(bool)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetIsLocked(v)
-		return nil
-	case principle.FieldCreatedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetCreatedAt(v)
-		return nil
-	case principle.FieldUpdatedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetUpdatedAt(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Principle field %s", name)
@@ -7082,20 +4912,7 @@ func (m *PrincipleMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *PrincipleMutation) ClearedFields() []string {
-	var fields []string
-	if m.FieldCleared(principle.FieldValidationStatus) {
-		fields = append(fields, principle.FieldValidationStatus)
-	}
-	if m.FieldCleared(principle.FieldValidationDetails) {
-		fields = append(fields, principle.FieldValidationDetails)
-	}
-	if m.FieldCleared(principle.FieldDescription) {
-		fields = append(fields, principle.FieldDescription)
-	}
-	if m.FieldCleared(principle.FieldCreatedBy) {
-		fields = append(fields, principle.FieldCreatedBy)
-	}
-	return fields
+	return nil
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -7108,20 +4925,6 @@ func (m *PrincipleMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *PrincipleMutation) ClearField(name string) error {
-	switch name {
-	case principle.FieldValidationStatus:
-		m.ClearValidationStatus()
-		return nil
-	case principle.FieldValidationDetails:
-		m.ClearValidationDetails()
-		return nil
-	case principle.FieldDescription:
-		m.ClearDescription()
-		return nil
-	case principle.FieldCreatedBy:
-		m.ClearCreatedBy()
-		return nil
-	}
 	return fmt.Errorf("unknown Principle nullable field %s", name)
 }
 
@@ -7138,37 +4941,13 @@ func (m *PrincipleMutation) ResetField(name string) error {
 	case principle.FieldPhase:
 		m.ResetPhase()
 		return nil
-	case principle.FieldValidationStatus:
-		m.ResetValidationStatus()
-		return nil
-	case principle.FieldValidationDetails:
-		m.ResetValidationDetails()
-		return nil
-	case principle.FieldDescription:
-		m.ResetDescription()
-		return nil
-	case principle.FieldCreatedBy:
-		m.ResetCreatedBy()
-		return nil
-	case principle.FieldIsLocked:
-		m.ResetIsLocked()
-		return nil
-	case principle.FieldCreatedAt:
-		m.ResetCreatedAt()
-		return nil
-	case principle.FieldUpdatedAt:
-		m.ResetUpdatedAt()
-		return nil
 	}
 	return fmt.Errorf("unknown Principle field %s", name)
 }
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *PrincipleMutation) AddedEdges() []string {
-	edges := make([]string, 0, 3)
-	if m.creator != nil {
-		edges = append(edges, principle.EdgeCreator)
-	}
+	edges := make([]string, 0, 2)
 	if m.rules != nil {
 		edges = append(edges, principle.EdgeRules)
 	}
@@ -7182,10 +4961,6 @@ func (m *PrincipleMutation) AddedEdges() []string {
 // name in this mutation.
 func (m *PrincipleMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case principle.EdgeCreator:
-		if id := m.creator; id != nil {
-			return []ent.Value{*id}
-		}
 	case principle.EdgeRules:
 		ids := make([]ent.Value, 0, len(m.rules))
 		for id := range m.rules {
@@ -7204,7 +4979,7 @@ func (m *PrincipleMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *PrincipleMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 2)
 	if m.removedrules != nil {
 		edges = append(edges, principle.EdgeRules)
 	}
@@ -7236,10 +5011,7 @@ func (m *PrincipleMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *PrincipleMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 3)
-	if m.clearedcreator {
-		edges = append(edges, principle.EdgeCreator)
-	}
+	edges := make([]string, 0, 2)
 	if m.clearedrules {
 		edges = append(edges, principle.EdgeRules)
 	}
@@ -7253,8 +5025,6 @@ func (m *PrincipleMutation) ClearedEdges() []string {
 // was cleared in this mutation.
 func (m *PrincipleMutation) EdgeCleared(name string) bool {
 	switch name {
-	case principle.EdgeCreator:
-		return m.clearedcreator
 	case principle.EdgeRules:
 		return m.clearedrules
 	case principle.EdgeDefenders:
@@ -7267,9 +5037,6 @@ func (m *PrincipleMutation) EdgeCleared(name string) bool {
 // if that edge is not defined in the schema.
 func (m *PrincipleMutation) ClearEdge(name string) error {
 	switch name {
-	case principle.EdgeCreator:
-		m.ClearCreator()
-		return nil
 	}
 	return fmt.Errorf("unknown Principle unique edge %s", name)
 }
@@ -7278,9 +5045,6 @@ func (m *PrincipleMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *PrincipleMutation) ResetEdge(name string) error {
 	switch name {
-	case principle.EdgeCreator:
-		m.ResetCreator()
-		return nil
 	case principle.EdgeRules:
 		m.ResetRules()
 		return nil
@@ -7303,17 +5067,11 @@ type RuleMutation struct {
 	comparator        *string
 	is_inversed       *bool
 	configurations    *map[string]interface{}
-	description       *string
-	is_locked         *bool
-	created_at        *time.Time
-	updated_at        *time.Time
 	clearedFields     map[string]struct{}
 	target            *uuid.UUID
 	clearedtarget     bool
 	wordlist          *uuid.UUID
 	clearedwordlist   bool
-	creator           *uuid.UUID
-	clearedcreator    bool
 	actions           map[uuid.UUID]struct{}
 	removedactions    map[uuid.UUID]struct{}
 	clearedactions    bool
@@ -7740,212 +5498,6 @@ func (m *RuleMutation) ResetWordlistID() {
 	delete(m.clearedFields, rule.FieldWordlistID)
 }
 
-// SetDescription sets the "description" field.
-func (m *RuleMutation) SetDescription(s string) {
-	m.description = &s
-}
-
-// Description returns the value of the "description" field in the mutation.
-func (m *RuleMutation) Description() (r string, exists bool) {
-	v := m.description
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldDescription returns the old "description" field's value of the Rule entity.
-// If the Rule object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *RuleMutation) OldDescription(ctx context.Context) (v *string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldDescription is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldDescription requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldDescription: %w", err)
-	}
-	return oldValue.Description, nil
-}
-
-// ClearDescription clears the value of the "description" field.
-func (m *RuleMutation) ClearDescription() {
-	m.description = nil
-	m.clearedFields[rule.FieldDescription] = struct{}{}
-}
-
-// DescriptionCleared returns if the "description" field was cleared in this mutation.
-func (m *RuleMutation) DescriptionCleared() bool {
-	_, ok := m.clearedFields[rule.FieldDescription]
-	return ok
-}
-
-// ResetDescription resets all changes to the "description" field.
-func (m *RuleMutation) ResetDescription() {
-	m.description = nil
-	delete(m.clearedFields, rule.FieldDescription)
-}
-
-// SetCreatedBy sets the "created_by" field.
-func (m *RuleMutation) SetCreatedBy(u uuid.UUID) {
-	m.creator = &u
-}
-
-// CreatedBy returns the value of the "created_by" field in the mutation.
-func (m *RuleMutation) CreatedBy() (r uuid.UUID, exists bool) {
-	v := m.creator
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldCreatedBy returns the old "created_by" field's value of the Rule entity.
-// If the Rule object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *RuleMutation) OldCreatedBy(ctx context.Context) (v *uuid.UUID, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldCreatedBy is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldCreatedBy requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldCreatedBy: %w", err)
-	}
-	return oldValue.CreatedBy, nil
-}
-
-// ClearCreatedBy clears the value of the "created_by" field.
-func (m *RuleMutation) ClearCreatedBy() {
-	m.creator = nil
-	m.clearedFields[rule.FieldCreatedBy] = struct{}{}
-}
-
-// CreatedByCleared returns if the "created_by" field was cleared in this mutation.
-func (m *RuleMutation) CreatedByCleared() bool {
-	_, ok := m.clearedFields[rule.FieldCreatedBy]
-	return ok
-}
-
-// ResetCreatedBy resets all changes to the "created_by" field.
-func (m *RuleMutation) ResetCreatedBy() {
-	m.creator = nil
-	delete(m.clearedFields, rule.FieldCreatedBy)
-}
-
-// SetIsLocked sets the "is_locked" field.
-func (m *RuleMutation) SetIsLocked(b bool) {
-	m.is_locked = &b
-}
-
-// IsLocked returns the value of the "is_locked" field in the mutation.
-func (m *RuleMutation) IsLocked() (r bool, exists bool) {
-	v := m.is_locked
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldIsLocked returns the old "is_locked" field's value of the Rule entity.
-// If the Rule object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *RuleMutation) OldIsLocked(ctx context.Context) (v bool, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldIsLocked is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldIsLocked requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldIsLocked: %w", err)
-	}
-	return oldValue.IsLocked, nil
-}
-
-// ResetIsLocked resets all changes to the "is_locked" field.
-func (m *RuleMutation) ResetIsLocked() {
-	m.is_locked = nil
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (m *RuleMutation) SetCreatedAt(t time.Time) {
-	m.created_at = &t
-}
-
-// CreatedAt returns the value of the "created_at" field in the mutation.
-func (m *RuleMutation) CreatedAt() (r time.Time, exists bool) {
-	v := m.created_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldCreatedAt returns the old "created_at" field's value of the Rule entity.
-// If the Rule object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *RuleMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
-	}
-	return oldValue.CreatedAt, nil
-}
-
-// ResetCreatedAt resets all changes to the "created_at" field.
-func (m *RuleMutation) ResetCreatedAt() {
-	m.created_at = nil
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (m *RuleMutation) SetUpdatedAt(t time.Time) {
-	m.updated_at = &t
-}
-
-// UpdatedAt returns the value of the "updated_at" field in the mutation.
-func (m *RuleMutation) UpdatedAt() (r time.Time, exists bool) {
-	v := m.updated_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldUpdatedAt returns the old "updated_at" field's value of the Rule entity.
-// If the Rule object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *RuleMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
-	}
-	return oldValue.UpdatedAt, nil
-}
-
-// ResetUpdatedAt resets all changes to the "updated_at" field.
-func (m *RuleMutation) ResetUpdatedAt() {
-	m.updated_at = nil
-}
-
 // ClearTarget clears the "target" edge to the Target entity.
 func (m *RuleMutation) ClearTarget() {
 	m.clearedtarget = true
@@ -7998,46 +5550,6 @@ func (m *RuleMutation) WordlistIDs() (ids []uuid.UUID) {
 func (m *RuleMutation) ResetWordlist() {
 	m.wordlist = nil
 	m.clearedwordlist = false
-}
-
-// SetCreatorID sets the "creator" edge to the User entity by id.
-func (m *RuleMutation) SetCreatorID(id uuid.UUID) {
-	m.creator = &id
-}
-
-// ClearCreator clears the "creator" edge to the User entity.
-func (m *RuleMutation) ClearCreator() {
-	m.clearedcreator = true
-	m.clearedFields[rule.FieldCreatedBy] = struct{}{}
-}
-
-// CreatorCleared reports if the "creator" edge to the User entity was cleared.
-func (m *RuleMutation) CreatorCleared() bool {
-	return m.CreatedByCleared() || m.clearedcreator
-}
-
-// CreatorID returns the "creator" edge ID in the mutation.
-func (m *RuleMutation) CreatorID() (id uuid.UUID, exists bool) {
-	if m.creator != nil {
-		return *m.creator, true
-	}
-	return
-}
-
-// CreatorIDs returns the "creator" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// CreatorID instead. It exists only for internal usage by the builders.
-func (m *RuleMutation) CreatorIDs() (ids []uuid.UUID) {
-	if id := m.creator; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetCreator resets all changes to the "creator" edge.
-func (m *RuleMutation) ResetCreator() {
-	m.creator = nil
-	m.clearedcreator = false
 }
 
 // AddActionIDs adds the "actions" edge to the Action entity by ids.
@@ -8182,7 +5694,7 @@ func (m *RuleMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *RuleMutation) Fields() []string {
-	fields := make([]string, 0, 12)
+	fields := make([]string, 0, 7)
 	if m.name != nil {
 		fields = append(fields, rule.FieldName)
 	}
@@ -8203,21 +5715,6 @@ func (m *RuleMutation) Fields() []string {
 	}
 	if m.wordlist != nil {
 		fields = append(fields, rule.FieldWordlistID)
-	}
-	if m.description != nil {
-		fields = append(fields, rule.FieldDescription)
-	}
-	if m.creator != nil {
-		fields = append(fields, rule.FieldCreatedBy)
-	}
-	if m.is_locked != nil {
-		fields = append(fields, rule.FieldIsLocked)
-	}
-	if m.created_at != nil {
-		fields = append(fields, rule.FieldCreatedAt)
-	}
-	if m.updated_at != nil {
-		fields = append(fields, rule.FieldUpdatedAt)
 	}
 	return fields
 }
@@ -8241,16 +5738,6 @@ func (m *RuleMutation) Field(name string) (ent.Value, bool) {
 		return m.Configurations()
 	case rule.FieldWordlistID:
 		return m.WordlistID()
-	case rule.FieldDescription:
-		return m.Description()
-	case rule.FieldCreatedBy:
-		return m.CreatedBy()
-	case rule.FieldIsLocked:
-		return m.IsLocked()
-	case rule.FieldCreatedAt:
-		return m.CreatedAt()
-	case rule.FieldUpdatedAt:
-		return m.UpdatedAt()
 	}
 	return nil, false
 }
@@ -8274,16 +5761,6 @@ func (m *RuleMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldConfigurations(ctx)
 	case rule.FieldWordlistID:
 		return m.OldWordlistID(ctx)
-	case rule.FieldDescription:
-		return m.OldDescription(ctx)
-	case rule.FieldCreatedBy:
-		return m.OldCreatedBy(ctx)
-	case rule.FieldIsLocked:
-		return m.OldIsLocked(ctx)
-	case rule.FieldCreatedAt:
-		return m.OldCreatedAt(ctx)
-	case rule.FieldUpdatedAt:
-		return m.OldUpdatedAt(ctx)
 	}
 	return nil, fmt.Errorf("unknown Rule field %s", name)
 }
@@ -8342,41 +5819,6 @@ func (m *RuleMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetWordlistID(v)
 		return nil
-	case rule.FieldDescription:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetDescription(v)
-		return nil
-	case rule.FieldCreatedBy:
-		v, ok := value.(uuid.UUID)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetCreatedBy(v)
-		return nil
-	case rule.FieldIsLocked:
-		v, ok := value.(bool)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetIsLocked(v)
-		return nil
-	case rule.FieldCreatedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetCreatedAt(v)
-		return nil
-	case rule.FieldUpdatedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetUpdatedAt(v)
-		return nil
 	}
 	return fmt.Errorf("unknown Rule field %s", name)
 }
@@ -8431,12 +5873,6 @@ func (m *RuleMutation) ClearedFields() []string {
 	if m.FieldCleared(rule.FieldWordlistID) {
 		fields = append(fields, rule.FieldWordlistID)
 	}
-	if m.FieldCleared(rule.FieldDescription) {
-		fields = append(fields, rule.FieldDescription)
-	}
-	if m.FieldCleared(rule.FieldCreatedBy) {
-		fields = append(fields, rule.FieldCreatedBy)
-	}
 	return fields
 }
 
@@ -8459,12 +5895,6 @@ func (m *RuleMutation) ClearField(name string) error {
 		return nil
 	case rule.FieldWordlistID:
 		m.ClearWordlistID()
-		return nil
-	case rule.FieldDescription:
-		m.ClearDescription()
-		return nil
-	case rule.FieldCreatedBy:
-		m.ClearCreatedBy()
 		return nil
 	}
 	return fmt.Errorf("unknown Rule nullable field %s", name)
@@ -8495,36 +5925,18 @@ func (m *RuleMutation) ResetField(name string) error {
 	case rule.FieldWordlistID:
 		m.ResetWordlistID()
 		return nil
-	case rule.FieldDescription:
-		m.ResetDescription()
-		return nil
-	case rule.FieldCreatedBy:
-		m.ResetCreatedBy()
-		return nil
-	case rule.FieldIsLocked:
-		m.ResetIsLocked()
-		return nil
-	case rule.FieldCreatedAt:
-		m.ResetCreatedAt()
-		return nil
-	case rule.FieldUpdatedAt:
-		m.ResetUpdatedAt()
-		return nil
 	}
 	return fmt.Errorf("unknown Rule field %s", name)
 }
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *RuleMutation) AddedEdges() []string {
-	edges := make([]string, 0, 5)
+	edges := make([]string, 0, 4)
 	if m.target != nil {
 		edges = append(edges, rule.EdgeTarget)
 	}
 	if m.wordlist != nil {
 		edges = append(edges, rule.EdgeWordlist)
-	}
-	if m.creator != nil {
-		edges = append(edges, rule.EdgeCreator)
 	}
 	if m.actions != nil {
 		edges = append(edges, rule.EdgeActions)
@@ -8547,10 +5959,6 @@ func (m *RuleMutation) AddedIDs(name string) []ent.Value {
 		if id := m.wordlist; id != nil {
 			return []ent.Value{*id}
 		}
-	case rule.EdgeCreator:
-		if id := m.creator; id != nil {
-			return []ent.Value{*id}
-		}
 	case rule.EdgeActions:
 		ids := make([]ent.Value, 0, len(m.actions))
 		for id := range m.actions {
@@ -8569,7 +5977,7 @@ func (m *RuleMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *RuleMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 5)
+	edges := make([]string, 0, 4)
 	if m.removedactions != nil {
 		edges = append(edges, rule.EdgeActions)
 	}
@@ -8601,15 +6009,12 @@ func (m *RuleMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *RuleMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 5)
+	edges := make([]string, 0, 4)
 	if m.clearedtarget {
 		edges = append(edges, rule.EdgeTarget)
 	}
 	if m.clearedwordlist {
 		edges = append(edges, rule.EdgeWordlist)
-	}
-	if m.clearedcreator {
-		edges = append(edges, rule.EdgeCreator)
 	}
 	if m.clearedactions {
 		edges = append(edges, rule.EdgeActions)
@@ -8628,8 +6033,6 @@ func (m *RuleMutation) EdgeCleared(name string) bool {
 		return m.clearedtarget
 	case rule.EdgeWordlist:
 		return m.clearedwordlist
-	case rule.EdgeCreator:
-		return m.clearedcreator
 	case rule.EdgeActions:
 		return m.clearedactions
 	case rule.EdgePrinciples:
@@ -8648,9 +6051,6 @@ func (m *RuleMutation) ClearEdge(name string) error {
 	case rule.EdgeWordlist:
 		m.ClearWordlist()
 		return nil
-	case rule.EdgeCreator:
-		m.ClearCreator()
-		return nil
 	}
 	return fmt.Errorf("unknown Rule unique edge %s", name)
 }
@@ -8664,9 +6064,6 @@ func (m *RuleMutation) ResetEdge(name string) error {
 		return nil
 	case rule.EdgeWordlist:
 		m.ResetWordlist()
-		return nil
-	case rule.EdgeCreator:
-		m.ResetCreator()
 		return nil
 	case rule.EdgeActions:
 		m.ResetActions()
@@ -8689,17 +6086,11 @@ type TargetMutation struct {
 	addphase        *int
 	_type           *target.Type
 	datatype        *target.Datatype
-	description     *string
-	is_locked       *bool
-	created_at      *time.Time
-	updated_at      *time.Time
 	clearedFields   map[string]struct{}
 	pattern         *uuid.UUID
 	clearedpattern  bool
 	wordlist        *uuid.UUID
 	clearedwordlist bool
-	creator         *uuid.UUID
-	clearedcreator  bool
 	engines         map[uuid.UUID]struct{}
 	removedengines  map[uuid.UUID]struct{}
 	clearedengines  bool
@@ -8979,55 +6370,6 @@ func (m *TargetMutation) ResetDatatype() {
 	m.datatype = nil
 }
 
-// SetDescription sets the "description" field.
-func (m *TargetMutation) SetDescription(s string) {
-	m.description = &s
-}
-
-// Description returns the value of the "description" field in the mutation.
-func (m *TargetMutation) Description() (r string, exists bool) {
-	v := m.description
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldDescription returns the old "description" field's value of the Target entity.
-// If the Target object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *TargetMutation) OldDescription(ctx context.Context) (v *string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldDescription is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldDescription requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldDescription: %w", err)
-	}
-	return oldValue.Description, nil
-}
-
-// ClearDescription clears the value of the "description" field.
-func (m *TargetMutation) ClearDescription() {
-	m.description = nil
-	m.clearedFields[target.FieldDescription] = struct{}{}
-}
-
-// DescriptionCleared returns if the "description" field was cleared in this mutation.
-func (m *TargetMutation) DescriptionCleared() bool {
-	_, ok := m.clearedFields[target.FieldDescription]
-	return ok
-}
-
-// ResetDescription resets all changes to the "description" field.
-func (m *TargetMutation) ResetDescription() {
-	m.description = nil
-	delete(m.clearedFields, target.FieldDescription)
-}
-
 // SetPatternID sets the "pattern_id" field.
 func (m *TargetMutation) SetPatternID(u uuid.UUID) {
 	m.pattern = &u
@@ -9126,163 +6468,6 @@ func (m *TargetMutation) ResetWordlistID() {
 	delete(m.clearedFields, target.FieldWordlistID)
 }
 
-// SetCreatedBy sets the "created_by" field.
-func (m *TargetMutation) SetCreatedBy(u uuid.UUID) {
-	m.creator = &u
-}
-
-// CreatedBy returns the value of the "created_by" field in the mutation.
-func (m *TargetMutation) CreatedBy() (r uuid.UUID, exists bool) {
-	v := m.creator
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldCreatedBy returns the old "created_by" field's value of the Target entity.
-// If the Target object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *TargetMutation) OldCreatedBy(ctx context.Context) (v *uuid.UUID, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldCreatedBy is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldCreatedBy requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldCreatedBy: %w", err)
-	}
-	return oldValue.CreatedBy, nil
-}
-
-// ClearCreatedBy clears the value of the "created_by" field.
-func (m *TargetMutation) ClearCreatedBy() {
-	m.creator = nil
-	m.clearedFields[target.FieldCreatedBy] = struct{}{}
-}
-
-// CreatedByCleared returns if the "created_by" field was cleared in this mutation.
-func (m *TargetMutation) CreatedByCleared() bool {
-	_, ok := m.clearedFields[target.FieldCreatedBy]
-	return ok
-}
-
-// ResetCreatedBy resets all changes to the "created_by" field.
-func (m *TargetMutation) ResetCreatedBy() {
-	m.creator = nil
-	delete(m.clearedFields, target.FieldCreatedBy)
-}
-
-// SetIsLocked sets the "is_locked" field.
-func (m *TargetMutation) SetIsLocked(b bool) {
-	m.is_locked = &b
-}
-
-// IsLocked returns the value of the "is_locked" field in the mutation.
-func (m *TargetMutation) IsLocked() (r bool, exists bool) {
-	v := m.is_locked
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldIsLocked returns the old "is_locked" field's value of the Target entity.
-// If the Target object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *TargetMutation) OldIsLocked(ctx context.Context) (v bool, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldIsLocked is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldIsLocked requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldIsLocked: %w", err)
-	}
-	return oldValue.IsLocked, nil
-}
-
-// ResetIsLocked resets all changes to the "is_locked" field.
-func (m *TargetMutation) ResetIsLocked() {
-	m.is_locked = nil
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (m *TargetMutation) SetCreatedAt(t time.Time) {
-	m.created_at = &t
-}
-
-// CreatedAt returns the value of the "created_at" field in the mutation.
-func (m *TargetMutation) CreatedAt() (r time.Time, exists bool) {
-	v := m.created_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldCreatedAt returns the old "created_at" field's value of the Target entity.
-// If the Target object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *TargetMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
-	}
-	return oldValue.CreatedAt, nil
-}
-
-// ResetCreatedAt resets all changes to the "created_at" field.
-func (m *TargetMutation) ResetCreatedAt() {
-	m.created_at = nil
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (m *TargetMutation) SetUpdatedAt(t time.Time) {
-	m.updated_at = &t
-}
-
-// UpdatedAt returns the value of the "updated_at" field in the mutation.
-func (m *TargetMutation) UpdatedAt() (r time.Time, exists bool) {
-	v := m.updated_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldUpdatedAt returns the old "updated_at" field's value of the Target entity.
-// If the Target object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *TargetMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
-	}
-	return oldValue.UpdatedAt, nil
-}
-
-// ResetUpdatedAt resets all changes to the "updated_at" field.
-func (m *TargetMutation) ResetUpdatedAt() {
-	m.updated_at = nil
-}
-
 // ClearPattern clears the "pattern" edge to the Pattern entity.
 func (m *TargetMutation) ClearPattern() {
 	m.clearedpattern = true
@@ -9335,46 +6520,6 @@ func (m *TargetMutation) WordlistIDs() (ids []uuid.UUID) {
 func (m *TargetMutation) ResetWordlist() {
 	m.wordlist = nil
 	m.clearedwordlist = false
-}
-
-// SetCreatorID sets the "creator" edge to the User entity by id.
-func (m *TargetMutation) SetCreatorID(id uuid.UUID) {
-	m.creator = &id
-}
-
-// ClearCreator clears the "creator" edge to the User entity.
-func (m *TargetMutation) ClearCreator() {
-	m.clearedcreator = true
-	m.clearedFields[target.FieldCreatedBy] = struct{}{}
-}
-
-// CreatorCleared reports if the "creator" edge to the User entity was cleared.
-func (m *TargetMutation) CreatorCleared() bool {
-	return m.CreatedByCleared() || m.clearedcreator
-}
-
-// CreatorID returns the "creator" edge ID in the mutation.
-func (m *TargetMutation) CreatorID() (id uuid.UUID, exists bool) {
-	if m.creator != nil {
-		return *m.creator, true
-	}
-	return
-}
-
-// CreatorIDs returns the "creator" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// CreatorID instead. It exists only for internal usage by the builders.
-func (m *TargetMutation) CreatorIDs() (ids []uuid.UUID) {
-	if id := m.creator; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetCreator resets all changes to the "creator" edge.
-func (m *TargetMutation) ResetCreator() {
-	m.creator = nil
-	m.clearedcreator = false
 }
 
 // AddEngineIDs adds the "engines" edge to the Engine entity by ids.
@@ -9519,7 +6664,7 @@ func (m *TargetMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *TargetMutation) Fields() []string {
-	fields := make([]string, 0, 11)
+	fields := make([]string, 0, 6)
 	if m.name != nil {
 		fields = append(fields, target.FieldName)
 	}
@@ -9532,26 +6677,11 @@ func (m *TargetMutation) Fields() []string {
 	if m.datatype != nil {
 		fields = append(fields, target.FieldDatatype)
 	}
-	if m.description != nil {
-		fields = append(fields, target.FieldDescription)
-	}
 	if m.pattern != nil {
 		fields = append(fields, target.FieldPatternID)
 	}
 	if m.wordlist != nil {
 		fields = append(fields, target.FieldWordlistID)
-	}
-	if m.creator != nil {
-		fields = append(fields, target.FieldCreatedBy)
-	}
-	if m.is_locked != nil {
-		fields = append(fields, target.FieldIsLocked)
-	}
-	if m.created_at != nil {
-		fields = append(fields, target.FieldCreatedAt)
-	}
-	if m.updated_at != nil {
-		fields = append(fields, target.FieldUpdatedAt)
 	}
 	return fields
 }
@@ -9569,20 +6699,10 @@ func (m *TargetMutation) Field(name string) (ent.Value, bool) {
 		return m.GetType()
 	case target.FieldDatatype:
 		return m.Datatype()
-	case target.FieldDescription:
-		return m.Description()
 	case target.FieldPatternID:
 		return m.PatternID()
 	case target.FieldWordlistID:
 		return m.WordlistID()
-	case target.FieldCreatedBy:
-		return m.CreatedBy()
-	case target.FieldIsLocked:
-		return m.IsLocked()
-	case target.FieldCreatedAt:
-		return m.CreatedAt()
-	case target.FieldUpdatedAt:
-		return m.UpdatedAt()
 	}
 	return nil, false
 }
@@ -9600,20 +6720,10 @@ func (m *TargetMutation) OldField(ctx context.Context, name string) (ent.Value, 
 		return m.OldType(ctx)
 	case target.FieldDatatype:
 		return m.OldDatatype(ctx)
-	case target.FieldDescription:
-		return m.OldDescription(ctx)
 	case target.FieldPatternID:
 		return m.OldPatternID(ctx)
 	case target.FieldWordlistID:
 		return m.OldWordlistID(ctx)
-	case target.FieldCreatedBy:
-		return m.OldCreatedBy(ctx)
-	case target.FieldIsLocked:
-		return m.OldIsLocked(ctx)
-	case target.FieldCreatedAt:
-		return m.OldCreatedAt(ctx)
-	case target.FieldUpdatedAt:
-		return m.OldUpdatedAt(ctx)
 	}
 	return nil, fmt.Errorf("unknown Target field %s", name)
 }
@@ -9651,13 +6761,6 @@ func (m *TargetMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetDatatype(v)
 		return nil
-	case target.FieldDescription:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetDescription(v)
-		return nil
 	case target.FieldPatternID:
 		v, ok := value.(uuid.UUID)
 		if !ok {
@@ -9671,34 +6774,6 @@ func (m *TargetMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetWordlistID(v)
-		return nil
-	case target.FieldCreatedBy:
-		v, ok := value.(uuid.UUID)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetCreatedBy(v)
-		return nil
-	case target.FieldIsLocked:
-		v, ok := value.(bool)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetIsLocked(v)
-		return nil
-	case target.FieldCreatedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetCreatedAt(v)
-		return nil
-	case target.FieldUpdatedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetUpdatedAt(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Target field %s", name)
@@ -9745,17 +6820,11 @@ func (m *TargetMutation) AddField(name string, value ent.Value) error {
 // mutation.
 func (m *TargetMutation) ClearedFields() []string {
 	var fields []string
-	if m.FieldCleared(target.FieldDescription) {
-		fields = append(fields, target.FieldDescription)
-	}
 	if m.FieldCleared(target.FieldPatternID) {
 		fields = append(fields, target.FieldPatternID)
 	}
 	if m.FieldCleared(target.FieldWordlistID) {
 		fields = append(fields, target.FieldWordlistID)
-	}
-	if m.FieldCleared(target.FieldCreatedBy) {
-		fields = append(fields, target.FieldCreatedBy)
 	}
 	return fields
 }
@@ -9771,17 +6840,11 @@ func (m *TargetMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *TargetMutation) ClearField(name string) error {
 	switch name {
-	case target.FieldDescription:
-		m.ClearDescription()
-		return nil
 	case target.FieldPatternID:
 		m.ClearPatternID()
 		return nil
 	case target.FieldWordlistID:
 		m.ClearWordlistID()
-		return nil
-	case target.FieldCreatedBy:
-		m.ClearCreatedBy()
 		return nil
 	}
 	return fmt.Errorf("unknown Target nullable field %s", name)
@@ -9803,26 +6866,11 @@ func (m *TargetMutation) ResetField(name string) error {
 	case target.FieldDatatype:
 		m.ResetDatatype()
 		return nil
-	case target.FieldDescription:
-		m.ResetDescription()
-		return nil
 	case target.FieldPatternID:
 		m.ResetPatternID()
 		return nil
 	case target.FieldWordlistID:
 		m.ResetWordlistID()
-		return nil
-	case target.FieldCreatedBy:
-		m.ResetCreatedBy()
-		return nil
-	case target.FieldIsLocked:
-		m.ResetIsLocked()
-		return nil
-	case target.FieldCreatedAt:
-		m.ResetCreatedAt()
-		return nil
-	case target.FieldUpdatedAt:
-		m.ResetUpdatedAt()
 		return nil
 	}
 	return fmt.Errorf("unknown Target field %s", name)
@@ -9830,15 +6878,12 @@ func (m *TargetMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *TargetMutation) AddedEdges() []string {
-	edges := make([]string, 0, 5)
+	edges := make([]string, 0, 4)
 	if m.pattern != nil {
 		edges = append(edges, target.EdgePattern)
 	}
 	if m.wordlist != nil {
 		edges = append(edges, target.EdgeWordlist)
-	}
-	if m.creator != nil {
-		edges = append(edges, target.EdgeCreator)
 	}
 	if m.engines != nil {
 		edges = append(edges, target.EdgeEngines)
@@ -9861,10 +6906,6 @@ func (m *TargetMutation) AddedIDs(name string) []ent.Value {
 		if id := m.wordlist; id != nil {
 			return []ent.Value{*id}
 		}
-	case target.EdgeCreator:
-		if id := m.creator; id != nil {
-			return []ent.Value{*id}
-		}
 	case target.EdgeEngines:
 		ids := make([]ent.Value, 0, len(m.engines))
 		for id := range m.engines {
@@ -9883,7 +6924,7 @@ func (m *TargetMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *TargetMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 5)
+	edges := make([]string, 0, 4)
 	if m.removedengines != nil {
 		edges = append(edges, target.EdgeEngines)
 	}
@@ -9915,15 +6956,12 @@ func (m *TargetMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *TargetMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 5)
+	edges := make([]string, 0, 4)
 	if m.clearedpattern {
 		edges = append(edges, target.EdgePattern)
 	}
 	if m.clearedwordlist {
 		edges = append(edges, target.EdgeWordlist)
-	}
-	if m.clearedcreator {
-		edges = append(edges, target.EdgeCreator)
 	}
 	if m.clearedengines {
 		edges = append(edges, target.EdgeEngines)
@@ -9942,8 +6980,6 @@ func (m *TargetMutation) EdgeCleared(name string) bool {
 		return m.clearedpattern
 	case target.EdgeWordlist:
 		return m.clearedwordlist
-	case target.EdgeCreator:
-		return m.clearedcreator
 	case target.EdgeEngines:
 		return m.clearedengines
 	case target.EdgeRules:
@@ -9962,9 +6998,6 @@ func (m *TargetMutation) ClearEdge(name string) error {
 	case target.EdgeWordlist:
 		m.ClearWordlist()
 		return nil
-	case target.EdgeCreator:
-		m.ClearCreator()
-		return nil
 	}
 	return fmt.Errorf("unknown Target unique edge %s", name)
 }
@@ -9979,9 +7012,6 @@ func (m *TargetMutation) ResetEdge(name string) error {
 	case target.EdgeWordlist:
 		m.ResetWordlist()
 		return nil
-	case target.EdgeCreator:
-		m.ResetCreator()
-		return nil
 	case target.EdgeEngines:
 		m.ResetEngines()
 		return nil
@@ -9995,46 +7025,23 @@ func (m *TargetMutation) ResetEdge(name string) error {
 // UserMutation represents an operation that mutates the User nodes in the graph.
 type UserMutation struct {
 	config
-	op                        Op
-	typ                       string
-	id                        *uuid.UUID
-	email                     *string
-	is_verified               *bool
-	is_activated              *bool
-	is_root                   *bool
-	created_at                *time.Time
-	updated_at                *time.Time
-	clearedFields             map[string]struct{}
-	groups                    map[uuid.UUID]struct{}
-	removedgroups             map[uuid.UUID]struct{}
-	clearedgroups             bool
-	permissions               map[uuid.UUID]struct{}
-	removedpermissions        map[uuid.UUID]struct{}
-	clearedpermissions        bool
-	created_wordlists         map[uuid.UUID]struct{}
-	removedcreated_wordlists  map[uuid.UUID]struct{}
-	clearedcreated_wordlists  bool
-	created_engines           map[uuid.UUID]struct{}
-	removedcreated_engines    map[uuid.UUID]struct{}
-	clearedcreated_engines    bool
-	created_targets           map[uuid.UUID]struct{}
-	removedcreated_targets    map[uuid.UUID]struct{}
-	clearedcreated_targets    bool
-	created_actions           map[uuid.UUID]struct{}
-	removedcreated_actions    map[uuid.UUID]struct{}
-	clearedcreated_actions    bool
-	created_rules             map[uuid.UUID]struct{}
-	removedcreated_rules      map[uuid.UUID]struct{}
-	clearedcreated_rules      bool
-	created_principles        map[uuid.UUID]struct{}
-	removedcreated_principles map[uuid.UUID]struct{}
-	clearedcreated_principles bool
-	created_decisions         map[uuid.UUID]struct{}
-	removedcreated_decisions  map[uuid.UUID]struct{}
-	clearedcreated_decisions  bool
-	done                      bool
-	oldValue                  func(context.Context) (*User, error)
-	predicates                []predicate.User
+	op                 Op
+	typ                string
+	id                 *uuid.UUID
+	email              *string
+	is_verified        *bool
+	is_activated       *bool
+	is_root            *bool
+	clearedFields      map[string]struct{}
+	groups             map[uuid.UUID]struct{}
+	removedgroups      map[uuid.UUID]struct{}
+	clearedgroups      bool
+	permissions        map[uuid.UUID]struct{}
+	removedpermissions map[uuid.UUID]struct{}
+	clearedpermissions bool
+	done               bool
+	oldValue           func(context.Context) (*User, error)
+	predicates         []predicate.User
 }
 
 var _ ent.Mutation = (*UserMutation)(nil)
@@ -10285,78 +7292,6 @@ func (m *UserMutation) ResetIsRoot() {
 	m.is_root = nil
 }
 
-// SetCreatedAt sets the "created_at" field.
-func (m *UserMutation) SetCreatedAt(t time.Time) {
-	m.created_at = &t
-}
-
-// CreatedAt returns the value of the "created_at" field in the mutation.
-func (m *UserMutation) CreatedAt() (r time.Time, exists bool) {
-	v := m.created_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldCreatedAt returns the old "created_at" field's value of the User entity.
-// If the User object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UserMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
-	}
-	return oldValue.CreatedAt, nil
-}
-
-// ResetCreatedAt resets all changes to the "created_at" field.
-func (m *UserMutation) ResetCreatedAt() {
-	m.created_at = nil
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (m *UserMutation) SetUpdatedAt(t time.Time) {
-	m.updated_at = &t
-}
-
-// UpdatedAt returns the value of the "updated_at" field in the mutation.
-func (m *UserMutation) UpdatedAt() (r time.Time, exists bool) {
-	v := m.updated_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldUpdatedAt returns the old "updated_at" field's value of the User entity.
-// If the User object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UserMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
-	}
-	return oldValue.UpdatedAt, nil
-}
-
-// ResetUpdatedAt resets all changes to the "updated_at" field.
-func (m *UserMutation) ResetUpdatedAt() {
-	m.updated_at = nil
-}
-
 // AddGroupIDs adds the "groups" edge to the Group entity by ids.
 func (m *UserMutation) AddGroupIDs(ids ...uuid.UUID) {
 	if m.groups == nil {
@@ -10465,384 +7400,6 @@ func (m *UserMutation) ResetPermissions() {
 	m.removedpermissions = nil
 }
 
-// AddCreatedWordlistIDs adds the "created_wordlists" edge to the Wordlist entity by ids.
-func (m *UserMutation) AddCreatedWordlistIDs(ids ...uuid.UUID) {
-	if m.created_wordlists == nil {
-		m.created_wordlists = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.created_wordlists[ids[i]] = struct{}{}
-	}
-}
-
-// ClearCreatedWordlists clears the "created_wordlists" edge to the Wordlist entity.
-func (m *UserMutation) ClearCreatedWordlists() {
-	m.clearedcreated_wordlists = true
-}
-
-// CreatedWordlistsCleared reports if the "created_wordlists" edge to the Wordlist entity was cleared.
-func (m *UserMutation) CreatedWordlistsCleared() bool {
-	return m.clearedcreated_wordlists
-}
-
-// RemoveCreatedWordlistIDs removes the "created_wordlists" edge to the Wordlist entity by IDs.
-func (m *UserMutation) RemoveCreatedWordlistIDs(ids ...uuid.UUID) {
-	if m.removedcreated_wordlists == nil {
-		m.removedcreated_wordlists = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.created_wordlists, ids[i])
-		m.removedcreated_wordlists[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedCreatedWordlists returns the removed IDs of the "created_wordlists" edge to the Wordlist entity.
-func (m *UserMutation) RemovedCreatedWordlistsIDs() (ids []uuid.UUID) {
-	for id := range m.removedcreated_wordlists {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// CreatedWordlistsIDs returns the "created_wordlists" edge IDs in the mutation.
-func (m *UserMutation) CreatedWordlistsIDs() (ids []uuid.UUID) {
-	for id := range m.created_wordlists {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetCreatedWordlists resets all changes to the "created_wordlists" edge.
-func (m *UserMutation) ResetCreatedWordlists() {
-	m.created_wordlists = nil
-	m.clearedcreated_wordlists = false
-	m.removedcreated_wordlists = nil
-}
-
-// AddCreatedEngineIDs adds the "created_engines" edge to the Engine entity by ids.
-func (m *UserMutation) AddCreatedEngineIDs(ids ...uuid.UUID) {
-	if m.created_engines == nil {
-		m.created_engines = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.created_engines[ids[i]] = struct{}{}
-	}
-}
-
-// ClearCreatedEngines clears the "created_engines" edge to the Engine entity.
-func (m *UserMutation) ClearCreatedEngines() {
-	m.clearedcreated_engines = true
-}
-
-// CreatedEnginesCleared reports if the "created_engines" edge to the Engine entity was cleared.
-func (m *UserMutation) CreatedEnginesCleared() bool {
-	return m.clearedcreated_engines
-}
-
-// RemoveCreatedEngineIDs removes the "created_engines" edge to the Engine entity by IDs.
-func (m *UserMutation) RemoveCreatedEngineIDs(ids ...uuid.UUID) {
-	if m.removedcreated_engines == nil {
-		m.removedcreated_engines = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.created_engines, ids[i])
-		m.removedcreated_engines[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedCreatedEngines returns the removed IDs of the "created_engines" edge to the Engine entity.
-func (m *UserMutation) RemovedCreatedEnginesIDs() (ids []uuid.UUID) {
-	for id := range m.removedcreated_engines {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// CreatedEnginesIDs returns the "created_engines" edge IDs in the mutation.
-func (m *UserMutation) CreatedEnginesIDs() (ids []uuid.UUID) {
-	for id := range m.created_engines {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetCreatedEngines resets all changes to the "created_engines" edge.
-func (m *UserMutation) ResetCreatedEngines() {
-	m.created_engines = nil
-	m.clearedcreated_engines = false
-	m.removedcreated_engines = nil
-}
-
-// AddCreatedTargetIDs adds the "created_targets" edge to the Target entity by ids.
-func (m *UserMutation) AddCreatedTargetIDs(ids ...uuid.UUID) {
-	if m.created_targets == nil {
-		m.created_targets = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.created_targets[ids[i]] = struct{}{}
-	}
-}
-
-// ClearCreatedTargets clears the "created_targets" edge to the Target entity.
-func (m *UserMutation) ClearCreatedTargets() {
-	m.clearedcreated_targets = true
-}
-
-// CreatedTargetsCleared reports if the "created_targets" edge to the Target entity was cleared.
-func (m *UserMutation) CreatedTargetsCleared() bool {
-	return m.clearedcreated_targets
-}
-
-// RemoveCreatedTargetIDs removes the "created_targets" edge to the Target entity by IDs.
-func (m *UserMutation) RemoveCreatedTargetIDs(ids ...uuid.UUID) {
-	if m.removedcreated_targets == nil {
-		m.removedcreated_targets = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.created_targets, ids[i])
-		m.removedcreated_targets[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedCreatedTargets returns the removed IDs of the "created_targets" edge to the Target entity.
-func (m *UserMutation) RemovedCreatedTargetsIDs() (ids []uuid.UUID) {
-	for id := range m.removedcreated_targets {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// CreatedTargetsIDs returns the "created_targets" edge IDs in the mutation.
-func (m *UserMutation) CreatedTargetsIDs() (ids []uuid.UUID) {
-	for id := range m.created_targets {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetCreatedTargets resets all changes to the "created_targets" edge.
-func (m *UserMutation) ResetCreatedTargets() {
-	m.created_targets = nil
-	m.clearedcreated_targets = false
-	m.removedcreated_targets = nil
-}
-
-// AddCreatedActionIDs adds the "created_actions" edge to the Action entity by ids.
-func (m *UserMutation) AddCreatedActionIDs(ids ...uuid.UUID) {
-	if m.created_actions == nil {
-		m.created_actions = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.created_actions[ids[i]] = struct{}{}
-	}
-}
-
-// ClearCreatedActions clears the "created_actions" edge to the Action entity.
-func (m *UserMutation) ClearCreatedActions() {
-	m.clearedcreated_actions = true
-}
-
-// CreatedActionsCleared reports if the "created_actions" edge to the Action entity was cleared.
-func (m *UserMutation) CreatedActionsCleared() bool {
-	return m.clearedcreated_actions
-}
-
-// RemoveCreatedActionIDs removes the "created_actions" edge to the Action entity by IDs.
-func (m *UserMutation) RemoveCreatedActionIDs(ids ...uuid.UUID) {
-	if m.removedcreated_actions == nil {
-		m.removedcreated_actions = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.created_actions, ids[i])
-		m.removedcreated_actions[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedCreatedActions returns the removed IDs of the "created_actions" edge to the Action entity.
-func (m *UserMutation) RemovedCreatedActionsIDs() (ids []uuid.UUID) {
-	for id := range m.removedcreated_actions {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// CreatedActionsIDs returns the "created_actions" edge IDs in the mutation.
-func (m *UserMutation) CreatedActionsIDs() (ids []uuid.UUID) {
-	for id := range m.created_actions {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetCreatedActions resets all changes to the "created_actions" edge.
-func (m *UserMutation) ResetCreatedActions() {
-	m.created_actions = nil
-	m.clearedcreated_actions = false
-	m.removedcreated_actions = nil
-}
-
-// AddCreatedRuleIDs adds the "created_rules" edge to the Rule entity by ids.
-func (m *UserMutation) AddCreatedRuleIDs(ids ...uuid.UUID) {
-	if m.created_rules == nil {
-		m.created_rules = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.created_rules[ids[i]] = struct{}{}
-	}
-}
-
-// ClearCreatedRules clears the "created_rules" edge to the Rule entity.
-func (m *UserMutation) ClearCreatedRules() {
-	m.clearedcreated_rules = true
-}
-
-// CreatedRulesCleared reports if the "created_rules" edge to the Rule entity was cleared.
-func (m *UserMutation) CreatedRulesCleared() bool {
-	return m.clearedcreated_rules
-}
-
-// RemoveCreatedRuleIDs removes the "created_rules" edge to the Rule entity by IDs.
-func (m *UserMutation) RemoveCreatedRuleIDs(ids ...uuid.UUID) {
-	if m.removedcreated_rules == nil {
-		m.removedcreated_rules = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.created_rules, ids[i])
-		m.removedcreated_rules[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedCreatedRules returns the removed IDs of the "created_rules" edge to the Rule entity.
-func (m *UserMutation) RemovedCreatedRulesIDs() (ids []uuid.UUID) {
-	for id := range m.removedcreated_rules {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// CreatedRulesIDs returns the "created_rules" edge IDs in the mutation.
-func (m *UserMutation) CreatedRulesIDs() (ids []uuid.UUID) {
-	for id := range m.created_rules {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetCreatedRules resets all changes to the "created_rules" edge.
-func (m *UserMutation) ResetCreatedRules() {
-	m.created_rules = nil
-	m.clearedcreated_rules = false
-	m.removedcreated_rules = nil
-}
-
-// AddCreatedPrincipleIDs adds the "created_principles" edge to the Principle entity by ids.
-func (m *UserMutation) AddCreatedPrincipleIDs(ids ...uuid.UUID) {
-	if m.created_principles == nil {
-		m.created_principles = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.created_principles[ids[i]] = struct{}{}
-	}
-}
-
-// ClearCreatedPrinciples clears the "created_principles" edge to the Principle entity.
-func (m *UserMutation) ClearCreatedPrinciples() {
-	m.clearedcreated_principles = true
-}
-
-// CreatedPrinciplesCleared reports if the "created_principles" edge to the Principle entity was cleared.
-func (m *UserMutation) CreatedPrinciplesCleared() bool {
-	return m.clearedcreated_principles
-}
-
-// RemoveCreatedPrincipleIDs removes the "created_principles" edge to the Principle entity by IDs.
-func (m *UserMutation) RemoveCreatedPrincipleIDs(ids ...uuid.UUID) {
-	if m.removedcreated_principles == nil {
-		m.removedcreated_principles = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.created_principles, ids[i])
-		m.removedcreated_principles[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedCreatedPrinciples returns the removed IDs of the "created_principles" edge to the Principle entity.
-func (m *UserMutation) RemovedCreatedPrinciplesIDs() (ids []uuid.UUID) {
-	for id := range m.removedcreated_principles {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// CreatedPrinciplesIDs returns the "created_principles" edge IDs in the mutation.
-func (m *UserMutation) CreatedPrinciplesIDs() (ids []uuid.UUID) {
-	for id := range m.created_principles {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetCreatedPrinciples resets all changes to the "created_principles" edge.
-func (m *UserMutation) ResetCreatedPrinciples() {
-	m.created_principles = nil
-	m.clearedcreated_principles = false
-	m.removedcreated_principles = nil
-}
-
-// AddCreatedDecisionIDs adds the "created_decisions" edge to the Decision entity by ids.
-func (m *UserMutation) AddCreatedDecisionIDs(ids ...uuid.UUID) {
-	if m.created_decisions == nil {
-		m.created_decisions = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.created_decisions[ids[i]] = struct{}{}
-	}
-}
-
-// ClearCreatedDecisions clears the "created_decisions" edge to the Decision entity.
-func (m *UserMutation) ClearCreatedDecisions() {
-	m.clearedcreated_decisions = true
-}
-
-// CreatedDecisionsCleared reports if the "created_decisions" edge to the Decision entity was cleared.
-func (m *UserMutation) CreatedDecisionsCleared() bool {
-	return m.clearedcreated_decisions
-}
-
-// RemoveCreatedDecisionIDs removes the "created_decisions" edge to the Decision entity by IDs.
-func (m *UserMutation) RemoveCreatedDecisionIDs(ids ...uuid.UUID) {
-	if m.removedcreated_decisions == nil {
-		m.removedcreated_decisions = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.created_decisions, ids[i])
-		m.removedcreated_decisions[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedCreatedDecisions returns the removed IDs of the "created_decisions" edge to the Decision entity.
-func (m *UserMutation) RemovedCreatedDecisionsIDs() (ids []uuid.UUID) {
-	for id := range m.removedcreated_decisions {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// CreatedDecisionsIDs returns the "created_decisions" edge IDs in the mutation.
-func (m *UserMutation) CreatedDecisionsIDs() (ids []uuid.UUID) {
-	for id := range m.created_decisions {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetCreatedDecisions resets all changes to the "created_decisions" edge.
-func (m *UserMutation) ResetCreatedDecisions() {
-	m.created_decisions = nil
-	m.clearedcreated_decisions = false
-	m.removedcreated_decisions = nil
-}
-
 // Where appends a list predicates to the UserMutation builder.
 func (m *UserMutation) Where(ps ...predicate.User) {
 	m.predicates = append(m.predicates, ps...)
@@ -10877,7 +7434,7 @@ func (m *UserMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *UserMutation) Fields() []string {
-	fields := make([]string, 0, 6)
+	fields := make([]string, 0, 4)
 	if m.email != nil {
 		fields = append(fields, user.FieldEmail)
 	}
@@ -10889,12 +7446,6 @@ func (m *UserMutation) Fields() []string {
 	}
 	if m.is_root != nil {
 		fields = append(fields, user.FieldIsRoot)
-	}
-	if m.created_at != nil {
-		fields = append(fields, user.FieldCreatedAt)
-	}
-	if m.updated_at != nil {
-		fields = append(fields, user.FieldUpdatedAt)
 	}
 	return fields
 }
@@ -10912,10 +7463,6 @@ func (m *UserMutation) Field(name string) (ent.Value, bool) {
 		return m.IsActivated()
 	case user.FieldIsRoot:
 		return m.IsRoot()
-	case user.FieldCreatedAt:
-		return m.CreatedAt()
-	case user.FieldUpdatedAt:
-		return m.UpdatedAt()
 	}
 	return nil, false
 }
@@ -10933,10 +7480,6 @@ func (m *UserMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldIsActivated(ctx)
 	case user.FieldIsRoot:
 		return m.OldIsRoot(ctx)
-	case user.FieldCreatedAt:
-		return m.OldCreatedAt(ctx)
-	case user.FieldUpdatedAt:
-		return m.OldUpdatedAt(ctx)
 	}
 	return nil, fmt.Errorf("unknown User field %s", name)
 }
@@ -10973,20 +7516,6 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetIsRoot(v)
-		return nil
-	case user.FieldCreatedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetCreatedAt(v)
-		return nil
-	case user.FieldUpdatedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetUpdatedAt(v)
 		return nil
 	}
 	return fmt.Errorf("unknown User field %s", name)
@@ -11049,45 +7578,18 @@ func (m *UserMutation) ResetField(name string) error {
 	case user.FieldIsRoot:
 		m.ResetIsRoot()
 		return nil
-	case user.FieldCreatedAt:
-		m.ResetCreatedAt()
-		return nil
-	case user.FieldUpdatedAt:
-		m.ResetUpdatedAt()
-		return nil
 	}
 	return fmt.Errorf("unknown User field %s", name)
 }
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *UserMutation) AddedEdges() []string {
-	edges := make([]string, 0, 9)
+	edges := make([]string, 0, 2)
 	if m.groups != nil {
 		edges = append(edges, user.EdgeGroups)
 	}
 	if m.permissions != nil {
 		edges = append(edges, user.EdgePermissions)
-	}
-	if m.created_wordlists != nil {
-		edges = append(edges, user.EdgeCreatedWordlists)
-	}
-	if m.created_engines != nil {
-		edges = append(edges, user.EdgeCreatedEngines)
-	}
-	if m.created_targets != nil {
-		edges = append(edges, user.EdgeCreatedTargets)
-	}
-	if m.created_actions != nil {
-		edges = append(edges, user.EdgeCreatedActions)
-	}
-	if m.created_rules != nil {
-		edges = append(edges, user.EdgeCreatedRules)
-	}
-	if m.created_principles != nil {
-		edges = append(edges, user.EdgeCreatedPrinciples)
-	}
-	if m.created_decisions != nil {
-		edges = append(edges, user.EdgeCreatedDecisions)
 	}
 	return edges
 }
@@ -11108,81 +7610,18 @@ func (m *UserMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case user.EdgeCreatedWordlists:
-		ids := make([]ent.Value, 0, len(m.created_wordlists))
-		for id := range m.created_wordlists {
-			ids = append(ids, id)
-		}
-		return ids
-	case user.EdgeCreatedEngines:
-		ids := make([]ent.Value, 0, len(m.created_engines))
-		for id := range m.created_engines {
-			ids = append(ids, id)
-		}
-		return ids
-	case user.EdgeCreatedTargets:
-		ids := make([]ent.Value, 0, len(m.created_targets))
-		for id := range m.created_targets {
-			ids = append(ids, id)
-		}
-		return ids
-	case user.EdgeCreatedActions:
-		ids := make([]ent.Value, 0, len(m.created_actions))
-		for id := range m.created_actions {
-			ids = append(ids, id)
-		}
-		return ids
-	case user.EdgeCreatedRules:
-		ids := make([]ent.Value, 0, len(m.created_rules))
-		for id := range m.created_rules {
-			ids = append(ids, id)
-		}
-		return ids
-	case user.EdgeCreatedPrinciples:
-		ids := make([]ent.Value, 0, len(m.created_principles))
-		for id := range m.created_principles {
-			ids = append(ids, id)
-		}
-		return ids
-	case user.EdgeCreatedDecisions:
-		ids := make([]ent.Value, 0, len(m.created_decisions))
-		for id := range m.created_decisions {
-			ids = append(ids, id)
-		}
-		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *UserMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 9)
+	edges := make([]string, 0, 2)
 	if m.removedgroups != nil {
 		edges = append(edges, user.EdgeGroups)
 	}
 	if m.removedpermissions != nil {
 		edges = append(edges, user.EdgePermissions)
-	}
-	if m.removedcreated_wordlists != nil {
-		edges = append(edges, user.EdgeCreatedWordlists)
-	}
-	if m.removedcreated_engines != nil {
-		edges = append(edges, user.EdgeCreatedEngines)
-	}
-	if m.removedcreated_targets != nil {
-		edges = append(edges, user.EdgeCreatedTargets)
-	}
-	if m.removedcreated_actions != nil {
-		edges = append(edges, user.EdgeCreatedActions)
-	}
-	if m.removedcreated_rules != nil {
-		edges = append(edges, user.EdgeCreatedRules)
-	}
-	if m.removedcreated_principles != nil {
-		edges = append(edges, user.EdgeCreatedPrinciples)
-	}
-	if m.removedcreated_decisions != nil {
-		edges = append(edges, user.EdgeCreatedDecisions)
 	}
 	return edges
 }
@@ -11203,81 +7642,18 @@ func (m *UserMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case user.EdgeCreatedWordlists:
-		ids := make([]ent.Value, 0, len(m.removedcreated_wordlists))
-		for id := range m.removedcreated_wordlists {
-			ids = append(ids, id)
-		}
-		return ids
-	case user.EdgeCreatedEngines:
-		ids := make([]ent.Value, 0, len(m.removedcreated_engines))
-		for id := range m.removedcreated_engines {
-			ids = append(ids, id)
-		}
-		return ids
-	case user.EdgeCreatedTargets:
-		ids := make([]ent.Value, 0, len(m.removedcreated_targets))
-		for id := range m.removedcreated_targets {
-			ids = append(ids, id)
-		}
-		return ids
-	case user.EdgeCreatedActions:
-		ids := make([]ent.Value, 0, len(m.removedcreated_actions))
-		for id := range m.removedcreated_actions {
-			ids = append(ids, id)
-		}
-		return ids
-	case user.EdgeCreatedRules:
-		ids := make([]ent.Value, 0, len(m.removedcreated_rules))
-		for id := range m.removedcreated_rules {
-			ids = append(ids, id)
-		}
-		return ids
-	case user.EdgeCreatedPrinciples:
-		ids := make([]ent.Value, 0, len(m.removedcreated_principles))
-		for id := range m.removedcreated_principles {
-			ids = append(ids, id)
-		}
-		return ids
-	case user.EdgeCreatedDecisions:
-		ids := make([]ent.Value, 0, len(m.removedcreated_decisions))
-		for id := range m.removedcreated_decisions {
-			ids = append(ids, id)
-		}
-		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *UserMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 9)
+	edges := make([]string, 0, 2)
 	if m.clearedgroups {
 		edges = append(edges, user.EdgeGroups)
 	}
 	if m.clearedpermissions {
 		edges = append(edges, user.EdgePermissions)
-	}
-	if m.clearedcreated_wordlists {
-		edges = append(edges, user.EdgeCreatedWordlists)
-	}
-	if m.clearedcreated_engines {
-		edges = append(edges, user.EdgeCreatedEngines)
-	}
-	if m.clearedcreated_targets {
-		edges = append(edges, user.EdgeCreatedTargets)
-	}
-	if m.clearedcreated_actions {
-		edges = append(edges, user.EdgeCreatedActions)
-	}
-	if m.clearedcreated_rules {
-		edges = append(edges, user.EdgeCreatedRules)
-	}
-	if m.clearedcreated_principles {
-		edges = append(edges, user.EdgeCreatedPrinciples)
-	}
-	if m.clearedcreated_decisions {
-		edges = append(edges, user.EdgeCreatedDecisions)
 	}
 	return edges
 }
@@ -11290,20 +7666,6 @@ func (m *UserMutation) EdgeCleared(name string) bool {
 		return m.clearedgroups
 	case user.EdgePermissions:
 		return m.clearedpermissions
-	case user.EdgeCreatedWordlists:
-		return m.clearedcreated_wordlists
-	case user.EdgeCreatedEngines:
-		return m.clearedcreated_engines
-	case user.EdgeCreatedTargets:
-		return m.clearedcreated_targets
-	case user.EdgeCreatedActions:
-		return m.clearedcreated_actions
-	case user.EdgeCreatedRules:
-		return m.clearedcreated_rules
-	case user.EdgeCreatedPrinciples:
-		return m.clearedcreated_principles
-	case user.EdgeCreatedDecisions:
-		return m.clearedcreated_decisions
 	}
 	return false
 }
@@ -11326,27 +7688,6 @@ func (m *UserMutation) ResetEdge(name string) error {
 	case user.EdgePermissions:
 		m.ResetPermissions()
 		return nil
-	case user.EdgeCreatedWordlists:
-		m.ResetCreatedWordlists()
-		return nil
-	case user.EdgeCreatedEngines:
-		m.ResetCreatedEngines()
-		return nil
-	case user.EdgeCreatedTargets:
-		m.ResetCreatedTargets()
-		return nil
-	case user.EdgeCreatedActions:
-		m.ResetCreatedActions()
-		return nil
-	case user.EdgeCreatedRules:
-		m.ResetCreatedRules()
-		return nil
-	case user.EdgeCreatedPrinciples:
-		m.ResetCreatedPrinciples()
-		return nil
-	case user.EdgeCreatedDecisions:
-		m.ResetCreatedDecisions()
-		return nil
 	}
 	return fmt.Errorf("unknown User edge %s", name)
 }
@@ -11364,13 +7705,7 @@ type WordlistMutation struct {
 	appendword_json []string
 	word_count      *int
 	addword_count   *int
-	description     *string
-	is_locked       *bool
-	created_at      *time.Time
-	updated_at      *time.Time
 	clearedFields   map[string]struct{}
-	creator         *uuid.UUID
-	clearedcreator  bool
 	targets         map[uuid.UUID]struct{}
 	removedtargets  map[uuid.UUID]struct{}
 	clearedtargets  bool
@@ -11742,252 +8077,6 @@ func (m *WordlistMutation) ResetWordCount() {
 	delete(m.clearedFields, wordlist.FieldWordCount)
 }
 
-// SetDescription sets the "description" field.
-func (m *WordlistMutation) SetDescription(s string) {
-	m.description = &s
-}
-
-// Description returns the value of the "description" field in the mutation.
-func (m *WordlistMutation) Description() (r string, exists bool) {
-	v := m.description
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldDescription returns the old "description" field's value of the Wordlist entity.
-// If the Wordlist object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *WordlistMutation) OldDescription(ctx context.Context) (v *string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldDescription is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldDescription requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldDescription: %w", err)
-	}
-	return oldValue.Description, nil
-}
-
-// ClearDescription clears the value of the "description" field.
-func (m *WordlistMutation) ClearDescription() {
-	m.description = nil
-	m.clearedFields[wordlist.FieldDescription] = struct{}{}
-}
-
-// DescriptionCleared returns if the "description" field was cleared in this mutation.
-func (m *WordlistMutation) DescriptionCleared() bool {
-	_, ok := m.clearedFields[wordlist.FieldDescription]
-	return ok
-}
-
-// ResetDescription resets all changes to the "description" field.
-func (m *WordlistMutation) ResetDescription() {
-	m.description = nil
-	delete(m.clearedFields, wordlist.FieldDescription)
-}
-
-// SetCreatedBy sets the "created_by" field.
-func (m *WordlistMutation) SetCreatedBy(u uuid.UUID) {
-	m.creator = &u
-}
-
-// CreatedBy returns the value of the "created_by" field in the mutation.
-func (m *WordlistMutation) CreatedBy() (r uuid.UUID, exists bool) {
-	v := m.creator
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldCreatedBy returns the old "created_by" field's value of the Wordlist entity.
-// If the Wordlist object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *WordlistMutation) OldCreatedBy(ctx context.Context) (v *uuid.UUID, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldCreatedBy is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldCreatedBy requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldCreatedBy: %w", err)
-	}
-	return oldValue.CreatedBy, nil
-}
-
-// ClearCreatedBy clears the value of the "created_by" field.
-func (m *WordlistMutation) ClearCreatedBy() {
-	m.creator = nil
-	m.clearedFields[wordlist.FieldCreatedBy] = struct{}{}
-}
-
-// CreatedByCleared returns if the "created_by" field was cleared in this mutation.
-func (m *WordlistMutation) CreatedByCleared() bool {
-	_, ok := m.clearedFields[wordlist.FieldCreatedBy]
-	return ok
-}
-
-// ResetCreatedBy resets all changes to the "created_by" field.
-func (m *WordlistMutation) ResetCreatedBy() {
-	m.creator = nil
-	delete(m.clearedFields, wordlist.FieldCreatedBy)
-}
-
-// SetIsLocked sets the "is_locked" field.
-func (m *WordlistMutation) SetIsLocked(b bool) {
-	m.is_locked = &b
-}
-
-// IsLocked returns the value of the "is_locked" field in the mutation.
-func (m *WordlistMutation) IsLocked() (r bool, exists bool) {
-	v := m.is_locked
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldIsLocked returns the old "is_locked" field's value of the Wordlist entity.
-// If the Wordlist object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *WordlistMutation) OldIsLocked(ctx context.Context) (v bool, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldIsLocked is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldIsLocked requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldIsLocked: %w", err)
-	}
-	return oldValue.IsLocked, nil
-}
-
-// ResetIsLocked resets all changes to the "is_locked" field.
-func (m *WordlistMutation) ResetIsLocked() {
-	m.is_locked = nil
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (m *WordlistMutation) SetCreatedAt(t time.Time) {
-	m.created_at = &t
-}
-
-// CreatedAt returns the value of the "created_at" field in the mutation.
-func (m *WordlistMutation) CreatedAt() (r time.Time, exists bool) {
-	v := m.created_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldCreatedAt returns the old "created_at" field's value of the Wordlist entity.
-// If the Wordlist object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *WordlistMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
-	}
-	return oldValue.CreatedAt, nil
-}
-
-// ResetCreatedAt resets all changes to the "created_at" field.
-func (m *WordlistMutation) ResetCreatedAt() {
-	m.created_at = nil
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (m *WordlistMutation) SetUpdatedAt(t time.Time) {
-	m.updated_at = &t
-}
-
-// UpdatedAt returns the value of the "updated_at" field in the mutation.
-func (m *WordlistMutation) UpdatedAt() (r time.Time, exists bool) {
-	v := m.updated_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldUpdatedAt returns the old "updated_at" field's value of the Wordlist entity.
-// If the Wordlist object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *WordlistMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
-	}
-	return oldValue.UpdatedAt, nil
-}
-
-// ResetUpdatedAt resets all changes to the "updated_at" field.
-func (m *WordlistMutation) ResetUpdatedAt() {
-	m.updated_at = nil
-}
-
-// SetCreatorID sets the "creator" edge to the User entity by id.
-func (m *WordlistMutation) SetCreatorID(id uuid.UUID) {
-	m.creator = &id
-}
-
-// ClearCreator clears the "creator" edge to the User entity.
-func (m *WordlistMutation) ClearCreator() {
-	m.clearedcreator = true
-	m.clearedFields[wordlist.FieldCreatedBy] = struct{}{}
-}
-
-// CreatorCleared reports if the "creator" edge to the User entity was cleared.
-func (m *WordlistMutation) CreatorCleared() bool {
-	return m.CreatedByCleared() || m.clearedcreator
-}
-
-// CreatorID returns the "creator" edge ID in the mutation.
-func (m *WordlistMutation) CreatorID() (id uuid.UUID, exists bool) {
-	if m.creator != nil {
-		return *m.creator, true
-	}
-	return
-}
-
-// CreatorIDs returns the "creator" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// CreatorID instead. It exists only for internal usage by the builders.
-func (m *WordlistMutation) CreatorIDs() (ids []uuid.UUID) {
-	if id := m.creator; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetCreator resets all changes to the "creator" edge.
-func (m *WordlistMutation) ResetCreator() {
-	m.creator = nil
-	m.clearedcreator = false
-}
-
 // AddTargetIDs adds the "targets" edge to the Target entity by ids.
 func (m *WordlistMutation) AddTargetIDs(ids ...uuid.UUID) {
 	if m.targets == nil {
@@ -12130,7 +8219,7 @@ func (m *WordlistMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *WordlistMutation) Fields() []string {
-	fields := make([]string, 0, 10)
+	fields := make([]string, 0, 5)
 	if m.name != nil {
 		fields = append(fields, wordlist.FieldName)
 	}
@@ -12145,21 +8234,6 @@ func (m *WordlistMutation) Fields() []string {
 	}
 	if m.word_count != nil {
 		fields = append(fields, wordlist.FieldWordCount)
-	}
-	if m.description != nil {
-		fields = append(fields, wordlist.FieldDescription)
-	}
-	if m.creator != nil {
-		fields = append(fields, wordlist.FieldCreatedBy)
-	}
-	if m.is_locked != nil {
-		fields = append(fields, wordlist.FieldIsLocked)
-	}
-	if m.created_at != nil {
-		fields = append(fields, wordlist.FieldCreatedAt)
-	}
-	if m.updated_at != nil {
-		fields = append(fields, wordlist.FieldUpdatedAt)
 	}
 	return fields
 }
@@ -12179,16 +8253,6 @@ func (m *WordlistMutation) Field(name string) (ent.Value, bool) {
 		return m.WordJSON()
 	case wordlist.FieldWordCount:
 		return m.WordCount()
-	case wordlist.FieldDescription:
-		return m.Description()
-	case wordlist.FieldCreatedBy:
-		return m.CreatedBy()
-	case wordlist.FieldIsLocked:
-		return m.IsLocked()
-	case wordlist.FieldCreatedAt:
-		return m.CreatedAt()
-	case wordlist.FieldUpdatedAt:
-		return m.UpdatedAt()
 	}
 	return nil, false
 }
@@ -12208,16 +8272,6 @@ func (m *WordlistMutation) OldField(ctx context.Context, name string) (ent.Value
 		return m.OldWordJSON(ctx)
 	case wordlist.FieldWordCount:
 		return m.OldWordCount(ctx)
-	case wordlist.FieldDescription:
-		return m.OldDescription(ctx)
-	case wordlist.FieldCreatedBy:
-		return m.OldCreatedBy(ctx)
-	case wordlist.FieldIsLocked:
-		return m.OldIsLocked(ctx)
-	case wordlist.FieldCreatedAt:
-		return m.OldCreatedAt(ctx)
-	case wordlist.FieldUpdatedAt:
-		return m.OldUpdatedAt(ctx)
 	}
 	return nil, fmt.Errorf("unknown Wordlist field %s", name)
 }
@@ -12261,41 +8315,6 @@ func (m *WordlistMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetWordCount(v)
-		return nil
-	case wordlist.FieldDescription:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetDescription(v)
-		return nil
-	case wordlist.FieldCreatedBy:
-		v, ok := value.(uuid.UUID)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetCreatedBy(v)
-		return nil
-	case wordlist.FieldIsLocked:
-		v, ok := value.(bool)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetIsLocked(v)
-		return nil
-	case wordlist.FieldCreatedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetCreatedAt(v)
-		return nil
-	case wordlist.FieldUpdatedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetUpdatedAt(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Wordlist field %s", name)
@@ -12351,12 +8370,6 @@ func (m *WordlistMutation) ClearedFields() []string {
 	if m.FieldCleared(wordlist.FieldWordCount) {
 		fields = append(fields, wordlist.FieldWordCount)
 	}
-	if m.FieldCleared(wordlist.FieldDescription) {
-		fields = append(fields, wordlist.FieldDescription)
-	}
-	if m.FieldCleared(wordlist.FieldCreatedBy) {
-		fields = append(fields, wordlist.FieldCreatedBy)
-	}
 	return fields
 }
 
@@ -12379,12 +8392,6 @@ func (m *WordlistMutation) ClearField(name string) error {
 		return nil
 	case wordlist.FieldWordCount:
 		m.ClearWordCount()
-		return nil
-	case wordlist.FieldDescription:
-		m.ClearDescription()
-		return nil
-	case wordlist.FieldCreatedBy:
-		m.ClearCreatedBy()
 		return nil
 	}
 	return fmt.Errorf("unknown Wordlist nullable field %s", name)
@@ -12409,31 +8416,13 @@ func (m *WordlistMutation) ResetField(name string) error {
 	case wordlist.FieldWordCount:
 		m.ResetWordCount()
 		return nil
-	case wordlist.FieldDescription:
-		m.ResetDescription()
-		return nil
-	case wordlist.FieldCreatedBy:
-		m.ResetCreatedBy()
-		return nil
-	case wordlist.FieldIsLocked:
-		m.ResetIsLocked()
-		return nil
-	case wordlist.FieldCreatedAt:
-		m.ResetCreatedAt()
-		return nil
-	case wordlist.FieldUpdatedAt:
-		m.ResetUpdatedAt()
-		return nil
 	}
 	return fmt.Errorf("unknown Wordlist field %s", name)
 }
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *WordlistMutation) AddedEdges() []string {
-	edges := make([]string, 0, 3)
-	if m.creator != nil {
-		edges = append(edges, wordlist.EdgeCreator)
-	}
+	edges := make([]string, 0, 2)
 	if m.targets != nil {
 		edges = append(edges, wordlist.EdgeTargets)
 	}
@@ -12447,10 +8436,6 @@ func (m *WordlistMutation) AddedEdges() []string {
 // name in this mutation.
 func (m *WordlistMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case wordlist.EdgeCreator:
-		if id := m.creator; id != nil {
-			return []ent.Value{*id}
-		}
 	case wordlist.EdgeTargets:
 		ids := make([]ent.Value, 0, len(m.targets))
 		for id := range m.targets {
@@ -12469,7 +8454,7 @@ func (m *WordlistMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *WordlistMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 2)
 	if m.removedtargets != nil {
 		edges = append(edges, wordlist.EdgeTargets)
 	}
@@ -12501,10 +8486,7 @@ func (m *WordlistMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *WordlistMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 3)
-	if m.clearedcreator {
-		edges = append(edges, wordlist.EdgeCreator)
-	}
+	edges := make([]string, 0, 2)
 	if m.clearedtargets {
 		edges = append(edges, wordlist.EdgeTargets)
 	}
@@ -12518,8 +8500,6 @@ func (m *WordlistMutation) ClearedEdges() []string {
 // was cleared in this mutation.
 func (m *WordlistMutation) EdgeCleared(name string) bool {
 	switch name {
-	case wordlist.EdgeCreator:
-		return m.clearedcreator
 	case wordlist.EdgeTargets:
 		return m.clearedtargets
 	case wordlist.EdgeRules:
@@ -12532,9 +8512,6 @@ func (m *WordlistMutation) EdgeCleared(name string) bool {
 // if that edge is not defined in the schema.
 func (m *WordlistMutation) ClearEdge(name string) error {
 	switch name {
-	case wordlist.EdgeCreator:
-		m.ClearCreator()
-		return nil
 	}
 	return fmt.Errorf("unknown Wordlist unique edge %s", name)
 }
@@ -12543,9 +8520,6 @@ func (m *WordlistMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *WordlistMutation) ResetEdge(name string) error {
 	switch name {
-	case wordlist.EdgeCreator:
-		m.ResetCreator()
-		return nil
 	case wordlist.EdgeTargets:
 		m.ResetTargets()
 		return nil
