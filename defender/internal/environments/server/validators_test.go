@@ -98,6 +98,46 @@ func TestValidateServerPath(t *testing.T) {
 	}
 }
 
+func TestValidateServerHeaderName(t *testing.T) {
+	tests := map[string]struct {
+		value string
+		want  bool
+	}{
+		"default": {
+			value: "X-Executor",
+			want:  true,
+		},
+		"underscore": {
+			value: "X_Executor",
+			want:  true,
+		},
+		"empty": {
+			value: "",
+			want:  false,
+		},
+		"space": {
+			value: "X Executor",
+			want:  false,
+		},
+		"colon": {
+			value: "X-Executor:",
+			want:  false,
+		},
+		"slash": {
+			value: "X/Executor",
+			want:  false,
+		},
+	}
+
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			if got := validateServerHeaderName(tt.value); got != tt.want {
+				t.Fatalf("validateServerHeaderName(%q) = %t, want %t", tt.value, got, tt.want)
+			}
+		})
+	}
+}
+
 func TestValidateDistinctValues(t *testing.T) {
 	tests := map[string]struct {
 		values  map[string]string
@@ -105,19 +145,19 @@ func TestValidateDistinctValues(t *testing.T) {
 	}{
 		"unique": {
 			values: map[string]string{
-				"SERVER_PATH_STATE":     "state",
-				"SERVER_PATH_GATE":      "gate",
+				"SERVER_PATH_STATE":      "state",
+				"SERVER_PATH_GATE":       "gate",
 				"SERVER_PATH_PRINCIPLES": "principles",
-				"SERVER_PATH_DECISIONS": "decisions",
+				"SERVER_PATH_DECISIONS":  "decisions",
 			},
 			wantErr: false,
 		},
 		"duplicate": {
 			values: map[string]string{
-				"SERVER_PATH_STATE":     "state",
-				"SERVER_PATH_GATE":      "gate",
+				"SERVER_PATH_STATE":      "state",
+				"SERVER_PATH_GATE":       "gate",
 				"SERVER_PATH_PRINCIPLES": "gate",
-				"SERVER_PATH_DECISIONS": "decisions",
+				"SERVER_PATH_DECISIONS":  "decisions",
 			},
 			wantErr: true,
 		},

@@ -22,12 +22,12 @@ const (
 	// Table holds the table name of the group in the database.
 	Table = "groups"
 	// UsersTable is the table that holds the users relation/edge. The primary key declared below.
-	UsersTable = "user_groups"
+	UsersTable = "users_groups"
 	// UsersInverseTable is the table name for the User entity.
 	// It exists in this package in order to avoid circular dependency with the "user" package.
 	UsersInverseTable = "users"
 	// PermissionsTable is the table that holds the permissions relation/edge. The primary key declared below.
-	PermissionsTable = "group_permissions"
+	PermissionsTable = "groups_permissions"
 	// PermissionsInverseTable is the table name for the Permission entity.
 	// It exists in this package in order to avoid circular dependency with the "permission" package.
 	PermissionsInverseTable = "permissions"
@@ -42,10 +42,10 @@ var Columns = []string{
 var (
 	// UsersPrimaryKey and UsersColumn2 are the table columns denoting the
 	// primary key for the users relation (M2M).
-	UsersPrimaryKey = []string{"user_id", "group_id"}
+	UsersPrimaryKey = []string{"user", "group"}
 	// PermissionsPrimaryKey and PermissionsColumn2 are the table columns denoting the
 	// primary key for the permissions relation (M2M).
-	PermissionsPrimaryKey = []string{"group_id", "permission_id"}
+	PermissionsPrimaryKey = []string{"group", "permission"}
 )
 
 // ValidColumn reports if the column name is valid (part of the table columns).

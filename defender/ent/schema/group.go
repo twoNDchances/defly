@@ -21,6 +21,10 @@ func (Group) Fields() []ent.Field {
 func (Group) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.From("users", User.Type).Ref("groups"),
-		edge.To("permissions", Permission.Type),
+		edge.To("permissions", Permission.Type).
+			StorageKey(
+				edge.Table("groups_permissions"),
+				edge.Columns("group", "permission"),
+			),
 	}
 }

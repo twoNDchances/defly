@@ -46,6 +46,11 @@ var (
 				WithDefault("delete").
 				Required()
 
+	ServerControllerPermissionEmail = ferrite.String("SERVER_CONTROLLER_PERMISSION_EMAIL", "HTTP header key used to identify the manager user email for permission checks").
+					WithDefault("X-Executor").
+					WithConstraint("Must be a valid HTTP header name", validateServerHeaderName).
+					Required()
+
 	ServerSecurityManager = ferrite.String("SERVER_SECURITY_MANAGER", "Manager IP address or host allowed to access Defender Server").
 				WithDefault("manager").
 				WithConstraint("Must be a valid manager IP address or host name", validateSecurityManager).

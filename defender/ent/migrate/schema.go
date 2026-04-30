@@ -306,26 +306,26 @@ var (
 			},
 		},
 	}
-	// GroupPermissionsColumns holds the columns for the "group_permissions" table.
-	GroupPermissionsColumns = []*schema.Column{
-		{Name: "group_id", Type: field.TypeUUID},
-		{Name: "permission_id", Type: field.TypeUUID},
+	// GroupsPermissionsColumns holds the columns for the "groups_permissions" table.
+	GroupsPermissionsColumns = []*schema.Column{
+		{Name: "group", Type: field.TypeUUID},
+		{Name: "permission", Type: field.TypeUUID},
 	}
-	// GroupPermissionsTable holds the schema information for the "group_permissions" table.
-	GroupPermissionsTable = &schema.Table{
-		Name:       "group_permissions",
-		Columns:    GroupPermissionsColumns,
-		PrimaryKey: []*schema.Column{GroupPermissionsColumns[0], GroupPermissionsColumns[1]},
+	// GroupsPermissionsTable holds the schema information for the "groups_permissions" table.
+	GroupsPermissionsTable = &schema.Table{
+		Name:       "groups_permissions",
+		Columns:    GroupsPermissionsColumns,
+		PrimaryKey: []*schema.Column{GroupsPermissionsColumns[0], GroupsPermissionsColumns[1]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "group_permissions_group_id",
-				Columns:    []*schema.Column{GroupPermissionsColumns[0]},
+				Symbol:     "groups_permissions_group",
+				Columns:    []*schema.Column{GroupsPermissionsColumns[0]},
 				RefColumns: []*schema.Column{GroupsColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
-				Symbol:     "group_permissions_permission_id",
-				Columns:    []*schema.Column{GroupPermissionsColumns[1]},
+				Symbol:     "groups_permissions_permission",
+				Columns:    []*schema.Column{GroupsPermissionsColumns[1]},
 				RefColumns: []*schema.Column{PermissionsColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
@@ -356,51 +356,51 @@ var (
 			},
 		},
 	}
-	// UserGroupsColumns holds the columns for the "user_groups" table.
-	UserGroupsColumns = []*schema.Column{
-		{Name: "user_id", Type: field.TypeUUID},
-		{Name: "group_id", Type: field.TypeUUID},
+	// UsersGroupsColumns holds the columns for the "users_groups" table.
+	UsersGroupsColumns = []*schema.Column{
+		{Name: "user", Type: field.TypeUUID},
+		{Name: "group", Type: field.TypeUUID},
 	}
-	// UserGroupsTable holds the schema information for the "user_groups" table.
-	UserGroupsTable = &schema.Table{
-		Name:       "user_groups",
-		Columns:    UserGroupsColumns,
-		PrimaryKey: []*schema.Column{UserGroupsColumns[0], UserGroupsColumns[1]},
+	// UsersGroupsTable holds the schema information for the "users_groups" table.
+	UsersGroupsTable = &schema.Table{
+		Name:       "users_groups",
+		Columns:    UsersGroupsColumns,
+		PrimaryKey: []*schema.Column{UsersGroupsColumns[0], UsersGroupsColumns[1]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "user_groups_user_id",
-				Columns:    []*schema.Column{UserGroupsColumns[0]},
+				Symbol:     "users_groups_user",
+				Columns:    []*schema.Column{UsersGroupsColumns[0]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
-				Symbol:     "user_groups_group_id",
-				Columns:    []*schema.Column{UserGroupsColumns[1]},
+				Symbol:     "users_groups_group",
+				Columns:    []*schema.Column{UsersGroupsColumns[1]},
 				RefColumns: []*schema.Column{GroupsColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 		},
 	}
-	// UserPermissionsColumns holds the columns for the "user_permissions" table.
-	UserPermissionsColumns = []*schema.Column{
-		{Name: "user_id", Type: field.TypeUUID},
-		{Name: "permission_id", Type: field.TypeUUID},
+	// UsersPermissionsColumns holds the columns for the "users_permissions" table.
+	UsersPermissionsColumns = []*schema.Column{
+		{Name: "user", Type: field.TypeUUID},
+		{Name: "permission", Type: field.TypeUUID},
 	}
-	// UserPermissionsTable holds the schema information for the "user_permissions" table.
-	UserPermissionsTable = &schema.Table{
-		Name:       "user_permissions",
-		Columns:    UserPermissionsColumns,
-		PrimaryKey: []*schema.Column{UserPermissionsColumns[0], UserPermissionsColumns[1]},
+	// UsersPermissionsTable holds the schema information for the "users_permissions" table.
+	UsersPermissionsTable = &schema.Table{
+		Name:       "users_permissions",
+		Columns:    UsersPermissionsColumns,
+		PrimaryKey: []*schema.Column{UsersPermissionsColumns[0], UsersPermissionsColumns[1]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "user_permissions_user_id",
-				Columns:    []*schema.Column{UserPermissionsColumns[0]},
+				Symbol:     "users_permissions_user",
+				Columns:    []*schema.Column{UsersPermissionsColumns[0]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
-				Symbol:     "user_permissions_permission_id",
-				Columns:    []*schema.Column{UserPermissionsColumns[1]},
+				Symbol:     "users_permissions_permission",
+				Columns:    []*schema.Column{UsersPermissionsColumns[1]},
 				RefColumns: []*schema.Column{PermissionsColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
@@ -424,10 +424,10 @@ var (
 		DefendersPrinciplesTable,
 		DefendersDecisionsTable,
 		TargetsEnginesTable,
-		GroupPermissionsTable,
+		GroupsPermissionsTable,
 		PrinciplesRulesTable,
-		UserGroupsTable,
-		UserPermissionsTable,
+		UsersGroupsTable,
+		UsersPermissionsTable,
 	}
 )
 
@@ -447,12 +447,12 @@ func init() {
 	DefendersDecisionsTable.ForeignKeys[1].RefTable = DecisionsTable
 	TargetsEnginesTable.ForeignKeys[0].RefTable = EnginesTable
 	TargetsEnginesTable.ForeignKeys[1].RefTable = TargetsTable
-	GroupPermissionsTable.ForeignKeys[0].RefTable = GroupsTable
-	GroupPermissionsTable.ForeignKeys[1].RefTable = PermissionsTable
+	GroupsPermissionsTable.ForeignKeys[0].RefTable = GroupsTable
+	GroupsPermissionsTable.ForeignKeys[1].RefTable = PermissionsTable
 	PrinciplesRulesTable.ForeignKeys[0].RefTable = RulesTable
 	PrinciplesRulesTable.ForeignKeys[1].RefTable = PrinciplesTable
-	UserGroupsTable.ForeignKeys[0].RefTable = UsersTable
-	UserGroupsTable.ForeignKeys[1].RefTable = GroupsTable
-	UserPermissionsTable.ForeignKeys[0].RefTable = UsersTable
-	UserPermissionsTable.ForeignKeys[1].RefTable = PermissionsTable
+	UsersGroupsTable.ForeignKeys[0].RefTable = UsersTable
+	UsersGroupsTable.ForeignKeys[1].RefTable = GroupsTable
+	UsersPermissionsTable.ForeignKeys[0].RefTable = UsersTable
+	UsersPermissionsTable.ForeignKeys[1].RefTable = PermissionsTable
 }

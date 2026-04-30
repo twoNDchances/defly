@@ -23,7 +23,15 @@ func (User) Fields() []ent.Field {
 
 func (User) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("groups", Group.Type),
-		edge.To("permissions", Permission.Type),
+		edge.To("groups", Group.Type).
+			StorageKey(
+				edge.Table("users_groups"),
+				edge.Columns("user", "group"),
+			),
+		edge.To("permissions", Permission.Type).
+			StorageKey(
+				edge.Table("users_permissions"),
+				edge.Columns("user", "permission"),
+			),
 	}
 }

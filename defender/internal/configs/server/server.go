@@ -45,7 +45,7 @@ func (s Server) Boot() error {
 		return s.Error.LogError(err)
 	}
 
-	s.Controller.Policy = &controllers.Policy{}
+	s.Controller.Principle = &controllers.Principle{}
 	s.Controller.Decision = &controllers.Decision{}
 
 	s.Controller.Control(server)

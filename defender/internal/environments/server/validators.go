@@ -6,7 +6,10 @@ import (
 	"strings"
 )
 
-var serverPathPattern = regexp.MustCompile(`^[A-Za-z0-9._~-]+(?:/[A-Za-z0-9._~-]+)*$`)
+var (
+	serverPathPattern       = regexp.MustCompile(`^[A-Za-z0-9._~-]+(?:/[A-Za-z0-9._~-]+)*$`)
+	serverHeaderNamePattern = regexp.MustCompile("^[!#$%&'*+\\-.^_`|~0-9A-Za-z]+$")
+)
 
 func validateSecurityManager(value string) bool {
 	value = strings.TrimSpace(value)
@@ -25,10 +28,15 @@ func validateServerPath(value string) bool {
 	return true
 }
 
+func validateServerHeaderName(value string) bool {
+	value = strings.TrimSpace(value)
+	return value != "" && serverHeaderNamePattern.MatchString(value)
+}
+
 func ValidatePathsAndMethods() error {
 	paths := map[string]string{
 		"SERVER_PATH_PRINCIPLES": ServerPathPrinciples.Value(),
-		"SERVER_PATH_DECISIONS": ServerPathDecisions.Value(),
+		"SERVER_PATH_DECISIONS":  ServerPathDecisions.Value(),
 	}
 	if err := validateDistinctValues("server path", paths); err != nil {
 		return err

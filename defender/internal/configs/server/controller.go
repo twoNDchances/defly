@@ -9,10 +9,11 @@ import (
 )
 
 type Controller struct {
-	Path     Path
-	Method   Method
-	Policy   *controllers.Policy
-	Decision *controllers.Decision
+	Path       Path
+	Method     Method
+	Permission Permission
+	Principle  *controllers.Principle
+	Decision   *controllers.Decision
 }
 
 func (c Controller) register(group *gin.RouterGroup, method, path string, handlers ...gin.HandlerFunc) {
@@ -24,13 +25,13 @@ func (c Controller) prefix(server *gin.Engine) *gin.RouterGroup {
 }
 
 func (c Controller) principles(group *gin.RouterGroup) {
-	c.register(group, c.Method.Apply, c.Path.Principles, c.Policy.Apply)
-	c.register(group, c.Method.Revoke, c.Path.Principles, c.Policy.Revoke)
+	c.register(group, c.Method.Apply, c.Path.Principles, c.Permission.Apply(), c.Principle.Apply)
+	c.register(group, c.Method.Revoke, c.Path.Principles, c.Permission.Revoke(), c.Principle.Revoke)
 }
 
 func (c Controller) decisions(group *gin.RouterGroup) {
-	c.register(group, c.Method.Implement, c.Path.Decisions, c.Decision.Implement)
-	c.register(group, c.Method.Suspend, c.Path.Decisions, c.Decision.Suspend)
+	c.register(group, c.Method.Implement, c.Path.Decisions, c.Permission.Implement(), c.Decision.Implement)
+	c.register(group, c.Method.Suspend, c.Path.Decisions, c.Permission.Suspend(), c.Decision.Suspend)
 }
 
 func (c Controller) Control(server *gin.Engine) {
