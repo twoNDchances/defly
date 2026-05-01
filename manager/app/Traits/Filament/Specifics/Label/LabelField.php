@@ -3,10 +3,11 @@
 namespace App\Traits\Filament\Specifics\Label;
 
 use App\Traits\Filament\Generals\Components\Field;
+use App\Traits\Validators\LabelValidator;
 
 trait LabelField
 {
-    use Field, LabelButton, LabelData;
+    use Field, LabelButton, LabelData, LabelValidator;
 
     public static function setName()
     {
@@ -18,7 +19,8 @@ trait LabelField
             ->helperText(__('forms.label.descriptions.name'))
             ->unique(ignoreRecord: true)
             ->alphaDash()
-            ->required();
+            ->required()
+            ->rules(fn ($livewire) => self::validateName(ignore: $livewire->record ?? null));
     }
 
     public static function setColor()
@@ -28,7 +30,8 @@ trait LabelField
             __('models.label.fields.color'),
         )
             ->helperText(__('forms.label.descriptions.color'))
-            ->required();
+            ->required()
+            ->rules(self::validateColor());
     }
 
     public static function setDescriptionField()

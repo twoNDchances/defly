@@ -1,18 +1,16 @@
 <?php
 
-namespace App\Rules\Rule;
+namespace App\Rules\Permission;
 
-use App\Models\Target;
+use App\Services\Security;
 use Closure;
 use Illuminate\Contracts\Validation\DataAwareRule;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Translation\PotentiallyTranslatedString;
 
-class TargetField implements DataAwareRule, ValidationRule
+class ActionField implements DataAwareRule, ValidationRule
 {
     protected array $data = [];
-
-    public function __construct(protected ?int $phase = null) {}
 
     public function setData(array $data): static
     {
@@ -28,19 +26,19 @@ class TargetField implements DataAwareRule, ValidationRule
      */
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
-        $phase = $this->phase ?? $this->data['phase'] ?? null;
+        $appliedFor = $this->data['applied_for'] ?? null;
 
-        if ($phase === null) {
+        if (! $appliedFor || ! array_key_exists($appliedFor, self::permissionList())) {
             return;
         }
 
-        $exists = Target::query()
-            ->where('id', $value)
-            ->where('phase', (int) $phase)
-            ->exists();
-
-        if (! $exists) {
-            $fail("The {$attribute} must be an existing target in the selected phase.");
+        if (! array_key_exists((string) $value, self::permissionList()[$appliedFor])) {
+            $fail("The {$attribute} is invalid for the selected applied for value.");
         }
+    }
+
+    private static function permissionList(): array
+    {
+        return Security::generatePermissionList(true);
     }
 }

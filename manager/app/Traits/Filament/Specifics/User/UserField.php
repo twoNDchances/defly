@@ -2,21 +2,26 @@
 
 namespace App\Traits\Filament\Specifics\User;
 
-use App\Rules\User\RootField;
 use App\Services\Identification;
 use App\Traits\Filament\Generals\Components\Field;
+use App\Traits\Validators\UserValidator;
 use Filament\Resources\Pages\CreateRecord;
 use Filament\Support\Icons\Heroicon;
 
 trait UserField
 {
-    use Field, UserButton, UserData;
+    use Field, UserButton, UserData, UserValidator;
 
     public static function setName()
     {
-        return self::textInput('name', __('models.user.fields.name'), __('forms.user.text_examples.name'))
+        return self::textInput(
+            'name',
+            __('models.user.fields.name'),
+            __('forms.user.text_examples.name'),
+        )
             ->helperText(__('forms.user.descriptions.name'))
-            ->required();
+            ->required()
+            ->rules(self::validateName());
     }
 
     public static function setEmail()
@@ -26,11 +31,14 @@ trait UserField
             ->helperText(__('forms.user.descriptions.email'))
             ->unique(ignoreRecord: true)
             ->required()
-            ->email();
+            ->email()
+            ->rules(fn ($livewire) => self::validateEmail(ignore: $livewire->record ?? null));
     }
 
     public static function setPassword()
     {
+        $condition = fn ($livewire) => $livewire instanceof CreateRecord;
+
         return self::textInput('password', __('models.user.fields.password'), __('forms.user.text_examples.password'))
             ->helperText(__('forms.user.descriptions.password'))
             ->suffixActions(
@@ -41,8 +49,9 @@ trait UserField
             ->copyable()
             ->minLength(4)
             ->revealable()
-            ->required(fn ($livewire) => $livewire instanceof CreateRecord)
-            ->password();
+            ->required($condition)
+            ->password()
+            ->rules(fn ($livewire) => self::validatePassword($condition($livewire) ? 'required' : 'nullable'));
     }
 
     public static function setIsActivated()
@@ -50,6 +59,7 @@ trait UserField
         return self::toggle('is_activated', __('models.user.fields.is_activated'))
             ->helperText(__('forms.user.descriptions.is_activated'))
             ->required()
+            ->rules(self::validateIsActivated())
             ->default(true);
     }
 
@@ -62,7 +72,7 @@ trait UserField
             ->required($condition)
             ->disabled(! $condition)
             ->visible($condition)
-            ->rule(new RootField)
+            ->rules(self::validateIsRoot($condition ? 'required' : 'nullable'))
             ->default(false);
     }
 
@@ -75,6 +85,7 @@ trait UserField
             ->required($condition)
             ->disabled(fn ($livewire) => ! $condition($livewire))
             ->visible($condition)
+            ->rules(fn ($livewire) => self::validateIsVerified($condition($livewire) ? 'required' : 'nullable'))
             ->default(true);
     }
 }

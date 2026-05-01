@@ -4,11 +4,12 @@ namespace App\Traits\Filament\Specifics\Defender;
 
 use App\Services\Security;
 use App\Traits\Filament\Generals\Components\Field;
+use App\Traits\Validators\DefenderValidator;
 use Filament\Forms\Components\CodeEditor\Enums\Language;
 
 trait DefenderField
 {
-    use DefenderButton, DefenderData, Field;
+    use DefenderButton, DefenderData, Field, DefenderValidator;
 
     public static function setName()
     {
@@ -20,7 +21,8 @@ trait DefenderField
             ->helperText(__('forms.defender.descriptions.name'))
             ->unique(ignoreRecord: true)
             ->alphaDash()
-            ->required();
+            ->required()
+            ->rules(fn ($livewire) => self::validateName(ignore: $livewire->record ?? null));
     }
 
     public static function setProxyPort()
@@ -29,12 +31,10 @@ trait DefenderField
             'proxy_port',
             __('models.defender.fields.proxy_port'),
             __('forms.defender.text_examples.proxy_port'),
-            [
-                'integer', 'min:1', 'max:65535',
-            ]
         )
             ->helperText(__('forms.defender.descriptions.proxy_port'))
             ->required()
+            ->rules(self::validateProxyPort())
             ->integer()
             ->default(9948)
             ->maxLength(null);
@@ -94,10 +94,8 @@ trait DefenderField
             __('models.defender.extras.common_environment_variables'),
             'key',
             [
-                self::textInput('key', __('models.defender.extras.key'), '', [
-                    'required',
-                    'in:'.implode(',', array_column($variables, 'key')),
-                ])
+                self::textInput('key', __('models.defender.extras.key'), '')
+                    ->rules(['required', 'in:'.implode(',', array_column($variables, 'key'))])
                     ->readOnly()
                     ->required(),
 
@@ -200,10 +198,8 @@ trait DefenderField
             __('models.defender.extras.server_environment_variables'),
             'key',
             [
-                self::textInput('key', __('models.defender.extras.key'), '', [
-                    'required',
-                    'in:'.implode(',', array_column($variables, 'key')),
-                ])
+                self::textInput('key', __('models.defender.extras.key'), '')
+                    ->rules(['required', 'in:'.implode(',', array_column($variables, 'key'))])
                     ->readOnly()
                     ->required(),
 
@@ -323,10 +319,8 @@ trait DefenderField
             __('models.defender.extras.proxy_environment_variables'),
             'key',
             [
-                self::textInput('key', __('models.defender.extras.key'), '', [
-                    'required',
-                    'in:'.implode(',', array_column($variables, 'key')),
-                ])
+                self::textInput('key', __('models.defender.extras.key'), '')
+                    ->rules(['required', 'in:'.implode(',', array_column($variables, 'key'))])
                     ->readOnly()
                     ->required(),
 
@@ -355,6 +349,7 @@ trait DefenderField
             self::statusOptionsAndColors(),
         )
             ->helperText(fn ($state) => self::statusDescriptions()[$state])
+            ->rules(self::validateStatus())
             ->disabled()
             ->visibleOn(['view', 'edit']);
     }
@@ -363,6 +358,7 @@ trait DefenderField
     {
         return self::codeEditor('details', __('models.defender.fields.details'), Language::Json)
             ->helperText(__('forms.defender.descriptions.details'))
+            ->rules(self::validateDetails())
             ->formatStateUsing(function ($state) {
                 if ($state === null) {
                     return null;
@@ -390,6 +386,7 @@ trait DefenderField
             self::deploymentStatusOptionsAndColors(),
         )
             ->helperText(fn ($state) => self::deploymentStatusDescriptions()[$state])
+            ->rules(self::validateDeploymentStatus())
             ->disabled()
             ->visibleOn(['view', 'edit']);
     }
@@ -398,6 +395,7 @@ trait DefenderField
     {
         return self::codeEditor('deployment_details', __('models.defender.fields.deployment_details'), Language::Json)
             ->helperText(__('forms.defender.descriptions.deploymnet_details'))
+            ->rules(self::validateDeploymentDetails())
             ->formatStateUsing(function ($state) {
                 if ($state === null) {
                     return null;
@@ -432,6 +430,7 @@ trait DefenderField
     {
         return self::codeEditor('last_response_details', __('models.defender.fields.last_response_details'), Language::Json)
             ->helperText(__('forms.defender.descriptions.last_response_details'))
+            ->rules(self::validateLastResponseDetails())
             ->formatStateUsing(function ($state) {
                 if ($state === null) {
                     return null;

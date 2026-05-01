@@ -3,71 +3,62 @@
 namespace App\Traits\Filament\Generals\Components;
 
 use App\Filament\Components\Label\LabelForm;
-use App\Traits\Validators\GeneralValidator;
 use Filament\Forms\Components;
+use Illuminate\Validation\Rule;
 
 trait Field
 {
-    use GeneralValidator;
-
-    public static function textInput($name, $label = null, $placeholder = null, $rules = [])
+    public static function textInput($name, $label = null, $placeholder = null)
     {
         return Components\TextInput::make($name)
             ->placeholder($placeholder)
             ->maxLength(255)
-            ->label($label)
-            ->rules($rules);
+            ->label($label);
     }
 
-    public static function textArea($name, $label = null, $placeholder = null, $rules = [])
+    public static function textArea($name, $label = null, $placeholder = null)
     {
         return Components\Textarea::make($name)
             ->placeholder($placeholder)
             ->label($label)
-            ->rows(6)
-            ->rules($rules);
+            ->rows(6);
     }
 
-    public static function toggle($name, $label = null, $rules = [])
+    public static function toggle($name, $label = null)
     {
         return Components\Toggle::make($name)
-            ->label($label)
-            ->rules($rules);
+            ->label($label);
     }
 
-    public static function select($name, $label = null, $rules = [])
+    public static function select($name, $label = null)
     {
         return Components\Select::make($name)
             ->label($label)
             ->searchable()
-            ->preload()
-            ->rules($rules);
+            ->preload();
     }
 
-    public static function fileUpload($name, $label = null, $directory = null, $rules = [])
+    public static function fileUpload($name, $label = null, $directory = null)
     {
         return Components\FileUpload::make($name)
             ->label($label)
-            ->directory($directory)
-            ->rules($rules);
+            ->directory($directory);
     }
 
-    public static function toggleButtons($name, $label = null, $colorsAndOptions = ['colors' => [], 'options' => []], $rules = [])
+    public static function toggleButtons($name, $label = null, $colorsAndOptions = ['colors' => [], 'options' => []])
     {
         return Components\ToggleButtons::make($name)
             ->options($colorsAndOptions['options'])
             ->colors($colorsAndOptions['colors'])
             ->label($label)
-            ->inline()
-            ->rules($rules);
+            ->inline();
     }
 
-    public static function colorPicker($name, $label = null, $rules = [])
+    public static function colorPicker($name, $label = null)
     {
         return Components\ColorPicker::make($name)
             ->default('#000000')
-            ->label($label)
-            ->rules($rules);
+            ->label($label);
     }
 
     public static function repeater($name, $label = null, $key = 'key', $schema = [])
@@ -95,6 +86,7 @@ trait Field
             __('models.generals.bases.description'),
             __('forms.generals.bases.fields.description.text_examples'),
         )
+            ->rules(['nullable'])
             ->helperText(__('forms.generals.bases.fields.description.descriptions'));
     }
 
@@ -103,8 +95,8 @@ trait Field
         return self::select(
             'labels',
             __('models.label.name'),
-            self::validateLabels(),
         )
+            ->rules(['nullable', Rule::exists('labels', 'id')])
             ->helperText(__('forms.generals.bases.sections.labels.description'))
             ->multiple()
             ->relationship('labels', 'name')

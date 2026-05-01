@@ -3,17 +3,19 @@
 namespace App\Traits\Filament\Specifics\Permission;
 
 use App\Traits\Filament\Generals\Components\Field;
+use App\Traits\Validators\PermissionValidator;
 
 trait PermissionField
 {
-    use Field, PermissionButton, PermissionData;
+    use Field, PermissionButton, PermissionData, PermissionValidator;
 
     public static function setName()
     {
         return self::textInput('name', __('models.permission.fields.name'), __('forms.permission.text_examples.name'))
             ->helperText(__('forms.permission.descriptions.name'))
             ->unique(ignoreRecord: true)
-            ->required();
+            ->required()
+            ->rules(fn ($livewire) => self::validateName(ignore: $livewire->record ?? null));
     }
 
     public static function setAppliedFor()
@@ -23,6 +25,7 @@ trait PermissionField
             ->options(self::permissionModelOptions())
             ->searchable()
             ->required()
+            ->rules(self::validateAppliedFor())
             ->reactive()
             ->afterStateUpdated(fn ($set) => $set('action', null));
     }
@@ -40,7 +43,8 @@ trait PermissionField
                 return self::permissionList()[$appliedFor] ?? [];
             })
             ->searchable()
-            ->required();
+            ->required()
+            ->rules(self::validateAction());
     }
 
     public static function setDescriptionField()

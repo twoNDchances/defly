@@ -5,13 +5,10 @@ namespace App\Traits\Validators;
 use App\Enums\Datatype;
 use App\Enums\Phase;
 use App\Enums\Type;
-use App\Rules\KebabNameField;
 use Illuminate\Validation\Rule;
 
 trait TargetValidator
 {
-    use GeneralValidator;
-
     private static function validatePhase($constraint = 'required')
     {
         return [
@@ -28,7 +25,7 @@ trait TargetValidator
         ];
     }
 
-    private static function validatePattern($constraint = 'required_if:type,full')
+    private static function validatePattern($constraint = 'required_if:type,full,meta')
     {
         return [
             $constraint,
@@ -36,12 +33,20 @@ trait TargetValidator
         ];
     }
 
-    private static function validateName($constraint = 'required')
+    private static function validateName($constraint = 'required', $ignore = null)
     {
+        $unique = Rule::unique('targets', 'name');
+
+        if ($ignore) {
+            $unique->ignore($ignore);
+        }
+
         return [
             $constraint,
-            new KebabNameField,
-            Rule::unique('targets', 'name'),
+            'string',
+            'max:255',
+            'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/',
+            $unique,
         ];
     }
 
@@ -53,11 +58,24 @@ trait TargetValidator
         ];
     }
 
-    private static function validateWordlist($constraint = 'required')
+    private static function validateWordlist($constraint = 'exclude_unless:datatype,array|required_without:pattern_id')
     {
         return [
             $constraint,
-            Rule::exists('wordlist', 'id'),
+            Rule::exists('wordlists', 'id'),
+        ];
+    }
+
+    public static function validateTarget($ignore = null)
+    {
+        return [
+            'phase' => self::validatePhase(),
+            'type' => self::validateType(),
+            'pattern_id' => self::validatePattern(),
+            'name' => self::validateName(ignore: $ignore),
+            'datatype' => self::validateDatatype(),
+            'wordlist_id' => self::validateWordlist(),
+            'description' => ['nullable'],
         ];
     }
 }

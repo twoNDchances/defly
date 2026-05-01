@@ -6,7 +6,7 @@ trait UserData
 {
     public static function editForm($data): array
     {
-        if (! isset($data['password'])) {
+        if (blank($data['password'] ?? null)) {
             unset($data['password']);
         }
 

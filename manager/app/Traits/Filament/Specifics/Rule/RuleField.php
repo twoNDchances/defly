@@ -7,13 +7,13 @@ use App\Enums\Rule\Comparator;
 use App\Filament\Components\Target\TargetForm;
 use App\Filament\Components\Wordlist\WordlistForm;
 use App\Models\Target;
-use App\Rules\Rule\TargetField;
 use App\Services\Datatype;
 use App\Traits\Filament\Generals\Components\Field;
+use App\Traits\Validators\RuleValidator;
 
 trait RuleField
 {
-    use Field, RuleButton, RuleData;
+    use Field, RuleButton, RuleData, RuleValidator;
 
     public static function setName()
     {
@@ -25,7 +25,8 @@ trait RuleField
             ->helperText(__('forms.rule.descriptions.name'))
             ->unique(ignoreRecord: true)
             ->alphaDash()
-            ->required();
+            ->required()
+            ->rules(fn ($livewire) => self::validateName(ignore: $livewire->record ?? null));
     }
 
     public static function setPhase()
@@ -38,6 +39,7 @@ trait RuleField
             ->helperText(fn ($state) => self::phaseDescriptions()[$state])
             ->default(Phase::One->value)
             ->required()
+            ->rules(self::validatePhase())
             ->reactive();
     }
 
@@ -48,10 +50,10 @@ trait RuleField
         return self::select(
             'target_id',
             __('models.rule.fields.target'),
-            [fn ($get) => new TargetField($get('phase'))]
         )
             ->helperText(__('forms.rule.descriptions.target'))
             ->required()
+            ->rules(fn ($get) => self::validateTarget($get('phase')))
             ->relationship(
                 'target',
                 'name',
@@ -96,6 +98,7 @@ trait RuleField
                 return self::comparatorOptionsPerDatatype()[Datatype::getFinal($target)];
             })
             ->required()
+            ->rules(self::validateComparator())
             ->reactive();
     }
 
@@ -104,7 +107,8 @@ trait RuleField
         return self::toggle('is_inversed', __('models.rule.fields.is_inversed'))
             ->helperText(__('forms.rule.descriptions.is_inversed'))
             ->default(false)
-            ->required();
+            ->required()
+            ->rules(self::validateIsInversed());
     }
 
     public static function setStringValue()
@@ -126,7 +130,8 @@ trait RuleField
             ->helperText(__('forms.rule.extras.configurations.string_value'))
             ->required($condition)
             ->disabled(fn ($get) => ! $condition($get))
-            ->visible($condition);
+            ->visible($condition)
+            ->rules(fn ($get) => self::validateStringValue($condition($get) ? 'required' : 'nullable'));
     }
 
     public static function setNumberValue()
@@ -149,6 +154,7 @@ trait RuleField
             ->disabled(fn ($get) => ! $condition($get))
             ->visible($condition)
             ->maxLength(null)
+            ->rules(fn ($get) => self::validateNumberValue($condition($get) ? 'required' : 'nullable'))
             ->numeric();
     }
 
@@ -166,6 +172,7 @@ trait RuleField
             ->required($condition)
             ->visible($condition)
             ->maxLength(null)
+            ->rules(fn ($get) => self::validateNumberFromValue($condition($get) ? 'required' : 'nullable'))
             ->lt('number_to_value')
             ->numeric();
     }
@@ -184,6 +191,7 @@ trait RuleField
             ->required($condition)
             ->visible($condition)
             ->maxLength(null)
+            ->rules(fn ($get) => self::validateNumberToValue($condition($get) ? 'required' : 'nullable'))
             ->gt('number_from_value')
             ->numeric();
     }
@@ -203,6 +211,7 @@ trait RuleField
             ->relationship('wordlist', 'name')
             ->required($condition)
             ->visible($condition)
+            ->rules(fn ($get) => self::validateWordlist($condition($get) ? 'required' : 'nullable'))
             ->createOptionForm(WordlistForm::build());
     }
 }

@@ -3,10 +3,11 @@
 namespace App\Traits\Filament\Specifics\Group;
 
 use App\Traits\Filament\Generals\Components\Field;
+use App\Traits\Validators\GroupValidator;
 
 trait GroupField
 {
-    use Field, GroupButton, GroupData;
+    use Field, GroupButton, GroupData, GroupValidator;
 
     public static function setName()
     {
@@ -18,7 +19,8 @@ trait GroupField
             ->helperText(__('forms.group.descriptions.name'))
             ->unique(ignoreRecord: true)
             ->alphaDash()
-            ->required();
+            ->required()
+            ->rules(fn ($livewire) => self::validateName(ignore: $livewire->record ?? null));
     }
 
     public static function setDescriptionField()

@@ -53,6 +53,7 @@ trait TargetField
             ->disabled($condition)
             ->required(fn ($get) => in_array($get('type'), [Type::Full->value, Type::Meta->value]))
             ->visible(fn ($get) => ! $condition($get))
+            ->rules(fn ($get) => self::validatePattern(in_array($get('type'), [Type::Full->value, Type::Meta->value]) ? 'required' : 'nullable'))
             ->reactive();
     }
 
@@ -66,7 +67,8 @@ trait TargetField
             ->helperText(__('forms.target.descriptions.name'))
             ->unique(ignoreRecord: true)
             ->alphaDash()
-            ->required();
+            ->required()
+            ->rules(fn ($livewire) => self::validateName(ignore: $livewire->record ?? null));
     }
 
     public static function setDatatype()
@@ -76,7 +78,8 @@ trait TargetField
             ->disabled(fn ($get) => $get('pattern'))
             ->default(Datatype::Array->value)
             ->reactive()
-            ->required();
+            ->required()
+            ->rules(self::validateDatatype());
     }
 
     public static function setWordlist()
@@ -89,6 +92,7 @@ trait TargetField
             ->relationship('wordlist', 'name')
             ->required($condition)
             ->visible($condition)
+            ->rules(fn ($get) => self::validateWordlist($condition($get) ? 'required' : 'nullable'))
             ->createOptionForm(WordlistForm::build());
     }
 

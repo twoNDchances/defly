@@ -4,11 +4,12 @@ namespace App\Traits\Filament\Specifics\Principle;
 
 use App\Enums\Phase;
 use App\Traits\Filament\Generals\Components\Field;
+use App\Traits\Validators\PrincipleValidator;
 use Filament\Forms\Components\CodeEditor\Enums\Language;
 
 trait PrincipleField
 {
-    use Field, PrincipleButton, PrincipleData;
+    use Field, PrincipleButton, PrincipleData, PrincipleValidator;
 
     public static function setName()
     {
@@ -16,7 +17,8 @@ trait PrincipleField
             ->helperText(__('forms.principle.descriptions.name'))
             ->unique(ignoreRecord: true)
             ->alphaDash()
-            ->required();
+            ->required()
+            ->rules(fn ($livewire) => self::validateName(ignore: $livewire->record ?? null));
     }
 
     public static function setLevel()
@@ -27,6 +29,7 @@ trait PrincipleField
             ->minValue(1)
             ->gt(0)
             ->default(1)
+            ->rules(self::validateLevel())
             ->integer();
     }
 
@@ -36,6 +39,7 @@ trait PrincipleField
             ->helperText(fn ($state) => self::phaseDescriptions()[$state])
             ->required()
             ->default(Phase::One->value)
+            ->rules(self::validatePhase())
             ->reactive();
     }
 
@@ -47,6 +51,7 @@ trait PrincipleField
             self::validationStatusOptionsAndColors(),
         )
             ->helperText(fn ($state) => self::validationStatusDescriptions()[$state])
+            ->rules(self::validateValidationStatus())
             ->disabled()
             ->visibleOn(['view', 'edit']);
     }
@@ -55,6 +60,7 @@ trait PrincipleField
     {
         return self::codeEditor('validation_details', __('models.principle.fields.validation_details'), Language::Json)
             ->helperText(__('forms.principle.descriptions.validation_details'))
+            ->rules(self::validateValidationDetails())
             ->formatStateUsing(function ($state) {
                 if ($state === null) {
                     return null;

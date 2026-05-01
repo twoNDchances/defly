@@ -6,11 +6,12 @@ use App\Enums\Action\Type;
 use App\Enums\Decision\Action as ActionDecision;
 use App\Models\Action as ActionModel;
 use App\Traits\Filament\Generals\Components\Field;
+use App\Traits\Validators\DecisionValidator;
 use Filament\Support\Icons\Heroicon;
 
 trait DecisionField
 {
-    use DecisionButton, DecisionData, Field;
+    use DecisionButton, DecisionData, Field, DecisionValidator;
 
     public static function setName()
     {
@@ -22,7 +23,8 @@ trait DecisionField
             ->helperText(__('forms.decision.descriptions.name'))
             ->unique(ignoreRecord: true)
             ->alphaDash()
-            ->required();
+            ->required()
+            ->rules(fn ($livewire) => self::validateName(ignore: $livewire->record ?? null));
     }
 
     public static function setDirection()
@@ -34,6 +36,7 @@ trait DecisionField
         )
             ->helperText(fn ($state) => self::directionDescriptions()[$state])
             ->required()
+            ->rules(self::validateDirection())
             ->afterStateUpdated(fn ($set) => $set('action', null))
             ->reactive();
     }
@@ -47,6 +50,7 @@ trait DecisionField
         )
             ->helperText(fn ($state) => self::conditionDescriptions()[$state])
             ->required()
+            ->rules(self::validateCondition())
             ->reactive();
     }
 
@@ -61,6 +65,7 @@ trait DecisionField
             ->required()
             ->minValue(5)
             ->default(5)
+            ->rules(self::validateScore())
             ->integer();
     }
 
@@ -73,6 +78,7 @@ trait DecisionField
             ->helperText(fn ($state) => self::actionDescriptions()[$state])
             ->options(fn ($get) => self::actionOptionsPerDirection()[$get('direction')])
             ->required()
+            ->rules(self::validateAction())
             ->reactive();
     }
 
@@ -89,6 +95,7 @@ trait DecisionField
             ->required($condition)
             ->disabled(fn ($get) => ! $condition($get))
             ->visible($condition)
+            ->rules(fn ($get) => self::validateDirective($condition($get) ? 'required' : 'nullable'))
             ->reactive();
     }
 
@@ -101,6 +108,7 @@ trait DecisionField
             ->required($condition)
             ->disabled(fn ($get) => ! $condition($get))
             ->visible($condition)
+            ->rules(fn ($get) => self::validateDenyRecord($condition($get) ? 'required' : 'nullable'))
             ->options(ActionModel::where('type', Type::Deny)->pluck('name', 'id')->toArray());
     }
 
@@ -117,6 +125,7 @@ trait DecisionField
             ->required($condition)
             ->disabled(fn ($get) => ! $condition($get))
             ->visible($condition)
+            ->rules(fn ($get) => self::validateDirective($condition($get) ? 'required' : 'nullable'))
             ->reactive();
     }
 
@@ -136,6 +145,7 @@ trait DecisionField
                 )
                     ->helperText(__('forms.decision.extras.key'))
                     ->alphaDash()
+                    ->rules(self::validateKey())
                     ->required(),
 
                 self::textArea(
@@ -144,13 +154,15 @@ trait DecisionField
                     'header-value',
                 )
                     ->helperText(__('forms.decision.extras.value'))
+                    ->rules(self::validateValue())
                     ->required(),
             ],
         )
             ->helperText(__('forms.decision.extras.configurations.rewrite_headers_set'))
             ->disabled(fn ($get) => ! $condition($get))
             ->required($condition)
-            ->visible($condition);
+            ->visible($condition)
+            ->rules(fn ($get) => self::validateKeyValueItems($condition($get) ? 'required' : 'nullable'));
     }
 
     public static function setRewriteHeadersUnset()
@@ -169,6 +181,7 @@ trait DecisionField
                 )
                     ->helperText(__('forms.decision.extras.key'))
                     ->alphaDash()
+                    ->rules(self::validateKey())
                     ->required()
                     ->columnSpanFull(),
             ],
@@ -176,7 +189,8 @@ trait DecisionField
             ->helperText(__('forms.decision.extras.configurations.rewrite_headers_unset'))
             ->disabled(fn ($get) => ! $condition($get))
             ->required($condition)
-            ->visible($condition);
+            ->visible($condition)
+            ->rules(fn ($get) => self::validateKeyValueItems($condition($get) ? 'required' : 'nullable'));
     }
 
     public static function setRewriteBodyDirective()
@@ -192,6 +206,7 @@ trait DecisionField
             ->required($condition)
             ->disabled(fn ($get) => ! $condition($get))
             ->visible($condition)
+            ->rules(fn ($get) => self::validateDirective($condition($get) ? 'required' : 'nullable'))
             ->reactive();
     }
 
@@ -211,6 +226,7 @@ trait DecisionField
                 )
                     ->helperText(__('forms.decision.extras.key'))
                     ->alphaDash()
+                    ->rules(self::validateKey())
                     ->required(),
 
                 self::textArea(
@@ -219,13 +235,15 @@ trait DecisionField
                     'body value',
                 )
                     ->helperText(__('forms.decision.extras.value'))
+                    ->rules(self::validateValue())
                     ->required(),
             ],
         )
             ->helperText(__('forms.decision.extras.configurations.rewrite_body_set'))
             ->disabled(fn ($get) => ! $condition($get))
             ->required($condition)
-            ->visible($condition);
+            ->visible($condition)
+            ->rules(fn ($get) => self::validateKeyValueItems($condition($get) ? 'required' : 'nullable'));
     }
 
     public static function setRewriteBodyUnset()
@@ -244,6 +262,7 @@ trait DecisionField
                 )
                     ->helperText(__('forms.decision.extras.key'))
                     ->alphaDash()
+                    ->rules(self::validateKey())
                     ->required()
                     ->columnSpanFull(),
             ],
@@ -251,7 +270,8 @@ trait DecisionField
             ->helperText(__('forms.decision.extras.configurations.rewrite_body_unset'))
             ->disabled(fn ($get) => ! $condition($get))
             ->required($condition)
-            ->visible($condition);
+            ->visible($condition)
+            ->rules(fn ($get) => self::validateKeyValueItems($condition($get) ? 'required' : 'nullable'));
     }
 
     public static function setRewriteType()
@@ -268,6 +288,7 @@ trait DecisionField
             ->disabled(fn ($get) => ! $condition($get))
             ->visible($condition)
             ->default('path')
+            ->rules(fn ($get) => self::validateRewriteType($condition($get) ? 'required' : 'nullable'))
             ->reactive();
     }
 
@@ -285,6 +306,7 @@ trait DecisionField
             ->required($condition)
             ->visible($condition)
             ->prefixIcon(Heroicon::OutlinedLink)
+            ->rules(fn ($get) => self::validateRewritePath($condition($get) ? 'required' : 'nullable'))
             ->startsWith('/');
     }
 
@@ -302,6 +324,7 @@ trait DecisionField
             ->disabled(fn ($get) => ! $condition($get))
             ->visible($condition)
             ->default('set')
+            ->rules(fn ($get) => self::validateDirective($condition($get) ? 'required' : 'nullable'))
             ->reactive();
     }
 
@@ -323,6 +346,7 @@ trait DecisionField
                 )
                     ->helperText(__('forms.decision.extras.key'))
                     ->alphaDash()
+                    ->rules(self::validateKey())
                     ->required(),
 
                 self::textArea(
@@ -331,13 +355,15 @@ trait DecisionField
                     'query-value',
                 )
                     ->helperText(__('forms.decision.extras.value'))
+                    ->rules(self::validateValue())
                     ->required(),
             ],
         )
             ->helperText(__('forms.decision.extras.configurations.rewrite_query_set'))
             ->disabled(fn ($get) => ! $condition($get))
             ->required($condition)
-            ->visible($condition);
+            ->visible($condition)
+            ->rules(fn ($get) => self::validateKeyValueItems($condition($get) ? 'required' : 'nullable'));
     }
 
     public static function setRewriteQueryUnset()
@@ -358,6 +384,7 @@ trait DecisionField
                 )
                     ->helperText(__('forms.decision.extras.key'))
                     ->alphaDash()
+                    ->rules(self::validateKey())
                     ->required()
                     ->columnSpanFull(),
             ],
@@ -365,7 +392,8 @@ trait DecisionField
             ->helperText(__('forms.decision.extras.configurations.rewrite_query_unset'))
             ->disabled(fn ($get) => ! $condition($get))
             ->required($condition)
-            ->visible($condition);
+            ->visible($condition)
+            ->rules(fn ($get) => self::validateKeyValueItems($condition($get) ? 'required' : 'nullable'));
     }
 
     public static function setSavePosition()
@@ -382,6 +410,7 @@ trait DecisionField
             ->disabled(fn ($get) => ! $condition($get))
             ->visible($condition)
             ->default('prefix')
+            ->rules(fn ($get) => self::validateSavePosition($condition($get) ? 'required' : 'nullable'))
             ->reactive();
     }
 
@@ -398,6 +427,7 @@ trait DecisionField
             ->disabled(fn ($get) => ! $condition($get))
             ->required($condition)
             ->visible($condition)
+            ->rules(fn ($get) => self::validateSaveName($condition($get) ? 'required' : 'nullable'))
             ->regex('/^[^\/\\\\:*?"<>|]+$/');
     }
 
@@ -416,6 +446,7 @@ trait DecisionField
             ->visible($condition)
             ->prefixIcon(Heroicon::OutlinedServer)
             ->suffixAction(self::testRequestButton())
+            ->rules(fn ($get) => self::validateRedirectUrl($condition($get) ? 'required' : 'nullable'))
             ->url();
     }
 }

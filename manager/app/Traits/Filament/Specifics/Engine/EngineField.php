@@ -6,10 +6,11 @@ use App\Enums\Datatype;
 use App\Enums\Engine\Hash;
 use App\Enums\Engine\Type;
 use App\Traits\Filament\Generals\Components\Field;
+use App\Traits\Validators\EngineValidator;
 
 trait EngineField
 {
-    use EngineButton, EngineData, Field;
+    use EngineButton, EngineData, Field, EngineValidator;
 
     public static function setName()
     {
@@ -21,7 +22,8 @@ trait EngineField
             ->helperText(__('forms.engine.descriptions.name'))
             ->unique(ignoreRecord: true)
             ->alphaDash()
-            ->required();
+            ->required()
+            ->rules(fn ($livewire) => self::validateName(ignore: $livewire->record ?? null));
     }
 
     public static function setInputDatatype()
@@ -35,6 +37,7 @@ trait EngineField
             ->afterStateUpdated(fn ($set) => [$set('type', null), $set('output_datatype', null)])
             ->default(Datatype::Array->value)
             ->required()
+            ->rules(self::validateInputDatatype())
             ->reactive();
     }
 
@@ -69,6 +72,7 @@ trait EngineField
                 Type::ToString->value => $set('output_datatype', Datatype::String->value),
             })
             ->required()
+            ->rules(self::validateType())
             ->selectablePlaceholder(false)
             ->reactive();
     }
@@ -86,6 +90,7 @@ trait EngineField
             ->required($condition)
             ->disabled(fn ($get) => ! $condition($get))
             ->visible($condition)
+            ->rules(fn ($get) => self::validatePosition($condition($get) ? 'required' : 'nullable'))
             ->integer();
     }
 
@@ -109,6 +114,7 @@ trait EngineField
             ->required($condition)
             ->disabled(fn ($get) => ! $condition($get))
             ->visible($condition)
+            ->rules(fn ($get) => self::validateDigit($condition($get) ? 'required' : 'nullable'))
             ->numeric();
     }
 
@@ -124,6 +130,7 @@ trait EngineField
             ->required($condition)
             ->disabled(fn ($get) => ! $condition($get))
             ->visible($condition)
+            ->rules(fn ($get) => self::validateHashMethod($condition($get) ? 'required' : 'nullable'))
             ->options([
                 Hash::Md5->value => 'MD5',
                 Hash::Sha1->value => 'SHA1',
@@ -145,7 +152,8 @@ trait EngineField
             ->helperText(__('forms.engine.extras.configurations.separator'))
             ->required($condition)
             ->disabled(fn ($get) => ! $condition($get))
-            ->visible($condition);
+            ->visible($condition)
+            ->rules(fn ($get) => self::validateSeparator($condition($get) ? 'required' : 'nullable'));
     }
 
     public static function setOutputDatatype()
@@ -155,6 +163,7 @@ trait EngineField
             __('models.engine.fields.output_datatype'),
             EngineData::datatypeOptionsAndColors(),
         )
+            ->rules(self::validateOutputDatatype())
             ->disabled();
     }
 }

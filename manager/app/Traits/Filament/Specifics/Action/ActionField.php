@@ -5,13 +5,14 @@ namespace App\Traits\Filament\Specifics\Action;
 use App\Enums\Action\Type;
 use App\Enums\Method;
 use App\Traits\Filament\Generals\Components\Field;
+use App\Traits\Validators\ActionValidator;
 use Filament\Forms\Components\CodeEditor\Enums\Language;
 use Filament\Schemas\Components\Grid;
 use Symfony\Component\HttpFoundation\Response;
 
 trait ActionField
 {
-    use ActionButton, ActionData, Field;
+    use ActionButton, ActionData, Field, ActionValidator;
 
     public static function setName()
     {
@@ -23,7 +24,8 @@ trait ActionField
             ->helperText(__('forms.action.descriptions.name'))
             ->unique(ignoreRecord: true)
             ->alphaDash()
-            ->required();
+            ->required()
+            ->rules(fn ($livewire) => self::validateName(ignore: $livewire->record ?? null));
     }
 
     public static function setType()
@@ -35,6 +37,7 @@ trait ActionField
         )
             ->helperText(fn ($state) => self::typeDescriptions()[$state] ?? __('forms.action.descriptions.type'))
             ->required()
+            ->rules(self::validateType())
             ->reactive()
             ->default(Type::Allow->value);
     }
@@ -53,6 +56,7 @@ trait ActionField
             )
             ->required($condition)
             ->visible($condition)
+            ->rules(fn ($get) => self::validateDenyStatus($condition($get) ? 'required' : 'nullable'))
             ->default(403);
     }
 
@@ -70,6 +74,7 @@ trait ActionField
             ->required($condition)
             ->visible($condition)
             ->default('json')
+            ->rules(fn ($get) => self::validateDenyContentType($condition($get) ? 'required' : 'nullable'))
             ->afterStateUpdated(fn ($set) => $set('deny_body', null))
             ->reactive();
     }
@@ -88,7 +93,8 @@ trait ActionField
         )
             ->disabled(fn ($get) => ! $condition($get))
             ->required($condition)
-            ->visible($condition);
+            ->visible($condition)
+            ->rules(fn ($get) => self::validateRequiredString($condition($get) ? 'required' : 'nullable'));
     }
 
     public static function setLogFormat()
@@ -104,6 +110,7 @@ trait ActionField
             ->disabled(fn ($get) => ! $condition($get))
             ->required($condition)
             ->visible($condition)
+            ->rules(fn ($get) => self::validateRequiredString($condition($get) ? 'required' : 'nullable'))
             ->default('[%time%] %ip% | %method% | %path% | %bytesSent% | %bytesReceived% | %error%');
     }
 
@@ -119,7 +126,8 @@ trait ActionField
             ->default(true)
             ->disabled(fn ($get) => ! $condition($get))
             ->required($condition)
-            ->visible($condition);
+            ->visible($condition)
+            ->rules(fn ($get) => self::validateRequiredBoolean($condition($get) ? 'required' : 'nullable'));
     }
 
     public static function setLogFile()
@@ -134,7 +142,8 @@ trait ActionField
             ->default(true)
             ->disabled(fn ($get) => ! $condition($get))
             ->required($condition)
-            ->visible($condition);
+            ->visible($condition)
+            ->rules(fn ($get) => self::validateRequiredBoolean($condition($get) ? 'required' : 'nullable'));
     }
 
     public static function setRequestUrl()
@@ -149,7 +158,8 @@ trait ActionField
             ->helperText(__('forms.action.extras.configurations.request_url'))
             ->disabled(fn ($get) => ! $condition($get))
             ->required($condition)
-            ->visible($condition);
+            ->visible($condition)
+            ->rules(fn ($get) => self::validateRequiredString($condition($get) ? 'required' : 'nullable'));
     }
 
     public static function setRequestMethod()
@@ -166,6 +176,7 @@ trait ActionField
             ->required($condition)
             ->visible($condition)
             ->default(Method::Get->value)
+            ->rules(fn ($get) => self::validateRequestMethod($condition($get) ? 'required' : 'nullable'))
             ->reactive();
     }
 
@@ -180,16 +191,19 @@ trait ActionField
             [
                 self::textInput('key', __('models.action.extras.key'), 'simple-header-key')
                     ->helperText(__('forms.action.extras.key'))
+                    ->rules(self::validateKey())
                     ->required(),
 
                 self::textArea('value', __('models.action.extras.value'), 'simple; header; value')
                     ->helperText(__('forms.action.extras.value'))
+                    ->rules(self::validateRequiredString())
                     ->required(),
             ]
         )
             ->helperText(__('forms.action.extras.configurations.request_headers'))
             ->disabled(fn ($get) => ! $condition($get))
-            ->visible($condition);
+            ->visible($condition)
+            ->rules(fn ($get) => self::validateRepeater($condition($get) ? 'nullable' : 'nullable'));
     }
 
     public static function setRequestBody()
@@ -204,7 +218,8 @@ trait ActionField
             ->helperText(__('forms.action.extras.configurations.request_body'))
             ->disabled(fn ($get) => ! $condition($get))
             ->required($condition)
-            ->visible($condition);
+            ->visible($condition)
+            ->rules(fn ($get) => self::validateRequiredString($condition($get) ? 'required' : 'nullable'));
     }
 
     public static function setSuspectSeverity()
@@ -220,7 +235,8 @@ trait ActionField
             ->disabled(fn ($get) => ! $condition($get))
             ->required($condition)
             ->visible($condition)
-            ->default('notice');
+            ->default('notice')
+            ->rules(fn ($get) => self::validateRequiredString($condition($get) ? 'required' : 'nullable'));
     }
 
     public static function setSetterDirective()
@@ -237,6 +253,7 @@ trait ActionField
             ->required($condition)
             ->visible($condition)
             ->default('set')
+            ->rules(fn ($get) => self::validateSetterDirective($condition($get) ? 'required' : 'nullable'))
             ->reactive();
     }
 
@@ -259,6 +276,7 @@ trait ActionField
                         )
                             ->helperText(__('forms.action.extras.key'))
                             ->alphaDash()
+                            ->rules(self::validateKey())
                             ->required(),
 
                         self::toggleButtons(
@@ -269,6 +287,7 @@ trait ActionField
                             ->helperText(fn ($state) => self::setterDatatypeDescriptions()[$state] ?? __('forms.action.extras.configurations.setter_set'))
                             ->default('string')
                             ->reactive()
+                            ->rules(self::validateSetterDatatype())
                             ->required(),
                     ]),
 
@@ -280,7 +299,8 @@ trait ActionField
                     ->helperText(__('forms.action.extras.value'))
                     ->disabled(fn ($get) => $get('datatype') != 'string')
                     ->visible(fn ($get) => $get('datatype') == 'string')
-                    ->required(fn ($get) => $get('datatype') == 'string'),
+                    ->required(fn ($get) => $get('datatype') == 'string')
+                    ->rules(fn ($get) => self::validateRequiredString($get('datatype') == 'string' ? 'required' : 'nullable')),
 
                 self::textInput(
                     'value',
@@ -291,13 +311,15 @@ trait ActionField
                     ->disabled(fn ($get) => $get('datatype') != 'number')
                     ->visible(fn ($get) => $get('datatype') == 'number')
                     ->required(fn ($get) => $get('datatype') == 'number')
+                    ->rules(fn ($get) => self::validatePositiveNumber($get('datatype') == 'number' ? 'required' : 'nullable'))
                     ->numeric(),
             ],
         )
             ->disabled(fn ($get) => ! $condition($get))
             ->helperText(__('forms.action.extras.configurations.setter_set'))
             ->required($condition)
-            ->visible($condition);
+            ->visible($condition)
+            ->rules(fn ($get) => self::validateRepeater($condition($get) ? 'required' : 'nullable'));
     }
 
     public static function setSetterUnset()
@@ -315,6 +337,7 @@ trait ActionField
                     'transaction-id',
                 )
                     ->helperText(__('forms.action.extras.key'))
+                    ->rules(self::validateKey())
                     ->required()
                     ->columnSpanFull(),
             ],
@@ -322,7 +345,8 @@ trait ActionField
             ->disabled(fn ($get) => ! $condition($get))
             ->helperText(__('forms.action.extras.configurations.setter_unset'))
             ->required($condition)
-            ->visible($condition);
+            ->visible($condition)
+            ->rules(fn ($get) => self::validateRepeater($condition($get) ? 'required' : 'nullable'));
     }
 
     public static function setScoreOperator()
@@ -339,7 +363,8 @@ trait ActionField
             ->required($condition)
             ->disabled(fn ($get) => ! $condition($get))
             ->visible($condition)
-            ->default('override');
+            ->default('override')
+            ->rules(fn ($get) => self::validateBehavior($condition($get) ? 'required' : 'nullable'));
     }
 
     public static function setScoreValue()
@@ -356,6 +381,7 @@ trait ActionField
             ->required($condition)
             ->visible($condition)
             ->numeric()
+            ->rules(fn ($get) => self::validatePositiveNumber($condition($get) ? 'required' : 'nullable'))
             ->minValue(1);
     }
 
@@ -373,7 +399,8 @@ trait ActionField
             ->required($condition)
             ->disabled(fn ($get) => ! $condition($get))
             ->visible($condition)
-            ->default('override');
+            ->default('override')
+            ->rules(fn ($get) => self::validateBehavior($condition($get) ? 'required' : 'nullable'));
     }
 
     public static function setLevelValue()
@@ -390,6 +417,7 @@ trait ActionField
             ->required($condition)
             ->visible($condition)
             ->numeric()
+            ->rules(fn ($get) => self::validatePositiveNumber($condition($get) ? 'required' : 'nullable'))
             ->minValue(1);
     }
 }

@@ -4,15 +4,19 @@ namespace App\Traits\Filament\Specifics\Pattern;
 
 use App\Enums\Type;
 use App\Traits\Filament\Generals\Components\Field;
+use App\Traits\Validators\PatternValidator;
 
 trait PatternField
 {
-    use Field, PatternButton, PatternData;
+    use Field, PatternButton, PatternData, PatternValidator;
 
     public static function setName()
     {
         return self::textInput('name', __('models.pattern.fields.name'))
-            ->helperText(__('forms.pattern.descriptions.name'));
+            ->helperText(__('forms.pattern.descriptions.name'))
+            ->unique(ignoreRecord: true)
+            ->required()
+            ->rules(fn ($livewire) => self::validateName(ignore: $livewire->record ?? null));
     }
 
     public static function setPhase()
@@ -22,7 +26,9 @@ trait PatternField
             __('models.pattern.fields.phase'),
             self::phaseOptionsAndColors(),
         )
-            ->helperText(__('forms.pattern.descriptions.phase'));
+            ->helperText(__('forms.pattern.descriptions.phase'))
+            ->required()
+            ->rules(self::validatePhase());
     }
 
     public static function setType()
@@ -40,7 +46,9 @@ trait PatternField
                 'colors' => $typeColors,
             ],
         )
-            ->helperText(__('forms.pattern.descriptions.type'));
+            ->helperText(__('forms.pattern.descriptions.type'))
+            ->required()
+            ->rules(self::validateType());
     }
 
     public static function setDatatype()
@@ -50,7 +58,9 @@ trait PatternField
             __('models.pattern.fields.datatype'),
             self::datatypeOptionsAndColors(),
         )
-            ->helperText(__('forms.pattern.descriptions.datatype'));
+            ->helperText(__('forms.pattern.descriptions.datatype'))
+            ->required()
+            ->rules(self::validateDatatype());
     }
 
     public static function setDescriptionField()
@@ -63,6 +73,7 @@ trait PatternField
         return self::select('targets', __('models.pattern.fields.targets'))
             ->helperText(__('forms.pattern.descriptions.targets'))
             ->multiple()
+            ->rules(self::validateTargets())
             ->relationship('targets', 'name');
     }
 }
