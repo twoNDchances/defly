@@ -18,9 +18,10 @@ const (
 	ActionImplement = "implement"
 	ActionSuspend   = "suspend"
 
-	appliedForDefender = "Defender"
-	defaultEmailHeader = "X-Executor"
-	fullAction         = "all"
+	appliedForPrinciple = "Principle"
+	appliedForDecision  = "Decision"
+	defaultEmailHeader  = "X-Executor"
+	fullAction          = "all"
 )
 
 type Authorization struct {
@@ -29,22 +30,22 @@ type Authorization struct {
 }
 
 func (a Authorization) Apply() gin.HandlerFunc {
-	return a.authorize(ActionApply)
+	return a.authorize(ActionApply, appliedForPrinciple)
 }
 
 func (a Authorization) Revoke() gin.HandlerFunc {
-	return a.authorize(ActionRevoke)
+	return a.authorize(ActionRevoke, appliedForPrinciple)
 }
 
 func (a Authorization) Implement() gin.HandlerFunc {
-	return a.authorize(ActionImplement)
+	return a.authorize(ActionImplement, appliedForDecision)
 }
 
 func (a Authorization) Suspend() gin.HandlerFunc {
-	return a.authorize(ActionSuspend)
+	return a.authorize(ActionSuspend, appliedForDecision)
 }
 
-func (a Authorization) authorize(action string) gin.HandlerFunc {
+func (a Authorization) authorize(action, appliedFor string) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		email := strings.TrimSpace(ctx.GetHeader(a.emailHeaderKey()))
 		if email == "" {
@@ -52,7 +53,7 @@ func (a Authorization) authorize(action string) gin.HandlerFunc {
 			return
 		}
 
-		allowed, err := a.can(ctx.Request.Context(), email, action)
+		allowed, err := a.can(ctx.Request.Context(), email, action, appliedFor)
 		if err != nil {
 			ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "failed to check permission"})
 			return
@@ -66,7 +67,7 @@ func (a Authorization) authorize(action string) gin.HandlerFunc {
 	}
 }
 
-func (a Authorization) can(ctx context.Context, email string, action string) (bool, error) {
+func (a Authorization) can(ctx context.Context, email, action, appliedFor string) (bool, error) {
 	client, err := a.Database.Connect()
 	if err != nil {
 		return false, err
@@ -93,12 +94,12 @@ func (a Authorization) can(ctx context.Context, email string, action string) (bo
 	if user.IsRoot {
 		return true, nil
 	}
-	if a.hasPermission(user.Edges.Permissions, action) {
+	if a.hasPermission(user.Edges.Permissions, action, appliedFor) {
 		return true, nil
 	}
 
 	for _, group := range user.Edges.Groups {
-		if a.hasPermission(group.Edges.Permissions, action) {
+		if a.hasPermission(group.Edges.Permissions, action, appliedFor) {
 			return true, nil
 		}
 	}
@@ -106,12 +107,12 @@ func (a Authorization) can(ctx context.Context, email string, action string) (bo
 	return false, nil
 }
 
-func (a Authorization) hasPermission(permissions []*ent.Permission, action string) bool {
+func (a Authorization) hasPermission(permissions []*ent.Permission, action, appliedFor string) bool {
 	for _, permission := range permissions {
 		if permission == nil {
 			continue
 		}
-		if !strings.EqualFold(permission.AppliedFor, appliedForDefender) {
+		if !strings.EqualFold(permission.AppliedFor, appliedFor) {
 			continue
 		}
 		if strings.EqualFold(permission.Action, fullAction) || strings.EqualFold(permission.Action, action) {
