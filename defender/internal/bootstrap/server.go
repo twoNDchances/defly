@@ -41,7 +41,7 @@ func NewServer() error {
 			Implement: envserver.ServerMethodImplement.Value(),
 			Suspend:   envserver.ServerMethodSuspend.Value(),
 		},
-		Permission: configserver.Permission{
+		Authorization: configserver.Authorization{
 			Database: NewDatabase(),
 			Email:    envserver.ServerControllerPermissionEmail.Value(),
 		},

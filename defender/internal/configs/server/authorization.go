@@ -23,36 +23,36 @@ const (
 	fullAction         = "all"
 )
 
-type Permission struct {
+type Authorization struct {
 	Database configs.Database
 	Email    string
 }
 
-func (p Permission) Apply() gin.HandlerFunc {
-	return p.authorize(ActionApply)
+func (a Authorization) Apply() gin.HandlerFunc {
+	return a.authorize(ActionApply)
 }
 
-func (p Permission) Revoke() gin.HandlerFunc {
-	return p.authorize(ActionRevoke)
+func (a Authorization) Revoke() gin.HandlerFunc {
+	return a.authorize(ActionRevoke)
 }
 
-func (p Permission) Implement() gin.HandlerFunc {
-	return p.authorize(ActionImplement)
+func (a Authorization) Implement() gin.HandlerFunc {
+	return a.authorize(ActionImplement)
 }
 
-func (p Permission) Suspend() gin.HandlerFunc {
-	return p.authorize(ActionSuspend)
+func (a Authorization) Suspend() gin.HandlerFunc {
+	return a.authorize(ActionSuspend)
 }
 
-func (p Permission) authorize(action string) gin.HandlerFunc {
+func (a Authorization) authorize(action string) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		email := strings.TrimSpace(ctx.GetHeader(p.emailHeaderKey()))
+		email := strings.TrimSpace(ctx.GetHeader(a.emailHeaderKey()))
 		if email == "" {
 			ctx.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "missing user email header"})
 			return
 		}
 
-		allowed, err := p.can(ctx.Request.Context(), email, action)
+		allowed, err := a.can(ctx.Request.Context(), email, action)
 		if err != nil {
 			ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "failed to check permission"})
 			return
@@ -66,8 +66,8 @@ func (p Permission) authorize(action string) gin.HandlerFunc {
 	}
 }
 
-func (p Permission) can(ctx context.Context, email string, action string) (bool, error) {
-	client, err := p.Database.Connect()
+func (a Authorization) can(ctx context.Context, email string, action string) (bool, error) {
+	client, err := a.Database.Connect()
 	if err != nil {
 		return false, err
 	}
@@ -93,12 +93,12 @@ func (p Permission) can(ctx context.Context, email string, action string) (bool,
 	if user.IsRoot {
 		return true, nil
 	}
-	if p.hasPermission(user.Edges.Permissions, action) {
+	if a.hasPermission(user.Edges.Permissions, action) {
 		return true, nil
 	}
 
 	for _, group := range user.Edges.Groups {
-		if p.hasPermission(group.Edges.Permissions, action) {
+		if a.hasPermission(group.Edges.Permissions, action) {
 			return true, nil
 		}
 	}
@@ -106,7 +106,7 @@ func (p Permission) can(ctx context.Context, email string, action string) (bool,
 	return false, nil
 }
 
-func (p Permission) hasPermission(permissions []*ent.Permission, action string) bool {
+func (a Authorization) hasPermission(permissions []*ent.Permission, action string) bool {
 	for _, permission := range permissions {
 		if permission == nil {
 			continue
@@ -122,8 +122,8 @@ func (p Permission) hasPermission(permissions []*ent.Permission, action string) 
 	return false
 }
 
-func (p Permission) emailHeaderKey() string {
-	header := strings.TrimSpace(p.Email)
+func (a Authorization) emailHeaderKey() string {
+	header := strings.TrimSpace(a.Email)
 	if header == "" {
 		return defaultEmailHeader
 	}
