@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 
-#[Fillable(['name', 'proxy_port', 'environment_variables', 'status', 'details', 'deployment_status', 'deployment_details', 'description', 'created_by'])]
+#[Fillable(['name', 'proxy_port', 'environment_variables', 'status', 'details', 'deployment_status', 'deployment_details', 'last_response_details', 'description', 'created_by'])]
 #[ObservedBy(DefenderObserver::class)]
 class Defender extends Model
 {
@@ -29,6 +29,7 @@ class Defender extends Model
             'details' => 'array',
             'deployment_status' => DeploymentStatus::class,
             'deployment_details' => 'array',
+            'last_response_details' => 'array',
             'description' => 'string',
             'created_by' => 'string',
             'created_at' => 'datetime',
@@ -39,14 +40,14 @@ class Defender extends Model
     public function principles()
     {
         return $this->belongsToMany(Principle::class, 'defenders_principles', 'defender', 'principle')
-            ->withPivot('order')
+            ->withPivot('order', 'is_applied')
             ->orderByPivot('order');
     }
 
     public function decisions()
     {
         return $this->belongsToMany(Decision::class, 'defenders_decisions', 'defender', 'decision')
-            ->withPivot('order')
+            ->withPivot('order', 'is_implemented')
             ->orderByPivot('order');
     }
 }

@@ -30,8 +30,6 @@ type Decision struct {
 	Action decision.Action `json:"action,omitempty"`
 	// Configurations holds the value of the "configurations" field.
 	Configurations map[string]interface{} `json:"configurations,omitempty"`
-	// IsImplemented holds the value of the "is_implemented" field.
-	IsImplemented bool `json:"is_implemented,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the DecisionQuery when eager-loading is set.
 	Edges        DecisionEdges `json:"edges"`
@@ -63,8 +61,6 @@ func (*Decision) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case decision.FieldConfigurations:
 			values[i] = new([]byte)
-		case decision.FieldIsImplemented:
-			values[i] = new(sql.NullBool)
 		case decision.FieldScore:
 			values[i] = new(sql.NullFloat64)
 		case decision.FieldName, decision.FieldDirection, decision.FieldCondition, decision.FieldAction:
@@ -130,12 +126,6 @@ func (d *Decision) assignValues(columns []string, values []any) error {
 					return fmt.Errorf("unmarshal field configurations: %w", err)
 				}
 			}
-		case decision.FieldIsImplemented:
-			if value, ok := values[i].(*sql.NullBool); !ok {
-				return fmt.Errorf("unexpected type %T for field is_implemented", values[i])
-			} else if value.Valid {
-				d.IsImplemented = value.Bool
-			}
 		default:
 			d.selectValues.Set(columns[i], values[i])
 		}
@@ -194,9 +184,6 @@ func (d *Decision) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("configurations=")
 	builder.WriteString(fmt.Sprintf("%v", d.Configurations))
-	builder.WriteString(", ")
-	builder.WriteString("is_implemented=")
-	builder.WriteString(fmt.Sprintf("%v", d.IsImplemented))
 	builder.WriteByte(')')
 	return builder.String()
 }

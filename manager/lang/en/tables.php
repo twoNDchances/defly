@@ -46,11 +46,21 @@ return [
         'buttons' => [
             'validate_button' => 'Validate',
             'validate_bulk_button' => 'Validate selected items',
+            'apply' => 'Apply',
+            'applyAny' => 'Apply selected items',
+            'revoke' => 'Revoke',
+            'revokeAny' => 'Revoke selected items',
         ],
     ],
     'decision' => [
         'defenders' => 'Defenders in use',
         'is_implemented' => 'Is implemented',
+        'buttons' => [
+            'implement' => 'Implement',
+            'implementAny' => 'Implement selected items',
+            'suspend' => 'Suspend',
+            'suspendAny' => 'Suspend selected items',
+        ],
     ],
     'defender' => [
         'principles' => 'Principles in use',

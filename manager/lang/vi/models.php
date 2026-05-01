@@ -340,6 +340,7 @@ return [
             'deployment_status' => 'Trạng thái triển khai',
             'deployment_details' => 'Chi tiết triển khai',
             'log' => 'Nhật ký',
+            'last_response_details' => 'Chi tiết phản hồi mới nhất',
         ],
         'extras' => [
             'status' => [

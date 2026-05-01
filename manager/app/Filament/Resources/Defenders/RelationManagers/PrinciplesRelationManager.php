@@ -33,7 +33,7 @@ class PrinciplesRelationManager extends RelationManager
                 //
             ])
             ->headerActions([
-                self::attachPolicesAndLockButton()->recordSelectOptionsQuery(fn ($query) => $query->where('validation_status', ValidationStatus::Passed)),
+                self::attachPrinciplesAndLockButton()->recordSelectOptionsQuery(fn ($query) => $query->where('validation_status', ValidationStatus::Passed)),
             ])
             ->recordActions([
                 self::buttonGroup(
@@ -56,7 +56,8 @@ class PrinciplesRelationManager extends RelationManager
                     ],
                 ),
             ])
-            ->reorderable('order');
+            ->reorderable('order')
+            ->poll('5s');
     }
 
     public static function getTitle(Model $ownerRecord, string $pageClass): string

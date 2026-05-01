@@ -617,7 +617,6 @@ type DecisionMutation struct {
 	addscore         *float64
 	action           *decision.Action
 	configurations   *map[string]interface{}
-	is_implemented   *bool
 	clearedFields    map[string]struct{}
 	defenders        map[uuid.UUID]struct{}
 	removeddefenders map[uuid.UUID]struct{}
@@ -980,42 +979,6 @@ func (m *DecisionMutation) ResetConfigurations() {
 	delete(m.clearedFields, decision.FieldConfigurations)
 }
 
-// SetIsImplemented sets the "is_implemented" field.
-func (m *DecisionMutation) SetIsImplemented(b bool) {
-	m.is_implemented = &b
-}
-
-// IsImplemented returns the value of the "is_implemented" field in the mutation.
-func (m *DecisionMutation) IsImplemented() (r bool, exists bool) {
-	v := m.is_implemented
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldIsImplemented returns the old "is_implemented" field's value of the Decision entity.
-// If the Decision object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *DecisionMutation) OldIsImplemented(ctx context.Context) (v bool, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldIsImplemented is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldIsImplemented requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldIsImplemented: %w", err)
-	}
-	return oldValue.IsImplemented, nil
-}
-
-// ResetIsImplemented resets all changes to the "is_implemented" field.
-func (m *DecisionMutation) ResetIsImplemented() {
-	m.is_implemented = nil
-}
-
 // AddDefenderIDs adds the "defenders" edge to the Defender entity by ids.
 func (m *DecisionMutation) AddDefenderIDs(ids ...uuid.UUID) {
 	if m.defenders == nil {
@@ -1104,7 +1067,7 @@ func (m *DecisionMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *DecisionMutation) Fields() []string {
-	fields := make([]string, 0, 7)
+	fields := make([]string, 0, 6)
 	if m.name != nil {
 		fields = append(fields, decision.FieldName)
 	}
@@ -1122,9 +1085,6 @@ func (m *DecisionMutation) Fields() []string {
 	}
 	if m.configurations != nil {
 		fields = append(fields, decision.FieldConfigurations)
-	}
-	if m.is_implemented != nil {
-		fields = append(fields, decision.FieldIsImplemented)
 	}
 	return fields
 }
@@ -1146,8 +1106,6 @@ func (m *DecisionMutation) Field(name string) (ent.Value, bool) {
 		return m.Action()
 	case decision.FieldConfigurations:
 		return m.Configurations()
-	case decision.FieldIsImplemented:
-		return m.IsImplemented()
 	}
 	return nil, false
 }
@@ -1169,8 +1127,6 @@ func (m *DecisionMutation) OldField(ctx context.Context, name string) (ent.Value
 		return m.OldAction(ctx)
 	case decision.FieldConfigurations:
 		return m.OldConfigurations(ctx)
-	case decision.FieldIsImplemented:
-		return m.OldIsImplemented(ctx)
 	}
 	return nil, fmt.Errorf("unknown Decision field %s", name)
 }
@@ -1221,13 +1177,6 @@ func (m *DecisionMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetConfigurations(v)
-		return nil
-	case decision.FieldIsImplemented:
-		v, ok := value.(bool)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetIsImplemented(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Decision field %s", name)
@@ -1319,9 +1268,6 @@ func (m *DecisionMutation) ResetField(name string) error {
 		return nil
 	case decision.FieldConfigurations:
 		m.ResetConfigurations()
-		return nil
-	case decision.FieldIsImplemented:
-		m.ResetIsImplemented()
 		return nil
 	}
 	return fmt.Errorf("unknown Decision field %s", name)
@@ -4435,7 +4381,6 @@ type PrincipleMutation struct {
 	addlevel         *int64
 	phase            *int
 	addphase         *int
-	is_applied       *bool
 	clearedFields    map[string]struct{}
 	rules            map[uuid.UUID]struct{}
 	removedrules     map[uuid.UUID]struct{}
@@ -4700,42 +4645,6 @@ func (m *PrincipleMutation) ResetPhase() {
 	m.addphase = nil
 }
 
-// SetIsApplied sets the "is_applied" field.
-func (m *PrincipleMutation) SetIsApplied(b bool) {
-	m.is_applied = &b
-}
-
-// IsApplied returns the value of the "is_applied" field in the mutation.
-func (m *PrincipleMutation) IsApplied() (r bool, exists bool) {
-	v := m.is_applied
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldIsApplied returns the old "is_applied" field's value of the Principle entity.
-// If the Principle object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *PrincipleMutation) OldIsApplied(ctx context.Context) (v bool, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldIsApplied is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldIsApplied requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldIsApplied: %w", err)
-	}
-	return oldValue.IsApplied, nil
-}
-
-// ResetIsApplied resets all changes to the "is_applied" field.
-func (m *PrincipleMutation) ResetIsApplied() {
-	m.is_applied = nil
-}
-
 // AddRuleIDs adds the "rules" edge to the Rule entity by ids.
 func (m *PrincipleMutation) AddRuleIDs(ids ...uuid.UUID) {
 	if m.rules == nil {
@@ -4878,7 +4787,7 @@ func (m *PrincipleMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *PrincipleMutation) Fields() []string {
-	fields := make([]string, 0, 4)
+	fields := make([]string, 0, 3)
 	if m.name != nil {
 		fields = append(fields, principle.FieldName)
 	}
@@ -4887,9 +4796,6 @@ func (m *PrincipleMutation) Fields() []string {
 	}
 	if m.phase != nil {
 		fields = append(fields, principle.FieldPhase)
-	}
-	if m.is_applied != nil {
-		fields = append(fields, principle.FieldIsApplied)
 	}
 	return fields
 }
@@ -4905,8 +4811,6 @@ func (m *PrincipleMutation) Field(name string) (ent.Value, bool) {
 		return m.Level()
 	case principle.FieldPhase:
 		return m.Phase()
-	case principle.FieldIsApplied:
-		return m.IsApplied()
 	}
 	return nil, false
 }
@@ -4922,8 +4826,6 @@ func (m *PrincipleMutation) OldField(ctx context.Context, name string) (ent.Valu
 		return m.OldLevel(ctx)
 	case principle.FieldPhase:
 		return m.OldPhase(ctx)
-	case principle.FieldIsApplied:
-		return m.OldIsApplied(ctx)
 	}
 	return nil, fmt.Errorf("unknown Principle field %s", name)
 }
@@ -4953,13 +4855,6 @@ func (m *PrincipleMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetPhase(v)
-		return nil
-	case principle.FieldIsApplied:
-		v, ok := value.(bool)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetIsApplied(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Principle field %s", name)
@@ -5045,9 +4940,6 @@ func (m *PrincipleMutation) ResetField(name string) error {
 		return nil
 	case principle.FieldPhase:
 		m.ResetPhase()
-		return nil
-	case principle.FieldIsApplied:
-		m.ResetIsApplied()
 		return nil
 	}
 	return fmt.Errorf("unknown Principle field %s", name)

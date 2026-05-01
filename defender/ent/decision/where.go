@@ -65,11 +65,6 @@ func Score(v float64) predicate.Decision {
 	return predicate.Decision(sql.FieldEQ(FieldScore, v))
 }
 
-// IsImplemented applies equality check predicate on the "is_implemented" field. It's identical to IsImplementedEQ.
-func IsImplemented(v bool) predicate.Decision {
-	return predicate.Decision(sql.FieldEQ(FieldIsImplemented, v))
-}
-
 // NameEQ applies the EQ predicate on the "name" field.
 func NameEQ(v string) predicate.Decision {
 	return predicate.Decision(sql.FieldEQ(FieldName, v))
@@ -243,16 +238,6 @@ func ConfigurationsIsNil() predicate.Decision {
 // ConfigurationsNotNil applies the NotNil predicate on the "configurations" field.
 func ConfigurationsNotNil() predicate.Decision {
 	return predicate.Decision(sql.FieldNotNull(FieldConfigurations))
-}
-
-// IsImplementedEQ applies the EQ predicate on the "is_implemented" field.
-func IsImplementedEQ(v bool) predicate.Decision {
-	return predicate.Decision(sql.FieldEQ(FieldIsImplemented, v))
-}
-
-// IsImplementedNEQ applies the NEQ predicate on the "is_implemented" field.
-func IsImplementedNEQ(v bool) predicate.Decision {
-	return predicate.Decision(sql.FieldNEQ(FieldIsImplemented, v))
 }
 
 // HasDefenders applies the HasEdge predicate on the "defenders" edge.

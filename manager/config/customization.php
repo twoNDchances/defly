@@ -69,6 +69,69 @@ return [
                     'email_header_key' => env('ORCHESTRATOR_EMAIL_HEADER_KEY', 'X-Executor'),
                 ],
             ],
+            'defender' => [
+                'base_url' => env('DEFENDER_SERVER_BASE_URL', 'http://defender:9947'),
+                'paths' => [
+                    'prefix' => env('DEFENDER_SERVER_PATH_PREFIX', 'api/v1'),
+                    'principle' => [
+                        'path' => env('DEFENDER_SERVER_PATH_PRINCIPLE', 'principles'),
+                        'methods' => [
+                            'apply' => (function () {
+                                $default = 'put';
+                                $method = Str::lower(env('DEFENDER_SERVER_METHOD_APPLY', $default));
+                                if (! in_array($method, ['post', 'put', 'patch', 'delete'], true)) {
+                                    return $default;
+                                }
+
+                                return $method;
+                            })(),
+                            'revoke' => (function () {
+                                $default = 'delete';
+                                $method = Str::lower(env('DEFENDER_SERVER_METHOD_REVOKE', $default));
+                                if (! in_array($method, ['post', 'put', 'patch', 'delete'], true)) {
+                                    return $default;
+                                }
+
+                                return $method;
+                            })(),
+                        ],
+                    ],
+                    'decision' => [
+                        'path' => env('DEFENDER_SERVER_PATH_DECISION', 'decisions'),
+                        'methods' => [
+                            'implement' => (function () {
+                                $default = 'put';
+                                $method = Str::lower(env('DEFENDER_SERVER_METHOD_IMPLEMENT', $default));
+                                if (! in_array($method, ['post', 'put', 'patch', 'delete'], true)) {
+                                    return $default;
+                                }
+
+                                return $method;
+                            })(),
+                            'suspend' => (function () {
+                                $default = 'delete';
+                                $method = Str::lower(env('DEFENDER_SERVER_METHOD_SUSPEND', $default));
+                                if (! in_array($method, ['post', 'put', 'patch', 'delete'], true)) {
+                                    return $default;
+                                }
+
+                                return $method;
+                            })(),
+                        ],
+                    ],
+                ],
+                'credentials' => [
+                    'username' => env('DEFENDER_SERVER_USERNAME', 'defly-defender'),
+                    'password' => env('DEFENDER_SERVER_PASSWORD', 'P@55w0rd'),
+                ],
+                'tls' => [
+                    'skip_verify' => (bool) env('DEFENDER_SERVER_TLS_SKIP_VERIFY', false),
+                    'directory' => env('DEFENDER_SERVER_TLS_DIRECTORY', 'storage/tls/defenders'),
+                ],
+                'headers' => [
+                    'email_header_key' => env('DEFENDER_SERVER_EMAIL_HEADER_KEY', 'X-Executor'),
+                ],
+            ],
         ],
         'default_credentials' => [
             'user_name' => env('USER_NAME', 'root'),

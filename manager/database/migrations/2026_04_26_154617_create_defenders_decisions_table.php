@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('defenders_decisions', function (Blueprint $table) {
             $table->foreignUuid('defender')->constrained('defenders')->cascadeOnDelete();
             $table->foreignUuid('decision')->constrained('decisions')->cascadeOnDelete();
+            $table->boolean('is_implemented')->default(false);
             $table->unsignedBigInteger('order')->nullable();
         });
     }

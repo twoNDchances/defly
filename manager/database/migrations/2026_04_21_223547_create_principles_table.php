@@ -18,7 +18,6 @@ return new class extends Migration
             $table->integer('phase');
             $table->enum('validation_status', ['pending', 'validating', 'failed', 'passed'])->nullable();
             $table->json('validation_details')->nullable();
-            $table->boolean('is_applied')->default(false);
             $table->longText('description')->nullable();
             $table->foreignUuid('created_by')->nullable()->index()->constrained('users')->nullOnDelete();
             $table->boolean('is_locked')->default(false);

@@ -70,11 +70,6 @@ func Phase(v int) predicate.Principle {
 	return predicate.Principle(sql.FieldEQ(FieldPhase, v))
 }
 
-// IsApplied applies equality check predicate on the "is_applied" field. It's identical to IsAppliedEQ.
-func IsApplied(v bool) predicate.Principle {
-	return predicate.Principle(sql.FieldEQ(FieldIsApplied, v))
-}
-
 // NameEQ applies the EQ predicate on the "name" field.
 func NameEQ(v string) predicate.Principle {
 	return predicate.Principle(sql.FieldEQ(FieldName, v))
@@ -218,16 +213,6 @@ func PhaseLT(v int) predicate.Principle {
 // PhaseLTE applies the LTE predicate on the "phase" field.
 func PhaseLTE(v int) predicate.Principle {
 	return predicate.Principle(sql.FieldLTE(FieldPhase, v))
-}
-
-// IsAppliedEQ applies the EQ predicate on the "is_applied" field.
-func IsAppliedEQ(v bool) predicate.Principle {
-	return predicate.Principle(sql.FieldEQ(FieldIsApplied, v))
-}
-
-// IsAppliedNEQ applies the NEQ predicate on the "is_applied" field.
-func IsAppliedNEQ(v bool) predicate.Principle {
-	return predicate.Principle(sql.FieldNEQ(FieldIsApplied, v))
 }
 
 // HasRules applies the HasEdge predicate on the "rules" edge.

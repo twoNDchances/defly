@@ -179,6 +179,14 @@ class DefenderForm
                                             self::setLog(),
                                             self::followDefenderButton(),
                                         ]),
+
+                                    Section::make(__('forms.defender.tabs.d.sections.b.title'))
+                                        ->collapsible()
+                                        ->columns(1)
+                                        ->schema([
+                                            self::setLastResponseDetails(),
+                                            self::refreshDefenderButton(),
+                                        ]),
                                 ]),
                         ]),
                 ]),

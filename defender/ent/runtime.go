@@ -40,10 +40,6 @@ func init() {
 	decisionDescName := decisionFields[1].Descriptor()
 	// decision.NameValidator is a validator for the "name" field. It is called by the builders before save.
 	decision.NameValidator = decisionDescName.Validators[0].(func(string) error)
-	// decisionDescIsImplemented is the schema descriptor for is_implemented field.
-	decisionDescIsImplemented := decisionFields[7].Descriptor()
-	// decision.DefaultIsImplemented holds the default value on creation for the is_implemented field.
-	decision.DefaultIsImplemented = decisionDescIsImplemented.Default.(bool)
 	// decisionDescID is the schema descriptor for id field.
 	decisionDescID := decisionFields[0].Descriptor()
 	// decision.DefaultID holds the default value on creation for the id field.
@@ -116,10 +112,6 @@ func init() {
 	principleDescLevel := principleFields[2].Descriptor()
 	// principle.DefaultLevel holds the default value on creation for the level field.
 	principle.DefaultLevel = principleDescLevel.Default.(uint64)
-	// principleDescIsApplied is the schema descriptor for is_applied field.
-	principleDescIsApplied := principleFields[4].Descriptor()
-	// principle.DefaultIsApplied holds the default value on creation for the is_applied field.
-	principle.DefaultIsApplied = principleDescIsApplied.Default.(bool)
 	// principleDescID is the schema descriptor for id field.
 	principleDescID := principleFields[0].Descriptor()
 	// principle.DefaultID holds the default value on creation for the id field.

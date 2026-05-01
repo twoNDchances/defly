@@ -31,7 +31,6 @@ var (
 		{Name: "score", Type: field.TypeFloat64},
 		{Name: "action", Type: field.TypeEnum, Enums: []string{"allow", "deny", "rewrite_headers", "rewrite_body", "redirect", "cancel", "rewrite", "save", "erase_cookies", "force_no_cache"}},
 		{Name: "configurations", Type: field.TypeJSON, Nullable: true},
-		{Name: "is_implemented", Type: field.TypeBool, Default: false},
 	}
 	// DecisionsTable holds the schema information for the "decisions" table.
 	DecisionsTable = &schema.Table{
@@ -110,7 +109,6 @@ var (
 		{Name: "name", Type: field.TypeString, Unique: true},
 		{Name: "level", Type: field.TypeUint64, Default: 1},
 		{Name: "phase", Type: field.TypeInt},
-		{Name: "is_applied", Type: field.TypeBool, Default: false},
 	}
 	// PrinciplesTable holds the schema information for the "principles" table.
 	PrinciplesTable = &schema.Table{

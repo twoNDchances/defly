@@ -4,8 +4,10 @@ namespace App\Traits\Filament\Specifics\Principle;
 
 use App\Enums\Defender\DeploymentStatus;
 use App\Enums\Principle\ValidationStatus;
+use App\Jobs\DefenderCommunication;
 use App\Jobs\PrincipleValidation;
 use App\Models\Defender;
+use App\Services\Identification;
 use App\Services\Lock;
 use App\Traits\Filament\Generals\Components\Button;
 use Filament\Support\Icons\Heroicon;
@@ -21,7 +23,7 @@ trait PrincipleButton
             && $defender->deployment_status === DeploymentStatus::Successful;
     }
 
-    public static function attachPolicesAndLockButton()
+    public static function attachPrinciplesAndLockButton()
     {
         return self::attachAndLockButton()
             ->after(function ($data, $table) {
@@ -42,10 +44,10 @@ trait PrincipleButton
                     return;
                 }
 
-                $ownerRecord->forceFill([
-                    'deployment_status' => null,
-                    'deployment_details' => null,
-                ])->save();
+                // $ownerRecord->forceFill([
+                //     'deployment_status' => null,
+                //     'deployment_details' => null,
+                // ])->save();
 
                 $livewire = $table->getLivewire();
                 $livewire
@@ -70,10 +72,10 @@ trait PrincipleButton
                     return;
                 }
 
-                $ownerRecord->forceFill([
-                    'deployment_status' => null,
-                    'deployment_details' => null,
-                ])->save();
+                // $ownerRecord->forceFill([
+                //     'deployment_status' => null,
+                //     'deployment_details' => null,
+                // ])->save();
 
                 $livewire = $table->getLivewire();
                 $livewire
@@ -96,10 +98,10 @@ trait PrincipleButton
                     return;
                 }
 
-                $ownerRecord->forceFill([
-                    'deployment_status' => null,
-                    'deployment_details' => null,
-                ])->save();
+                // $ownerRecord->forceFill([
+                //     'deployment_status' => null,
+                //     'deployment_details' => null,
+                // ])->save();
 
                 $livewire = $table->getLivewire();
                 $livewire
@@ -190,13 +192,19 @@ trait PrincipleButton
     {
         return self::button(
             'apply_button',
-            'Apply',
+            __('tables.principle.buttons.apply'),
             Heroicon::OutlinedArrowUpOnSquareStack,
             function ($record) use ($defender) {
                 if (! self::ownerDefenderIsDeployed($defender)) {
                     return;
                 }
 
+                DefenderCommunication::dispatch(
+                    $defender->id,
+                    [$record->id],
+                    DefenderCommunication::ACTION_APPLY,
+                    Identification::getEmail(),
+                );
             },
         )
             ->color('sky')
@@ -208,38 +216,53 @@ trait PrincipleButton
     {
         return self::bulkButton(
             'apply_bulk_button',
-            'Apply selected items',
+            __('tables.principle.buttons.applyAny'),
             Heroicon::OutlinedArrowUpOnSquareStack,
             function ($records) use ($defender) {
                 if (! self::ownerDefenderIsDeployed($defender)) {
                     return;
                 }
 
-                foreach ($records as $record) {
-
+                $recordIds = $records->pluck('id')->all();
+                if ($recordIds === []) {
+                    return;
                 }
+
+                DefenderCommunication::dispatch(
+                    $defender->id,
+                    $recordIds,
+                    DefenderCommunication::ACTION_APPLY,
+                    Identification::getEmail(),
+                );
             },
         )
             ->color('sky')
             ->visible(fn () => self::ownerDefenderIsDeployed($defender))
-            ->authorize('applyAny');
+            ->authorize('applyAny')
+            ->deselectRecordsAfterCompletion();
     }
 
     public static function revokePrincipleButton(?Defender $defender = null)
     {
         return self::button(
             'revoke_button',
-            'Apply',
+            __('tables.principle.buttons.revoke'),
             Heroicon::OutlinedArrowUturnLeft,
             function ($record) use ($defender) {
-                if (! self::ownerDefenderIsDeployed($defender) || ! $record->is_applied) {
+                if (! self::ownerDefenderIsDeployed($defender) || ! $record->pivot?->is_applied) {
                     return;
                 }
 
+                DefenderCommunication::dispatch(
+                    $defender->id,
+                    [$record->id],
+                    DefenderCommunication::ACTION_REVOKE,
+                    Identification::getEmail(),
+                );
             },
         )
             ->color('pink')
-            ->visible(fn ($record) => self::ownerDefenderIsDeployed($defender) && $record->is_applied)
+            ->visible(fn ($record) => self::ownerDefenderIsDeployed($defender) && $record->pivot?->is_applied)
             ->authorize('revoke');
     }
 
@@ -247,22 +270,32 @@ trait PrincipleButton
     {
         return self::bulkButton(
             'revoke_bulk_button',
-            'Revoke selected items',
+            __('tables.principle.buttons.revokeAny'),
             Heroicon::OutlinedArrowUturnLeft,
             function ($records) use ($defender) {
                 if (! self::ownerDefenderIsDeployed($defender)) {
                     return;
                 }
 
-                foreach ($records as $record) {
-                    if (! $record->is_applied) {
-                        continue;
-                    }
+                $recordIds = $records
+                    ->filter(fn ($record) => $record->pivot?->is_applied)
+                    ->pluck('id')
+                    ->all();
+                if ($recordIds === []) {
+                    return;
                 }
+
+                DefenderCommunication::dispatch(
+                    $defender->id,
+                    $recordIds,
+                    DefenderCommunication::ACTION_REVOKE,
+                    Identification::getEmail(),
+                );
             },
         )
             ->color('pink')
             ->visible(fn () => self::ownerDefenderIsDeployed($defender))
-            ->authorize('revokeAny');
+            ->authorize('revokeAny')
+            ->deselectRecordsAfterCompletion();
     }
 }

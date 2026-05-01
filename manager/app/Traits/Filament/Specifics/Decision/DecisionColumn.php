@@ -47,6 +47,6 @@ trait DecisionColumn
 
     public static function getIsImplemented()
     {
-        return self::booleanColumn('is_implemented', __('tables.decision.is_implemented'));
+        return self::booleanColumn('pivot.is_implemented', __('tables.decision.is_implemented'));
     }
 }

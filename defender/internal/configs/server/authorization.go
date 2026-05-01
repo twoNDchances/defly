@@ -27,6 +27,7 @@ const (
 type Authorization struct {
 	Database configs.Database
 	Email    string
+	Error    configs.Error
 }
 
 func (a Authorization) Apply() gin.HandlerFunc {
@@ -55,7 +56,8 @@ func (a Authorization) authorize(action, appliedFor string) gin.HandlerFunc {
 
 		allowed, err := a.can(ctx.Request.Context(), email, action, appliedFor)
 		if err != nil {
-			ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "failed to check permission"})
+			_ = a.Error.LogError(err)
+			ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
 			return
 		}
 		if !allowed {

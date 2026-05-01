@@ -48,20 +48,6 @@ func (pc *PrincipleCreate) SetPhase(i int) *PrincipleCreate {
 	return pc
 }
 
-// SetIsApplied sets the "is_applied" field.
-func (pc *PrincipleCreate) SetIsApplied(b bool) *PrincipleCreate {
-	pc.mutation.SetIsApplied(b)
-	return pc
-}
-
-// SetNillableIsApplied sets the "is_applied" field if the given value is not nil.
-func (pc *PrincipleCreate) SetNillableIsApplied(b *bool) *PrincipleCreate {
-	if b != nil {
-		pc.SetIsApplied(*b)
-	}
-	return pc
-}
-
 // SetID sets the "id" field.
 func (pc *PrincipleCreate) SetID(u uuid.UUID) *PrincipleCreate {
 	pc.mutation.SetID(u)
@@ -145,10 +131,6 @@ func (pc *PrincipleCreate) defaults() {
 		v := principle.DefaultLevel
 		pc.mutation.SetLevel(v)
 	}
-	if _, ok := pc.mutation.IsApplied(); !ok {
-		v := principle.DefaultIsApplied
-		pc.mutation.SetIsApplied(v)
-	}
 	if _, ok := pc.mutation.ID(); !ok {
 		v := principle.DefaultID()
 		pc.mutation.SetID(v)
@@ -170,9 +152,6 @@ func (pc *PrincipleCreate) check() error {
 	}
 	if _, ok := pc.mutation.Phase(); !ok {
 		return &ValidationError{Name: "phase", err: errors.New(`ent: missing required field "Principle.phase"`)}
-	}
-	if _, ok := pc.mutation.IsApplied(); !ok {
-		return &ValidationError{Name: "is_applied", err: errors.New(`ent: missing required field "Principle.is_applied"`)}
 	}
 	return nil
 }
@@ -220,10 +199,6 @@ func (pc *PrincipleCreate) createSpec() (*Principle, *sqlgraph.CreateSpec) {
 	if value, ok := pc.mutation.Phase(); ok {
 		_spec.SetField(principle.FieldPhase, field.TypeInt, value)
 		_node.Phase = value
-	}
-	if value, ok := pc.mutation.IsApplied(); ok {
-		_spec.SetField(principle.FieldIsApplied, field.TypeBool, value)
-		_node.IsApplied = value
 	}
 	if nodes := pc.mutation.RulesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

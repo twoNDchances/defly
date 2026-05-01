@@ -54,7 +54,8 @@ class DecisionsRelationManager extends RelationManager
                     ],
                 ),
             ])
-            ->reorderable('order');
+            ->reorderable('order')
+            ->poll('5s');
     }
 
     public static function getTitle(Model $ownerRecord, string $pageClass): string

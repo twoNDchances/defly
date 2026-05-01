@@ -45,8 +45,14 @@ func (s Server) Boot() error {
 		return s.Error.LogError(err)
 	}
 
-	s.Controller.Principle = &controllers.Principle{}
-	s.Controller.Decision = &controllers.Decision{}
+	s.Controller.Principle = &controllers.Principle{
+		Database: s.Controller.Authorization.Database,
+		Error:    s.Error,
+	}
+	s.Controller.Decision = &controllers.Decision{
+		Database: s.Controller.Authorization.Database,
+		Error:    s.Error,
+	}
 
 	s.Controller.Control(server)
 

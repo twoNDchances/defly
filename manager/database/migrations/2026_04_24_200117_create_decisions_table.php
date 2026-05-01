@@ -19,7 +19,6 @@ return new class extends Migration
             $table->float('score');
             $table->enum('action', ['allow', 'deny', 'rewrite_headers', 'rewrite_body', 'redirect', 'cancel', 'rewrite', 'save', 'erase_cookies', 'force_no_cache']);
             $table->json('configurations')->nullable();
-            $table->boolean('is_implemented')->default(false);
             $table->longText('description')->nullable();
             $table->foreignUuid('created_by')->nullable()->index()->constrained('users')->nullOnDelete();
             $table->boolean('is_locked')->default(false);

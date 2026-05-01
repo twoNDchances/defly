@@ -3,7 +3,9 @@
 namespace App\Traits\Filament\Specifics\Decision;
 
 use App\Enums\Defender\DeploymentStatus;
+use App\Jobs\DefenderCommunication;
 use App\Models\Defender;
+use App\Services\Identification;
 use App\Services\Lock;
 use App\Traits\Filament\Generals\Components\Button;
 use Filament\Notifications\Notification;
@@ -77,10 +79,10 @@ trait DecisionButton
                     return;
                 }
 
-                $ownerRecord->forceFill([
-                    'deployment_status' => null,
-                    'deployment_details' => null,
-                ])->save();
+                // $ownerRecord->forceFill([
+                //     'deployment_status' => null,
+                //     'deployment_details' => null,
+                // ])->save();
 
                 $livewire = $table->getLivewire();
                 $livewire
@@ -105,10 +107,10 @@ trait DecisionButton
                     return;
                 }
 
-                $ownerRecord->forceFill([
-                    'deployment_status' => null,
-                    'deployment_details' => null,
-                ])->save();
+                // $ownerRecord->forceFill([
+                //     'deployment_status' => null,
+                //     'deployment_details' => null,
+                // ])->save();
 
                 $livewire = $table->getLivewire();
                 $livewire
@@ -131,10 +133,10 @@ trait DecisionButton
                     return;
                 }
 
-                $ownerRecord->forceFill([
-                    'deployment_status' => null,
-                    'deployment_details' => null,
-                ])->save();
+                // $ownerRecord->forceFill([
+                //     'deployment_status' => null,
+                //     'deployment_details' => null,
+                // ])->save();
 
                 $livewire = $table->getLivewire();
                 $livewire
@@ -147,13 +149,19 @@ trait DecisionButton
     {
         return self::button(
             'implement_button',
-            'Implement',
+            __('tables.decision.buttons.implement'),
             Heroicon::OutlinedBolt,
             function ($record) use ($defender) {
                 if (! self::ownerDefenderIsDeployed($defender)) {
                     return;
                 }
 
+                DefenderCommunication::dispatch(
+                    $defender->id,
+                    [$record->id],
+                    DefenderCommunication::ACTION_IMPLEMENT,
+                    Identification::getEmail(),
+                );
             },
         )
             ->color('orange')
@@ -165,38 +173,53 @@ trait DecisionButton
     {
         return self::bulkButton(
             'implement_bulk_button',
-            'Implement selected items',
+            __('tables.decision.buttons.implementAny'),
             Heroicon::OutlinedBolt,
             function ($records) use ($defender) {
                 if (! self::ownerDefenderIsDeployed($defender)) {
                     return;
                 }
 
-                foreach ($records as $record) {
-
+                $recordIds = $records->pluck('id')->all();
+                if ($recordIds === []) {
+                    return;
                 }
+
+                DefenderCommunication::dispatch(
+                    $defender->id,
+                    $recordIds,
+                    DefenderCommunication::ACTION_IMPLEMENT,
+                    Identification::getEmail(),
+                );
             },
         )
             ->color('orange')
             ->visible(fn () => self::ownerDefenderIsDeployed($defender))
-            ->authorize('implementAny');
+            ->authorize('implementAny')
+            ->deselectRecordsAfterCompletion();
     }
 
     public static function suspendDecisionButton(?Defender $defender = null)
     {
         return self::button(
             'suspend_button',
-            'Suspend',
+            __('tables.decision.buttons.suspend'),
             Heroicon::OutlinedBoltSlash,
             function ($record) use ($defender) {
-                if (! self::ownerDefenderIsDeployed($defender) || ! $record->is_implemented) {
+                if (! self::ownerDefenderIsDeployed($defender) || ! $record->pivot?->is_implemented) {
                     return;
                 }
 
+                DefenderCommunication::dispatch(
+                    $defender->id,
+                    [$record->id],
+                    DefenderCommunication::ACTION_SUSPEND,
+                    Identification::getEmail(),
+                );
             },
         )
-            ->color('yellow')
-            ->visible(fn ($record) => self::ownerDefenderIsDeployed($defender) && $record->is_implemented)
+            ->color('warning')
+            ->visible(fn ($record) => self::ownerDefenderIsDeployed($defender) && $record->pivot?->is_implemented)
             ->authorize('suspend');
     }
 
@@ -204,22 +227,32 @@ trait DecisionButton
     {
         return self::bulkButton(
             'suspend_bulk_button',
-            'Suspend selected items',
+            __('tables.decision.buttons.suspendAny'),
             Heroicon::OutlinedBoltSlash,
             function ($records) use ($defender) {
                 if (! self::ownerDefenderIsDeployed($defender)) {
                     return;
                 }
 
-                foreach ($records as $record) {
-                    if (! $record->is_implemented) {
-                        continue;
-                    }
+                $recordIds = $records
+                    ->filter(fn ($record) => $record->pivot?->is_implemented)
+                    ->pluck('id')
+                    ->all();
+                if ($recordIds === []) {
+                    return;
                 }
+
+                DefenderCommunication::dispatch(
+                    $defender->id,
+                    $recordIds,
+                    DefenderCommunication::ACTION_SUSPEND,
+                    Identification::getEmail(),
+                );
             },
         )
-            ->color('yellow')
+            ->color('warning')
             ->visible(fn () => self::ownerDefenderIsDeployed($defender))
-            ->authorize('suspendAny');
+            ->authorize('suspendAny')
+            ->deselectRecordsAfterCompletion();
     }
 }

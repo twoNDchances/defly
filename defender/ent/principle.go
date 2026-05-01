@@ -23,8 +23,6 @@ type Principle struct {
 	Level uint64 `json:"level,omitempty"`
 	// Phase holds the value of the "phase" field.
 	Phase int `json:"phase,omitempty"`
-	// IsApplied holds the value of the "is_applied" field.
-	IsApplied bool `json:"is_applied,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the PrincipleQuery when eager-loading is set.
 	Edges        PrincipleEdges `json:"edges"`
@@ -65,8 +63,6 @@ func (*Principle) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case principle.FieldIsApplied:
-			values[i] = new(sql.NullBool)
 		case principle.FieldLevel, principle.FieldPhase:
 			values[i] = new(sql.NullInt64)
 		case principle.FieldName:
@@ -111,12 +107,6 @@ func (pr *Principle) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field phase", values[i])
 			} else if value.Valid {
 				pr.Phase = int(value.Int64)
-			}
-		case principle.FieldIsApplied:
-			if value, ok := values[i].(*sql.NullBool); !ok {
-				return fmt.Errorf("unexpected type %T for field is_applied", values[i])
-			} else if value.Valid {
-				pr.IsApplied = value.Bool
 			}
 		default:
 			pr.selectValues.Set(columns[i], values[i])
@@ -172,9 +162,6 @@ func (pr *Principle) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("phase=")
 	builder.WriteString(fmt.Sprintf("%v", pr.Phase))
-	builder.WriteString(", ")
-	builder.WriteString("is_applied=")
-	builder.WriteString(fmt.Sprintf("%v", pr.IsApplied))
 	builder.WriteByte(')')
 	return builder.String()
 }

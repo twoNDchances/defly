@@ -44,6 +44,7 @@ func NewServer() error {
 		Authorization: configserver.Authorization{
 			Database: NewDatabase(),
 			Email:    envserver.ServerControllerPermissionEmail.Value(),
+			Error:    runtimeError,
 		},
 	}
 

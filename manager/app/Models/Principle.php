@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 
-#[Fillable(['name', 'level', 'phase', 'validation_status', 'validation_details', 'is_applied', 'description', 'created_by', 'is_locked'])]
+#[Fillable(['name', 'level', 'phase', 'validation_status', 'validation_details', 'description', 'created_by', 'is_locked'])]
 #[ObservedBy(PrincipleObserver::class)]
 class Principle extends Model
 {
@@ -27,7 +27,6 @@ class Principle extends Model
             'phase' => Phase::class,
             'validation_status' => ValidationStatus::class,
             'validation_details' => 'array',
-            'is_applied' => 'boolean',
             'description' => 'string',
             'created_by' => 'string',
             'is_locked' => 'boolean',
@@ -46,7 +45,7 @@ class Principle extends Model
     public function defenders()
     {
         return $this->belongsToMany(Defender::class, 'defenders_principles', 'principle', 'defender')
-            ->withPivot('order')
+            ->withPivot('order', 'is_applied')
             ->orderByPivot('order');
     }
 }

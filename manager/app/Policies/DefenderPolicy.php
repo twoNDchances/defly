@@ -85,4 +85,13 @@ class DefenderPolicy
 
         return false;
     }
+
+    public function refresh(User $user, Defender $defender): bool
+    {
+        if ($defender->deployment_status == DeploymentStatus::Successful) {
+            return $this->checkAccess($user, $defender, 'refresh');
+        }
+
+        return false;
+    }
 }

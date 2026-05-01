@@ -46,11 +46,21 @@ return [
         'buttons' => [
             'validate_button' => 'Xác minh',
             'validate_bulk_button' => 'Xác minh các mục đã chọn',
+            'apply' => 'Áp dụng',
+            'applyAny' => 'Áp dụng các mục đã chọn',
+            'revoke' => 'Thu hồi',
+            'revokeAny' => 'Thu hồi các mục đã chọn',
         ],
     ],
     'decision' => [
         'defenders' => 'Defender sử dụng',
         'is_implemented' => 'Được triển khai',
+        'buttons' => [
+            'implement' => 'Triển khai',
+            'implementAny' => 'Triển khai các mục đã chọn',
+            'suspend' => 'Đình chỉ',
+            'suspendAny' => 'Đỉnh chỉ các mục đã chọn',
+        ],
     ],
     'defender' => [
         'principles' => 'Nguyên tắc sử dụng',

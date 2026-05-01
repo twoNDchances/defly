@@ -19,8 +19,6 @@ const (
 	FieldLevel = "level"
 	// FieldPhase holds the string denoting the phase field in the database.
 	FieldPhase = "phase"
-	// FieldIsApplied holds the string denoting the is_applied field in the database.
-	FieldIsApplied = "is_applied"
 	// EdgeRules holds the string denoting the rules edge name in mutations.
 	EdgeRules = "rules"
 	// EdgeDefenders holds the string denoting the defenders edge name in mutations.
@@ -45,7 +43,6 @@ var Columns = []string{
 	FieldName,
 	FieldLevel,
 	FieldPhase,
-	FieldIsApplied,
 }
 
 var (
@@ -72,8 +69,6 @@ var (
 	NameValidator func(string) error
 	// DefaultLevel holds the default value on creation for the "level" field.
 	DefaultLevel uint64
-	// DefaultIsApplied holds the default value on creation for the "is_applied" field.
-	DefaultIsApplied bool
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
@@ -99,11 +94,6 @@ func ByLevel(opts ...sql.OrderTermOption) OrderOption {
 // ByPhase orders the results by the phase field.
 func ByPhase(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldPhase, opts...).ToFunc()
-}
-
-// ByIsApplied orders the results by the is_applied field.
-func ByIsApplied(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldIsApplied, opts...).ToFunc()
 }
 
 // ByRulesCount orders the results by rules count.

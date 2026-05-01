@@ -340,6 +340,7 @@ return [
             'deployment_status' => 'Deployment status',
             'deployment_details' => 'Deployment details',
             'log' => 'Log',
+            'last_response_details' => 'Last response details',
         ],
         'extras' => [
             'status' => [

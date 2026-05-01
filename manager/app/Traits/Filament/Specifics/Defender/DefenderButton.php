@@ -189,8 +189,33 @@ trait DefenderButton
                 $set('log', $state);
             }
         )
-            ->tooltip(__('tables.defender.buttons.tooltips.follow'))
+            ->tooltip(__('forms.defender.buttons.tooltips.follow'))
             ->authorize('follow')
             ->color('sky');
+    }
+
+    public static function refreshDefenderButton()
+    {
+        return self::button(
+            'refresh_button',
+            __('forms.defender.buttons.refresh'),
+            Heroicon::OutlinedArrowPath,
+            function ($record, $set) {
+                $freshRecord = $record?->fresh();
+                $state = $freshRecord?->last_response_details;
+
+                if (is_array($state)) {
+                    $state = json_encode($state, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)
+                        ?: (string) print_r($state, true);
+                } elseif (($state !== null) && (! is_string($state))) {
+                    $state = (string) $state;
+                }
+
+                $set('last_response_details', $state);
+            },
+        )
+            ->tooltip(__('forms.defender.buttons.tooltips.refresh'))
+            ->authorize('refresh')
+            ->color('rose');
     }
 }

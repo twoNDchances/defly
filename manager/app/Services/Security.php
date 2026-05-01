@@ -28,6 +28,7 @@ class Security
         'cancel' => 'Cancel',
         'cancelAny' => 'Multi-cancel',
         'follow' => 'Follow',
+        'refresh' => 'Refresh',
         'apply' => 'Apply',
         'revoke' => 'Revoke',
         'implement' => 'Implement',

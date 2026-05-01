@@ -2,6 +2,7 @@
 
 namespace App\Traits\Filament\Specifics\Defender;
 
+use App\Services\Security;
 use App\Traits\Filament\Generals\Components\Field;
 use Filament\Forms\Components\CodeEditor\Enums\Language;
 
@@ -155,7 +156,7 @@ trait DefenderField
             ['key' => 'SERVER_CONTROLLER_PATH_DECISIONS', 'value' => 'decisions'],
             ['key' => 'SERVER_CONTROLLER_METHOD_IMPLEMENT', 'value' => 'put'],
             ['key' => 'SERVER_CONTROLLER_METHOD_SUSPEND', 'value' => 'delete'],
-            ['key' => 'SERVER_CONTROLLER_PERMISSION_EMAIL', 'value' => 'X-Executor'],
+            ['key' => 'SERVER_CONTROLLER_AUTHORIZATION_EMAIL', 'value' => 'X-Executor'],
             ['key' => 'SERVER_SECURITY_MANAGER', 'value' => 'manager'],
             ['key' => 'SERVER_SECURITY_USERNAME', 'value' => 'defly-defender'],
             ['key' => 'SERVER_SECURITY_PASSWORD', 'value' => 'P@55w0rd'],
@@ -188,7 +189,7 @@ trait DefenderField
             'SERVER_CONTROLLER_METHOD_REVOKE' => ['required', 'in:post,put,patch,delete'],
             'SERVER_CONTROLLER_METHOD_IMPLEMENT' => ['required', 'in:post,put,patch,delete'],
             'SERVER_CONTROLLER_METHOD_SUSPEND' => ['required', 'in:post,put,patch,delete'],
-            'SERVER_CONTROLLER_PERMISSION_EMAIL' => ['required', 'regex:/^[!#$%&\'*+\-.^_`|~0-9A-Za-z]+$/'],
+            'SERVER_CONTROLLER_AUTHORIZATION_EMAIL' => ['required', 'regex:/^[!#$%&\'*+\-.^_`|~0-9A-Za-z]+$/'],
             'SERVER_SECURITY_MANAGER' => ['required', 'string', 'max:255', 'not_regex:/[\s\/\\\\:]/'],
             'SERVER_SECURITY_USERNAME' => ['required', 'string', 'min:4', 'max:255'],
             'SERVER_SECURITY_PASSWORD' => ['required', 'string', 'min:4', 'max:255'],
@@ -425,5 +426,30 @@ trait DefenderField
         )
         ->helperText(__('forms.defender.descriptions.log'))
         ->disabled();
+    }
+
+    public static function setLastResponseDetails()
+    {
+        return self::codeEditor('last_response_details', __('models.defender.fields.last_response_details'), Language::Json)
+            ->helperText(__('forms.defender.descriptions.last_response_details'))
+            ->formatStateUsing(function ($state) {
+                if ($state === null) {
+                    return null;
+                }
+
+                if (is_string($state)) {
+                    return $state;
+                }
+
+                if (is_array($state)) {
+                    return json_encode($state, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+                }
+
+                return (string) $state;
+            })
+            ->disabled()
+            ->visible(fn ($operation, $record): bool => in_array($operation, ['view', 'edit'], true)
+                && $record
+                && Security::can($record, 'refresh'));
     }
 }

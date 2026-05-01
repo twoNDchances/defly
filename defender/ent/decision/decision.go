@@ -27,8 +27,6 @@ const (
 	FieldAction = "action"
 	// FieldConfigurations holds the string denoting the configurations field in the database.
 	FieldConfigurations = "configurations"
-	// FieldIsImplemented holds the string denoting the is_implemented field in the database.
-	FieldIsImplemented = "is_implemented"
 	// EdgeDefenders holds the string denoting the defenders edge name in mutations.
 	EdgeDefenders = "defenders"
 	// Table holds the table name of the decision in the database.
@@ -49,7 +47,6 @@ var Columns = []string{
 	FieldScore,
 	FieldAction,
 	FieldConfigurations,
-	FieldIsImplemented,
 }
 
 var (
@@ -71,8 +68,6 @@ func ValidColumn(column string) bool {
 var (
 	// NameValidator is a validator for the "name" field. It is called by the builders before save.
 	NameValidator func(string) error
-	// DefaultIsImplemented holds the default value on creation for the "is_implemented" field.
-	DefaultIsImplemented bool
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
@@ -188,11 +183,6 @@ func ByScore(opts ...sql.OrderTermOption) OrderOption {
 // ByAction orders the results by the action field.
 func ByAction(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldAction, opts...).ToFunc()
-}
-
-// ByIsImplemented orders the results by the is_implemented field.
-func ByIsImplemented(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldIsImplemented, opts...).ToFunc()
 }
 
 // ByDefendersCount orders the results by defenders count.

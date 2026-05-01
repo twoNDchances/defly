@@ -47,6 +47,6 @@ trait PrincipleColumn
 
     public static function getIsApplied()
     {
-        return self::booleanColumn('is_applied', __('tables.principle.is_applied'));
+        return self::booleanColumn('pivot.is_applied', __('tables.principle.is_applied'));
     }
 }

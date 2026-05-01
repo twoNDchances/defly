@@ -19,7 +19,6 @@ func (Principle) Fields() []ent.Field {
 		field.String("name").Unique().NotEmpty(),
 		field.Uint64("level").Default(1),
 		field.Int("phase"),
-		field.Bool("is_applied").Default(false),
 	}
 }
 

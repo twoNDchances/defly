@@ -118,20 +118,6 @@ func (du *DecisionUpdate) ClearConfigurations() *DecisionUpdate {
 	return du
 }
 
-// SetIsImplemented sets the "is_implemented" field.
-func (du *DecisionUpdate) SetIsImplemented(b bool) *DecisionUpdate {
-	du.mutation.SetIsImplemented(b)
-	return du
-}
-
-// SetNillableIsImplemented sets the "is_implemented" field if the given value is not nil.
-func (du *DecisionUpdate) SetNillableIsImplemented(b *bool) *DecisionUpdate {
-	if b != nil {
-		du.SetIsImplemented(*b)
-	}
-	return du
-}
-
 // AddDefenderIDs adds the "defenders" edge to the Defender entity by IDs.
 func (du *DecisionUpdate) AddDefenderIDs(ids ...uuid.UUID) *DecisionUpdate {
 	du.mutation.AddDefenderIDs(ids...)
@@ -260,9 +246,6 @@ func (du *DecisionUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if du.mutation.ConfigurationsCleared() {
 		_spec.ClearField(decision.FieldConfigurations, field.TypeJSON)
-	}
-	if value, ok := du.mutation.IsImplemented(); ok {
-		_spec.SetField(decision.FieldIsImplemented, field.TypeBool, value)
 	}
 	if du.mutation.DefendersCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -415,20 +398,6 @@ func (duo *DecisionUpdateOne) SetConfigurations(m map[string]interface{}) *Decis
 // ClearConfigurations clears the value of the "configurations" field.
 func (duo *DecisionUpdateOne) ClearConfigurations() *DecisionUpdateOne {
 	duo.mutation.ClearConfigurations()
-	return duo
-}
-
-// SetIsImplemented sets the "is_implemented" field.
-func (duo *DecisionUpdateOne) SetIsImplemented(b bool) *DecisionUpdateOne {
-	duo.mutation.SetIsImplemented(b)
-	return duo
-}
-
-// SetNillableIsImplemented sets the "is_implemented" field if the given value is not nil.
-func (duo *DecisionUpdateOne) SetNillableIsImplemented(b *bool) *DecisionUpdateOne {
-	if b != nil {
-		duo.SetIsImplemented(*b)
-	}
 	return duo
 }
 
@@ -590,9 +559,6 @@ func (duo *DecisionUpdateOne) sqlSave(ctx context.Context) (_node *Decision, err
 	}
 	if duo.mutation.ConfigurationsCleared() {
 		_spec.ClearField(decision.FieldConfigurations, field.TypeJSON)
-	}
-	if value, ok := duo.mutation.IsImplemented(); ok {
-		_spec.SetField(decision.FieldIsImplemented, field.TypeBool, value)
 	}
 	if duo.mutation.DefendersCleared() {
 		edge := &sqlgraph.EdgeSpec{

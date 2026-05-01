@@ -444,6 +444,7 @@ return [
             'deployment_status' => 'Deployment status determines whether this defender can start being used',
             'deploymnet_details' => 'Deployment details to help you identify defender issues',
             'log' => 'Latest defender logs returned by the orchestrator',
+            'last_response_details' => 'Most recent response details from Defly Defender, split by principle and decision requests',
         ],
         'extras' => [
             'status' => [
@@ -465,8 +466,10 @@ return [
         ],
         'buttons' => [
             'follow' => 'Follow',
+            'refresh' => 'Refresh',
             'tooltips' => [
                 'follow' => 'Fetch the latest defender logs from the orchestrator',
+                'refresh' => 'Refresh the latest response details from the Defender Server'
             ],
         ],
         'tabs' => [
@@ -508,6 +511,9 @@ return [
                 'sections' => [
                     'a' => [
                         'title' => 'Defender logs',
+                    ],
+                    'b' => [
+                        'title' => 'Defender response',
                     ],
                 ],
             ],

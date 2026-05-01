@@ -47,18 +47,34 @@ abstract class Connector
         array $query = [],
         array $headers = [],
     ): Response {
+        return static::sendRequest(
+            static::request($headers),
+            $path,
+            $method,
+            $data,
+            $query,
+        );
+    }
+
+    protected static function sendRequest(
+        PendingRequest $request,
+        string $path,
+        string $method,
+        array $data = [],
+        array $query = [],
+    ): Response {
         $path = static::normalizePath($path);
         $method = strtolower(trim($method));
 
         return match ($method) {
-            'get' => static::request($headers)->get(
+            'get' => $request->get(
                 $path,
                 $query !== [] ? $query : $data
             ),
-            'post' => static::request($headers)->post($path, $data),
-            'put' => static::request($headers)->put($path, $data),
-            'patch' => static::request($headers)->patch($path, $data),
-            'delete' => static::request($headers)->delete($path, $data),
+            'post' => $request->post($path, $data),
+            'put' => $request->put($path, $data),
+            'patch' => $request->patch($path, $data),
+            'delete' => $request->delete($path, $data),
         };
     }
 
