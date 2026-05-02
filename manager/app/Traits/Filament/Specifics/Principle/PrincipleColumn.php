@@ -10,12 +10,12 @@ trait PrincipleColumn
 
     public static function getName()
     {
-        return self::textColumn('name');
+        return self::textColumn('name', __('models.principle.fields.name'));
     }
 
     public static function getLevel()
     {
-        return self::textColumn('level')
+        return self::textColumn('level', __('models.principle.fields.level'))
             ->numeric();
     }
 

@@ -46,7 +46,7 @@ trait PrincipleValidator
             'level' => self::validateLevel(),
             'phase' => self::validatePhase(),
             'validation_status' => self::validateValidationStatus(),
-            'validation_details' => self::validateValidationDetails(),
+            // 'validation_details' => self::validateValidationDetails(),
             'description' => ['nullable'],
         ];
     }

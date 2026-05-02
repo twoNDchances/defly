@@ -138,6 +138,11 @@ func (p *Principle) findPrinciples(ctx *gin.Context) ([]*ent.Principle, []uuid.U
 		return nil, nil, false
 	}
 	principles = p.Database.SortPrinciplesByPivotOrder(principles, principleIDsByPivotOrder)
+	if err := p.Database.SortRuntimeEdges(ctx.Request.Context(), principles); err != nil {
+		_ = p.Error.LogError(err)
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
+		return nil, nil, false
+	}
 
 	existingIDs := make(map[uuid.UUID]bool, len(principles))
 	for _, principle := range principles {

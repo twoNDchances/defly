@@ -18,7 +18,7 @@ trait TargetField
     {
         return self::toggleButtons('phase', __('models.target.fields.phase'), self::phaseOptionsAndColors())
             ->helperText(fn ($state) => self::phaseDescriptions()[$state])
-            ->afterStateUpdated(fn ($set) => [$set('type', Type::Getter->value), $set('pattern', null)])
+            ->afterStateUpdated(fn ($set) => [$set('type', Type::Getter->value), $set('pattern_id', null)])
             ->default(Phase::One->value)
             ->reactive()
             ->required()
@@ -31,7 +31,7 @@ trait TargetField
             ->helperText(fn ($state) => self::typeDescriptions()[$state])
             ->options(fn ($get) => self::typeOptionsAndColorsPerPhases()[$get('phase')]['options'])
             ->colors(fn ($get) => self::typeOptionsAndColorsPerPhases()[$get('phase')]['colors'])
-            ->afterStateUpdated(fn ($set) => $set('pattern', null))
+            ->afterStateUpdated(fn ($set) => $set('pattern_id', null))
             ->default(Type::Getter->value)
             ->reactive()
             ->required()
@@ -42,7 +42,7 @@ trait TargetField
     {
         $condition = fn ($get) => $get('type') == Type::Getter->value;
 
-        return self::select('pattern', __('models.target.fields.pattern'))
+        return self::select('pattern_id', __('models.target.fields.pattern'))
             ->helperText(__('forms.target.descriptions.pattern'))
             ->relationship(
                 'pattern',
@@ -75,7 +75,7 @@ trait TargetField
     {
         return self::toggleButtons('datatype', __('models.target.fields.datatype'), self::datatypeOptionsAndColors())
             ->helperText(fn ($state) => self::datatypeDescriptions()[$state])
-            ->disabled(fn ($get) => $get('pattern'))
+            ->disabled(fn ($get) => $get('pattern_id'))
             ->default(Datatype::Array->value)
             ->reactive()
             ->required()
@@ -84,7 +84,7 @@ trait TargetField
 
     public static function setWordlist()
     {
-        $condition = fn ($get) => $get('datatype') == Datatype::Array->value && ! $get('pattern');
+        $condition = fn ($get) => $get('datatype') == Datatype::Array->value && ! $get('pattern_id');
 
         return self::select('wordlist_id', __('models.target.fields.wordlist'))
             ->helperText(__('forms.target.descriptions.wordlist'))

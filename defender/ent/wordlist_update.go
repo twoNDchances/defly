@@ -8,6 +8,7 @@ import (
 	"defly-defender/ent/rule"
 	"defly-defender/ent/target"
 	"defly-defender/ent/wordlist"
+	"defly-defender/internal/types"
 	"errors"
 	"fmt"
 
@@ -80,14 +81,14 @@ func (wu *WordlistUpdate) ClearWordFile() *WordlistUpdate {
 }
 
 // SetWordJSON sets the "word_json" field.
-func (wu *WordlistUpdate) SetWordJSON(s []string) *WordlistUpdate {
-	wu.mutation.SetWordJSON(s)
+func (wu *WordlistUpdate) SetWordJSON(ti []types.WordlistItem) *WordlistUpdate {
+	wu.mutation.SetWordJSON(ti)
 	return wu
 }
 
-// AppendWordJSON appends s to the "word_json" field.
-func (wu *WordlistUpdate) AppendWordJSON(s []string) *WordlistUpdate {
-	wu.mutation.AppendWordJSON(s)
+// AppendWordJSON appends ti to the "word_json" field.
+func (wu *WordlistUpdate) AppendWordJSON(ti []types.WordlistItem) *WordlistUpdate {
+	wu.mutation.AppendWordJSON(ti)
 	return wu
 }
 
@@ -446,14 +447,14 @@ func (wuo *WordlistUpdateOne) ClearWordFile() *WordlistUpdateOne {
 }
 
 // SetWordJSON sets the "word_json" field.
-func (wuo *WordlistUpdateOne) SetWordJSON(s []string) *WordlistUpdateOne {
-	wuo.mutation.SetWordJSON(s)
+func (wuo *WordlistUpdateOne) SetWordJSON(ti []types.WordlistItem) *WordlistUpdateOne {
+	wuo.mutation.SetWordJSON(ti)
 	return wuo
 }
 
-// AppendWordJSON appends s to the "word_json" field.
-func (wuo *WordlistUpdateOne) AppendWordJSON(s []string) *WordlistUpdateOne {
-	wuo.mutation.AppendWordJSON(s)
+// AppendWordJSON appends ti to the "word_json" field.
+func (wuo *WordlistUpdateOne) AppendWordJSON(ti []types.WordlistItem) *WordlistUpdateOne {
+	wuo.mutation.AppendWordJSON(ti)
 	return wuo
 }
 

@@ -28,7 +28,7 @@ trait TargetValidator
     private static function validatePattern($constraint = 'required_if:type,full,meta')
     {
         return [
-            $constraint,
+            ...((array) $constraint),
             Rule::exists('patterns', 'id'),
         ];
     }

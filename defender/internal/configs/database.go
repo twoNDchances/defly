@@ -7,6 +7,7 @@ import (
 	entdefender "defly-defender/ent/defender"
 	"defly-defender/internal/globals"
 	"fmt"
+	"sort"
 	"strings"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -38,14 +39,18 @@ func (d Database) Connect() (*ent.Client, error) {
 }
 
 func (d Database) PrincipleIDsByPivotOrder(ctx context.Context, defenderID uuid.UUID, principleIDs []uuid.UUID) ([]uuid.UUID, error) {
-	return d.resourceIDsByPivotOrder(ctx, "defenders_principles", "principle", defenderID, principleIDs)
+	return d.resourceIDsByPivotOrderFor(ctx, "defenders_principles", "defender", "principle", defenderID, principleIDs)
 }
 
 func (d Database) DecisionIDsByPivotOrder(ctx context.Context, defenderID uuid.UUID, decisionIDs []uuid.UUID) ([]uuid.UUID, error) {
-	return d.resourceIDsByPivotOrder(ctx, "defenders_decisions", "decision", defenderID, decisionIDs)
+	return d.resourceIDsByPivotOrderFor(ctx, "defenders_decisions", "defender", "decision", defenderID, decisionIDs)
 }
 
 func (d Database) resourceIDsByPivotOrder(ctx context.Context, table string, resourceColumn string, defenderID uuid.UUID, resourceIDs []uuid.UUID) ([]uuid.UUID, error) {
+	return d.resourceIDsByPivotOrderFor(ctx, table, "defender", resourceColumn, defenderID, resourceIDs)
+}
+
+func (d Database) resourceIDsByPivotOrderFor(ctx context.Context, table string, parentColumn string, resourceColumn string, parentID uuid.UUID, resourceIDs []uuid.UUID) ([]uuid.UUID, error) {
 	db, err := sql.Open("mysql", d.DSN())
 	if err != nil {
 		return nil, err
@@ -53,12 +58,13 @@ func (d Database) resourceIDsByPivotOrder(ctx context.Context, table string, res
 	defer db.Close()
 
 	args := make([]any, 0, len(resourceIDs)+1)
-	args = append(args, defenderID.String())
+	args = append(args, parentID.String())
 
 	query := fmt.Sprintf(
-		"SELECT %s FROM %s WHERE defender = ?",
+		"SELECT %s FROM %s WHERE %s = ?",
 		resourceColumn,
 		table,
+		parentColumn,
 	)
 	if len(resourceIDs) > 0 {
 		placeholders := strings.TrimRight(strings.Repeat("?,", len(resourceIDs)), ",")
@@ -136,6 +142,9 @@ func (d Database) LoadGlobals(ctx context.Context) error {
 		return d.Error.LogString(fmt.Sprintf("failed to order principles for defender %q: %v", d.Defender.Name, err))
 	}
 	principles = d.SortPrinciplesByPivotOrder(principles, principleIDsByPivotOrder)
+	if err := d.SortRuntimeEdges(ctx, principles); err != nil {
+		return d.Error.LogString(fmt.Sprintf("failed to order runtime edges for defender %q: %v", d.Defender.Name, err))
+	}
 
 	decisions, err := defender.QueryDecisions().All(ctx)
 	if err != nil {
@@ -154,6 +163,41 @@ func (d Database) LoadGlobals(ctx context.Context) error {
 	globals.Principles = principles
 	globals.Decisions = decisions
 
+	return nil
+}
+
+func (d Database) SortRuntimeEdges(ctx context.Context, principles []*ent.Principle) error {
+	for _, principle := range principles {
+		if principle == nil {
+			continue
+		}
+		ruleIDs, err := d.resourceIDsByPivotOrderFor(ctx, "principles_rules", "principle", "rule", principle.ID, nil)
+		if err != nil {
+			return err
+		}
+		principle.Edges.Rules = sortRulesByIDs(principle.Edges.Rules, ruleIDs)
+
+		for _, rule := range principle.Edges.Rules {
+			if rule == nil {
+				continue
+			}
+			actionIDs, err := d.resourceIDsByPivotOrderFor(ctx, "rules_actions", "rule", "action", rule.ID, nil)
+			if err != nil {
+				return err
+			}
+			rule.Edges.Actions = sortActionsByIDs(rule.Edges.Actions, actionIDs)
+
+			target := rule.Edges.Target
+			if target == nil {
+				continue
+			}
+			engineIDs, err := d.resourceIDsByPivotOrderFor(ctx, "targets_engines", "target", "engine", target.ID, nil)
+			if err != nil {
+				return err
+			}
+			target.Edges.Engines = sortEnginesByIDs(target.Edges.Engines, engineIDs)
+		}
+	}
 	return nil
 }
 
@@ -204,5 +248,79 @@ func (d Database) SortDecisionsByPivotOrder(decisions []*ent.Decision, decisionI
 		}
 	}
 
+	return ordered
+}
+
+func sortRulesByIDs(rules []*ent.Rule, ids []uuid.UUID) []*ent.Rule {
+	byID := make(map[uuid.UUID]*ent.Rule, len(rules))
+	for _, rule := range rules {
+		if rule != nil {
+			byID[rule.ID] = rule
+		}
+	}
+	return appendOrdered(rules, ids, func(rule *ent.Rule) uuid.UUID { return rule.ID }, byID)
+}
+
+func sortActionsByIDs(actions []*ent.Action, ids []uuid.UUID) []*ent.Action {
+	byID := make(map[uuid.UUID]*ent.Action, len(actions))
+	for _, action := range actions {
+		if action != nil {
+			byID[action.ID] = action
+		}
+	}
+	return appendOrdered(actions, ids, func(action *ent.Action) uuid.UUID { return action.ID }, byID)
+}
+
+func sortEnginesByIDs(engines []*ent.Engine, ids []uuid.UUID) []*ent.Engine {
+	byID := make(map[uuid.UUID]*ent.Engine, len(engines))
+	for _, engine := range engines {
+		if engine != nil {
+			byID[engine.ID] = engine
+		}
+	}
+	return appendOrdered(engines, ids, func(engine *ent.Engine) uuid.UUID { return engine.ID }, byID)
+}
+
+func appendOrdered[T any](items []*T, ids []uuid.UUID, idOf func(*T) uuid.UUID, byID map[uuid.UUID]*T) []*T {
+	index := make(map[uuid.UUID]int, len(ids))
+	for position, id := range ids {
+		index[id] = position
+	}
+
+	sort.SliceStable(items, func(i, j int) bool {
+		if items[i] == nil {
+			return false
+		}
+		if items[j] == nil {
+			return true
+		}
+		left, leftOK := index[idOf(items[i])]
+		right, rightOK := index[idOf(items[j])]
+		switch {
+		case leftOK && rightOK:
+			return left < right
+		case leftOK:
+			return true
+		case rightOK:
+			return false
+		default:
+			return false
+		}
+	})
+
+	ordered := make([]*T, 0, len(items))
+	seen := make(map[uuid.UUID]bool, len(items))
+	for _, id := range ids {
+		if item, ok := byID[id]; ok {
+			ordered = append(ordered, item)
+			seen[id] = true
+		}
+	}
+	for _, item := range items {
+		if item == nil || seen[idOf(item)] {
+			continue
+		}
+		ordered = append(ordered, item)
+	}
 	return ordered
 }

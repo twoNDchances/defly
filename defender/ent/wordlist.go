@@ -4,6 +4,7 @@ package ent
 
 import (
 	"defly-defender/ent/wordlist"
+	"defly-defender/internal/types"
 	"encoding/json"
 	"fmt"
 	"strings"
@@ -25,7 +26,7 @@ type Wordlist struct {
 	// WordFile holds the value of the "word_file" field.
 	WordFile *string `json:"word_file,omitempty"`
 	// WordJSON holds the value of the "word_json" field.
-	WordJSON []string `json:"word_json,omitempty"`
+	WordJSON []types.WordlistItem `json:"word_json,omitempty"`
 	// WordCount holds the value of the "word_count" field.
 	WordCount *int `json:"word_count,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.

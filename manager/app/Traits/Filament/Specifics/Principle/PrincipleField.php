@@ -60,7 +60,7 @@ trait PrincipleField
     {
         return self::codeEditor('validation_details', __('models.principle.fields.validation_details'), Language::Json)
             ->helperText(__('forms.principle.descriptions.validation_details'))
-            ->rules(self::validateValidationDetails())
+            // ->rules(self::validateValidationDetails())
             ->formatStateUsing(function ($state) {
                 if ($state === null) {
                     return null;

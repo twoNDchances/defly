@@ -1,6 +1,8 @@
 package schema
 
 import (
+	"defly-defender/internal/types"
+
 	"entgo.io/ent"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
@@ -17,7 +19,7 @@ func (Wordlist) Fields() []ent.Field {
 		field.String("name").Unique().NotEmpty(),
 		field.Enum("type").Values("file", "json"),
 		field.Text("word_file").Optional().Nillable(),
-		field.JSON("word_json", []string{}).Optional(),
+		field.JSON("word_json", []types.WordlistItem{}).Optional(),
 		field.Int("word_count").Optional().Nillable(),
 	}
 }
