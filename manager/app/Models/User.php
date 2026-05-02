@@ -111,6 +111,11 @@ class User extends Authenticatable
         return $this->hasMany(Principle::class, $this->getCreatedByField());
     }
 
+    public function getKeys()
+    {
+        return $this->hasMany(Key::class, $this->getCreatedByField());
+    }
+
     public function groups()
     {
         return $this->belongsToMany(Group::class, 'users_groups', 'user', 'group');

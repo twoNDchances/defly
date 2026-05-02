@@ -33,6 +33,11 @@ class Group extends Model
         return $this->belongsToMany(User::class, 'users_groups', 'group', 'user');
     }
 
+    public function keys()
+    {
+        return $this->belongsToMany(Key::class, 'keys_groups', 'group', 'key');
+    }
+
     public function permissions()
     {
         return $this->belongsToMany(Permission::class, 'groups_permissions', 'group', 'permission');

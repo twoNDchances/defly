@@ -17,7 +17,7 @@ return [
 
                     return $location;
                 })(),
-                'token_key_name' => Str::slug(env('TOKEN_KEY_NAME', 'X-Token-Key')),
+                'token_key_name' => filled(env('TOKEN_KEY_NAME')) ? env('TOKEN_KEY_NAME') : 'X-Token-Key',
             ],
             'user_agent' => env('USER_AGENT', 'Defly/Manager'),
             'orchestrator' => [

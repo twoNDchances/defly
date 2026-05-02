@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Key;
 use App\Models\User;
 
 class Security
@@ -99,17 +100,24 @@ class Security
         if (! $user || ! $user->is_verified || ! $user->is_activated) {
             return false;
         }
-        if ($user->is_root || self::checkPermission($user, $model, 'all')) {
+
+        $subject = self::getPermissionSubject($user);
+
+        if ($subject instanceof User && $user->is_root) {
             return true;
         }
 
-        return self::checkPermission($user, $model, $action);
+        if (self::checkPermission($subject, $model, 'all')) {
+            return true;
+        }
+
+        return self::checkPermission($subject, $model, $action);
     }
 
-    public static function checkPermission(User $user, $model, $action)
+    public static function checkPermission(User|Key $subject, $model, $action)
     {
         $appliedFor = basename($model);
-        $hasDirectPermission = $user->permissions()
+        $hasDirectPermission = $subject->permissions()
             ->where('action', $action)
             ->where('applied_for', $appliedFor)
             ->exists();
@@ -118,11 +126,22 @@ class Security
             return true;
         }
 
-        return $user->groups()
+        return $subject->groups()
             ->whereHas('permissions', function ($query) use ($action, $appliedFor) {
                 $query->where('action', $action)
                     ->where('applied_for', $appliedFor);
             })
             ->exists();
+    }
+
+    private static function getPermissionSubject(User $user): User|Key
+    {
+        $key = request()?->attributes->get('authenticated_key');
+
+        if ($key instanceof Key && ! $key->is_reused) {
+            return $key;
+        }
+
+        return $user;
     }
 }
