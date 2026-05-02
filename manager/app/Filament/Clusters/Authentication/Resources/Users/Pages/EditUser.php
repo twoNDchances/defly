@@ -9,8 +9,7 @@ use Filament\Resources\Pages\EditRecord;
 
 class EditUser extends EditRecord
 {
-    use EditPage;
-    use UserData;
+    use EditPage, UserData;
 
     protected static string $resource = UserResource::class;
 

@@ -11,8 +11,7 @@ class Orchestrator extends Connector
         string $defenderId,
         array $data = [],
         ?string $requesterEmail = null,
-    ): Response
-    {
+    ): Response {
         return static::send(
             static::deploymentPath($defenderId),
             config('customization.backend.apis.orchestrator.paths.deployment.methods.deploy', 'post'),
@@ -25,8 +24,7 @@ class Orchestrator extends Connector
         string $defenderId,
         array $query = [],
         ?string $requesterEmail = null,
-    ): Response
-    {
+    ): Response {
         return static::send(
             static::deploymentPath($defenderId),
             config('customization.backend.apis.orchestrator.paths.deployment.methods.follow', 'get'),
@@ -39,8 +37,7 @@ class Orchestrator extends Connector
         string $defenderId,
         array $data = [],
         ?string $requesterEmail = null,
-    ): Response
-    {
+    ): Response {
         return static::send(
             static::deploymentPath($defenderId),
             config('customization.backend.apis.orchestrator.paths.deployment.methods.cancel', 'delete'),

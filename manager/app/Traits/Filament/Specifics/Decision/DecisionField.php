@@ -11,7 +11,7 @@ use Filament\Support\Icons\Heroicon;
 
 trait DecisionField
 {
-    use DecisionButton, DecisionData, Field, DecisionValidator;
+    use DecisionButton, DecisionData, DecisionValidator, Field;
 
     public static function setName()
     {

@@ -502,7 +502,7 @@ return [
                         'title' => 'Trạng thái defender',
                     ],
                     'b' => [
-                        'title' => 'Trạng thái triển khai defender'
+                        'title' => 'Trạng thái triển khai defender',
                     ],
                 ],
             ],
@@ -516,6 +516,19 @@ return [
                         'title' => 'Phản hồi defender',
                     ],
                 ],
+            ],
+        ],
+    ],
+    'key' => [
+        'descriptions' => [
+            'name' => 'Tên kebab-case duy nhất để đại diện cho khóa này',
+            'token' => 'Token bí mật dùng để xác thực API. Khi chỉnh sửa, để trống nếu muốn giữ token hiện tại',
+            'expired_at' => 'Thời điểm hết hạn tùy chọn của khóa',
+            'is_reused' => 'Cho phép khóa này dùng lại nhóm và quyền của người dùng sở hữu thay vì gán quyền trực tiếp cho khóa',
+        ],
+        'sections' => [
+            'a' => [
+                'title' => 'Định nghĩa khóa',
             ],
         ],
     ],

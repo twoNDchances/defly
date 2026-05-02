@@ -469,7 +469,7 @@ return [
             'refresh' => 'Refresh',
             'tooltips' => [
                 'follow' => 'Fetch the latest defender logs from the orchestrator',
-                'refresh' => 'Refresh the latest response details from the Defender Server'
+                'refresh' => 'Refresh the latest response details from the Defender Server',
             ],
         ],
         'tabs' => [
@@ -516,6 +516,19 @@ return [
                         'title' => 'Defender response',
                     ],
                 ],
+            ],
+        ],
+    ],
+    'key' => [
+        'descriptions' => [
+            'name' => 'A unique kebab-case name representing this API key',
+            'token' => 'Secret token used for API authentication. Leave blank when editing to keep the current token',
+            'expired_at' => 'Optional expiration date and time for this key',
+            'is_reused' => 'Allow this key to reuse the owner user groups and permissions instead of assigning access directly to the key',
+        ],
+        'sections' => [
+            'a' => [
+                'title' => 'Key definition',
             ],
         ],
     ],

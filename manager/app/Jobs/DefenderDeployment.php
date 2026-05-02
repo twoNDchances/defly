@@ -5,9 +5,9 @@ namespace App\Jobs;
 use App\Enums\Defender\DeploymentStatus;
 use App\Models\Defender;
 use App\Services\Orchestrator;
-use Illuminate\Http\Client\Response;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Http\Client\Response;
 use Throwable;
 
 class DefenderDeployment implements ShouldQueue

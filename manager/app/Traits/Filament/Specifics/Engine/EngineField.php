@@ -10,7 +10,7 @@ use App\Traits\Validators\EngineValidator;
 
 trait EngineField
 {
-    use EngineButton, EngineData, Field, EngineValidator;
+    use EngineButton, EngineData, EngineValidator, Field;
 
     public static function setName()
     {

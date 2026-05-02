@@ -360,4 +360,14 @@ return [
             'value' => 'Giá trị biến',
         ],
     ],
+    'key' => [
+        'title' => 'Khóa',
+        'name' => 'Khóa',
+        'fields' => [
+            'name' => 'Tên',
+            'token' => 'Token',
+            'expired_at' => 'Hết hạn lúc',
+            'is_reused' => 'Được sử dụng lại',
+        ],
+    ],
 ];

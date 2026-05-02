@@ -1,31 +1,31 @@
 <?php
 
-namespace App\Filament\Clusters\Authentication\Resources\Users\RelationManagers;
+namespace App\Filament\Clusters\Authentication\Resources\Keys\RelationManagers;
 
-use App\Filament\Components\Group\GroupForm;
-use App\Filament\Components\Group\GroupTable;
-use App\Traits\Filament\Specifics\Group\GroupButton;
+use App\Filament\Components\Permission\PermissionForm;
+use App\Filament\Components\Permission\PermissionTable;
+use App\Traits\Filament\Specifics\Permission\PermissionButton;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
 
-class GroupsRelationManager extends RelationManager
+class PermissionsRelationManager extends RelationManager
 {
-    use GroupButton;
+    use PermissionButton;
 
-    protected static string $relationship = 'groups';
+    protected static string $relationship = 'permissions';
 
     public function form(Schema $schema): Schema
     {
-        return $schema->components(GroupForm::build());
+        return $schema->components(PermissionForm::build());
     }
 
     public function table(Table $table): Table
     {
         return $table
             ->recordTitleAttribute('name')
-            ->columns(GroupTable::build())
+            ->columns(PermissionTable::build())
             ->filters([
                 //
             ])
@@ -43,11 +43,11 @@ class GroupsRelationManager extends RelationManager
 
     public static function getTitle(Model $ownerRecord, string $pageClass): string
     {
-        return __('models.group.name');
+        return __('models.permission.name');
     }
 
     public static function getRecordLabel(): ?string
     {
-        return __('models.group.name');
+        return __('models.permission.name');
     }
 }

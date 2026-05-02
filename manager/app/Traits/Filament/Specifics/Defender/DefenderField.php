@@ -9,7 +9,7 @@ use Filament\Forms\Components\CodeEditor\Enums\Language;
 
 trait DefenderField
 {
-    use DefenderButton, DefenderData, Field, DefenderValidator;
+    use DefenderButton, DefenderData, DefenderValidator, Field;
 
     public static function setName()
     {
@@ -422,8 +422,8 @@ trait DefenderField
             __('models.defender.fields.log'),
             Language::Json,
         )
-        ->helperText(__('forms.defender.descriptions.log'))
-        ->disabled();
+            ->helperText(__('forms.defender.descriptions.log'))
+            ->disabled();
     }
 
     public static function setLastResponseDetails()

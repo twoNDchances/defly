@@ -360,4 +360,13 @@ return [
             'value' => 'Variable value',
         ],
     ],
+    'key' => [
+        'name' => 'Key',
+        'fields' => [
+            'name' => 'Name',
+            'token' => 'Token',
+            'expired_at' => 'Expired at',
+            'is_reused' => 'Is reused',
+        ],
+    ],
 ];

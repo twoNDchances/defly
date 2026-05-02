@@ -12,7 +12,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 trait ActionField
 {
-    use ActionButton, ActionData, Field, ActionValidator;
+    use ActionButton, ActionData, ActionValidator, Field;
 
     public static function setName()
     {

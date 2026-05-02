@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Filament\Clusters\Authentication\Resources\Users\RelationManagers;
+namespace App\Filament\Clusters\Authentication\Resources\Keys\RelationManagers;
 
 use App\Filament\Components\Group\GroupForm;
 use App\Filament\Components\Group\GroupTable;
-use App\Traits\Filament\Specifics\Group\GroupButton;
+use App\Traits\Filament\Specifics\Key\KeyButton;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
 use Filament\Tables\Table;
@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class GroupsRelationManager extends RelationManager
 {
-    use GroupButton;
+    use KeyButton;
 
     protected static string $relationship = 'groups';
 

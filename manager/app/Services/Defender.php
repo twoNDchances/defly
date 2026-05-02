@@ -79,10 +79,10 @@ class Defender extends Connector
         return static::sendRequest(
             static::request(static::emailHeader($requesterEmail))
                 ->withOptions(static::requestOptionsFor($defender)),
-                $path,
-                $method,
-                $data,
-                $query,
+            $path,
+            $method,
+            $data,
+            $query,
         );
     }
 
@@ -206,7 +206,7 @@ class Defender extends Connector
             $directory = 'storage/tls/defenders';
         }
 
-        $certificatePath = rtrim($directory, "\\/")
+        $certificatePath = rtrim($directory, '\\/')
             .DIRECTORY_SEPARATOR
             .$defenderName
             .'.crt';
