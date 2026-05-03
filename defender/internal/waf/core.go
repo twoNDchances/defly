@@ -21,7 +21,6 @@ type Factory struct{}
 
 type Core struct {
 	Config Config
-	Utilities
 }
 
 func (Factory) New(config Config) Core {

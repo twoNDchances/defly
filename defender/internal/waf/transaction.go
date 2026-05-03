@@ -4,6 +4,10 @@ import (
 	"bytes"
 	"io"
 	"net/http"
+	"net/url"
+	"strconv"
+
+	decisionaction "defly-defender/internal/waf/decisions/action"
 )
 
 type Config struct {
@@ -12,26 +16,7 @@ type Config struct {
 	Severity       map[string]int
 }
 
-type DecisionResult struct {
-	Allow                 bool
-	Deny                  bool
-	Cancel                bool
-	StopRequestDecisions  bool
-	StopResponseDecisions bool
-	Status                int
-	ContentType           string
-	Body                  []byte
-	BodyRewrite           []byte
-	BodyRewritten         bool
-	RewriteHeaders        http.Header
-	UnsetHeaders          []string
-	RewritePath           string
-	RewriteQuery          map[string]string
-	UnsetQuery            []string
-	RedirectURL           string
-	ForceNoCache          bool
-	EraseCookies          bool
-}
+type DecisionResult = decisionaction.Result
 
 type Transaction struct {
 	Request       *http.Request
@@ -43,7 +28,7 @@ type Transaction struct {
 	Score         float64
 	Level         int
 	Vars          map[string]any
-	Result        DecisionResult
+	Result        decisionaction.Result
 	phaseContexts map[int]map[string]any
 }
 
@@ -116,6 +101,257 @@ func (tx *Transaction) SetRequestBody(body []byte) {
 	tx.Request.Body = io.NopCloser(bytes.NewReader(body))
 	tx.Request.ContentLength = int64(len(body))
 	tx.Request.Header.Set("Content-Length", tx.stringInt(len(body)))
+}
+
+func (tx *Transaction) SetAllow() {
+	tx.Result.Allow = true
+}
+
+func (tx *Transaction) IsAllowed() bool {
+	return tx != nil && tx.Result.Allow
+}
+
+func (tx *Transaction) SetDeny(status int, contentType string, body []byte) {
+	tx.Result.Deny = true
+	tx.Result.Status = status
+	tx.Result.ContentType = contentType
+	tx.Result.Body = body
+}
+
+func (tx *Transaction) IsDenied() bool {
+	return tx != nil && tx.Result.Deny
+}
+
+func (tx *Transaction) AddScore(score float64) {
+	tx.Score += score
+}
+
+func (tx *Transaction) CurrentScore() float64 {
+	return tx.Score
+}
+
+func (tx *Transaction) SetScore(score float64) {
+	tx.Score = score
+}
+
+func (tx *Transaction) CurrentLevel() int {
+	return tx.Level
+}
+
+func (tx *Transaction) SetLevel(level int) {
+	tx.Level = level
+}
+
+func (tx *Transaction) SetVar(key string, value any) {
+	tx.Vars[key] = value
+}
+
+func (tx *Transaction) UnsetVar(key string) {
+	delete(tx.Vars, key)
+}
+
+func (tx *Transaction) ResultState() *decisionaction.Result {
+	if tx == nil {
+		return nil
+	}
+	return &tx.Result
+}
+
+func (tx *Transaction) ScoreValue() float64 {
+	if tx == nil {
+		return 0
+	}
+	return tx.Score
+}
+
+func (tx *Transaction) LevelValue() int {
+	if tx == nil {
+		return 0
+	}
+	return tx.Level
+}
+
+func (tx *Transaction) RequestObject() *http.Request {
+	if tx == nil {
+		return nil
+	}
+	return tx.Request
+}
+
+func (tx *Transaction) ResponseObject() *http.Response {
+	if tx == nil {
+		return nil
+	}
+	return tx.Response
+}
+
+func (tx *Transaction) RawRequest() []byte {
+	if tx == nil {
+		return nil
+	}
+	return tx.RequestRaw
+}
+
+func (tx *Transaction) RawResponse() []byte {
+	if tx == nil {
+		return nil
+	}
+	return tx.ResponseRaw
+}
+
+func (tx *Transaction) RequestBodyBytes() []byte {
+	if tx == nil {
+		return nil
+	}
+	return tx.RequestBody
+}
+
+func (tx *Transaction) ResponseBodyBytes() []byte {
+	if tx == nil {
+		return nil
+	}
+	return tx.ResponseBody
+}
+
+func (tx *Transaction) RequestHeaders() http.Header {
+	if tx == nil || tx.Request == nil {
+		return nil
+	}
+	return tx.Request.Header
+}
+
+func (tx *Transaction) ResponseHeaders() http.Header {
+	if tx == nil || tx.Response == nil {
+		return nil
+	}
+	return tx.Response.Header
+}
+
+func (tx *Transaction) RequestQuery() url.Values {
+	if tx == nil || tx.Request == nil {
+		return nil
+	}
+	return tx.Request.URL.Query()
+}
+
+func (tx *Transaction) RequestMethod() string {
+	if tx == nil || tx.Request == nil {
+		return ""
+	}
+	return tx.Request.Method
+}
+
+func (tx *Transaction) RequestProto() string {
+	if tx == nil || tx.Request == nil {
+		return ""
+	}
+	return tx.Request.Proto
+}
+
+func (tx *Transaction) RequestURL() string {
+	if tx == nil || tx.Request == nil {
+		return ""
+	}
+	return tx.Request.URL.String()
+}
+
+func (tx *Transaction) RequestRemoteAddr() string {
+	if tx == nil || tx.Request == nil {
+		return ""
+	}
+	return tx.Request.RemoteAddr
+}
+
+func (tx *Transaction) RequestPath() string {
+	if tx == nil || tx.Request == nil {
+		return ""
+	}
+	return tx.Request.URL.Path
+}
+
+func (tx *Transaction) RequestScheme() string {
+	if tx == nil || tx.Request == nil {
+		return ""
+	}
+	if tx.Request.URL.Scheme != "" {
+		return tx.Request.URL.Scheme
+	}
+	if tx.Request.TLS != nil {
+		return "https"
+	}
+	return "http"
+}
+
+func (tx *Transaction) RequestHost() string {
+	if tx == nil || tx.Request == nil {
+		return ""
+	}
+	return tx.Request.Host
+}
+
+func (tx *Transaction) RequestPort() float64 {
+	if tx == nil || tx.Request == nil {
+		return 0
+	}
+	port := tx.Request.URL.Port()
+	if port == "" {
+		if tx.Request.TLS != nil {
+			return 443
+		}
+		return 80
+	}
+	value, _ := strconv.ParseFloat(port, 64)
+	return value
+}
+
+func (tx *Transaction) RequestContentType() string {
+	if tx == nil || tx.Request == nil {
+		return ""
+	}
+	return tx.Request.Header.Get("Content-Type")
+}
+
+func (tx *Transaction) RequestContentLength() int64 {
+	if tx == nil || tx.Request == nil {
+		return 0
+	}
+	return tx.Request.ContentLength
+}
+
+func (tx *Transaction) ResponseStatusCode() int {
+	if tx == nil || tx.Response == nil {
+		return 0
+	}
+	return tx.Response.StatusCode
+}
+
+func (tx *Transaction) ResponseProto() string {
+	if tx == nil || tx.Response == nil {
+		return ""
+	}
+	return tx.Response.Proto
+}
+
+func (tx *Transaction) ResponseContentType() string {
+	if tx == nil || tx.Response == nil {
+		return ""
+	}
+	return tx.Response.Header.Get("Content-Type")
+}
+
+func (tx *Transaction) ResponseContentLength() int64 {
+	if tx == nil || tx.Response == nil {
+		return 0
+	}
+	return tx.Response.ContentLength
+}
+
+func (tx *Transaction) VarValue(key string) (any, bool) {
+	if tx == nil {
+		return nil, false
+	}
+	value, ok := tx.Vars[key]
+	return value, ok
 }
 
 func (tx *Transaction) stringInt(value int) string {
