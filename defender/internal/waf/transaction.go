@@ -7,6 +7,7 @@ import (
 	"compress/lzw"
 	"compress/zlib"
 	"io"
+	"net"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -28,6 +29,7 @@ type Transaction struct {
 	Response          *http.Response
 	RequestRaw        []byte
 	RequestBody       []byte
+	RequestURLPort    float64
 	ResponseRaw       []byte
 	ResponseBody      []byte
 	ResponseEncodings []string
@@ -41,6 +43,7 @@ func (tx *Transaction) CaptureRequest() error {
 	if tx.Request == nil {
 		return nil
 	}
+	tx.RequestURLPort = requestURLPort(tx.Request)
 
 	if tx.Request.Body != nil {
 		body, err := io.ReadAll(tx.Request.Body)
@@ -301,15 +304,45 @@ func (tx *Transaction) RequestHost() string {
 }
 
 func (tx *Transaction) RequestPort() float64 {
-	if tx == nil || tx.Request == nil {
+	if tx == nil {
 		return 0
 	}
-	port := tx.Request.URL.Port()
-	if port == "" {
-		if tx.Request.TLS != nil {
-			return 443
+	if tx.RequestURLPort > 0 {
+		return tx.RequestURLPort
+	}
+	if tx.Request == nil {
+		return 0
+	}
+	return requestURLPort(tx.Request)
+}
+
+func requestURLPort(request *http.Request) float64 {
+	if request == nil {
+		return 0
+	}
+	if request.URL != nil {
+		if port := request.URL.Port(); port != "" {
+			return parsePort(port)
 		}
-		return 80
+	}
+	host := request.Host
+	if host == "" && request.URL != nil {
+		host = request.URL.Host
+	}
+	if host != "" {
+		if _, port, err := net.SplitHostPort(host); err == nil {
+			return parsePort(port)
+		}
+	}
+	if request.TLS != nil || (request.URL != nil && request.URL.Scheme == "https") {
+		return 443
+	}
+	return 80
+}
+
+func parsePort(port string) float64 {
+	if port == "" {
+		return 0
 	}
 	value, _ := strconv.ParseFloat(port, 64)
 	return value
