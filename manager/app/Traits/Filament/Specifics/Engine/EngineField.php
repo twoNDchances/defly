@@ -23,7 +23,7 @@ trait EngineField
             ->unique(ignoreRecord: true)
             ->alphaDash()
             ->required()
-            ->rules(fn ($livewire) => self::validateName(ignore: $livewire->record ?? null));
+            ->rules(fn ($record) => self::validateName(ignore: $record?->getKey()));
     }
 
     public static function setInputDatatype()

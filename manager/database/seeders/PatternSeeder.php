@@ -15,10 +15,6 @@ class PatternSeeder extends Seeder
      */
     public function run(): void
     {
-        if (Pattern::query()->exists()) {
-            return;
-        }
-
         $patterns = [
             [
                 'name' => 'request-full',
@@ -228,6 +224,16 @@ class PatternSeeder extends Seeder
                 'description' => $this->description(
                     'File extensions of request.',
                     'Phần mở rộng của các tệp trong yêu cầu.',
+                ),
+            ],
+            [
+                'name' => 'request-file-detected-extensions',
+                'type' => Type::File,
+                'phase' => Phase::Three,
+                'datatype' => Datatype::Array,
+                'description' => $this->description(
+                    'File extensions detected from request file content.',
+                    'Phần mở rộng của các tệp trong yêu cầu được phát hiện từ nội dung.',
                 ),
             ],
             [

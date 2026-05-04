@@ -32,7 +32,7 @@ trait UserField
             ->unique(ignoreRecord: true)
             ->required()
             ->email()
-            ->rules(fn ($livewire) => self::validateEmail(ignore: $livewire->record ?? null));
+            ->rules(fn ($record) => self::validateEmail(ignore: $record?->getKey()));
     }
 
     public static function setPassword()

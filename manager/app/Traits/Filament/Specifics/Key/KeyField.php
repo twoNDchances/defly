@@ -18,12 +18,12 @@ trait KeyField
             ->unique(ignoreRecord: true)
             ->alphaDash()
             ->required()
-            ->rules(fn ($livewire) => [
+            ->rules(fn ($record) => [
                 'required',
                 'string',
                 'max:255',
                 'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/',
-                Rule::unique('keys', 'name')->ignore($livewire->record ?? null),
+                Rule::unique('keys', 'name')->ignore($record?->getKey()),
             ]);
     }
 
@@ -41,12 +41,12 @@ trait KeyField
                 ]
             )
             ->required(fn ($operation) => $operation === 'create')
-            ->rules(fn ($livewire, $operation) => [
+            ->rules(fn ($record, $operation) => [
                 $operation === 'create' ? 'required' : 'nullable',
                 'string',
                 'min:16',
                 'max:255',
-                Rule::unique('keys', 'token')->ignore($livewire->record ?? null),
+                Rule::unique('keys', 'token')->ignore($record?->getKey()),
             ]);
     }
 

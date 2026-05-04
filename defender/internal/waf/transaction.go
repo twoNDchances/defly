@@ -2,12 +2,19 @@ package waf
 
 import (
 	"bytes"
+	"compress/flate"
+	"compress/gzip"
+	"compress/lzw"
+	"compress/zlib"
 	"io"
 	"net/http"
 	"net/url"
 	"strconv"
+	"strings"
 
 	decisionaction "defly-defender/internal/waf/decisions/action"
+	"github.com/andybalholm/brotli"
+	"github.com/klauspost/compress/zstd"
 )
 
 type Config struct {
@@ -17,16 +24,17 @@ type Config struct {
 }
 
 type Transaction struct {
-	Request      *http.Request
-	Response     *http.Response
-	RequestRaw   []byte
-	RequestBody  []byte
-	ResponseRaw  []byte
-	ResponseBody []byte
-	Score        float64
-	Level        int
-	Vars         map[string]any
-	Result       decisionaction.Result
+	Request           *http.Request
+	Response          *http.Response
+	RequestRaw        []byte
+	RequestBody       []byte
+	ResponseRaw       []byte
+	ResponseBody      []byte
+	ResponseEncodings []string
+	Score             float64
+	Level             int
+	Vars              map[string]any
+	Result            decisionaction.Result
 }
 
 func (tx *Transaction) CaptureRequest() error {
@@ -65,9 +73,19 @@ func (tx *Transaction) CaptureResponse(response *http.Response) error {
 		if err != nil {
 			return err
 		}
-		tx.ResponseBody = body
-		response.Body = io.NopCloser(bytes.NewReader(body))
-		response.ContentLength = int64(len(body))
+		tx.ResponseEncodings = responseContentEncodings(response)
+		decoded, encodings, err := decodeResponseBody(body, tx.ResponseEncodings)
+		if err != nil {
+			tx.ResponseEncodings = nil
+			decoded = body
+		} else {
+			tx.ResponseEncodings = encodings
+		}
+		tx.ResponseBody = decoded
+		response.Body = io.NopCloser(bytes.NewReader(decoded))
+		response.ContentLength = int64(len(decoded))
+		response.Header.Set("Content-Length", tx.stringInt(len(decoded)))
+		clearResponseContentEncoding(response)
 	}
 
 	var raw bytes.Buffer
@@ -75,9 +93,7 @@ func (tx *Transaction) CaptureResponse(response *http.Response) error {
 		return err
 	}
 	tx.ResponseRaw = raw.Bytes()
-	response.Body = io.NopCloser(bytes.NewReader(tx.ResponseBody))
-	response.ContentLength = int64(len(tx.ResponseBody))
-	return nil
+	return tx.restoreEncodedResponse()
 }
 
 func (tx *Transaction) SetResponseBody(body []byte) {
@@ -85,9 +101,7 @@ func (tx *Transaction) SetResponseBody(body []byte) {
 		return
 	}
 	tx.ResponseBody = body
-	tx.Response.Body = io.NopCloser(bytes.NewReader(body))
-	tx.Response.ContentLength = int64(len(body))
-	tx.Response.Header.Set("Content-Length", tx.stringInt(len(body)))
+	_ = tx.restoreEncodedResponse()
 }
 
 func (tx *Transaction) SetRequestBody(body []byte) {
@@ -363,4 +377,212 @@ func (tx *Transaction) stringInt(value int) string {
 		value /= 10
 	}
 	return string(buf[i:])
+}
+
+func (tx *Transaction) restoreEncodedResponse() error {
+	if tx == nil || tx.Response == nil {
+		return nil
+	}
+	body := tx.ResponseBody
+	if len(tx.ResponseEncodings) > 0 {
+		encoded, err := encodeResponseBody(body, tx.ResponseEncodings)
+		if err != nil {
+			return err
+		}
+		body = encoded
+		tx.Response.Header.Set("Content-Encoding", responseHeaderEncodings(tx.ResponseEncodings))
+	} else {
+		clearResponseContentEncoding(tx.Response)
+	}
+	tx.Response.Body = io.NopCloser(bytes.NewReader(body))
+	tx.Response.ContentLength = int64(len(body))
+	tx.Response.Header.Set("Content-Length", tx.stringInt(len(body)))
+	return nil
+}
+
+func responseHeaderEncodings(encodings []string) string {
+	values := make([]string, 0, len(encodings))
+	for _, encoding := range encodings {
+		values = append(values, responseHeaderEncoding(encoding))
+	}
+	return strings.Join(values, ", ")
+}
+
+func responseHeaderEncoding(encoding string) string {
+	switch encoding {
+	case "deflate-raw":
+		return "deflate"
+	case "x-gzip":
+		return "gzip"
+	default:
+		return encoding
+	}
+}
+
+func responseContentEncodings(response *http.Response) []string {
+	if response == nil {
+		return nil
+	}
+	header := strings.TrimSpace(response.Header.Get("Content-Encoding"))
+	if header == "" {
+		return nil
+	}
+	parts := strings.Split(header, ",")
+	encodings := make([]string, 0, len(parts))
+	for _, part := range parts {
+		encoding := strings.TrimSpace(strings.ToLower(part))
+		switch encoding {
+		case "", "identity":
+			continue
+		case "gzip", "x-gzip", "deflate", "compress", "x-compress", "br", "zstd":
+			encodings = append(encodings, encoding)
+		default:
+			return nil
+		}
+	}
+	return encodings
+}
+
+func clearResponseContentEncoding(response *http.Response) {
+	if response == nil {
+		return
+	}
+	response.Header.Del("Content-Encoding")
+	response.Header.Del("Content-Length")
+}
+
+func decodeResponseBody(body []byte, encodings []string) ([]byte, []string, error) {
+	decoded := body
+	actual := append([]string(nil), encodings...)
+	for index := len(actual) - 1; index >= 0; index-- {
+		next, encoding, err := decodeSingleResponseBody(decoded, actual[index])
+		if err != nil {
+			return nil, nil, err
+		}
+		decoded = next
+		actual[index] = encoding
+	}
+	return decoded, actual, nil
+}
+
+func decodeSingleResponseBody(body []byte, encoding string) ([]byte, string, error) {
+	switch encoding {
+	case "gzip", "x-gzip":
+		reader, err := gzip.NewReader(bytes.NewReader(body))
+		if err != nil {
+			return nil, "", err
+		}
+		defer reader.Close()
+		decoded, err := io.ReadAll(reader)
+		return decoded, encoding, err
+	case "deflate":
+		zlibReader, err := zlib.NewReader(bytes.NewReader(body))
+		if err == nil {
+			defer zlibReader.Close()
+			decoded, err := io.ReadAll(zlibReader)
+			return decoded, "deflate", err
+		}
+		reader := flate.NewReader(bytes.NewReader(body))
+		defer reader.Close()
+		decoded, err := io.ReadAll(reader)
+		return decoded, "deflate-raw", err
+	case "compress", "x-compress":
+		reader := lzw.NewReader(bytes.NewReader(body), lzw.MSB, 8)
+		defer reader.Close()
+		decoded, err := io.ReadAll(reader)
+		return decoded, encoding, err
+	case "br":
+		decoded, err := io.ReadAll(brotli.NewReader(bytes.NewReader(body)))
+		return decoded, encoding, err
+	case "zstd":
+		decoder, err := zstd.NewReader(bytes.NewReader(body))
+		if err != nil {
+			return nil, "", err
+		}
+		defer decoder.Close()
+		decoded, err := decoder.DecodeAll(body, nil)
+		return decoded, encoding, err
+	default:
+		return body, encoding, nil
+	}
+}
+
+func encodeResponseBody(body []byte, encodings []string) ([]byte, error) {
+	encoded := body
+	for _, encoding := range encodings {
+		next, err := encodeSingleResponseBody(encoded, encoding)
+		if err != nil {
+			return nil, err
+		}
+		encoded = next
+	}
+	return encoded, nil
+}
+
+func encodeSingleResponseBody(body []byte, encoding string) ([]byte, error) {
+	var buffer bytes.Buffer
+	switch encoding {
+	case "gzip", "x-gzip":
+		writer := gzip.NewWriter(&buffer)
+		if _, err := writer.Write(body); err != nil {
+			_ = writer.Close()
+			return nil, err
+		}
+		if err := writer.Close(); err != nil {
+			return nil, err
+		}
+		return buffer.Bytes(), nil
+	case "deflate":
+		writer := zlib.NewWriter(&buffer)
+		if _, err := writer.Write(body); err != nil {
+			_ = writer.Close()
+			return nil, err
+		}
+		if err := writer.Close(); err != nil {
+			return nil, err
+		}
+		return buffer.Bytes(), nil
+	case "deflate-raw":
+		writer, err := flate.NewWriter(&buffer, flate.DefaultCompression)
+		if err != nil {
+			return nil, err
+		}
+		if _, err := writer.Write(body); err != nil {
+			_ = writer.Close()
+			return nil, err
+		}
+		if err := writer.Close(); err != nil {
+			return nil, err
+		}
+		return buffer.Bytes(), nil
+	case "compress", "x-compress":
+		writer := lzw.NewWriter(&buffer, lzw.MSB, 8)
+		if _, err := writer.Write(body); err != nil {
+			_ = writer.Close()
+			return nil, err
+		}
+		if err := writer.Close(); err != nil {
+			return nil, err
+		}
+		return buffer.Bytes(), nil
+	case "br":
+		writer := brotli.NewWriter(&buffer)
+		if _, err := writer.Write(body); err != nil {
+			_ = writer.Close()
+			return nil, err
+		}
+		if err := writer.Close(); err != nil {
+			return nil, err
+		}
+		return buffer.Bytes(), nil
+	case "zstd":
+		writer, err := zstd.NewWriter(&buffer)
+		if err != nil {
+			return nil, err
+		}
+		defer writer.Close()
+		return writer.EncodeAll(body, nil), nil
+	default:
+		return body, nil
+	}
 }

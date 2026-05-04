@@ -18,6 +18,10 @@ func (File) RequestFileExtensions(ctx Context) any {
 	return fileExtensions(requestFileFields(ctx))
 }
 
+func (File) RequestFileDetectedExtensions(ctx Context) any {
+	return fileDetectedExtensions(requestFileFields(ctx))
+}
+
 func (File) RequestFileSize(ctx Context) any {
 	return float64(len(requestFileFields(ctx)))
 }

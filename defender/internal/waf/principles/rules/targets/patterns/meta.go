@@ -11,7 +11,14 @@ func (Meta) RequestMetaProtocol(ctx Context) any {
 }
 
 func (Meta) RequestMetaIP(ctx Context) any {
-	return ctx.RequestRemoteAddr()
+	value := ctx.RequestRemoteAddr()
+	if value == "[::1]" {
+		return "127.0.0.1"
+	}
+	if len(value) > len("[::1]:") && value[:len("[::1]:")] == "[::1]:" {
+		return "127.0.0.1"
+	}
+	return value
 }
 
 func (Meta) RequestMetaMethod(ctx Context) any {

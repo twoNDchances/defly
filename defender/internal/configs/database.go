@@ -4,7 +4,9 @@ import (
 	"context"
 	"database/sql"
 	"defly-defender/ent"
+	entdecision "defly-defender/ent/decision"
 	entdefender "defly-defender/ent/defender"
+	entprinciple "defly-defender/ent/principle"
 	"defly-defender/internal/globals"
 	"fmt"
 	"sort"
@@ -42,8 +44,16 @@ func (d Database) PrincipleIDsByPivotOrder(ctx context.Context, defenderID uuid.
 	return d.resourceIDsByPivotOrderFor(ctx, "defenders_principles", "defender", "principle", defenderID, principleIDs)
 }
 
+func (d Database) AppliedPrincipleIDsByPivotOrder(ctx context.Context, defenderID uuid.UUID) ([]uuid.UUID, error) {
+	return d.resourceIDsByPivotOrderForState(ctx, "defenders_principles", "defender", "principle", defenderID, nil, "is_applied")
+}
+
 func (d Database) DecisionIDsByPivotOrder(ctx context.Context, defenderID uuid.UUID, decisionIDs []uuid.UUID) ([]uuid.UUID, error) {
 	return d.resourceIDsByPivotOrderFor(ctx, "defenders_decisions", "defender", "decision", defenderID, decisionIDs)
+}
+
+func (d Database) ImplementedDecisionIDsByPivotOrder(ctx context.Context, defenderID uuid.UUID) ([]uuid.UUID, error) {
+	return d.resourceIDsByPivotOrderForState(ctx, "defenders_decisions", "defender", "decision", defenderID, nil, "is_implemented")
 }
 
 func (d Database) resourceIDsByPivotOrder(ctx context.Context, table string, resourceColumn string, defenderID uuid.UUID, resourceIDs []uuid.UUID) ([]uuid.UUID, error) {
@@ -51,6 +61,10 @@ func (d Database) resourceIDsByPivotOrder(ctx context.Context, table string, res
 }
 
 func (d Database) resourceIDsByPivotOrderFor(ctx context.Context, table string, parentColumn string, resourceColumn string, parentID uuid.UUID, resourceIDs []uuid.UUID) ([]uuid.UUID, error) {
+	return d.resourceIDsByPivotOrderForState(ctx, table, parentColumn, resourceColumn, parentID, resourceIDs, "")
+}
+
+func (d Database) resourceIDsByPivotOrderForState(ctx context.Context, table string, parentColumn string, resourceColumn string, parentID uuid.UUID, resourceIDs []uuid.UUID, stateColumn string) ([]uuid.UUID, error) {
 	db, err := sql.Open("mysql", d.DSN())
 	if err != nil {
 		return nil, err
@@ -66,6 +80,9 @@ func (d Database) resourceIDsByPivotOrderFor(ctx context.Context, table string, 
 		table,
 		parentColumn,
 	)
+	if stateColumn != "" {
+		query += fmt.Sprintf(" AND %s = 1", stateColumn)
+	}
 	if len(resourceIDs) > 0 {
 		placeholders := strings.TrimRight(strings.Repeat("?,", len(resourceIDs)), ",")
 		query += fmt.Sprintf(" AND %s IN (%s)", resourceColumn, placeholders)
@@ -123,36 +140,45 @@ func (d Database) LoadGlobals(ctx context.Context) error {
 		return d.Error.LogString(fmt.Sprintf("failed to load defender %q: %v", d.Defender.Name, err))
 	}
 
-	principles, err := defender.QueryPrinciples().
-		WithRules(func(ruleQuery *ent.RuleQuery) {
-			ruleQuery.WithTarget(func(targetQuery *ent.TargetQuery) {
-				targetQuery.WithPattern()
-				targetQuery.WithWordlist()
-				targetQuery.WithEngines()
-			})
-			ruleQuery.WithWordlist()
-			ruleQuery.WithActions()
-		}).
-		All(ctx)
-	if err != nil {
-		return d.Error.LogString(fmt.Sprintf("failed to load principles for defender %q: %v", d.Defender.Name, err))
-	}
-	principleIDsByPivotOrder, err := d.PrincipleIDsByPivotOrder(ctx, defender.ID, nil)
+	principleIDsByPivotOrder, err := d.AppliedPrincipleIDsByPivotOrder(ctx, defender.ID)
 	if err != nil {
 		return d.Error.LogString(fmt.Sprintf("failed to order principles for defender %q: %v", d.Defender.Name, err))
+	}
+	principles := make([]*ent.Principle, 0)
+	if len(principleIDsByPivotOrder) > 0 {
+		principles, err = defender.QueryPrinciples().
+			Where(entprinciple.IDIn(principleIDsByPivotOrder...)).
+			WithRules(func(ruleQuery *ent.RuleQuery) {
+				ruleQuery.WithTarget(func(targetQuery *ent.TargetQuery) {
+					targetQuery.WithPattern()
+					targetQuery.WithWordlist()
+					targetQuery.WithEngines()
+				})
+				ruleQuery.WithWordlist()
+				ruleQuery.WithActions()
+			}).
+			All(ctx)
+		if err != nil {
+			return d.Error.LogString(fmt.Sprintf("failed to load principles for defender %q: %v", d.Defender.Name, err))
+		}
 	}
 	principles = d.SortPrinciplesByPivotOrder(principles, principleIDsByPivotOrder)
 	if err := d.SortRuntimeEdges(ctx, principles); err != nil {
 		return d.Error.LogString(fmt.Sprintf("failed to order runtime edges for defender %q: %v", d.Defender.Name, err))
 	}
 
-	decisions, err := defender.QueryDecisions().All(ctx)
-	if err != nil {
-		return d.Error.LogString(fmt.Sprintf("failed to load decisions for defender %q: %v", d.Defender.Name, err))
-	}
-	decisionIDsByPivotOrder, err := d.DecisionIDsByPivotOrder(ctx, defender.ID, nil)
+	decisionIDsByPivotOrder, err := d.ImplementedDecisionIDsByPivotOrder(ctx, defender.ID)
 	if err != nil {
 		return d.Error.LogString(fmt.Sprintf("failed to order decisions for defender %q: %v", d.Defender.Name, err))
+	}
+	decisions := make([]*ent.Decision, 0)
+	if len(decisionIDsByPivotOrder) > 0 {
+		decisions, err = defender.QueryDecisions().
+			Where(entdecision.IDIn(decisionIDsByPivotOrder...)).
+			All(ctx)
+		if err != nil {
+			return d.Error.LogString(fmt.Sprintf("failed to load decisions for defender %q: %v", d.Defender.Name, err))
+		}
 	}
 	decisions = d.SortDecisionsByPivotOrder(decisions, decisionIDsByPivotOrder)
 

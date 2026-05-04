@@ -11,6 +11,8 @@ import (
 	"net/url"
 	"path/filepath"
 	"strings"
+
+	"github.com/gabriel-vasile/mimetype"
 )
 
 type FilePart struct {
@@ -169,6 +171,20 @@ func fileExtensions(values map[string][]FilePart) []string {
 	extensions := make([]string, 0)
 	for _, name := range fileNames(values) {
 		extensions = append(extensions, strings.TrimPrefix(filepath.Ext(name), "."))
+	}
+	return extensions
+}
+
+func fileDetectedExtensions(values map[string][]FilePart) []string {
+	extensions := make([]string, 0)
+	for _, parts := range values {
+		for _, part := range parts {
+			extension := strings.TrimPrefix(mimetype.Detect(part.Content).Extension(), ".")
+			if extension == "" {
+				continue
+			}
+			extensions = append(extensions, extension)
+		}
 	}
 	return extensions
 }

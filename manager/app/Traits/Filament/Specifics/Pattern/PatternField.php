@@ -16,7 +16,7 @@ trait PatternField
             ->helperText(__('forms.pattern.descriptions.name'))
             ->unique(ignoreRecord: true)
             ->required()
-            ->rules(fn ($livewire) => self::validateName(ignore: $livewire->record ?? null));
+            ->rules(fn ($record) => self::validateName(ignore: $record?->getKey()));
     }
 
     public static function setPhase()

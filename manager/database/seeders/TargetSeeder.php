@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Enums\Type;
 use App\Models\Label;
 use App\Models\Pattern;
 use App\Models\Target;
@@ -16,17 +15,11 @@ class TargetSeeder extends Seeder
      */
     public function run(): void
     {
-        if (Target::query()->exists()) {
-            return;
-        }
-
         $label = Label::where('name', config('customization.backend.default_label'))->first();
         $email = config('customization.backend.default_credentials.user_email');
         $user = User::where('email', $email)->first();
 
-        $patterns = Pattern::query()
-            ->whereIn('type', [Type::Full->value, Type::Meta->value])
-            ->get();
+        $patterns = Pattern::query()->get();
 
         foreach ($patterns as $pattern) {
             $record = Target::firstOrCreate(
