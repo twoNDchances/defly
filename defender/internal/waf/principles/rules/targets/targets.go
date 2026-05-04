@@ -196,7 +196,7 @@ func fileValue(files map[string][]filePart, key string) any {
 	}
 	values := make([]string, 0, len(parts))
 	for _, part := range parts {
-		values = append(values, part.Filename)
+		values = append(values, string(part.Content))
 	}
 	if len(values) == 1 {
 		return values[0]

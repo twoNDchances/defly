@@ -6,6 +6,7 @@ use App\Enums\Action\Type as ActionType;
 use App\Enums\Decision\Action;
 use App\Enums\Decision\Condition;
 use App\Enums\Decision\Direction;
+use App\Rules\Decision\ActionField;
 use Illuminate\Validation\Rule;
 
 trait DecisionValidator
@@ -38,12 +39,17 @@ trait DecisionValidator
 
     private static function validateAction($constraint = 'required')
     {
-        return [$constraint, Rule::enum(Action::class)];
+        return [$constraint, Rule::enum(Action::class), new ActionField];
     }
 
-    private static function validateDirective($constraint = 'required')
+    private static function validateDenyDirective($constraint = 'required')
     {
-        return [$constraint, 'string', Rule::in(['set', 'unset', 'copy_record'])];
+        return [$constraint, 'nullable', 'string', Rule::in(['use_default', 'copy_record'])];
+    }
+
+    private static function validateRewriteDirective($constraint = 'required')
+    {
+        return [$constraint, 'nullable', 'string', Rule::in(['set', 'unset'])];
     }
 
     private static function validateDenyRecord($constraint = 'required_if:deny_directive,copy_record')
@@ -99,15 +105,15 @@ trait DecisionValidator
             'condition' => self::validateCondition(),
             'score' => self::validateScore(),
             'action' => self::validateAction(),
-            'deny_directive' => self::validateDirective('required_if:action,deny'),
+            'deny_directive' => self::validateDenyDirective('required_if:action,deny'),
             'deny_record' => self::validateDenyRecord(),
-            'rewrite_headers_directive' => self::validateDirective('required_if:action,rewrite_headers'),
+            'rewrite_headers_directive' => self::validateRewriteDirective('required_if:action,rewrite_headers'),
             'rewrite_headers_set' => self::validateKeyValueItems('required_if:rewrite_headers_directive,set'),
             'rewrite_headers_set.*.key' => self::validateKey(),
             'rewrite_headers_set.*.value' => self::validateValue(),
             'rewrite_headers_unset' => self::validateKeyValueItems('required_if:rewrite_headers_directive,unset'),
             'rewrite_headers_unset.*.key' => self::validateKey(),
-            'rewrite_body_directive' => self::validateDirective('required_if:action,rewrite_body'),
+            'rewrite_body_directive' => self::validateRewriteDirective('required_if:action,rewrite_body'),
             'rewrite_body_set' => self::validateKeyValueItems('required_if:rewrite_body_directive,set'),
             'rewrite_body_set.*.key' => self::validateKey(),
             'rewrite_body_set.*.value' => self::validateValue(),
@@ -115,7 +121,7 @@ trait DecisionValidator
             'rewrite_body_unset.*.key' => self::validateKey(),
             'rewrite_type' => self::validateRewriteType(),
             'rewrite_path' => self::validateRewritePath(),
-            'rewrite_query_directive' => self::validateDirective('required_if:rewrite_type,query'),
+            'rewrite_query_directive' => self::validateRewriteDirective('required_if:rewrite_type,query'),
             'rewrite_query_set' => self::validateKeyValueItems('required_if:rewrite_query_directive,set'),
             'rewrite_query_set.*.key' => self::validateKey(),
             'rewrite_query_set.*.value' => self::validateValue(),

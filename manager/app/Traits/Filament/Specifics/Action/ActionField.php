@@ -236,7 +236,7 @@ trait ActionField
             ->required($condition)
             ->visible($condition)
             ->default('notice')
-            ->rules(fn ($get) => self::validateRequiredString($condition($get) ? 'required' : 'nullable'));
+            ->rules(fn ($get) => self::validateSuspectSeverity($condition($get) ? 'required' : 'nullable'));
     }
 
     public static function setSetterDirective()
@@ -364,7 +364,7 @@ trait ActionField
             ->disabled(fn ($get) => ! $condition($get))
             ->visible($condition)
             ->default('override')
-            ->rules(fn ($get) => self::validateBehavior($condition($get) ? 'required' : 'nullable'));
+            ->rules(fn ($get) => self::validateScoreBehavior($condition($get) ? 'required' : 'nullable'));
     }
 
     public static function setScoreValue()
@@ -400,7 +400,7 @@ trait ActionField
             ->disabled(fn ($get) => ! $condition($get))
             ->visible($condition)
             ->default('override')
-            ->rules(fn ($get) => self::validateBehavior($condition($get) ? 'required' : 'nullable'));
+            ->rules(fn ($get) => self::validateLevelBehavior($condition($get) ? 'required' : 'nullable'));
     }
 
     public static function setLevelValue()

@@ -5,6 +5,7 @@ namespace App\Traits\Validators;
 use App\Enums\Datatype;
 use App\Enums\Engine\Hash;
 use App\Enums\Engine\Type;
+use App\Rules\Engine\TypeField;
 use Illuminate\Validation\Rule;
 
 trait EngineValidator
@@ -27,7 +28,7 @@ trait EngineValidator
 
     private static function validateType($constraint = 'required')
     {
-        return [$constraint, Rule::enum(Type::class)];
+        return [$constraint, Rule::enum(Type::class), new TypeField];
     }
 
     private static function validatePosition($constraint = 'required_if:type,indexOf')

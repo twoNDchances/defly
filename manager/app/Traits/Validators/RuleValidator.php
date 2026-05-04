@@ -4,6 +4,7 @@ namespace App\Traits\Validators;
 
 use App\Enums\Phase;
 use App\Enums\Rule\Comparator;
+use App\Rules\Rule\ComparatorField;
 use App\Rules\Rule\TargetField;
 use Illuminate\Validation\Rule;
 
@@ -48,6 +49,7 @@ trait RuleValidator
         return [
             $constraint,
             Rule::enum(Comparator::class),
+            new ComparatorField,
         ];
     }
 

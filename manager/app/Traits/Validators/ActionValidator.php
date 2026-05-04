@@ -40,6 +40,11 @@ trait ActionValidator
         return [$constraint, 'nullable', 'string'];
     }
 
+    private static function validateSuspectSeverity($constraint = 'required_if:type,suspect')
+    {
+        return [$constraint, 'nullable', 'string', Rule::in(['info', 'notice', 'warning', 'error', 'critical', 'alert', 'emergency'])];
+    }
+
     private static function validateRequiredBoolean($constraint = 'required')
     {
         return [$constraint, 'boolean'];
@@ -70,9 +75,14 @@ trait ActionValidator
         return [$constraint, 'nullable', Rule::in(['set', 'unset'])];
     }
 
-    private static function validateBehavior($constraint = 'required')
+    private static function validateScoreBehavior($constraint = 'required_if:type,score')
     {
-        return [$constraint, Rule::in(['override', 'increase', 'decrease'])];
+        return [$constraint, 'nullable', Rule::in(['override', '+', '-', '*', '/'])];
+    }
+
+    private static function validateLevelBehavior($constraint = 'required_if:type,level')
+    {
+        return [$constraint, 'nullable', Rule::in(['override', 'increase', 'decrease'])];
     }
 
     private static function validatePositiveNumber($constraint = 'required')
@@ -97,7 +107,7 @@ trait ActionValidator
             'request_headers.*.key' => self::validateKey(),
             'request_headers.*.value' => self::validateRequiredString(),
             'request_body' => self::validateRequiredString('required_if:type,request'),
-            'suspect_severity' => self::validateRequiredString('required_if:type,suspect'),
+            'suspect_severity' => self::validateSuspectSeverity(),
             'setter_directive' => self::validateSetterDirective(),
             'setter_set' => self::validateRepeater('required_if:setter_directive,set'),
             'setter_set.*.key' => self::validateKey(),
@@ -105,9 +115,9 @@ trait ActionValidator
             'setter_set.*.value' => self::validateRequiredString(),
             'setter_unset' => self::validateRepeater('required_if:setter_directive,unset'),
             'setter_unset.*.key' => self::validateKey(),
-            'score_behavior' => self::validateBehavior('required_if:type,score'),
+            'score_behavior' => self::validateScoreBehavior(),
             'score_value' => self::validatePositiveNumber('required_if:type,score'),
-            'level_behavior' => self::validateBehavior('required_if:type,level'),
+            'level_behavior' => self::validateLevelBehavior(),
             'level_value' => self::validatePositiveNumber('required_if:type,level'),
             'description' => ['nullable'],
         ];

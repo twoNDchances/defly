@@ -5,6 +5,7 @@ namespace App\Traits\Validators;
 use App\Enums\Datatype;
 use App\Enums\Phase;
 use App\Enums\Type;
+use App\Rules\Target\TypeField;
 use Illuminate\Validation\Rule;
 
 trait TargetValidator
@@ -22,6 +23,7 @@ trait TargetValidator
         return [
             $constraint,
             Rule::enum(Type::class),
+            new TypeField,
         ];
     }
 

@@ -95,7 +95,7 @@ trait DecisionField
             ->required($condition)
             ->disabled(fn ($get) => ! $condition($get))
             ->visible($condition)
-            ->rules(fn ($get) => self::validateDirective($condition($get) ? 'required' : 'nullable'))
+            ->rules(fn ($get) => self::validateDenyDirective($condition($get) ? 'required' : 'nullable'))
             ->reactive();
     }
 
@@ -125,7 +125,7 @@ trait DecisionField
             ->required($condition)
             ->disabled(fn ($get) => ! $condition($get))
             ->visible($condition)
-            ->rules(fn ($get) => self::validateDirective($condition($get) ? 'required' : 'nullable'))
+            ->rules(fn ($get) => self::validateRewriteDirective($condition($get) ? 'required' : 'nullable'))
             ->reactive();
     }
 
@@ -206,7 +206,7 @@ trait DecisionField
             ->required($condition)
             ->disabled(fn ($get) => ! $condition($get))
             ->visible($condition)
-            ->rules(fn ($get) => self::validateDirective($condition($get) ? 'required' : 'nullable'))
+            ->rules(fn ($get) => self::validateRewriteDirective($condition($get) ? 'required' : 'nullable'))
             ->reactive();
     }
 
@@ -324,7 +324,7 @@ trait DecisionField
             ->disabled(fn ($get) => ! $condition($get))
             ->visible($condition)
             ->default('set')
-            ->rules(fn ($get) => self::validateDirective($condition($get) ? 'required' : 'nullable'))
+            ->rules(fn ($get) => self::validateRewriteDirective($condition($get) ? 'required' : 'nullable'))
             ->reactive();
     }
 
