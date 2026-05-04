@@ -2,9 +2,11 @@ package action
 
 import entdecision "defly-defender/ent/decision"
 
-type Allow struct{}
+type Allow struct {
+	Direction entdecision.Direction
+}
 
-func (Allow) Apply(result *Result, direction entdecision.Direction) {
+func (a Allow) Apply(result *Result) {
 	result.Allow = true
-	stopDirection(result, direction)
+	stopDirection(result, a.Direction)
 }

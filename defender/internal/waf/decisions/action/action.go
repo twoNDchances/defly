@@ -19,7 +19,6 @@ type Transaction interface {
 	RequestObject() *http.Request
 	ResponseObject() *http.Response
 	RawRequest() []byte
-	RawResponse() []byte
 	RequestBodyBytes() []byte
 	ResponseBodyBytes() []byte
 	RequestContentType() string
@@ -41,13 +40,13 @@ func (e Executor) Apply(tx Transaction, decision Decision) {
 	}
 	switch decision.ActionValue() {
 	case entdecision.ActionAllow:
-		Allow{}.Apply(tx.ResultState(), decision.DirectionValue())
+		Allow{Direction: decision.DirectionValue()}.Apply(tx.ResultState())
 	case entdecision.ActionDeny:
-		Deny{}.Apply(tx.ResultState(), decision)
+		NewDeny(decision).Apply(tx.ResultState())
 	case entdecision.ActionRewriteHeaders:
-		RewriteHeaders{}.Apply(tx.ResultState(), decision.ConfigurationsValue())
+		NewRewriteHeaders(decision.ConfigurationsValue()).Apply(tx.ResultState())
 	case entdecision.ActionRewriteBody:
-		RewriteBody{}.Apply(tx, decision)
+		NewRewriteBody(decision).Apply(tx)
 	case entdecision.ActionRedirect, entdecision.ActionCancel, entdecision.ActionRewrite, entdecision.ActionSave:
 		if e.Request != nil {
 			e.Request.Apply(tx, decision)

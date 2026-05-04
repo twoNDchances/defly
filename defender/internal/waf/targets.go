@@ -13,7 +13,3 @@ type Targets struct {
 func (t Targets) Extract(tx *Transaction, target *ent.Target, phase int) any {
 	return targetruntime.Extractor{Wordlist: wordlistruntime.Loader{}}.Extract(tx, target, phase)
 }
-
-func (t Targets) WordlistWords(wordlist *ent.Wordlist) []string {
-	return wordlistruntime.Loader{}.Words(wordlist)
-}

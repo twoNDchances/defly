@@ -1,26 +1,42 @@
 package action
 
 import (
+	entdecision "defly-defender/ent/decision"
 	"log"
 	"net/http"
 	"os"
 	"path/filepath"
 )
 
-type Deny struct{}
+type Deny struct {
+	Direction   entdecision.Direction
+	Status      int
+	ContentType string
+	Body        []byte
+}
 
-func (Deny) Apply(result *Result, decision Decision) {
+func NewDeny(decision Decision) Deny {
 	config := decision.ConfigurationsValue()
 	directive := stringConfig(config, "directive", "use_default")
-	result.Deny = true
-	result.Status = int(numberConfig(config, "status", http.StatusForbidden))
-	result.ContentType = denyContentType(config)
-	result.Body = defaultDenyBody(config)
-	if directive == "use_default" {
-		result.Status = http.StatusForbidden
-		result.ContentType = "text/html; charset=utf-8"
+	action := Deny{
+		Direction:   decision.DirectionValue(),
+		Status:      int(numberConfig(config, "status", http.StatusForbidden)),
+		ContentType: denyContentType(config),
+		Body:        defaultDenyBody(config),
 	}
-	stopDirection(result, decision.DirectionValue())
+	if directive == "use_default" {
+		action.Status = http.StatusForbidden
+		action.ContentType = "text/html; charset=utf-8"
+	}
+	return action
+}
+
+func (a Deny) Apply(result *Result) {
+	result.Deny = true
+	result.Status = a.Status
+	result.ContentType = a.ContentType
+	result.Body = a.Body
+	stopDirection(result, a.Direction)
 }
 
 func defaultDenyBody(config map[string]any) []byte {

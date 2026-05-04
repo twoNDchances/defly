@@ -11,21 +11,30 @@ import (
 	decisionaction "defly-defender/internal/waf/decisions/action"
 )
 
-type Save struct{}
+type Save struct {
+	Name     string
+	Position string
+}
 
-func (Save) Apply(tx decisionaction.Transaction, direction entdecision.Direction, config map[string]any) {
-	name := filepath.Base(stringConfig(config, "name", "request.json"))
+func NewSave(config map[string]any) Save {
+	return Save{
+		Name:     stringConfig(config, "name", "request.json"),
+		Position: stringConfig(config, "position", "prefix"),
+	}
+}
+
+func (a Save) Apply(tx decisionaction.Transaction) {
+	name := filepath.Base(a.Name)
 	if name == "." || name == string(filepath.Separator) {
 		name = "request.json"
 	}
-	position := stringConfig(config, "position", "prefix")
-	filename := rawFilename(name, position)
+	filename := rawFilename(name, a.Position)
 	path := filepath.Join("storage", "raw", filename)
 	if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
 		log.Println("waf save decision could not create raw directory:", err)
 		return
 	}
-	content, err := json.MarshalIndent(rawPayload(tx, direction), "", "  ")
+	content, err := json.MarshalIndent(rawPayload(tx), "", "  ")
 	if err != nil {
 		log.Println("waf save decision could not encode raw payload:", err)
 		return
@@ -53,9 +62,9 @@ func rawFilename(name string, position string) string {
 	return base + stamp + extension
 }
 
-func rawPayload(tx decisionaction.Transaction, direction entdecision.Direction) map[string]any {
+func rawPayload(tx decisionaction.Transaction) map[string]any {
 	payload := map[string]any{
-		"direction": direction.String(),
+		"direction": entdecision.DirectionRequest.String(),
 		"saved_at":  time.Now().Format(time.RFC3339),
 		"score":     tx.ScoreValue(),
 		"level":     tx.LevelValue(),

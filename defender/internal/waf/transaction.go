@@ -16,20 +16,17 @@ type Config struct {
 	Severity       map[string]int
 }
 
-type DecisionResult = decisionaction.Result
-
 type Transaction struct {
-	Request       *http.Request
-	Response      *http.Response
-	RequestRaw    []byte
-	RequestBody   []byte
-	ResponseRaw   []byte
-	ResponseBody  []byte
-	Score         float64
-	Level         int
-	Vars          map[string]any
-	Result        decisionaction.Result
-	phaseContexts map[int]map[string]any
+	Request      *http.Request
+	Response     *http.Response
+	RequestRaw   []byte
+	RequestBody  []byte
+	ResponseRaw  []byte
+	ResponseBody []byte
+	Score        float64
+	Level        int
+	Vars         map[string]any
+	Result       decisionaction.Result
 }
 
 func (tx *Transaction) CaptureRequest() error {

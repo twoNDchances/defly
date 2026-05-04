@@ -2,17 +2,31 @@ package action
 
 import "net/http"
 
-type RewriteHeaders struct{}
+type RewriteHeaders struct {
+	Set   http.Header
+	Unset []string
+}
 
-func (RewriteHeaders) Apply(result *Result, config map[string]any) {
+func NewRewriteHeaders(config map[string]any) RewriteHeaders {
+	if stringConfig(config, "directive", "set") == "unset" {
+		return RewriteHeaders{Unset: executionKeys(config, "unset")}
+	}
+	headers := http.Header{}
+	for key, value := range executionKeyValueMap(config, "set") {
+		headers.Set(key, value)
+	}
+	return RewriteHeaders{Set: headers}
+}
+
+func (a RewriteHeaders) Apply(result *Result) {
 	if result.RewriteHeaders == nil {
 		result.RewriteHeaders = http.Header{}
 	}
-	if stringConfig(config, "directive", "set") == "unset" {
-		result.UnsetHeaders = append(result.UnsetHeaders, executionKeys(config, "unset")...)
-		return
+	for key, values := range a.Set {
+		result.RewriteHeaders.Del(key)
+		for _, value := range values {
+			result.RewriteHeaders.Add(key, value)
+		}
 	}
-	for key, value := range executionKeyValueMap(config, "set") {
-		result.RewriteHeaders.Set(key, value)
-	}
+	result.UnsetHeaders = append(result.UnsetHeaders, a.Unset...)
 }

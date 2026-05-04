@@ -1,10 +1,7 @@
 package request
 
 import (
-	"encoding/json"
 	"fmt"
-	"strconv"
-	"strings"
 )
 
 func stringConfig(config map[string]any, key string, fallback string) string {
@@ -105,26 +102,5 @@ func stringify(value any) string {
 		return typed.String()
 	default:
 		return fmt.Sprint(typed)
-	}
-}
-
-func toFloat(value any) float64 {
-	switch typed := value.(type) {
-	case int:
-		return float64(typed)
-	case int64:
-		return float64(typed)
-	case uint64:
-		return float64(typed)
-	case float32:
-		return float64(typed)
-	case float64:
-		return typed
-	case json.Number:
-		number, _ := typed.Float64()
-		return number
-	default:
-		number, _ := strconv.ParseFloat(strings.TrimSpace(stringify(value)), 64)
-		return number
 	}
 }

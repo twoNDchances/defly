@@ -62,10 +62,9 @@ func (e Core) NewBlankTransaction(request *http.Request) *Transaction {
 		level = 1
 	}
 	return &Transaction{
-		Request:       request,
-		Level:         level,
-		Vars:          make(map[string]any),
-		phaseContexts: make(map[int]map[string]any),
+		Request: request,
+		Level:   level,
+		Vars:    make(map[string]any),
 	}
 }
 

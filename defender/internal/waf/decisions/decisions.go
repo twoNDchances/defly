@@ -6,11 +6,6 @@ import (
 	decisionaction "defly-defender/internal/waf/decisions/action"
 )
 
-type Transaction interface {
-	ResultState() *decisionaction.Result
-	ScoreValue() float64
-}
-
 type Action interface {
 	Apply(tx decisionaction.Transaction, decision decisionaction.Decision)
 }

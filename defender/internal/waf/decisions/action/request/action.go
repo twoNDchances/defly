@@ -13,12 +13,12 @@ func (Executor) Apply(tx decisionaction.Transaction, decision decisionaction.Dec
 	}
 	switch decision.ActionValue() {
 	case entdecision.ActionRedirect:
-		Redirect{}.Apply(tx.ResultState(), decision.ConfigurationsValue())
+		NewRedirect(decision.ConfigurationsValue()).Apply(tx.ResultState())
 	case entdecision.ActionCancel:
 		Cancel{}.Apply(tx.ResultState())
 	case entdecision.ActionRewrite:
-		Rewrite{}.Apply(tx.ResultState(), decision.ConfigurationsValue())
+		NewRewrite(decision.ConfigurationsValue()).Apply(tx.ResultState())
 	case entdecision.ActionSave:
-		Save{}.Apply(tx, decision.DirectionValue(), decision.ConfigurationsValue())
+		NewSave(decision.ConfigurationsValue()).Apply(tx)
 	}
 }

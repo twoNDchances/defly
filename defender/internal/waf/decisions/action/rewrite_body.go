@@ -9,11 +9,28 @@ import (
 	entdecision "defly-defender/ent/decision"
 )
 
-type RewriteBody struct{}
+type RewriteBody struct {
+	Direction entdecision.Direction
+	Directive string
+	Body      []byte
+	Set       map[string]string
+	Unset     []string
+}
 
-func (RewriteBody) Apply(tx Transaction, decision Decision) {
-	body, contentType := bodyContext(tx, decision.DirectionValue())
-	if rewritten, ok := rewriteBody(body, contentType, decision.ConfigurationsValue()); ok {
+func NewRewriteBody(decision Decision) RewriteBody {
+	config := decision.ConfigurationsValue()
+	return RewriteBody{
+		Direction: decision.DirectionValue(),
+		Directive: stringConfig(config, "directive", "set"),
+		Body:      []byte(stringConfig(config, "body", "")),
+		Set:       executionKeyValueMap(config, "set"),
+		Unset:     executionKeys(config, "unset"),
+	}
+}
+
+func (a RewriteBody) Apply(tx Transaction) {
+	body, contentType := bodyContext(tx, a.Direction)
+	if rewritten, ok := a.rewrite(body, contentType); ok {
 		result := tx.ResultState()
 		result.BodyRewrite = rewritten
 		result.BodyRewritten = true
@@ -30,25 +47,21 @@ func bodyContext(tx Transaction, direction entdecision.Direction) ([]byte, strin
 	return nil, ""
 }
 
-func rewriteBody(body []byte, contentType string, config map[string]any) ([]byte, bool) {
-	directive := stringConfig(config, "directive", "set")
-	if directive == "unset" {
-		keys := executionKeys(config, "unset")
-		if len(keys) == 0 {
+func (a RewriteBody) rewrite(body []byte, contentType string) ([]byte, bool) {
+	if a.Directive == "unset" {
+		if len(a.Unset) == 0 {
 			return body, false
 		}
-		return unsetBodyFields(body, contentType, keys), true
+		return unsetBodyFields(body, contentType, a.Unset), true
 	}
 
-	values := executionKeyValueMap(config, "set")
-	if len(values) == 0 {
-		value := stringConfig(config, "body", "")
-		return []byte(value), value != ""
+	if len(a.Set) == 0 {
+		return a.Body, len(a.Body) > 0
 	}
-	if value, ok := directBodyRewrite(values); ok {
+	if value, ok := directBodyRewrite(a.Set); ok {
 		return []byte(value), true
 	}
-	return setBodyFields(body, contentType, values), true
+	return setBodyFields(body, contentType, a.Set), true
 }
 
 func directBodyRewrite(values map[string]string) (string, bool) {
