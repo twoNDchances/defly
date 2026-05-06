@@ -47,6 +47,10 @@ class Security
             'create',
             'update',
         ],
+        'Timeline' => [
+            'create',
+            'update',
+        ],
     ];
 
     public static function generatePermissionList($groupByModel = false)

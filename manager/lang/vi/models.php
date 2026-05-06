@@ -393,4 +393,21 @@ return [
             'value' => 'Giá trị',
         ],
     ],
+    'timeline' => [
+        'name' => 'Dòng thời gian',
+        'fields' => [
+            'ipv4' => 'IPv4',
+            'ipv6' => 'IPv6',
+            'method' => 'Phương thức',
+            'path' => 'Đường dẫn',
+            'action' => 'Hành động',
+            'resource' => 'Tài nguyên',
+        ],
+        'extras' => [
+            'resource' => [
+                'resource_type' => 'Loại tài nguyên',
+                'resource_id' => 'ID tài nguyên',
+            ]
+        ]
+    ],
 ];

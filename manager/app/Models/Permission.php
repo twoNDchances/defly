@@ -37,7 +37,7 @@ class Permission extends Model
 
     public function keys()
     {
-        return $this->belongsToMany(Key::class, 'keys_groups', 'permission', 'key');
+        return $this->belongsToMany(Key::class, 'keys_permissions', 'permission', 'key');
     }
 
     public function groups()

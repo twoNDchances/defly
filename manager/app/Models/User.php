@@ -111,9 +111,24 @@ class User extends Authenticatable
         return $this->hasMany(Principle::class, $this->getCreatedByField());
     }
 
+    public function getDecisions()
+    {
+        return $this->hasMany(Decision::class, $this->getCreatedByField());
+    }
+
+    public function getDefenders()
+    {
+        return $this->hasMany(Defender::class, $this->getCreatedByField());
+    }
+
     public function getKeys()
     {
         return $this->hasMany(Key::class, $this->getCreatedByField());
+    }
+
+    public function getTimelines()
+    {
+        return $this->hasMany(Timeline::class, $this->getCreatedByField());
     }
 
     public function groups()
