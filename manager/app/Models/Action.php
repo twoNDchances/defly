@@ -38,4 +38,9 @@ class Action extends Model
             ->withPivot('order')
             ->orderByPivot('order');
     }
+
+    public function reports()
+    {
+        return $this->hasMany(Report::class, 'triggered_by');
+    }
 }

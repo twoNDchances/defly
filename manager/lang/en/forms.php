@@ -532,4 +532,20 @@ return [
             ],
         ],
     ],
+    'report' => [
+        'sections' => [
+            'metas' => [
+                'title' => 'HTTP metadata',
+            ],
+            'request' => [
+                'title' => 'Request',
+            ],
+            'response' => [
+                'title' => 'Response',
+            ],
+            'rule' => [
+                'title' => 'Triggered rule',
+            ],
+        ],
+    ],
 ];

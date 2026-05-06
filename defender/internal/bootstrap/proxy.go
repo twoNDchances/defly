@@ -42,7 +42,8 @@ func NewProxy() error {
 			Host: "",
 			Port: envproxy.ProxyPort.Value(),
 		},
-		Logger: proxyLogger,
+		Database: NewDatabase(),
+		Logger:   proxyLogger,
 		Severity: configproxy.Severity{
 			Info:      envproxy.ProxySeverityInfo.Value(),
 			Notice:    envproxy.ProxySeverityNotice.Value(),

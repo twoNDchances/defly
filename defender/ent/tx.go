@@ -28,6 +28,8 @@ type Tx struct {
 	Permission *PermissionClient
 	// Principle is the client for interacting with the Principle builders.
 	Principle *PrincipleClient
+	// Report is the client for interacting with the Report builders.
+	Report *ReportClient
 	// Rule is the client for interacting with the Rule builders.
 	Rule *RuleClient
 	// Target is the client for interacting with the Target builders.
@@ -175,6 +177,7 @@ func (tx *Tx) init() {
 	tx.Pattern = NewPatternClient(tx.config)
 	tx.Permission = NewPermissionClient(tx.config)
 	tx.Principle = NewPrincipleClient(tx.config)
+	tx.Report = NewReportClient(tx.config)
 	tx.Rule = NewRuleClient(tx.config)
 	tx.Target = NewTargetClient(tx.config)
 	tx.User = NewUserClient(tx.config)

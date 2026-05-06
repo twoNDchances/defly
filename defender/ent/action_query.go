@@ -7,6 +7,7 @@ import (
 	"database/sql/driver"
 	"defly-defender/ent/action"
 	"defly-defender/ent/predicate"
+	"defly-defender/ent/report"
 	"defly-defender/ent/rule"
 	"fmt"
 	"math"
@@ -21,11 +22,12 @@ import (
 // ActionQuery is the builder for querying Action entities.
 type ActionQuery struct {
 	config
-	ctx        *QueryContext
-	order      []action.OrderOption
-	inters     []Interceptor
-	predicates []predicate.Action
-	withRules  *RuleQuery
+	ctx         *QueryContext
+	order       []action.OrderOption
+	inters      []Interceptor
+	predicates  []predicate.Action
+	withRules   *RuleQuery
+	withReports *ReportQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -77,6 +79,28 @@ func (aq *ActionQuery) QueryRules() *RuleQuery {
 			sqlgraph.From(action.Table, action.FieldID, selector),
 			sqlgraph.To(rule.Table, rule.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, false, action.RulesTable, action.RulesPrimaryKey...),
+		)
+		fromU = sqlgraph.SetNeighbors(aq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryReports chains the current query on the "reports" edge.
+func (aq *ActionQuery) QueryReports() *ReportQuery {
+	query := (&ReportClient{config: aq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := aq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := aq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(action.Table, action.FieldID, selector),
+			sqlgraph.To(report.Table, report.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, action.ReportsTable, action.ReportsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(aq.driver.Dialect(), step)
 		return fromU, nil
@@ -271,12 +295,13 @@ func (aq *ActionQuery) Clone() *ActionQuery {
 		return nil
 	}
 	return &ActionQuery{
-		config:     aq.config,
-		ctx:        aq.ctx.Clone(),
-		order:      append([]action.OrderOption{}, aq.order...),
-		inters:     append([]Interceptor{}, aq.inters...),
-		predicates: append([]predicate.Action{}, aq.predicates...),
-		withRules:  aq.withRules.Clone(),
+		config:      aq.config,
+		ctx:         aq.ctx.Clone(),
+		order:       append([]action.OrderOption{}, aq.order...),
+		inters:      append([]Interceptor{}, aq.inters...),
+		predicates:  append([]predicate.Action{}, aq.predicates...),
+		withRules:   aq.withRules.Clone(),
+		withReports: aq.withReports.Clone(),
 		// clone intermediate query.
 		sql:  aq.sql.Clone(),
 		path: aq.path,
@@ -291,6 +316,17 @@ func (aq *ActionQuery) WithRules(opts ...func(*RuleQuery)) *ActionQuery {
 		opt(query)
 	}
 	aq.withRules = query
+	return aq
+}
+
+// WithReports tells the query-builder to eager-load the nodes that are connected to
+// the "reports" edge. The optional arguments are used to configure the query builder of the edge.
+func (aq *ActionQuery) WithReports(opts ...func(*ReportQuery)) *ActionQuery {
+	query := (&ReportClient{config: aq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	aq.withReports = query
 	return aq
 }
 
@@ -372,8 +408,9 @@ func (aq *ActionQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Actio
 	var (
 		nodes       = []*Action{}
 		_spec       = aq.querySpec()
-		loadedTypes = [1]bool{
+		loadedTypes = [2]bool{
 			aq.withRules != nil,
+			aq.withReports != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -398,6 +435,13 @@ func (aq *ActionQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Actio
 		if err := aq.loadRules(ctx, query, nodes,
 			func(n *Action) { n.Edges.Rules = []*Rule{} },
 			func(n *Action, e *Rule) { n.Edges.Rules = append(n.Edges.Rules, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := aq.withReports; query != nil {
+		if err := aq.loadReports(ctx, query, nodes,
+			func(n *Action) { n.Edges.Reports = []*Report{} },
+			func(n *Action, e *Report) { n.Edges.Reports = append(n.Edges.Reports, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -462,6 +506,39 @@ func (aq *ActionQuery) loadRules(ctx context.Context, query *RuleQuery, nodes []
 		for kn := range nodes {
 			assign(kn, n)
 		}
+	}
+	return nil
+}
+func (aq *ActionQuery) loadReports(ctx context.Context, query *ReportQuery, nodes []*Action, init func(*Action), assign func(*Action, *Report)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Action)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(report.FieldTriggeredBy)
+	}
+	query.Where(predicate.Report(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(action.ReportsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.TriggeredBy
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "triggered_by" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "triggered_by" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
 	}
 	return nil
 }

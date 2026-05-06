@@ -11,11 +11,13 @@ import (
 	"defly-defender/ent/pattern"
 	"defly-defender/ent/permission"
 	"defly-defender/ent/principle"
+	"defly-defender/ent/report"
 	"defly-defender/ent/rule"
 	"defly-defender/ent/schema"
 	"defly-defender/ent/target"
 	"defly-defender/ent/user"
 	"defly-defender/ent/wordlist"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -116,6 +118,22 @@ func init() {
 	principleDescID := principleFields[0].Descriptor()
 	// principle.DefaultID holds the default value on creation for the id field.
 	principle.DefaultID = principleDescID.Default.(func() uuid.UUID)
+	reportFields := schema.Report{}.Fields()
+	_ = reportFields
+	// reportDescCreatedAt is the schema descriptor for created_at field.
+	reportDescCreatedAt := reportFields[9].Descriptor()
+	// report.DefaultCreatedAt holds the default value on creation for the created_at field.
+	report.DefaultCreatedAt = reportDescCreatedAt.Default.(func() time.Time)
+	// reportDescUpdatedAt is the schema descriptor for updated_at field.
+	reportDescUpdatedAt := reportFields[10].Descriptor()
+	// report.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	report.DefaultUpdatedAt = reportDescUpdatedAt.Default.(func() time.Time)
+	// report.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	report.UpdateDefaultUpdatedAt = reportDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// reportDescID is the schema descriptor for id field.
+	reportDescID := reportFields[0].Descriptor()
+	// report.DefaultID holds the default value on creation for the id field.
+	report.DefaultID = reportDescID.Default.(func() uuid.UUID)
 	ruleFields := schema.Rule{}.Fields()
 	_ = ruleFields
 	// ruleDescName is the schema descriptor for name field.

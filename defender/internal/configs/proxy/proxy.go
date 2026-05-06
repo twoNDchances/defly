@@ -1,7 +1,9 @@
 package proxy
 
 import (
+	"bytes"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"net/http/httputil"
@@ -17,6 +19,7 @@ import (
 type Proxy struct {
 	Address      configs.Address
 	Absorber     configs.Absorber
+	Database     configs.Database
 	Logger       configs.Logger
 	Severity     Severity
 	Violation    Violation
@@ -58,8 +61,9 @@ func (p Proxy) Boot() error {
 	}
 
 	wafCore := waf.Factory{}.New(waf.Config{
-		ViolationScore: p.Violation.Score,
-		ViolationLevel: p.Violation.Level,
+		ViolationScore:    p.Violation.Score,
+		ViolationLevel:    p.Violation.Level,
+		ReportDatabaseDSN: p.Database.DSN(),
 		Severity: map[string]int{
 			"info":      p.Severity.Info,
 			"notice":    p.Severity.Notice,
@@ -70,6 +74,9 @@ func (p Proxy) Boot() error {
 			"emergency": p.Severity.Emergency,
 		},
 	})
+	if globals.Defender != nil {
+		wafCore.Config.ReportDefenderID = globals.Defender.ID.String()
+	}
 
 	reverseProxy := &httputil.ReverseProxy{
 		Rewrite: func(request *httputil.ProxyRequest) {
@@ -97,9 +104,13 @@ func (p Proxy) Boot() error {
 			return wafCore.RunResponse(tx, r)
 		},
 		ErrorHandler: func(writer http.ResponseWriter, request *http.Request, err error) {
+			body := []byte(`{"message":"backend unavailable"}`)
+			if tx := wafCore.TransactionFrom(request); tx != nil {
+				captureReportResponse(tx, request, http.StatusBadGateway, "application/json", body)
+			}
 			writer.Header().Set("Content-Type", "application/json")
 			writer.WriteHeader(http.StatusBadGateway)
-			_, _ = writer.Write([]byte(`{"message":"backend unavailable"}`))
+			_, _ = writer.Write(body)
 		},
 	}
 
@@ -116,6 +127,7 @@ func (p Proxy) Boot() error {
 		}
 		wafCore.RunRequest(tx)
 		if wafCore.Decisions().ApplyRequest(tx, ctx.Writer) {
+			captureResultReportResponse(tx, ctx.Request)
 			ctx.Abort()
 			return
 		}
@@ -124,4 +136,54 @@ func (p Proxy) Boot() error {
 	})
 	log.Println(utilities.Infof("Defender proxy is running at http://0.0.0.0:%s", p.Address.Port))
 	return p.Error.LogError(proxy.Run(fmt.Sprintf("%s:%s", p.Address.Host, p.Address.Port)))
+}
+
+func captureResultReportResponse(tx *waf.Transaction, request *http.Request) {
+	if tx == nil || tx.ResultState() == nil {
+		return
+	}
+	result := tx.ResultState()
+	if result.Cancel {
+		tx.MarkReportReady()
+		return
+	}
+	if !result.Deny {
+		tx.MarkReportReady()
+		return
+	}
+	status := result.Status
+	if status == 0 {
+		status = http.StatusForbidden
+	}
+	contentType := result.ContentType
+	if contentType == "" {
+		contentType = "application/json"
+	}
+	body := result.Body
+	if len(body) == 0 {
+		body = []byte(`{"message":"request denied"}`)
+	}
+	captureReportResponse(tx, request, status, contentType, body)
+}
+
+func captureReportResponse(tx *waf.Transaction, request *http.Request, status int, contentType string, body []byte) {
+	if tx == nil {
+		return
+	}
+	response := &http.Response{
+		StatusCode:    status,
+		Status:        fmt.Sprintf("%d %s", status, http.StatusText(status)),
+		Proto:         "HTTP/1.1",
+		ProtoMajor:    1,
+		ProtoMinor:    1,
+		Header:        http.Header{},
+		Body:          io.NopCloser(bytes.NewReader(body)),
+		ContentLength: int64(len(body)),
+		Request:       request,
+	}
+	response.Header.Set("Content-Type", contentType)
+	if err := tx.CaptureResponse(response); err != nil {
+		log.Println("waf report could not capture synthetic response:", err)
+	}
+	tx.MarkReportReady()
 }

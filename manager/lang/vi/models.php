@@ -361,13 +361,36 @@ return [
         ],
     ],
     'key' => [
-        'title' => 'Khóa',
         'name' => 'Khóa',
         'fields' => [
             'name' => 'Tên',
             'token' => 'Token',
             'expired_at' => 'Hết hạn lúc',
             'is_reused' => 'Được sử dụng lại',
+        ],
+    ],
+    'report' => [
+        'name' => 'Báo cáo',
+        'fields' => [
+            'metas' => 'Các siêu dữ liệu',
+            'request_headers' => 'Các tiêu đề yêu cầu',
+            'request_body' => 'Nội dung yêu cầu',
+            'response_headers' => 'Các tiêu đề phản hồi',
+            'response_body' => 'Nội dung phản hồi',
+            'rule_details' => 'Các chi tiết quy tắc',
+            'triggered_by' => 'Kích hoạt bởi',
+            'created_by' => 'Tạo bởi',
+        ],
+        'extras' => [
+            'metas' => [
+                'ip' => 'Địa chỉ IP',
+                'url' => 'URL',
+                'status' => 'Trạng thái',
+                'method' => 'Phương thức',
+                'protocol' => 'Giao thức',
+            ],
+            'key' => 'Khóa',
+            'value' => 'Giá trị',
         ],
     ],
 ];

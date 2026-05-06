@@ -43,6 +43,10 @@ class Security
             'deleteAny',
             'delete',
         ],
+        'Report' => [
+            'create',
+            'update',
+        ],
     ];
 
     public static function generatePermissionList($groupByModel = false)

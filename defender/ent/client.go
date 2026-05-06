@@ -19,6 +19,7 @@ import (
 	"defly-defender/ent/pattern"
 	"defly-defender/ent/permission"
 	"defly-defender/ent/principle"
+	"defly-defender/ent/report"
 	"defly-defender/ent/rule"
 	"defly-defender/ent/target"
 	"defly-defender/ent/user"
@@ -52,6 +53,8 @@ type Client struct {
 	Permission *PermissionClient
 	// Principle is the client for interacting with the Principle builders.
 	Principle *PrincipleClient
+	// Report is the client for interacting with the Report builders.
+	Report *ReportClient
 	// Rule is the client for interacting with the Rule builders.
 	Rule *RuleClient
 	// Target is the client for interacting with the Target builders.
@@ -79,6 +82,7 @@ func (c *Client) init() {
 	c.Pattern = NewPatternClient(c.config)
 	c.Permission = NewPermissionClient(c.config)
 	c.Principle = NewPrincipleClient(c.config)
+	c.Report = NewReportClient(c.config)
 	c.Rule = NewRuleClient(c.config)
 	c.Target = NewTargetClient(c.config)
 	c.User = NewUserClient(c.config)
@@ -183,6 +187,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		Pattern:    NewPatternClient(cfg),
 		Permission: NewPermissionClient(cfg),
 		Principle:  NewPrincipleClient(cfg),
+		Report:     NewReportClient(cfg),
 		Rule:       NewRuleClient(cfg),
 		Target:     NewTargetClient(cfg),
 		User:       NewUserClient(cfg),
@@ -214,6 +219,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		Pattern:    NewPatternClient(cfg),
 		Permission: NewPermissionClient(cfg),
 		Principle:  NewPrincipleClient(cfg),
+		Report:     NewReportClient(cfg),
 		Rule:       NewRuleClient(cfg),
 		Target:     NewTargetClient(cfg),
 		User:       NewUserClient(cfg),
@@ -248,7 +254,7 @@ func (c *Client) Close() error {
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
 		c.Action, c.Decision, c.Defender, c.Engine, c.Group, c.Pattern, c.Permission,
-		c.Principle, c.Rule, c.Target, c.User, c.Wordlist,
+		c.Principle, c.Report, c.Rule, c.Target, c.User, c.Wordlist,
 	} {
 		n.Use(hooks...)
 	}
@@ -259,7 +265,7 @@ func (c *Client) Use(hooks ...Hook) {
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
 		c.Action, c.Decision, c.Defender, c.Engine, c.Group, c.Pattern, c.Permission,
-		c.Principle, c.Rule, c.Target, c.User, c.Wordlist,
+		c.Principle, c.Report, c.Rule, c.Target, c.User, c.Wordlist,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -284,6 +290,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Permission.mutate(ctx, m)
 	case *PrincipleMutation:
 		return c.Principle.mutate(ctx, m)
+	case *ReportMutation:
+		return c.Report.mutate(ctx, m)
 	case *RuleMutation:
 		return c.Rule.mutate(ctx, m)
 	case *TargetMutation:
@@ -414,6 +422,22 @@ func (c *ActionClient) QueryRules(a *Action) *RuleQuery {
 			sqlgraph.From(action.Table, action.FieldID, id),
 			sqlgraph.To(rule.Table, rule.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, false, action.RulesTable, action.RulesPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(a.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryReports queries the reports edge of a Action.
+func (c *ActionClient) QueryReports(a *Action) *ReportQuery {
+	query := (&ReportClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := a.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(action.Table, action.FieldID, id),
+			sqlgraph.To(report.Table, report.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, action.ReportsTable, action.ReportsColumn),
 		)
 		fromV = sqlgraph.Neighbors(a.driver.Dialect(), step)
 		return fromV, nil
@@ -728,6 +752,22 @@ func (c *DefenderClient) QueryDecisions(d *Defender) *DecisionQuery {
 			sqlgraph.From(defender.Table, defender.FieldID, id),
 			sqlgraph.To(decision.Table, decision.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, false, defender.DecisionsTable, defender.DecisionsPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(d.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryReports queries the reports edge of a Defender.
+func (c *DefenderClient) QueryReports(d *Defender) *ReportQuery {
+	query := (&ReportClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := d.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(defender.Table, defender.FieldID, id),
+			sqlgraph.To(report.Table, report.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, defender.ReportsTable, defender.ReportsColumn),
 		)
 		fromV = sqlgraph.Neighbors(d.driver.Dialect(), step)
 		return fromV, nil
@@ -1553,6 +1593,171 @@ func (c *PrincipleClient) mutate(ctx context.Context, m *PrincipleMutation) (Val
 	}
 }
 
+// ReportClient is a client for the Report schema.
+type ReportClient struct {
+	config
+}
+
+// NewReportClient returns a client for the Report from the given config.
+func NewReportClient(c config) *ReportClient {
+	return &ReportClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `report.Hooks(f(g(h())))`.
+func (c *ReportClient) Use(hooks ...Hook) {
+	c.hooks.Report = append(c.hooks.Report, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `report.Intercept(f(g(h())))`.
+func (c *ReportClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Report = append(c.inters.Report, interceptors...)
+}
+
+// Create returns a builder for creating a Report entity.
+func (c *ReportClient) Create() *ReportCreate {
+	mutation := newReportMutation(c.config, OpCreate)
+	return &ReportCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Report entities.
+func (c *ReportClient) CreateBulk(builders ...*ReportCreate) *ReportCreateBulk {
+	return &ReportCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *ReportClient) MapCreateBulk(slice any, setFunc func(*ReportCreate, int)) *ReportCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &ReportCreateBulk{err: fmt.Errorf("calling to ReportClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*ReportCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &ReportCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Report.
+func (c *ReportClient) Update() *ReportUpdate {
+	mutation := newReportMutation(c.config, OpUpdate)
+	return &ReportUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *ReportClient) UpdateOne(r *Report) *ReportUpdateOne {
+	mutation := newReportMutation(c.config, OpUpdateOne, withReport(r))
+	return &ReportUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *ReportClient) UpdateOneID(id uuid.UUID) *ReportUpdateOne {
+	mutation := newReportMutation(c.config, OpUpdateOne, withReportID(id))
+	return &ReportUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Report.
+func (c *ReportClient) Delete() *ReportDelete {
+	mutation := newReportMutation(c.config, OpDelete)
+	return &ReportDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *ReportClient) DeleteOne(r *Report) *ReportDeleteOne {
+	return c.DeleteOneID(r.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *ReportClient) DeleteOneID(id uuid.UUID) *ReportDeleteOne {
+	builder := c.Delete().Where(report.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &ReportDeleteOne{builder}
+}
+
+// Query returns a query builder for Report.
+func (c *ReportClient) Query() *ReportQuery {
+	return &ReportQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeReport},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a Report entity by its id.
+func (c *ReportClient) Get(ctx context.Context, id uuid.UUID) (*Report, error) {
+	return c.Query().Where(report.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *ReportClient) GetX(ctx context.Context, id uuid.UUID) *Report {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryTriggeredByAction queries the triggered_by_action edge of a Report.
+func (c *ReportClient) QueryTriggeredByAction(r *Report) *ActionQuery {
+	query := (&ActionClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := r.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(report.Table, report.FieldID, id),
+			sqlgraph.To(action.Table, action.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, report.TriggeredByActionTable, report.TriggeredByActionColumn),
+		)
+		fromV = sqlgraph.Neighbors(r.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryCreatedByDefender queries the created_by_defender edge of a Report.
+func (c *ReportClient) QueryCreatedByDefender(r *Report) *DefenderQuery {
+	query := (&DefenderClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := r.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(report.Table, report.FieldID, id),
+			sqlgraph.To(defender.Table, defender.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, report.CreatedByDefenderTable, report.CreatedByDefenderColumn),
+		)
+		fromV = sqlgraph.Neighbors(r.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *ReportClient) Hooks() []Hook {
+	return c.hooks.Report
+}
+
+// Interceptors returns the client interceptors.
+func (c *ReportClient) Interceptors() []Interceptor {
+	return c.inters.Report
+}
+
+func (c *ReportClient) mutate(ctx context.Context, m *ReportMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&ReportCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&ReportUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&ReportUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&ReportDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown Report mutation op: %q", m.Op())
+	}
+}
+
 // RuleClient is a client for the Rule schema.
 type RuleClient struct {
 	config
@@ -2280,11 +2485,11 @@ func (c *WordlistClient) mutate(ctx context.Context, m *WordlistMutation) (Value
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Action, Decision, Defender, Engine, Group, Pattern, Permission, Principle, Rule,
-		Target, User, Wordlist []ent.Hook
+		Action, Decision, Defender, Engine, Group, Pattern, Permission, Principle,
+		Report, Rule, Target, User, Wordlist []ent.Hook
 	}
 	inters struct {
-		Action, Decision, Defender, Engine, Group, Pattern, Permission, Principle, Rule,
-		Target, User, Wordlist []ent.Interceptor
+		Action, Decision, Defender, Engine, Group, Pattern, Permission, Principle,
+		Report, Rule, Target, User, Wordlist []ent.Interceptor
 	}
 )

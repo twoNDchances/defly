@@ -369,4 +369,28 @@ return [
             'is_reused' => 'Is reused',
         ],
     ],
+    'report' => [
+        'name' => 'Report',
+        'fields' => [
+            'metas' => 'Metas',
+            'request_headers' => 'Request headers',
+            'request_body' => 'Request body',
+            'response_headers' => 'Response headers',
+            'response_body' => 'Response body',
+            'rule_details' => 'Rule details',
+            'triggered_by' => 'Triggered by',
+            'created_by' => 'Created by',
+        ],
+        'extras' => [
+            'metas' => [
+                'ip' => 'IP address',
+                'url' => 'URL',
+                'status' => 'Status',
+                'method' => 'Method',
+                'protocol' => 'Protocol',
+            ],
+            'key' => 'Key',
+            'value' => 'Value',
+        ],
+    ],
 ];

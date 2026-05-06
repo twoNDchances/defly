@@ -349,32 +349,14 @@ trait DefenderField
             self::statusOptionsAndColors(),
         )
             ->helperText(fn ($state) => self::statusDescriptions()[$state])
-            ->rules(self::validateStatus())
             ->disabled()
             ->visibleOn(['view', 'edit']);
     }
 
     public static function setDetails()
     {
-        return self::codeEditor('details', __('models.defender.fields.details'), Language::Json)
+        return self::jsonPreview('details', __('models.defender.fields.details'))
             ->helperText(__('forms.defender.descriptions.details'))
-            ->rules(self::validateDetails())
-            ->formatStateUsing(function ($state) {
-                if ($state === null) {
-                    return null;
-                }
-
-                if (is_string($state)) {
-                    return $state;
-                }
-
-                if (is_array($state)) {
-                    return json_encode($state, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-                }
-
-                return (string) $state;
-            })
-            ->disabled()
             ->visibleOn(['view', 'edit']);
     }
 
@@ -386,32 +368,14 @@ trait DefenderField
             self::deploymentStatusOptionsAndColors(),
         )
             ->helperText(fn ($state) => self::deploymentStatusDescriptions()[$state])
-            ->rules(self::validateDeploymentStatus())
             ->disabled()
             ->visibleOn(['view', 'edit']);
     }
 
     public static function setDeploymentDetails()
     {
-        return self::codeEditor('deployment_details', __('models.defender.fields.deployment_details'), Language::Json)
+        return self::jsonPreview('deployment_details', __('models.defender.fields.deployment_details'))
             ->helperText(__('forms.defender.descriptions.deploymnet_details'))
-            ->rules(self::validateDeploymentDetails())
-            ->formatStateUsing(function ($state) {
-                if ($state === null) {
-                    return null;
-                }
-
-                if (is_string($state)) {
-                    return $state;
-                }
-
-                if (is_array($state)) {
-                    return json_encode($state, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-                }
-
-                return (string) $state;
-            })
-            ->disabled()
             ->visibleOn(['view', 'edit']);
     }
 
@@ -428,25 +392,8 @@ trait DefenderField
 
     public static function setLastResponseDetails()
     {
-        return self::codeEditor('last_response_details', __('models.defender.fields.last_response_details'), Language::Json)
+        return self::jsonPreview('last_response_details', __('models.defender.fields.last_response_details'))
             ->helperText(__('forms.defender.descriptions.last_response_details'))
-            ->rules(self::validateLastResponseDetails())
-            ->formatStateUsing(function ($state) {
-                if ($state === null) {
-                    return null;
-                }
-
-                if (is_string($state)) {
-                    return $state;
-                }
-
-                if (is_array($state)) {
-                    return json_encode($state, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-                }
-
-                return (string) $state;
-            })
-            ->disabled()
             ->visible(fn ($operation, $record): bool => in_array($operation, ['view', 'edit'], true)
                 && $record
                 && Security::can($record, 'refresh'));

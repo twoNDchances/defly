@@ -532,4 +532,20 @@ return [
             ],
         ],
     ],
+    'report' => [
+        'sections' => [
+            'metas' => [
+                'title' => 'Siêu dữ liệu HTTP',
+            ],
+            'request' => [
+                'title' => 'Yêu cầu',
+            ],
+            'response' => [
+                'title' => 'Phản hồi',
+            ],
+            'rule' => [
+                'title' => 'Quy tắc kích hoạt',
+            ],
+        ],
+    ],
 ];

@@ -50,30 +50,42 @@ type Transaction interface {
 	SetLevel(level int)
 	SetVar(key string, value any)
 	UnsetVar(key string)
+	AwaitReportReady(timeout time.Duration) bool
+	RawRequest() []byte
+	RawResponse() []byte
 	RequestRemoteAddr() string
 	RequestHeaders() http.Header
 	RequestQuery() url.Values
 	RequestBodyBytes() []byte
 	RequestMethod() string
 	RequestPath() string
+	RequestScheme() string
 	RequestProto() string
 	RequestHost() string
 	RequestURL() string
+	RequestFullURLValue() string
+	RequestPort() float64
 	RequestContentLength() int64
 	RequestContentType() string
 	ResponseHeaders() http.Header
 	ResponseBodyBytes() []byte
 	ResponseStatusCode() int
+	ResponseProto() string
 	ResponseContentLength() int64
+	ResponseContentType() string
 	VarValue(key string) (any, bool)
 }
 
 type Executor struct {
-	Severity map[string]int
-	Client   *http.Client
+	Severity          map[string]int
+	Client            *http.Client
+	ReportDatabaseDSN string
+	ReportDefenderID  string
+	Rule              *ent.Rule
 }
 
-func (e Executor) Execute(tx Transaction, actions []*ent.Action) {
+func (e Executor) Execute(tx Transaction, rule *ent.Rule, actions []*ent.Action) {
+	e.Rule = rule
 	for _, action := range actions {
 		if action == nil || tx == nil || tx.IsAllowed() || tx.IsDenied() {
 			return
@@ -84,6 +96,10 @@ func (e Executor) Execute(tx Transaction, actions []*ent.Action) {
 		}
 		if runtimeAction == nil {
 			continue
+		}
+		if report, ok := runtimeAction.(Report); ok {
+			report.RuleDetails = report.ruleDetails(tx)
+			runtimeAction = report
 		}
 		if runtimeAction.Async() {
 			go runtimeAction.Execute(tx)
@@ -113,8 +129,15 @@ func (e Executor) build(action *ent.Action) (Action, error) {
 			},
 			Path: logFilePath(cfg),
 		}
-	case entaction.TypeRequest, entaction.TypeReport:
+	case entaction.TypeRequest:
 		runtimeAction = Request{Send: func() { e.sendRequest(cfg) }}
+	case entaction.TypeReport:
+		runtimeAction = Report{
+			DatabaseDSN: e.ReportDatabaseDSN,
+			DefenderID:  e.ReportDefenderID,
+			ActionID:    action.ID.String(),
+			Rule:        e.Rule,
+		}
 	case entaction.TypeSuspect:
 		runtimeAction = Suspect{Score: float64(e.Severity[stringConfig(cfg, "severity", "notice")])}
 	case entaction.TypeSetter:

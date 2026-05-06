@@ -9,22 +9,69 @@ type Engine interface {
 type Transformer struct{}
 
 func (Transformer) TransformTarget(value any, target *ent.Target) any {
+	return (Transformer{}).TraceTarget(value, target).FinalValue
+}
+
+type TransformTrace struct {
+	InitialDatatype string          `json:"initial_datatype"`
+	InitialValue    any             `json:"initial_value"`
+	CastedValue     any             `json:"casted_value"`
+	Steps           []TransformStep `json:"steps"`
+	FinalDatatype   string          `json:"final_datatype"`
+	FinalValue      any             `json:"final_value"`
+}
+
+type TransformStep struct {
+	ID             string `json:"id"`
+	Name           string `json:"name"`
+	Type           string `json:"type"`
+	InputDatatype  string `json:"input_datatype"`
+	OutputDatatype string `json:"output_datatype"`
+	Input          any    `json:"input"`
+	Output         any    `json:"output"`
+}
+
+func (Transformer) TraceTarget(value any, target *ent.Target) TransformTrace {
 	if target == nil {
-		return value
+		return TransformTrace{
+			InitialValue: value,
+			CastedValue:  value,
+			FinalValue:   value,
+		}
 	}
 	currentDatatype := target.Datatype.String()
 	if target.Edges.Pattern != nil {
 		currentDatatype = target.Edges.Pattern.Datatype.String()
 	}
+	initialDatatype := currentDatatype
 	next := castDatatype(value, currentDatatype)
+	trace := TransformTrace{
+		InitialDatatype: initialDatatype,
+		InitialValue:    value,
+		CastedValue:     next,
+		FinalDatatype:   currentDatatype,
+		FinalValue:      next,
+	}
 	for _, engine := range target.Edges.Engines {
 		if engine == nil || engine.InputDatatype.String() != currentDatatype {
 			break
 		}
+		input := next
 		next = build(engine).Transform(next)
+		trace.Steps = append(trace.Steps, TransformStep{
+			ID:             engine.ID.String(),
+			Name:           engine.Name,
+			Type:           engine.Type,
+			InputDatatype:  engine.InputDatatype.String(),
+			OutputDatatype: engine.OutputDatatype.String(),
+			Input:          input,
+			Output:         next,
+		})
 		currentDatatype = engine.OutputDatatype.String()
+		trace.FinalDatatype = currentDatatype
+		trace.FinalValue = next
 	}
-	return next
+	return trace
 }
 
 func build(engine *ent.Engine) Engine {

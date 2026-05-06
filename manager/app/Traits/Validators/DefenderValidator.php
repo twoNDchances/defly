@@ -29,42 +29,12 @@ trait DefenderValidator
         return [$constraint, 'array'];
     }
 
-    private static function validateStatus($constraint = 'nullable')
-    {
-        return [$constraint, Rule::enum(Status::class)];
-    }
-
-    private static function validateDetails($constraint = 'nullable')
-    {
-        return [$constraint, 'array'];
-    }
-
-    private static function validateDeploymentStatus($constraint = 'nullable')
-    {
-        return [$constraint, Rule::enum(DeploymentStatus::class)];
-    }
-
-    private static function validateDeploymentDetails($constraint = 'nullable')
-    {
-        return [$constraint, 'array'];
-    }
-
-    private static function validateLastResponseDetails($constraint = 'nullable')
-    {
-        return [$constraint, 'array'];
-    }
-
     public static function validateDefender($ignore = null)
     {
         return [
             'name' => self::validateName(ignore: $ignore),
             'proxy_port' => self::validateProxyPort(),
             'environment_variables' => self::validateEnvironmentVariables(),
-            'status' => self::validateStatus(),
-            'details' => self::validateDetails(),
-            'deployment_status' => self::validateDeploymentStatus(),
-            'deployment_details' => self::validateDeploymentDetails(),
-            'last_response_details' => self::validateLastResponseDetails(),
             'description' => ['nullable'],
         ];
     }

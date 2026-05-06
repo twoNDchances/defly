@@ -9,6 +9,10 @@ type Actions struct {
 	core Core
 }
 
-func (a Actions) Execute(tx *Transaction, actions []*ent.Action) {
-	ruleactions.Executor{Severity: a.core.Config.Severity}.Execute(tx, actions)
+func (a Actions) Execute(tx *Transaction, rule *ent.Rule, actions []*ent.Action) {
+	ruleactions.Executor{
+		Severity:          a.core.Config.Severity,
+		ReportDatabaseDSN: a.core.Config.ReportDatabaseDSN,
+		ReportDefenderID:  a.core.Config.ReportDefenderID,
+	}.Execute(tx, rule, actions)
 }

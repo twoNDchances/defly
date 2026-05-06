@@ -34,9 +34,11 @@ type Action struct {
 type ActionEdges struct {
 	// Rules holds the value of the rules edge.
 	Rules []*Rule `json:"rules,omitempty"`
+	// Reports holds the value of the reports edge.
+	Reports []*Report `json:"reports,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [2]bool
 }
 
 // RulesOrErr returns the Rules value or an error if the edge
@@ -46,6 +48,15 @@ func (e ActionEdges) RulesOrErr() ([]*Rule, error) {
 		return e.Rules, nil
 	}
 	return nil, &NotLoadedError{edge: "rules"}
+}
+
+// ReportsOrErr returns the Reports value or an error if the edge
+// was not loaded in eager-loading.
+func (e ActionEdges) ReportsOrErr() ([]*Report, error) {
+	if e.loadedTypes[1] {
+		return e.Reports, nil
+	}
+	return nil, &NotLoadedError{edge: "reports"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -116,6 +127,11 @@ func (a *Action) Value(name string) (ent.Value, error) {
 // QueryRules queries the "rules" edge of the Action entity.
 func (a *Action) QueryRules() *RuleQuery {
 	return NewActionClient(a.config).QueryRules(a)
+}
+
+// QueryReports queries the "reports" edge of the Action entity.
+func (a *Action) QueryReports() *ReportQuery {
+	return NewActionClient(a.config).QueryReports(a)
 }
 
 // Update returns a builder for updating this Action.

@@ -116,6 +116,40 @@ var (
 		Columns:    PrinciplesColumns,
 		PrimaryKey: []*schema.Column{PrinciplesColumns[0]},
 	}
+	// ReportsColumns holds the columns for the "reports" table.
+	ReportsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "metas", Type: field.TypeJSON, Nullable: true},
+		{Name: "request_headers", Type: field.TypeJSON, Nullable: true},
+		{Name: "request_body", Type: field.TypeJSON, Nullable: true},
+		{Name: "response_headers", Type: field.TypeJSON, Nullable: true},
+		{Name: "response_body", Type: field.TypeJSON, Nullable: true},
+		{Name: "rule_details", Type: field.TypeJSON, Nullable: true},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "triggered_by", Type: field.TypeUUID, Nullable: true},
+		{Name: "created_by", Type: field.TypeUUID, Nullable: true},
+	}
+	// ReportsTable holds the schema information for the "reports" table.
+	ReportsTable = &schema.Table{
+		Name:       "reports",
+		Columns:    ReportsColumns,
+		PrimaryKey: []*schema.Column{ReportsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "reports_actions_reports",
+				Columns:    []*schema.Column{ReportsColumns[9]},
+				RefColumns: []*schema.Column{ActionsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "reports_defenders_reports",
+				Columns:    []*schema.Column{ReportsColumns[10]},
+				RefColumns: []*schema.Column{DefendersColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
 	// RulesColumns holds the columns for the "rules" table.
 	RulesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -416,6 +450,7 @@ var (
 		PatternsTable,
 		PermissionsTable,
 		PrinciplesTable,
+		ReportsTable,
 		RulesTable,
 		TargetsTable,
 		UsersTable,
@@ -435,6 +470,8 @@ func init() {
 	PrinciplesTable.Annotation = &entsql.Annotation{
 		Table: "principles",
 	}
+	ReportsTable.ForeignKeys[0].RefTable = ActionsTable
+	ReportsTable.ForeignKeys[1].RefTable = DefendersTable
 	RulesTable.ForeignKeys[0].RefTable = TargetsTable
 	RulesTable.ForeignKeys[1].RefTable = WordlistsTable
 	TargetsTable.ForeignKeys[0].RefTable = PatternsTable

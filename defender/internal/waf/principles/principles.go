@@ -13,7 +13,7 @@ type RuleMatcher interface {
 }
 
 type ActionExecutor interface {
-	Execute(actions []*ent.Action)
+	Execute(rule *ent.Rule, actions []*ent.Action)
 }
 
 type Runner struct {
@@ -62,7 +62,7 @@ func (r Runner) runPrinciple(tx Transaction, principle *ent.Principle, phase int
 	if len(rules) == 0 {
 		return
 	}
-	actionGroups := make([][]*ent.Action, 0, len(rules))
+	actionGroups := make([]actionGroup, 0, len(rules))
 	for _, rule := range rules {
 		if tx.IsAllowed() || tx.IsDenied() {
 			return
@@ -77,9 +77,17 @@ func (r Runner) runPrinciple(tx Transaction, principle *ent.Principle, phase int
 		if !matched {
 			return
 		}
-		actionGroups = append(actionGroups, rule.Edges.Actions)
+		actionGroups = append(actionGroups, actionGroup{
+			Rule:    rule,
+			Actions: rule.Edges.Actions,
+		})
 	}
-	for _, actions := range actionGroups {
-		r.Actions.Execute(actions)
+	for _, group := range actionGroups {
+		r.Actions.Execute(group.Rule, group.Actions)
 	}
+}
+
+type actionGroup struct {
+	Rule    *ent.Rule
+	Actions []*ent.Action
 }

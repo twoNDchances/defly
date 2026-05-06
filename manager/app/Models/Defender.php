@@ -50,4 +50,9 @@ class Defender extends Model
             ->withPivot('order', 'is_implemented')
             ->orderByPivot('order');
     }
+
+    public function reports()
+    {
+        return $this->hasMany(Report::class, 'created_by');
+    }
 }

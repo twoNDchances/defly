@@ -4,6 +4,7 @@ namespace App\Traits\Filament\Generals\Components;
 
 use App\Filament\Components\Label\LabelForm;
 use Filament\Forms\Components;
+use Filament\Forms\Components\CodeEditor\Enums\Language;
 use Illuminate\Validation\Rule;
 
 trait Field
@@ -77,6 +78,28 @@ trait Field
         return Components\CodeEditor::make($name)
             ->language($language)
             ->label($label);
+    }
+
+    public static function jsonPreview($name, $label = null)
+    {
+        return self::codeEditor($name, $label, Language::Json)
+            ->formatStateUsing(function ($state) {
+                if ($state === null) {
+                    return null;
+                }
+
+                if (is_string($state)) {
+                    return $state;
+                }
+
+                if (is_array($state)) {
+                    return json_encode($state, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+                }
+
+                return (string) $state;
+            })
+            ->disabled()
+            ->wrap();
     }
 
     public static function setDescription()

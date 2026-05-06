@@ -37,5 +37,6 @@ func (Action) Edges() []ent.Edge {
 				edge.Table("rules_actions"),
 				edge.Columns("action", "rule"),
 			),
+		edge.To("reports", Report.Type),
 	}
 }

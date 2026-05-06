@@ -12,6 +12,8 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+	"sync"
+	"time"
 
 	decisionaction "defly-defender/internal/waf/decisions/action"
 	"github.com/andybalholm/brotli"
@@ -19,9 +21,11 @@ import (
 )
 
 type Config struct {
-	ViolationScore int
-	ViolationLevel int
-	Severity       map[string]int
+	ViolationScore    int
+	ViolationLevel    int
+	Severity          map[string]int
+	ReportDatabaseDSN string
+	ReportDefenderID  string
 }
 
 type Transaction struct {
@@ -29,6 +33,7 @@ type Transaction struct {
 	Response          *http.Response
 	RequestRaw        []byte
 	RequestBody       []byte
+	RequestFullURL    string
 	RequestURLPort    float64
 	ResponseRaw       []byte
 	ResponseBody      []byte
@@ -37,6 +42,8 @@ type Transaction struct {
 	Level             int
 	Vars              map[string]any
 	Result            decisionaction.Result
+	ReportReady       chan struct{}
+	reportReadyOnce   sync.Once
 }
 
 func (tx *Transaction) CaptureRequest() error {
@@ -44,6 +51,7 @@ func (tx *Transaction) CaptureRequest() error {
 		return nil
 	}
 	tx.RequestURLPort = requestURLPort(tx.Request)
+	tx.RequestFullURL = requestFullURL(tx.Request)
 
 	if tx.Request.Body != nil {
 		body, err := io.ReadAll(tx.Request.Body)
@@ -97,6 +105,33 @@ func (tx *Transaction) CaptureResponse(response *http.Response) error {
 	}
 	tx.ResponseRaw = raw.Bytes()
 	return tx.restoreEncodedResponse()
+}
+
+func (tx *Transaction) AwaitReportReady(timeout time.Duration) bool {
+	if tx == nil || tx.ReportReady == nil {
+		return true
+	}
+	if timeout <= 0 {
+		<-tx.ReportReady
+		return true
+	}
+	timer := time.NewTimer(timeout)
+	defer timer.Stop()
+	select {
+	case <-tx.ReportReady:
+		return true
+	case <-timer.C:
+		return false
+	}
+}
+
+func (tx *Transaction) MarkReportReady() {
+	if tx == nil || tx.ReportReady == nil {
+		return
+	}
+	tx.reportReadyOnce.Do(func() {
+		close(tx.ReportReady)
+	})
 }
 
 func (tx *Transaction) SetResponseBody(body []byte) {
@@ -269,6 +304,16 @@ func (tx *Transaction) RequestURL() string {
 	return tx.Request.URL.String()
 }
 
+func (tx *Transaction) RequestFullURLValue() string {
+	if tx == nil {
+		return ""
+	}
+	if tx.RequestFullURL != "" {
+		return tx.RequestFullURL
+	}
+	return requestFullURL(tx.Request)
+}
+
 func (tx *Transaction) RequestRemoteAddr() string {
 	if tx == nil || tx.Request == nil {
 		return ""
@@ -338,6 +383,37 @@ func requestURLPort(request *http.Request) float64 {
 		return 443
 	}
 	return 80
+}
+
+func requestFullURL(request *http.Request) string {
+	if request == nil || request.URL == nil {
+		return ""
+	}
+	rawURL := strings.TrimSpace(request.URL.String())
+	if strings.HasPrefix(rawURL, "http://") || strings.HasPrefix(rawURL, "https://") {
+		return rawURL
+	}
+
+	host := strings.TrimSpace(request.Host)
+	if host == "" {
+		host = strings.TrimSpace(request.URL.Host)
+	}
+	if host == "" {
+		return rawURL
+	}
+
+	scheme := "http"
+	if request.URL.Scheme != "" {
+		scheme = request.URL.Scheme
+	} else if request.TLS != nil {
+		scheme = "https"
+	}
+
+	requestURI := request.URL.RequestURI()
+	if requestURI == "" {
+		requestURI = "/"
+	}
+	return scheme + "://" + host + requestURI
 }
 
 func parsePort(port string) float64 {

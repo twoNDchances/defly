@@ -36,9 +36,11 @@ type DefenderEdges struct {
 	Principles []*Principle `json:"principles,omitempty"`
 	// Decisions holds the value of the decisions edge.
 	Decisions []*Decision `json:"decisions,omitempty"`
+	// Reports holds the value of the reports edge.
+	Reports []*Report `json:"reports,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [3]bool
 }
 
 // PrinciplesOrErr returns the Principles value or an error if the edge
@@ -57,6 +59,15 @@ func (e DefenderEdges) DecisionsOrErr() ([]*Decision, error) {
 		return e.Decisions, nil
 	}
 	return nil, &NotLoadedError{edge: "decisions"}
+}
+
+// ReportsOrErr returns the Reports value or an error if the edge
+// was not loaded in eager-loading.
+func (e DefenderEdges) ReportsOrErr() ([]*Report, error) {
+	if e.loadedTypes[2] {
+		return e.Reports, nil
+	}
+	return nil, &NotLoadedError{edge: "reports"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -133,6 +144,11 @@ func (d *Defender) QueryPrinciples() *PrincipleQuery {
 // QueryDecisions queries the "decisions" edge of the Defender entity.
 func (d *Defender) QueryDecisions() *DecisionQuery {
 	return NewDefenderClient(d.config).QueryDecisions(d)
+}
+
+// QueryReports queries the "reports" edge of the Defender entity.
+func (d *Defender) QueryReports() *ReportQuery {
+	return NewDefenderClient(d.config).QueryReports(d)
 }
 
 // Update returns a builder for updating this Defender.

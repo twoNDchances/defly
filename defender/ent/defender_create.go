@@ -7,6 +7,7 @@ import (
 	"defly-defender/ent/decision"
 	"defly-defender/ent/defender"
 	"defly-defender/ent/principle"
+	"defly-defender/ent/report"
 	"errors"
 	"fmt"
 
@@ -90,6 +91,21 @@ func (dc *DefenderCreate) AddDecisions(d ...*Decision) *DefenderCreate {
 		ids[i] = d[i].ID
 	}
 	return dc.AddDecisionIDs(ids...)
+}
+
+// AddReportIDs adds the "reports" edge to the Report entity by IDs.
+func (dc *DefenderCreate) AddReportIDs(ids ...uuid.UUID) *DefenderCreate {
+	dc.mutation.AddReportIDs(ids...)
+	return dc
+}
+
+// AddReports adds the "reports" edges to the Report entity.
+func (dc *DefenderCreate) AddReports(r ...*Report) *DefenderCreate {
+	ids := make([]uuid.UUID, len(r))
+	for i := range r {
+		ids[i] = r[i].ID
+	}
+	return dc.AddReportIDs(ids...)
 }
 
 // Mutation returns the DefenderMutation object of the builder.
@@ -220,6 +236,22 @@ func (dc *DefenderCreate) createSpec() (*Defender, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(decision.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := dc.mutation.ReportsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   defender.ReportsTable,
+			Columns: []string{defender.ReportsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(report.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

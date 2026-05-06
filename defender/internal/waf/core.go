@@ -62,9 +62,10 @@ func (e Core) NewBlankTransaction(request *http.Request) *Transaction {
 		level = 1
 	}
 	return &Transaction{
-		Request: request,
-		Level:   level,
-		Vars:    make(map[string]any),
+		Request:     request,
+		Level:       level,
+		Vars:        make(map[string]any),
+		ReportReady: make(chan struct{}),
 	}
 }
 
@@ -77,13 +78,16 @@ func (e Core) RunRequest(tx *Transaction) {
 
 func (e Core) RunResponse(tx *Transaction, response *http.Response) error {
 	if err := tx.CaptureResponse(response); err != nil {
+		tx.MarkReportReady()
 		return err
 	}
 	e.Phases().Run(tx, PhaseResponseHead)
 	e.Phases().Run(tx, PhaseResponseBody)
 	e.Phases().Run(tx, PhaseFullResponse)
 	e.Decisions().Run(tx, entdecision.DirectionResponse)
-	return e.Decisions().ApplyResponse(tx)
+	err := e.Decisions().ApplyResponse(tx)
+	tx.MarkReportReady()
+	return err
 }
 
 func (e Core) SetTransaction(request *http.Request, tx *Transaction) {

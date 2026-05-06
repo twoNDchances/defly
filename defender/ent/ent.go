@@ -12,6 +12,7 @@ import (
 	"defly-defender/ent/pattern"
 	"defly-defender/ent/permission"
 	"defly-defender/ent/principle"
+	"defly-defender/ent/report"
 	"defly-defender/ent/rule"
 	"defly-defender/ent/target"
 	"defly-defender/ent/user"
@@ -92,6 +93,7 @@ func checkColumn(table, column string) error {
 			pattern.Table:    pattern.ValidColumn,
 			permission.Table: permission.ValidColumn,
 			principle.Table:  principle.ValidColumn,
+			report.Table:     report.ValidColumn,
 			rule.Table:       rule.ValidColumn,
 			target.Table:     target.ValidColumn,
 			user.Table:       user.ValidColumn,

@@ -9,6 +9,7 @@ import (
 	"defly-defender/ent/defender"
 	"defly-defender/ent/predicate"
 	"defly-defender/ent/principle"
+	"defly-defender/ent/report"
 	"fmt"
 	"math"
 
@@ -28,6 +29,7 @@ type DefenderQuery struct {
 	predicates     []predicate.Defender
 	withPrinciples *PrincipleQuery
 	withDecisions  *DecisionQuery
+	withReports    *ReportQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -101,6 +103,28 @@ func (dq *DefenderQuery) QueryDecisions() *DecisionQuery {
 			sqlgraph.From(defender.Table, defender.FieldID, selector),
 			sqlgraph.To(decision.Table, decision.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, false, defender.DecisionsTable, defender.DecisionsPrimaryKey...),
+		)
+		fromU = sqlgraph.SetNeighbors(dq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryReports chains the current query on the "reports" edge.
+func (dq *DefenderQuery) QueryReports() *ReportQuery {
+	query := (&ReportClient{config: dq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := dq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := dq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(defender.Table, defender.FieldID, selector),
+			sqlgraph.To(report.Table, report.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, defender.ReportsTable, defender.ReportsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(dq.driver.Dialect(), step)
 		return fromU, nil
@@ -302,6 +326,7 @@ func (dq *DefenderQuery) Clone() *DefenderQuery {
 		predicates:     append([]predicate.Defender{}, dq.predicates...),
 		withPrinciples: dq.withPrinciples.Clone(),
 		withDecisions:  dq.withDecisions.Clone(),
+		withReports:    dq.withReports.Clone(),
 		// clone intermediate query.
 		sql:  dq.sql.Clone(),
 		path: dq.path,
@@ -327,6 +352,17 @@ func (dq *DefenderQuery) WithDecisions(opts ...func(*DecisionQuery)) *DefenderQu
 		opt(query)
 	}
 	dq.withDecisions = query
+	return dq
+}
+
+// WithReports tells the query-builder to eager-load the nodes that are connected to
+// the "reports" edge. The optional arguments are used to configure the query builder of the edge.
+func (dq *DefenderQuery) WithReports(opts ...func(*ReportQuery)) *DefenderQuery {
+	query := (&ReportClient{config: dq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	dq.withReports = query
 	return dq
 }
 
@@ -408,9 +444,10 @@ func (dq *DefenderQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Def
 	var (
 		nodes       = []*Defender{}
 		_spec       = dq.querySpec()
-		loadedTypes = [2]bool{
+		loadedTypes = [3]bool{
 			dq.withPrinciples != nil,
 			dq.withDecisions != nil,
+			dq.withReports != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -442,6 +479,13 @@ func (dq *DefenderQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Def
 		if err := dq.loadDecisions(ctx, query, nodes,
 			func(n *Defender) { n.Edges.Decisions = []*Decision{} },
 			func(n *Defender, e *Decision) { n.Edges.Decisions = append(n.Edges.Decisions, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := dq.withReports; query != nil {
+		if err := dq.loadReports(ctx, query, nodes,
+			func(n *Defender) { n.Edges.Reports = []*Report{} },
+			func(n *Defender, e *Report) { n.Edges.Reports = append(n.Edges.Reports, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -567,6 +611,39 @@ func (dq *DefenderQuery) loadDecisions(ctx context.Context, query *DecisionQuery
 		for kn := range nodes {
 			assign(kn, n)
 		}
+	}
+	return nil
+}
+func (dq *DefenderQuery) loadReports(ctx context.Context, query *ReportQuery, nodes []*Defender, init func(*Defender), assign func(*Defender, *Report)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Defender)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(report.FieldCreatedBy)
+	}
+	query.Where(predicate.Report(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(defender.ReportsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.CreatedBy
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "created_by" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "created_by" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
 	}
 	return nil
 }

@@ -30,6 +30,9 @@ type Permission func(*sql.Selector)
 // Principle is the predicate function for principle builders.
 type Principle func(*sql.Selector)
 
+// Report is the predicate function for report builders.
+type Report func(*sql.Selector)
+
 // Rule is the predicate function for rule builders.
 type Rule func(*sql.Selector)
 

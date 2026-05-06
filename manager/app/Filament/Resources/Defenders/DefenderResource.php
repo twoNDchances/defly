@@ -7,6 +7,7 @@ use App\Filament\Resources\Defenders\Pages\EditDefender;
 use App\Filament\Resources\Defenders\Pages\ListDefenders;
 use App\Filament\Resources\Defenders\RelationManagers\DecisionsRelationManager;
 use App\Filament\Resources\Defenders\RelationManagers\PrinciplesRelationManager;
+use App\Filament\Resources\Defenders\RelationManagers\ReportsRelationManager;
 use App\Filament\Resources\Defenders\Schemas\DefenderForm;
 use App\Filament\Resources\Defenders\Tables\DefendersTable;
 use App\Models\Defender;
@@ -42,6 +43,7 @@ class DefenderResource extends Resource
         return [
             PrinciplesRelationManager::class,
             DecisionsRelationManager::class,
+            ReportsRelationManager::class,
         ];
     }
 

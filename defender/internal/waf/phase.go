@@ -32,6 +32,6 @@ type phaseActions struct {
 	tx   *Transaction
 }
 
-func (p phaseActions) Execute(actions []*ent.Action) {
-	p.core.Actions().Execute(p.tx, actions)
+func (p phaseActions) Execute(rule *ent.Rule, actions []*ent.Action) {
+	p.core.Actions().Execute(p.tx, rule, actions)
 }

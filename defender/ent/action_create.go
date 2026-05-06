@@ -5,6 +5,7 @@ package ent
 import (
 	"context"
 	"defly-defender/ent/action"
+	"defly-defender/ent/report"
 	"defly-defender/ent/rule"
 	"errors"
 	"fmt"
@@ -66,6 +67,21 @@ func (ac *ActionCreate) AddRules(r ...*Rule) *ActionCreate {
 		ids[i] = r[i].ID
 	}
 	return ac.AddRuleIDs(ids...)
+}
+
+// AddReportIDs adds the "reports" edge to the Report entity by IDs.
+func (ac *ActionCreate) AddReportIDs(ids ...uuid.UUID) *ActionCreate {
+	ac.mutation.AddReportIDs(ids...)
+	return ac
+}
+
+// AddReports adds the "reports" edges to the Report entity.
+func (ac *ActionCreate) AddReports(r ...*Report) *ActionCreate {
+	ids := make([]uuid.UUID, len(r))
+	for i := range r {
+		ids[i] = r[i].ID
+	}
+	return ac.AddReportIDs(ids...)
 }
 
 // Mutation returns the ActionMutation object of the builder.
@@ -183,6 +199,22 @@ func (ac *ActionCreate) createSpec() (*Action, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(rule.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := ac.mutation.ReportsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   action.ReportsTable,
+			Columns: []string{action.ReportsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(report.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

@@ -32,5 +32,6 @@ func (Defender) Edges() []ent.Edge {
 				edge.Table("defenders_decisions"),
 				edge.Columns("defender", "decision"),
 			),
+		edge.To("reports", Report.Type),
 	}
 }
