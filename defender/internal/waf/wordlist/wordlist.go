@@ -5,9 +5,11 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"defly-defender/ent"
 	entwordlist "defly-defender/ent/wordlist"
+	envcommon "defly-defender/internal/environments/common"
 )
 
 type Loader struct{}
@@ -48,6 +50,9 @@ func resolvePath(path string) string {
 	if filepath.IsAbs(path) {
 		return path
 	}
+	if candidate := resolveFromWordlistRoot(path); candidate != "" {
+		return candidate
+	}
 	candidates := []string{
 		path,
 		filepath.Join("storage", "app", "public", path),
@@ -60,4 +65,17 @@ func resolvePath(path string) string {
 		}
 	}
 	return path
+}
+
+func resolveFromWordlistRoot(path string) string {
+	root := strings.TrimSpace(envcommon.WordlistRoot.Value())
+	if root == "" {
+		return ""
+	}
+	relative := strings.TrimPrefix(filepath.ToSlash(path), "wordlist/")
+	candidate := filepath.Join(root, filepath.FromSlash(relative))
+	if _, err := os.Stat(candidate); err == nil {
+		return candidate
+	}
+	return ""
 }

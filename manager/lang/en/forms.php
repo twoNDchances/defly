@@ -308,10 +308,10 @@ return [
         ],
         'extras' => [
             'comparator' => [
-                '@similar' => '[(Target){Array} @ (Value){Wordlist}] True if the first target array item equals the first item in the provided wordlist',
-                '@contains' => '[(Target){Array} @ (Value){String}] True if the first target array item equals the provided string value',
-                '@match' => '[(Target){Array} @ (Value){String}] True if the first target array item matches the provided string using a regular expression',
-                '@search' => '[(Target){Array} @ (Value){Wordlist}] True if the first target array item matches the first provided wordlist item using a regular expression',
+                '@similar' => '[(Target){Array} @ (Value){Wordlist}] True if a target array item equals an item in the provided wordlist',
+                '@contains' => '[(Target){Array} @ (Value){String}] True if a target array item equals the provided string value',
+                '@match' => '[(Target){Array} @ (Value){String}] True if a target array item matches the provided string using a regular expression',
+                '@search' => '[(Target){Array} @ (Value){Wordlist}] True if a target array item matches an item in the provided wordlist using a regular expression',
                 '@equal' => '[(Target){Number} @ (Value){Number}] True if the target number equals the provided number',
                 '@greaterThan' => '[(Target){Number} @ (Value){Number}] True if the target number is greater than the provided number',
                 '@lessThan' => '[(Target){Number} @ (Value){Number}] True if the target number is less than the provided number',
@@ -321,9 +321,9 @@ return [
                 '@mirror' => '[(Target){String} @ (Value){String}] True if the target string equals the provided string',
                 '@startsWith' => '[(Target){String} @ (Value){String}] True if the target string starts with the provided string',
                 '@endsWith' => '[(Target){String} @ (Value){String}] True if the target string ends with the provided string',
-                '@check' => '[(Target){String} @ (Value){Wordlist}] True if the target string equals the first item in the provided wordlist',
+                '@check' => '[(Target){String} @ (Value){Wordlist}] True if the target string equals an item in the provided wordlist',
                 '@regExp' => '[(Target){String} @ (Value){String}] True if the target string matches the provided string using a regular expression',
-                '@checkRegExp' => '[(Target){String} @ (Value){Wordlist}] True if the target string matches the first item in the provided wordlist using a regular expression',
+                '@checkRegExp' => '[(Target){String} @ (Value){Wordlist}] True if the target string matches an item in the provided wordlist using a regular expression',
             ],
             'configurations' => [
                 'string_value' => 'String value used to compare with targets whose final datatype is string',

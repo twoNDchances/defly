@@ -308,10 +308,10 @@ return [
         ],
         'extras' => [
             'comparator' => [
-                '@similar' => '[(Mục tiêu){Mảng} @ (Giá trị){Danh sách từ}] Đúng nếu phần tử đầu tiên trong mảng của mục tiêu trùng với phần từ đầu tiên trong danh sách từ được cho',
-                '@contains' => '[(Mục tiêu){Mảng} @ (Giá trị){Chuỗi}] Đúng nếu phần tử đầu tiên trong mảng của mục tiêu trùng với giá trị chuỗi được cho',
-                '@match' => '[(Mục tiêu){Mảng} @ (Giá trị){Chuỗi}] Đúng nếu phần tử đầu tiên trong mảng của mục tiêu trùng với giá trị chuỗi được cho bằng cách sử dụng biểu thức chính quy',
-                '@search' => '[(Mục tiêu){Mảng} @ (Giá trị){Danh sách từ}] Đúng nếu phần tử đầu tiên trong mảng của mục tiêu trùng với phần tử đầu tiên trong danh sách từ được cho bằng cách sử dụng biểu thức chính quy',
+                '@similar' => '[(Mục tiêu){Mảng} @ (Giá trị){Danh sách từ}] Đúng nếu một phần tử trong mảng của mục tiêu trùng với một phần tử trong danh sách từ được cho',
+                '@contains' => '[(Mục tiêu){Mảng} @ (Giá trị){Chuỗi}] Đúng nếu một phần tử trong mảng của mục tiêu trùng với giá trị chuỗi được cho',
+                '@match' => '[(Mục tiêu){Mảng} @ (Giá trị){Chuỗi}] Đúng nếu một phần tử trong mảng của mục tiêu khớp với giá trị chuỗi được cho bằng cách sử dụng biểu thức chính quy',
+                '@search' => '[(Mục tiêu){Mảng} @ (Giá trị){Danh sách từ}] Đúng nếu một phần tử trong mảng của mục tiêu khớp với một phần tử trong danh sách từ được cho bằng cách sử dụng biểu thức chính quy',
                 '@equal' => '[(Mục tiêu){Số} @ (Giá trị){Số}] Đúng nếu giá trị số của mục tiêu trùng với giá trị số được cho',
                 '@greaterThan' => '[(Mục tiêu){Số} @ (Giá trị){Số}] Đúng nếu giá trị số của mục tiêu lớn hơn giá trị số được cho',
                 '@lessThan' => '[(Mục tiêu){Số} @ (Giá trị){Số}] Đúng nếu giá trị số của mục tiêu nhỏ hơn giá trị số được cho',
@@ -321,9 +321,9 @@ return [
                 '@mirror' => '[(Mục tiêu){Chuỗi} @ (Giá trị){Chuỗi}] Đúng nếu giá trị chuỗi của mục tiêu trùng với giá trị chuỗi được cho',
                 '@startsWith' => '[(Mục tiêu){Chuỗi} @ (Giá trị){Chuỗi}] Đúng nếu giá trị chuỗi của mục tiêu bắt đầu giống với giá trị chuỗi được cho',
                 '@endsWith' => '[(Mục tiêu){Chuỗi} @ (Giá trị){Chuỗi}] Đúng nếu giá trị chuỗi của mục tiêu kết thúc giống với giá trị chuỗi được cho',
-                '@check' => '[(Mục tiêu){Chuỗi} @ (Giá trị){Danh sách từ}] Đúng nếu giá trị chuỗi của mục tiêu trùng với phần tử đầu tiên trong danh sách từ được cho',
+                '@check' => '[(Mục tiêu){Chuỗi} @ (Giá trị){Danh sách từ}] Đúng nếu giá trị chuỗi của mục tiêu trùng với một phần tử trong danh sách từ được cho',
                 '@regExp' => '[(Mục tiêu){Chuỗi} @ (Giá trị){Chuỗi}] Đúng nếu giá trị chuỗi của mục tiêu trùng với giá trị chuỗi được cho bằng cách sử dụng biểu thức chính quy',
-                '@checkRegExp' => '[(Mục tiêu){Chuỗi} @ (Giá trị){Danh sách từ}] Đúng nếu giá trị chuỗi của mục tiêu trùng với phần tử đầu tiên trong danh sách từ được cho bằng cách sử dụng biểu thức chính quy',
+                '@checkRegExp' => '[(Mục tiêu){Chuỗi} @ (Giá trị){Danh sách từ}] Đúng nếu giá trị chuỗi của mục tiêu khớp với một phần tử trong danh sách từ được cho bằng cách sử dụng biểu thức chính quy',
             ],
             'configurations' => [
                 'string_value' => 'Giá trị có kiểu dữ liệu chuỗi dùng để so sánh với mục tiêu có kiểu dữ liệu cuối cùng là chuỗi',

@@ -3,9 +3,7 @@ package rules
 import (
 	"encoding/json"
 	"fmt"
-	"math"
 	"regexp"
-	"slices"
 	"strconv"
 	"strings"
 
@@ -37,7 +35,7 @@ func (m Matcher) Match(rule *ent.Rule, phase int) bool {
 		value = m.Targets.Extract(target, phase)
 		value = m.Engines.Transform(value, target)
 	}
-	return compare(rule.Comparator, value, m.expectedValues(rule))
+	return Compare(rule.Comparator, value, m.expectedValues(rule))
 }
 
 func (m Matcher) expectedValues(rule *ent.Rule) []any {
@@ -55,49 +53,154 @@ func (m Matcher) expectedValues(rule *ent.Rule) []any {
 	return expected
 }
 
-func compare(comparator string, value any, expected []any) bool {
+func Compare(comparator string, value any, expected []any) bool {
 	switch comparator {
-	case "@check":
-		return value != nil && stringify(value) != ""
-	case "@equal":
-		return slices.ContainsFunc(expected, func(item any) bool { return stringify(value) == stringify(item) })
-	case "@contains", "@search":
-		text := stringify(value)
-		return slices.ContainsFunc(expected, func(item any) bool { return strings.Contains(text, stringify(item)) })
+	case "@similar", "@contains":
+		return anyArrayItemMatches(value, expected, stringsEqual)
+	case "@match", "@search":
+		return anyArrayItemMatches(value, expected, regexpMatches)
+	case "@check", "@mirror":
+		return anyExpectedMatches(value, expected, stringsEqual)
+	case "@regExp", "@checkRegExp":
+		return anyExpectedMatches(value, expected, regexpMatches)
 	case "@startsWith":
-		text := stringify(value)
-		return slices.ContainsFunc(expected, func(item any) bool { return strings.HasPrefix(text, stringify(item)) })
+		return anyExpectedMatches(value, expected, strings.HasPrefix)
 	case "@endsWith":
-		text := stringify(value)
-		return slices.ContainsFunc(expected, func(item any) bool { return strings.HasSuffix(text, stringify(item)) })
+		return anyExpectedMatches(value, expected, strings.HasSuffix)
+	case "@equal":
+		return anyExpectedMatches(value, expected, numbersEqual)
 	case "@greaterThan":
-		return toFloat(value) > firstFloat(expected)
+		return compareFirstNumber(value, expected, func(number, limit float64) bool { return number > limit })
 	case "@lessThan":
-		return toFloat(value) < firstFloat(expected)
+		return compareFirstNumber(value, expected, func(number, limit float64) bool { return number < limit })
 	case "@greaterThanOrEqual":
-		return toFloat(value) >= firstFloat(expected)
+		return compareFirstNumber(value, expected, func(number, limit float64) bool { return number >= limit })
 	case "@lessThanOrEqual":
-		return toFloat(value) <= firstFloat(expected)
+		return compareFirstNumber(value, expected, func(number, limit float64) bool { return number <= limit })
 	case "@inRange":
-		if len(expected) < 2 {
-			return false
-		}
-		number := toFloat(value)
-		return number >= toFloat(expected[0]) && number <= toFloat(expected[1])
-	case "@match", "@regExp", "@checkRegExp":
-		text := stringify(value)
-		return slices.ContainsFunc(expected, func(item any) bool {
-			matched, _ := regexp.MatchString(stringify(item), text)
-			return matched
-		})
-	case "@mirror":
-		items := toStrings(value)
-		return len(items) > 0 && slices.ContainsFunc(items, func(item string) bool { return item == stringify(expectedValue(expected)) })
-	case "@similar":
-		return similarity(stringify(value), stringify(expectedValue(expected))) >= 0.8
+		return compareRangeNumber(value, expected)
 	default:
 		return false
 	}
+}
+
+func MatchedExpectedValues(comparator string, value any, expected []any) []any {
+	matches := make([]any, 0)
+	for _, item := range expected {
+		if expectedMatches(comparator, value, item, expected) {
+			matches = append(matches, item)
+		}
+	}
+	return matches
+}
+
+func MatchedTargetValues(comparator string, value any, expected []any) []any {
+	matches := make([]any, 0)
+	for _, item := range toAnySlice(value) {
+		if Compare(comparator, item, expected) {
+			matches = append(matches, item)
+		}
+	}
+	return matches
+}
+
+func expectedMatches(comparator string, value any, expected any, allExpected []any) bool {
+	switch comparator {
+	case "@similar", "@contains":
+		return anyArrayItemMatches(value, []any{expected}, stringsEqual)
+	case "@match", "@search":
+		return anyArrayItemMatches(value, []any{expected}, regexpMatches)
+	case "@check", "@mirror":
+		return anyTargetValueMatches(value, []any{expected}, stringsEqual)
+	case "@regExp", "@checkRegExp":
+		return anyTargetValueMatches(value, []any{expected}, regexpMatches)
+	case "@startsWith":
+		return anyTargetValueMatches(value, []any{expected}, strings.HasPrefix)
+	case "@endsWith":
+		return anyTargetValueMatches(value, []any{expected}, strings.HasSuffix)
+	case "@equal":
+		return anyTargetValueMatches(value, []any{expected}, numbersEqual)
+	case "@greaterThan", "@lessThan", "@greaterThanOrEqual", "@lessThanOrEqual":
+		return len(allExpected) > 0 && stringify(expected) == stringify(allExpected[0]) && Compare(comparator, value, allExpected)
+	case "@inRange":
+		return len(allExpected) >= 2 &&
+			(stringify(expected) == stringify(allExpected[0]) || stringify(expected) == stringify(allExpected[1])) &&
+			Compare(comparator, value, allExpected)
+	default:
+		return false
+	}
+}
+
+func anyArrayItemMatches(value any, expected []any, matcher func(string, string) bool) bool {
+	for _, item := range toAnySlice(value) {
+		if anyExpectedMatches(item, expected, matcher) {
+			return true
+		}
+	}
+	return false
+}
+
+func anyExpectedMatches(value any, expected []any, matcher func(string, string) bool) bool {
+	return anyTargetValueMatches(value, expected, matcher)
+}
+
+func anyTargetValueMatches(value any, expected []any, matcher func(string, string) bool) bool {
+	if len(expected) == 0 {
+		return false
+	}
+	text := stringify(value)
+	for _, item := range expected {
+		if matcher(text, stringify(item)) {
+			return true
+		}
+	}
+	return false
+}
+
+func stringsEqual(value string, expected string) bool {
+	return value == expected
+}
+
+func regexpMatches(value string, pattern string) bool {
+	matched, err := regexp.MatchString(pattern, value)
+	return err == nil && matched
+}
+
+func numbersEqual(value string, expected string) bool {
+	number, ok := parseFloat(value)
+	if !ok {
+		return false
+	}
+	expectedNumber, ok := parseFloat(expected)
+	return ok && number == expectedNumber
+}
+
+func compareFirstNumber(value any, expected []any, matcher func(float64, float64) bool) bool {
+	if len(expected) == 0 {
+		return false
+	}
+	number, ok := toFloat(value)
+	if !ok {
+		return false
+	}
+	limit, ok := toFloat(expected[0])
+	return ok && matcher(number, limit)
+}
+
+func compareRangeNumber(value any, expected []any) bool {
+	if len(expected) < 2 {
+		return false
+	}
+	number, ok := toFloat(value)
+	if !ok {
+		return false
+	}
+	from, ok := toFloat(expected[0])
+	if !ok {
+		return false
+	}
+	to, ok := toFloat(expected[1])
+	return ok && number >= from && number <= to
 }
 
 func stringify(value any) string {
@@ -115,51 +218,35 @@ func stringify(value any) string {
 	}
 }
 
-func toFloat(value any) float64 {
+func toFloat(value any) (float64, bool) {
 	switch typed := value.(type) {
 	case int:
-		return float64(typed)
+		return float64(typed), true
 	case int64:
-		return float64(typed)
+		return float64(typed), true
 	case uint64:
-		return float64(typed)
+		return float64(typed), true
 	case float32:
-		return float64(typed)
+		return float64(typed), true
 	case float64:
-		return typed
+		return typed, true
 	case json.Number:
-		number, _ := typed.Float64()
-		return number
+		number, err := typed.Float64()
+		return number, err == nil
 	default:
-		number, _ := strconv.ParseFloat(strings.TrimSpace(stringify(value)), 64)
-		return number
+		return parseFloat(stringify(value))
 	}
 }
 
-func firstFloat(values []any) float64 {
-	return toFloat(expectedValue(values))
-}
-
-func expectedValue(values []any) any {
-	if len(values) == 0 {
-		return nil
-	}
-	return values[0]
-}
-
-func toStrings(value any) []string {
-	items := toAnySlice(value)
-	result := make([]string, 0, len(items))
-	for _, item := range items {
-		result = append(result, stringify(item))
-	}
-	return result
+func parseFloat(value string) (float64, bool) {
+	number, err := strconv.ParseFloat(strings.TrimSpace(value), 64)
+	return number, err == nil
 }
 
 func toAnySlice(value any) []any {
 	switch typed := value.(type) {
 	case nil:
-		return []any{nil}
+		return nil
 	case []any:
 		return typed
 	case []string:
@@ -171,36 +258,4 @@ func toAnySlice(value any) []any {
 	default:
 		return []any{typed}
 	}
-}
-
-func similarity(a string, b string) float64 {
-	if a == b {
-		return 1
-	}
-	if a == "" || b == "" {
-		return 0
-	}
-	distance := levenshtein(a, b)
-	maxLen := math.Max(float64(len(a)), float64(len(b)))
-	return 1 - float64(distance)/maxLen
-}
-
-func levenshtein(a string, b string) int {
-	previous := make([]int, len(b)+1)
-	for j := range previous {
-		previous[j] = j
-	}
-	for i := 1; i <= len(a); i++ {
-		current := make([]int, len(b)+1)
-		current[0] = i
-		for j := 1; j <= len(b); j++ {
-			cost := 0
-			if a[i-1] != b[j-1] {
-				cost = 1
-			}
-			current[j] = min(previous[j]+1, current[j-1]+1, previous[j-1]+cost)
-		}
-		previous = current
-	}
-	return previous[len(b)]
 }

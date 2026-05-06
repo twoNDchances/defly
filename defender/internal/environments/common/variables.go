@@ -20,4 +20,9 @@ var (
 				WithDefault("storage/errors").
 				WithConstraint("Must be a valid directory path", validateErrorDirectoryPath).
 				Required(ferrite.RelevantIf(ErrorFileEnable))
+
+	WordlistRoot = ferrite.String("WORDLIST_ROOT", "Directory path where mounted wordlist files are stored").
+			WithDefault("storage/wordlists").
+			WithConstraint("Must be a valid directory path", validateWordlistRoot).
+			Required()
 )

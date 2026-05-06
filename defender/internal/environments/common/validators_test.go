@@ -44,6 +44,40 @@ func TestValidateErrorFilePath(t *testing.T) {
 	}
 }
 
+func TestValidateWordlistRoot(t *testing.T) {
+	root := t.TempDir()
+	filePath := filepath.Join(root, "wordlist.txt")
+	if err := os.WriteFile(filePath, []byte("word"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+
+	tests := map[string]struct {
+		value string
+		want  bool
+	}{
+		"existing directory": {
+			value: root,
+			want:  true,
+		},
+		"new nested directory": {
+			value: filepath.Join(root, "wordlists", "private"),
+			want:  true,
+		},
+		"existing file": {
+			value: filePath,
+			want:  false,
+		},
+	}
+
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			if got := validateWordlistRoot(tt.value); got != tt.want {
+				t.Fatalf("validateWordlistRoot(%q) = %t, want %t", tt.value, got, tt.want)
+			}
+		})
+	}
+}
+
 func TestValidateDefenderName(t *testing.T) {
 	tests := map[string]struct {
 		value string

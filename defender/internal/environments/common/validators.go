@@ -16,3 +16,7 @@ func validateDefenderName(value string) bool {
 func validateErrorDirectoryPath(value string) bool {
 	return utilities.IsCreatableDirectoryPath(value)
 }
+
+func validateWordlistRoot(value string) bool {
+	return utilities.IsCreatableDirectoryPath(value)
+}

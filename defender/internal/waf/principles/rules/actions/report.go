@@ -6,22 +6,23 @@ import (
 	"encoding/json"
 	"errors"
 	"log"
-	"math"
 	"mime"
 	"mime/multipart"
 	"net/http"
 	"net/url"
-	"regexp"
 	"strings"
 	"time"
 
 	"defly-defender/ent"
+	ruleruntime "defly-defender/internal/waf/principles/rules"
 	ruletargets "defly-defender/internal/waf/principles/rules/targets"
 	ruleengines "defly-defender/internal/waf/principles/rules/targets/engines"
 	"defly-defender/internal/waf/wordlist"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/google/uuid"
 )
+
+const fullExpectedValuesLimit = 10
 
 type Report struct {
 	DatabaseDSN  string
@@ -239,8 +240,8 @@ func (r Report) ruleDetails(tx Transaction) map[string]any {
 	}
 
 	expected := reportExpectedValues(rule)
-	matchedExpected := matchedExpectedValues(rule.Comparator, trace.FinalValue, expected)
-	matchedTarget := matchedTargetValues(rule.Comparator, trace.FinalValue, expected)
+	matchedExpected := ruleruntime.MatchedExpectedValues(rule.Comparator, trace.FinalValue, expected)
+	matchedTarget := ruleruntime.MatchedTargetValues(rule.Comparator, trace.FinalValue, expected)
 
 	return map[string]any{
 		"rule": map[string]any{
@@ -255,7 +256,7 @@ func (r Report) ruleDetails(tx Transaction) map[string]any {
 		"final_output":    trace.FinalValue,
 		"datatype":        trace.FinalDatatype,
 		"comparator":      rule.Comparator,
-		"expected_values": expected,
+		"expected_values": reportDisplayExpectedValues(expected, matchedExpected),
 		"matched_values": map[string]any{
 			"target":   matchedTarget,
 			"expected": matchedExpected,
@@ -314,133 +315,45 @@ func reportExpectedValues(rule *ent.Rule) []any {
 	return expected
 }
 
-func matchedExpectedValues(comparator string, value any, expected []any) []any {
-	matches := make([]any, 0)
-	for _, item := range expected {
-		if comparisonMatchesExpected(comparator, value, item, expected) {
-			matches = append(matches, item)
-		}
+func reportDisplayExpectedValues(expected []any, matches []any) []any {
+	if len(expected) <= fullExpectedValuesLimit {
+		return expected
 	}
-	if len(matches) == 0 && comparator == "@check" && stringify(value) != "" {
-		return []any{value}
-	}
-	return matches
-}
 
-func matchedTargetValues(comparator string, value any, expected []any) []any {
-	matches := make([]any, 0)
-	for _, item := range toAnySlice(value) {
-		if comparisonSatisfied(comparator, item, expected) {
-			matches = append(matches, item)
-		}
-	}
-	return matches
-}
-
-func comparisonMatchesExpected(comparator string, value any, expected any, allExpected []any) bool {
-	switch comparator {
-	case "@equal":
-		return stringify(value) == stringify(expected)
-	case "@contains", "@search":
-		return strings.Contains(stringify(value), stringify(expected))
-	case "@startsWith":
-		return strings.HasPrefix(stringify(value), stringify(expected))
-	case "@endsWith":
-		return strings.HasSuffix(stringify(value), stringify(expected))
-	case "@greaterThan", "@lessThan", "@greaterThanOrEqual", "@lessThanOrEqual":
-		return len(allExpected) > 0 && stringify(expected) == stringify(allExpected[0]) && comparisonSatisfied(comparator, value, allExpected)
-	case "@inRange":
-		return len(allExpected) >= 2 && (stringify(expected) == stringify(allExpected[0]) || stringify(expected) == stringify(allExpected[1])) && comparisonSatisfied(comparator, value, allExpected)
-	case "@match", "@regExp", "@checkRegExp":
-		matched, _ := regexp.MatchString(stringify(expected), stringify(value))
-		return matched
-	case "@mirror":
-		return containsString(toAnySlice(value), stringify(expected))
-	case "@similar":
-		return similarity(stringify(value), stringify(expected)) >= 0.8
-	case "@check":
-		return stringify(value) != ""
-	default:
-		return false
-	}
-}
-
-func comparisonSatisfied(comparator string, value any, expected []any) bool {
-	switch comparator {
-	case "@check":
-		return stringify(value) != ""
-	case "@equal":
-		return containsString(expected, stringify(value))
-	case "@contains", "@search":
-		text := stringify(value)
-		for _, item := range expected {
-			if strings.Contains(text, stringify(item)) {
-				return true
-			}
-		}
-	case "@startsWith":
-		text := stringify(value)
-		for _, item := range expected {
-			if strings.HasPrefix(text, stringify(item)) {
-				return true
-			}
-		}
-	case "@endsWith":
-		text := stringify(value)
-		for _, item := range expected {
-			if strings.HasSuffix(text, stringify(item)) {
-				return true
-			}
-		}
-	case "@greaterThan":
-		return toFloat(value) > firstReportFloat(expected)
-	case "@lessThan":
-		return toFloat(value) < firstReportFloat(expected)
-	case "@greaterThanOrEqual":
-		return toFloat(value) >= firstReportFloat(expected)
-	case "@lessThanOrEqual":
-		return toFloat(value) <= firstReportFloat(expected)
-	case "@inRange":
-		return len(expected) >= 2 && toFloat(value) >= toFloat(expected[0]) && toFloat(value) <= toFloat(expected[1])
-	case "@match", "@regExp", "@checkRegExp":
-		text := stringify(value)
-		for _, item := range expected {
-			matched, _ := regexp.MatchString(stringify(item), text)
-			if matched {
-				return true
-			}
-		}
-	case "@mirror":
-		if len(expected) == 0 {
-			return false
-		}
-		return stringify(value) == stringify(expected[0])
-	case "@similar":
-		for _, item := range expected {
-			if similarity(stringify(value), stringify(item)) >= 0.8 {
-				return true
-			}
-		}
-	}
-	return false
+	display := make([]any, 0, len(matches)+2)
+	display = append(display, "...")
+	display = append(display, matches...)
+	display = append(display, "...")
+	return display
 }
 
 func contextualMatch(values []any, matches []any) []any {
-	for index, value := range values {
-		if !containsString(matches, stringify(value)) {
-			continue
-		}
-		context := make([]any, 0, 3)
-		if index > 0 {
-			context = append(context, "...")
-		}
-		context = append(context, value)
-		if index < len(values)-1 {
-			context = append(context, "...")
-		}
-		return context
+	if len(values) == 0 || len(matches) == 0 {
+		return nil
 	}
-	return nil
+
+	context := make([]any, 0, len(matches)+2)
+	lastMatchedIndex := -1
+	for index, value := range values {
+		if containsString(matches, stringify(value)) {
+			if len(context) == 0 {
+				if index > 0 {
+					context = append(context, "...")
+				}
+			} else if index > lastMatchedIndex+1 {
+				context = append(context, "...")
+			}
+			context = append(context, value)
+			lastMatchedIndex = index
+		}
+	}
+	if len(context) == 0 {
+		return nil
+	}
+	if lastMatchedIndex < len(values)-1 {
+		context = append(context, "...")
+	}
+	return context
 }
 
 func containsString(values []any, needle string) bool {
@@ -450,13 +363,6 @@ func containsString(values []any, needle string) bool {
 		}
 	}
 	return false
-}
-
-func firstReportFloat(values []any) float64 {
-	if len(values) == 0 {
-		return 0
-	}
-	return toFloat(values[0])
 }
 
 func valuesToMap(values url.Values) map[string]any {
@@ -530,36 +436,4 @@ func ioReadAll(part *multipart.Part) ([]byte, error) {
 	var buffer bytes.Buffer
 	_, err := buffer.ReadFrom(part)
 	return buffer.Bytes(), err
-}
-
-func similarity(a string, b string) float64 {
-	if a == b {
-		return 1
-	}
-	if a == "" || b == "" {
-		return 0
-	}
-	distance := levenshtein(a, b)
-	maxLen := math.Max(float64(len(a)), float64(len(b)))
-	return 1 - float64(distance)/maxLen
-}
-
-func levenshtein(a string, b string) int {
-	previous := make([]int, len(b)+1)
-	for j := range previous {
-		previous[j] = j
-	}
-	for i := 1; i <= len(a); i++ {
-		current := make([]int, len(b)+1)
-		current[0] = i
-		for j := 1; j <= len(b); j++ {
-			cost := 0
-			if a[i-1] != b[j-1] {
-				cost = 1
-			}
-			current[j] = min(previous[j]+1, current[j-1]+1, previous[j-1]+cost)
-		}
-		previous = current
-	}
-	return previous[len(b)]
 }
