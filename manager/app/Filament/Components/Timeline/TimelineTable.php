@@ -3,7 +3,6 @@
 namespace App\Filament\Components\Timeline;
 
 use App\Traits\Filament\Specifics\Timeline\TimelineColumn;
-use Devletes\FilamentTimelineView\Tables\Columns\TimelineEntry;
 
 class TimelineTable
 {
@@ -12,7 +11,12 @@ class TimelineTable
     public static function build()
     {
         return [
-            self::getTimeline(),
+            self::getLoggedAt(),
+            self::getCreatedBy(),
+            self::getMethod(),
+            self::getPath(),
+            self::getAction(),
+            self::getResource(),
         ];
     }
 }

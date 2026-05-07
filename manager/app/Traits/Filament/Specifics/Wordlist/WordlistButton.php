@@ -3,6 +3,7 @@
 namespace App\Traits\Filament\Specifics\Wordlist;
 
 use App\Enums\Wordlist\Type;
+use App\Services\Logger;
 use App\Traits\Filament\Generals\Components\Button;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -31,6 +32,7 @@ trait WordlistButton
 
                 $clone->save();
                 $clone->labels()->sync($record->labels()->pluck('id')->all());
+                Logger::log($record, 'clone');
             });
     }
 }

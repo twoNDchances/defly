@@ -5,6 +5,7 @@ namespace App\Traits\Filament\Specifics\Defender;
 use App\Enums\Defender\DeploymentStatus;
 use App\Jobs\DefenderDeployment;
 use App\Services\Identification;
+use App\Services\Logger;
 use App\Services\Orchestrator;
 use App\Traits\Filament\Generals\Components\Button;
 use Filament\Support\Icons\Heroicon;
@@ -32,6 +33,7 @@ trait DefenderButton
                     DefenderDeployment::ACTION_DEPLOY,
                     Identification::getEmail(),
                 );
+                Logger::log($record, 'deploy');
             }
         )
             ->authorize('deploy')
@@ -59,6 +61,7 @@ trait DefenderButton
                         DefenderDeployment::ACTION_DEPLOY,
                         Identification::getEmail(),
                     );
+                    Logger::log($record, 'deployAny');
                 }
             }
         )
@@ -90,6 +93,7 @@ trait DefenderButton
                     DefenderDeployment::ACTION_CANCEL,
                     Identification::getEmail(),
                 );
+                Logger::log($record, 'cancel');
             }
         )
             ->authorize('cancel')
@@ -118,6 +122,7 @@ trait DefenderButton
                         DefenderDeployment::ACTION_CANCEL,
                         Identification::getEmail(),
                     );
+                    Logger::log($record, 'cancelAny');
                 }
             }
         )
@@ -187,6 +192,7 @@ trait DefenderButton
                 }
 
                 $set('log', $state);
+                Logger::log($record, 'follow');
             }
         )
             ->tooltip(__('forms.defender.buttons.tooltips.follow'))
@@ -212,6 +218,7 @@ trait DefenderButton
                 }
 
                 $set('last_response_details', $state);
+                Logger::log($record, 'refresh');
             },
         )
             ->tooltip(__('forms.defender.buttons.tooltips.refresh'))

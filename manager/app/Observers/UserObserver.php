@@ -5,6 +5,7 @@ namespace App\Observers;
 use App\Mail\VerificationMail;
 use App\Models\User;
 use App\Services\Identification;
+use App\Services\Logger;
 use App\Traits\Observers\After;
 use App\Traits\Observers\Before;
 use Exception;
@@ -36,5 +37,7 @@ class UserObserver
             $user->markEmailAsVerified();
             $user->save();
         }
+
+        Logger::created($user);
     }
 }

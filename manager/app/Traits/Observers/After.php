@@ -2,6 +2,7 @@
 
 namespace App\Traits\Observers;
 
+use App\Services\Logger;
 use Illuminate\Database\Eloquent\Model;
 
 trait After
@@ -19,7 +20,7 @@ trait After
      */
     public function created(Model $model): void
     {
-        //
+        Logger::created($model);
     }
 
     /**
@@ -27,7 +28,7 @@ trait After
      */
     public function updated(Model $model): void
     {
-        //
+        Logger::updated($model);
     }
 
     /**
@@ -35,6 +36,6 @@ trait After
      */
     public function deleted(Model $model): void
     {
-        //
+        Logger::deleted($model);
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Traits\Filament\Generals\Components;
 
+use App\Services\Logger;
 use App\Services\Lock;
 use Filament\Actions;
 use Filament\Actions\DeleteBulkAction;
@@ -234,6 +235,7 @@ trait Button
                 }
                 $clone->save();
                 $clone->labels()->sync($record->labels()->pluck('id')->all());
+                Logger::log($record, 'clone');
             })
             ->requiresConfirmation()
             ->color('gray');

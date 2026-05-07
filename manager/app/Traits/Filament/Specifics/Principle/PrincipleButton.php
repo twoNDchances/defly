@@ -8,6 +8,7 @@ use App\Jobs\DefenderCommunication;
 use App\Jobs\PrincipleValidation;
 use App\Models\Defender;
 use App\Services\Identification;
+use App\Services\Logger;
 use App\Services\Lock;
 use App\Traits\Filament\Generals\Components\Button;
 use Filament\Support\Icons\Heroicon;
@@ -120,6 +121,7 @@ trait PrincipleButton
                 $record->validation_status = ValidationStatus::Pending;
                 $record->save();
                 PrincipleValidation::dispatch($record->id);
+                Logger::log($record, 'validate');
             },
         )
             ->authorize('validate')
@@ -138,6 +140,7 @@ trait PrincipleButton
                 $clone->validation_details = null;
                 $clone->save();
                 $clone->labels()->sync($record->labels()->pluck('id')->all());
+                Logger::log($record, 'clone');
             });
     }
 
@@ -158,6 +161,7 @@ trait PrincipleButton
                     $record->validation_status = ValidationStatus::Pending;
                     $record->save();
                     PrincipleValidation::dispatch($record->id);
+                    Logger::log($record, 'validateAny');
                 }
             }
         )
@@ -205,6 +209,7 @@ trait PrincipleButton
                     DefenderCommunication::ACTION_APPLY,
                     Identification::getEmail(),
                 );
+                Logger::log($record, 'apply');
             },
         )
             ->color('sky')
@@ -234,6 +239,7 @@ trait PrincipleButton
                     DefenderCommunication::ACTION_APPLY,
                     Identification::getEmail(),
                 );
+                Logger::logMany($records, 'applyAny');
             },
         )
             ->color('sky')
@@ -259,6 +265,7 @@ trait PrincipleButton
                     DefenderCommunication::ACTION_REVOKE,
                     Identification::getEmail(),
                 );
+                Logger::log($record, 'revoke');
             },
         )
             ->color('pink')
@@ -291,6 +298,7 @@ trait PrincipleButton
                     DefenderCommunication::ACTION_REVOKE,
                     Identification::getEmail(),
                 );
+                Logger::logMany($records->whereIn('id', $recordIds), 'revokeAny');
             },
         )
             ->color('pink')

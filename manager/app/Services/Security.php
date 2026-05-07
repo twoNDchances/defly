@@ -31,9 +31,13 @@ class Security
         'follow' => 'Follow',
         'refresh' => 'Refresh',
         'apply' => 'Apply',
+        'applyAny' => 'Multi-apply',
         'revoke' => 'Revoke',
+        'revokeAny' => 'Multi-revoke',
         'implement' => 'Implement',
+        'implementAny' => 'Multi-implement',
         'suspend' => 'Suspend',
+        'suspendAny' => 'Multi-suspend',
     ];
 
     public static $excludeActionsByModel = [

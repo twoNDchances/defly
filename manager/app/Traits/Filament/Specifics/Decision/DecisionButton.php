@@ -6,6 +6,7 @@ use App\Enums\Defender\DeploymentStatus;
 use App\Jobs\DefenderCommunication;
 use App\Models\Defender;
 use App\Services\Identification;
+use App\Services\Logger;
 use App\Services\Lock;
 use App\Traits\Filament\Generals\Components\Button;
 use Filament\Notifications\Notification;
@@ -162,6 +163,7 @@ trait DecisionButton
                     DefenderCommunication::ACTION_IMPLEMENT,
                     Identification::getEmail(),
                 );
+                Logger::log($record, 'implement');
             },
         )
             ->color('orange')
@@ -191,6 +193,7 @@ trait DecisionButton
                     DefenderCommunication::ACTION_IMPLEMENT,
                     Identification::getEmail(),
                 );
+                Logger::logMany($records, 'implementAny');
             },
         )
             ->color('orange')
@@ -216,6 +219,7 @@ trait DecisionButton
                     DefenderCommunication::ACTION_SUSPEND,
                     Identification::getEmail(),
                 );
+                Logger::log($record, 'suspend');
             },
         )
             ->color('warning')
@@ -248,6 +252,7 @@ trait DecisionButton
                     DefenderCommunication::ACTION_SUSPEND,
                     Identification::getEmail(),
                 );
+                Logger::logMany($records->whereIn('id', $recordIds), 'suspendAny');
             },
         )
             ->color('warning')
