@@ -161,7 +161,6 @@ trait PrincipleButton
                     $record->validation_status = ValidationStatus::Pending;
                     $record->save();
                     PrincipleValidation::dispatch($record->id);
-                    Logger::log($record, 'validateAny');
                 }
             }
         )
@@ -239,7 +238,6 @@ trait PrincipleButton
                     DefenderCommunication::ACTION_APPLY,
                     Identification::getEmail(),
                 );
-                Logger::logMany($records, 'applyAny');
             },
         )
             ->color('sky')
@@ -298,7 +296,6 @@ trait PrincipleButton
                     DefenderCommunication::ACTION_REVOKE,
                     Identification::getEmail(),
                 );
-                Logger::logMany($records->whereIn('id', $recordIds), 'revokeAny');
             },
         )
             ->color('pink')

@@ -80,6 +80,12 @@ trait Field
             ->label($label);
     }
 
+    public static function datetimePicker($name, $label = null)
+    {
+        return Components\DateTimePicker::make($name)
+            ->label($label);
+    }
+
     public static function jsonPreview($name, $label = null)
     {
         return self::codeEditor($name, $label, Language::Json)

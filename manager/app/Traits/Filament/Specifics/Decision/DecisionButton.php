@@ -193,7 +193,6 @@ trait DecisionButton
                     DefenderCommunication::ACTION_IMPLEMENT,
                     Identification::getEmail(),
                 );
-                Logger::logMany($records, 'implementAny');
             },
         )
             ->color('orange')
@@ -252,7 +251,6 @@ trait DecisionButton
                     DefenderCommunication::ACTION_SUSPEND,
                     Identification::getEmail(),
                 );
-                Logger::logMany($records->whereIn('id', $recordIds), 'suspendAny');
             },
         )
             ->color('warning')

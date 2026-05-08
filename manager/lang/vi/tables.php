@@ -54,10 +54,10 @@ return [
     ],
     'decision' => [
         'defenders' => 'Defender sử dụng',
-        'is_implemented' => 'Được triển khai',
+        'is_implemented' => 'Được thực hiện',
         'buttons' => [
-            'implement' => 'Triển khai',
-            'implementAny' => 'Triển khai các mục đã chọn',
+            'implement' => 'Thực hiện',
+            'implementAny' => 'Thực hiện các mục đã chọn',
             'suspend' => 'Đình chỉ',
             'suspendAny' => 'Đỉnh chỉ các mục đã chọn',
         ],

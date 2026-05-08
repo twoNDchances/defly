@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Timelines\Tables;
 
 use App\Filament\Components\Timeline\TimelineTable;
+use Filament\Tables\Grouping\Group;
 use Filament\Tables\Table;
 
 class TimelinesTable
@@ -17,10 +18,12 @@ class TimelinesTable
             ->recordActions([
                 TimelineTable::buttonGroup(edit: false),
             ])
-            ->toolbarActions([
-                TimelineTable::bulkButtonGroup(),
-            ])
-            ->defaultSort('created_at', 'desc')
-            ->poll('5s');
+            ->defaultGroup(
+                Group::make('created_at')
+                ->date()
+                ->orderQueryUsing(fn ($query) => $query->orderByDesc('created_at'))
+                ->collapsible()
+            )
+            ->asDoubleSidedTimeline();
     }
 }

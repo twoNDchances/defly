@@ -32,7 +32,10 @@ class DeflyManagerPanelProvider extends PanelProvider
             ->login()
             ->colors([
                 'primary' => config('customization.gui.theme_color'),
+                'blue' => Color::Blue,
                 'cyan' => Color::Cyan,
+                'emerald' => Color::Emerald,
+                'indigo' => Color::Indigo,
                 'orange' => Color::Orange,
                 'pink' => Color::Pink,
                 'purple' => Color::Purple,

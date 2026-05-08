@@ -407,7 +407,22 @@ return [
             'resource' => [
                 'resource_type' => 'Loại tài nguyên',
                 'resource_id' => 'ID tài nguyên',
-            ]
+            ],
+            'action' => [
+                'create' => 'Tạo',
+                'update' => 'Cập nhật',
+                'delete' => 'Xóa',
+                'clone' => 'Nhân bản',
+                'validate' => 'Xác minh',
+                'deploy' => 'Triển khai',
+                'cancel' => 'Hủy bỏ',
+                'follow' => 'Theo dõi',
+                'refresh' => 'Làm mới',
+                'apply' => 'Áp dụng',
+                'revoke' => 'Thu hồi',
+                'implement' => 'Thực hiện',
+                'suspend' => 'Đình chỉ',
+            ],
         ]
     ],
 ];

@@ -84,7 +84,7 @@ trait TimelineColumn
         ];
 
         return self::textColumn('resource_type', __('models.timeline.fields.resource'))
-            ->formatStateUsing(fn ($state) => blank($state) ? '' : Str::headline(class_basename($state)))
+            ->formatStateUsing(fn ($state) => self::resourceTypeOptionsAndColors()['options'][$state] ?? (blank($state) ? '' : Str::headline(class_basename($state))))
             ->url(function ($record) use ($resources) {
                 $resource = $resources[$record->resource_type] ?? null;
 
@@ -93,6 +93,7 @@ trait TimelineColumn
                 }
 
                 return $resource::getUrl('edit', ['record' => $record->resource_id]);
-            });
+            })
+            ->openUrlInNewTab();
     }
 }

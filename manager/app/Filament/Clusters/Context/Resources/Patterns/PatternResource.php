@@ -3,8 +3,6 @@
 namespace App\Filament\Clusters\Context\Resources\Patterns;
 
 use App\Filament\Clusters\Context\ContextCluster;
-use App\Filament\Clusters\Context\Resources\Patterns\Pages\CreatePattern;
-use App\Filament\Clusters\Context\Resources\Patterns\Pages\EditPattern;
 use App\Filament\Clusters\Context\Resources\Patterns\Pages\ListPatterns;
 use App\Filament\Clusters\Context\Resources\Patterns\Schemas\PatternForm;
 use App\Filament\Clusters\Context\Resources\Patterns\Tables\PatternsTable;
@@ -48,8 +46,6 @@ class PatternResource extends Resource
     {
         return [
             'index' => ListPatterns::route('/'),
-            'create' => CreatePattern::route('/create'),
-            'edit' => EditPattern::route('/{record}/edit'),
         ];
     }
 

@@ -52,8 +52,7 @@ trait KeyField
 
     public static function setExpiredAt()
     {
-        return DateTimePicker::make('expired_at')
-            ->label(__('models.key.fields.expired_at'))
+        return self::datetimePicker('expired_at', __('models.key.fields.expired_at'))
             ->helperText(__('forms.key.descriptions.expired_at'))
             ->seconds(false)
             ->nullable()

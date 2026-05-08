@@ -393,4 +393,36 @@ return [
             'value' => 'Value',
         ],
     ],
+    'timeline' => [
+        'name' => 'Timeline',
+        'fields' => [
+            'ipv4' => 'IPv4',
+            'ipv6' => 'IPv6',
+            'method' => 'Method',
+            'path' => 'Path',
+            'action' => 'Action',
+            'resource' => 'Resource',
+        ],
+        'extras' => [
+            'resource' => [
+                'resource_type' => 'Resource type',
+                'resource_id' => 'Resource ID',
+            ],
+            'action' => [
+                'create' => 'Create',
+                'update' => 'Update',
+                'delete' => 'Delete',
+                'clone' => 'Clone',
+                'validate' => 'Validate',
+                'deploy' => 'Deploy',
+                'cancel' => 'Cancel',
+                'follow' => 'Follow',
+                'refresh' => 'Refresh',
+                'apply' => 'Apply',
+                'revoke' => 'Revoke',
+                'implement' => 'Implement',
+                'suspend' => 'Suspend',
+            ],
+        ],
+    ],
 ];

@@ -548,4 +548,29 @@ return [
             ],
         ],
     ],
+    'timeline' => [
+        'descriptions' => [
+            'created_at' => 'Thời gian xảy ra sự kiện này',
+            'created_by' => 'Người dùng kích hoạt sự kiện này',
+            'ipv4' => 'Địa chỉ IPv4 từ trình duyệt của người dùng',
+            'ipv6' => 'Địa chỉ IPv6 từ trình duyệt của người dùng',
+            'method' => 'Phương thức kích hoạt sự kiện này',
+            'path' => 'Đường dẫn kích hoạt sự kiện này',
+            'action' => 'Hành động tác động lên tài nguyên này',
+        ],
+        'extras' => [
+            'resource' => [
+                'resource_type' => 'Loại tài nguyên được nhắm tới',
+                'resource_id' => 'ID của tài nguyên được nhắm tới',
+            ],
+        ],
+        'buttons' => [
+            'open_resource' => 'Mở tài nguyên',
+        ],
+        'sections' => [
+            'a' => [
+                'title' => 'Chi tiết dòng thời gian',
+            ],
+        ],
+    ],
 ];

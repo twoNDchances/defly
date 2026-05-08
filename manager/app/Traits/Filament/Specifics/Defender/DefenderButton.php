@@ -61,7 +61,6 @@ trait DefenderButton
                         DefenderDeployment::ACTION_DEPLOY,
                         Identification::getEmail(),
                     );
-                    Logger::log($record, 'deployAny');
                 }
             }
         )
@@ -122,7 +121,6 @@ trait DefenderButton
                         DefenderDeployment::ACTION_CANCEL,
                         Identification::getEmail(),
                     );
-                    Logger::log($record, 'cancelAny');
                 }
             }
         )

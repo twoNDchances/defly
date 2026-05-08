@@ -548,4 +548,29 @@ return [
             ],
         ],
     ],
+    'timeline' => [
+        'descriptions' => [
+            'created_at' => 'When this event happened',
+            'created_by' => 'User who triggered this event',
+            'ipv4' => 'IPv4 address from the user browser',
+            'ipv6' => 'IPv6 address from the user browser',
+            'method' => 'HTTP method that triggered this event',
+            'path' => 'Path that triggered this event',
+            'action' => 'Action performed on this resource',
+        ],
+        'extras' => [
+            'resource' => [
+                'resource_type' => 'Targeted resource type',
+                'resource_id' => 'Targeted resource ID',
+            ],
+        ],
+        'buttons' => [
+            'open_resource' => 'Open resource',
+        ],
+        'sections' => [
+            'a' => [
+                'title' => 'Timeline details',
+            ],
+        ],
+    ],
 ];

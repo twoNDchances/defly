@@ -2,8 +2,6 @@
 
 namespace App\Filament\Resources\Timelines;
 
-use App\Filament\Resources\Timelines\Pages\CreateTimeline;
-use App\Filament\Resources\Timelines\Pages\EditTimeline;
 use App\Filament\Resources\Timelines\Pages\ListTimelines;
 use App\Filament\Resources\Timelines\Schemas\TimelineForm;
 use App\Filament\Resources\Timelines\Tables\TimelinesTable;
@@ -44,8 +42,6 @@ class TimelineResource extends Resource
     {
         return [
             'index' => ListTimelines::route('/'),
-            'create' => CreateTimeline::route('/create'),
-            'edit' => EditTimeline::route('/{record}/edit'),
         ];
     }
 
