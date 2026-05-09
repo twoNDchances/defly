@@ -3,6 +3,13 @@
 namespace App\Filament\Resources\Defenders\Pages;
 
 use App\Filament\Resources\Defenders\DefenderResource;
+use App\Filament\Resources\Defenders\Widgets\DefenderHttpStatusChart;
+use App\Filament\Resources\Defenders\Widgets\DefenderOverviewStats;
+use App\Filament\Resources\Defenders\Widgets\DefenderPolicyCoverageChart;
+use App\Filament\Resources\Defenders\Widgets\DefenderReportTrendChart;
+use App\Filament\Resources\Defenders\Widgets\DefenderTopRulesChart;
+use App\Filament\Resources\Defenders\Widgets\DefenderTopSourcesChart;
+use App\Filament\Resources\Defenders\Widgets\DefenderTrafficMethodChart;
 use App\Traits\Filament\Generals\Pages\EditPage;
 use App\Traits\Filament\Specifics\Defender\DefenderData;
 use Filament\Resources\Pages\EditRecord;
@@ -21,5 +28,23 @@ class EditDefender extends EditRecord
     protected function mutateFormDataBeforeSave(array $data): array
     {
         return self::saveForm($data);
+    }
+
+    protected function getFooterWidgets(): array
+    {
+        return [
+            DefenderOverviewStats::class,
+            DefenderPolicyCoverageChart::class,
+            DefenderReportTrendChart::class,
+            DefenderTopRulesChart::class,
+            DefenderTrafficMethodChart::class,
+            DefenderHttpStatusChart::class,
+            DefenderTopSourcesChart::class,
+        ];
+    }
+
+    public function getFooterWidgetsColumns(): int|array
+    {
+        return 2;
     }
 }
