@@ -3,8 +3,9 @@
 namespace App\Services;
 
 use App\Models\Defender as DefenderModel;
+use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Client\Response;
-use Override;
+use Illuminate\Support\Facades\Http;
 
 class Defender extends Connector
 {
@@ -16,8 +17,8 @@ class Defender extends Connector
     ): Response {
         return static::sendToDefender(
             $defender,
-            static::principlePath(),
-            config('customization.backend.apis.defender.paths.principle.methods.apply', 'put'),
+            static::principlePath($defender),
+            static::methodFrom($defender, 'SERVER_CONTROLLER_METHOD_APPLY', 'put'),
             $data !== [] ? $data : static::principlesPayload($principleIds),
             requesterEmail: $requesterEmail,
         );
@@ -31,8 +32,8 @@ class Defender extends Connector
     ): Response {
         return static::sendToDefender(
             $defender,
-            static::principlePath(),
-            config('customization.backend.apis.defender.paths.principle.methods.revoke', 'delete'),
+            static::principlePath($defender),
+            static::methodFrom($defender, 'SERVER_CONTROLLER_METHOD_REVOKE', 'delete'),
             $data !== [] ? $data : static::principlesPayload($principleIds),
             requesterEmail: $requesterEmail,
         );
@@ -46,8 +47,8 @@ class Defender extends Connector
     ): Response {
         return static::sendToDefender(
             $defender,
-            static::decisionPath(),
-            config('customization.backend.apis.defender.paths.decision.methods.implement', 'put'),
+            static::decisionPath($defender),
+            static::methodFrom($defender, 'SERVER_CONTROLLER_METHOD_IMPLEMENT', 'put'),
             $data !== [] ? $data : static::decisionsPayload($decisionIds),
             requesterEmail: $requesterEmail,
         );
@@ -61,8 +62,8 @@ class Defender extends Connector
     ): Response {
         return static::sendToDefender(
             $defender,
-            static::decisionPath(),
-            config('customization.backend.apis.defender.paths.decision.methods.suspend', 'delete'),
+            static::decisionPath($defender),
+            static::methodFrom($defender, 'SERVER_CONTROLLER_METHOD_SUSPEND', 'delete'),
             $data !== [] ? $data : static::decisionsPayload($decisionIds),
             requesterEmail: $requesterEmail,
         );
@@ -77,7 +78,7 @@ class Defender extends Connector
         ?string $requesterEmail = null,
     ): Response {
         return static::sendRequest(
-            static::request(static::emailHeader($requesterEmail))
+            static::requestFor($defender, static::emailHeader($defender, $requesterEmail))
                 ->withOptions(static::requestOptionsFor($defender)),
             $path,
             $method,
@@ -86,14 +87,14 @@ class Defender extends Connector
         );
     }
 
-    protected static function principlePath(): string
+    protected static function principlePath(DefenderModel $defender): string
     {
-        return trim((string) config('customization.backend.apis.defender.paths.principle.path', 'principles'), '/');
+        return static::pathFrom($defender, 'SERVER_CONTROLLER_PATH_PRINCIPLES', 'principles');
     }
 
-    protected static function decisionPath(): string
+    protected static function decisionPath(DefenderModel $defender): string
     {
-        return trim((string) config('customization.backend.apis.defender.paths.decision.path', 'decisions'), '/');
+        return static::pathFrom($defender, 'SERVER_CONTROLLER_PATH_DECISIONS', 'decisions');
     }
 
     protected static function principlesPayload(array $principleIds): array
@@ -118,28 +119,53 @@ class Defender extends Connector
         )));
     }
 
-    #[Override]
-    protected static function baseUrl(): ?string
+    protected static function requestFor(DefenderModel $defender, array $headers = []): PendingRequest
     {
-        return config('customization.backend.apis.defender.base_url');
+        $request = Http::baseUrl(static::baseUriFor($defender))
+            ->acceptJson()
+            ->asJson();
+
+        $requestHeaders = array_merge(static::requestHeadersFor($defender), $headers);
+        if ($requestHeaders !== []) {
+            $request = $request->withHeaders($requestHeaders);
+        }
+
+        $username = static::environmentValue($defender, 'SERVER_SECURITY_USERNAME', 'defly-defender');
+        $password = static::environmentValue($defender, 'SERVER_SECURITY_PASSWORD', 'P@55w0rd');
+        if (filled($username) || filled($password)) {
+            $request->withBasicAuth($username, $password);
+        }
+
+        return $request;
     }
 
-    #[Override]
-    protected static function pathPrefix(): ?string
+    protected static function baseUriFor(DefenderModel $defender): string
     {
-        return config('customization.backend.apis.defender.paths.prefix');
+        $scheme = static::boolFrom($defender, 'SERVER_HTTPS_ENABLE', true) ? 'https' : 'http';
+        $host = trim((string) $defender->name);
+        if ($host === '') {
+            $host = 'defender';
+        }
+
+        $port = static::portFrom($defender, 'SERVER_PORT', '9947');
+        $pathPrefix = static::pathFrom($defender, 'SERVER_CONTROLLER_PATH_PREFIX', 'api/v1');
+        $baseUrl = "{$scheme}://{$host}:{$port}";
+
+        return $pathPrefix === '' ? $baseUrl : "{$baseUrl}/{$pathPrefix}";
     }
 
-    #[Override]
-    protected static function username(): ?string
+    protected static function pathFrom(DefenderModel $defender, string $key, string $fallback): string
     {
-        return config('customization.backend.apis.defender.credentials.username');
+        return trim(static::environmentValue($defender, $key, $fallback), '/');
     }
 
-    #[Override]
-    protected static function password(): ?string
+    protected static function methodFrom(DefenderModel $defender, string $key, string $fallback): string
     {
-        return config('customization.backend.apis.defender.credentials.password');
+        $method = strtolower(static::environmentValue($defender, $key, $fallback));
+
+        return in_array($method, ['post', 'put', 'patch', 'delete'], true)
+            ? $method
+            : strtolower($fallback);
     }
 
     protected static function requestOptionsFor(DefenderModel $defender): array
@@ -160,10 +186,9 @@ class Defender extends Connector
         return ['verify' => static::certificatePath($defenderName)];
     }
 
-    #[Override]
-    protected static function requestHeaders(): array
+    protected static function requestHeadersFor(DefenderModel $defender): array
     {
-        $headerName = static::emailHeaderName();
+        $headerName = static::emailHeaderName($defender);
         $email = trim((string) Identification::getEmail());
 
         if (($headerName === '') || ($email === '')) {
@@ -173,27 +198,24 @@ class Defender extends Connector
         return [$headerName => $email];
     }
 
-    protected static function emailHeader(?string $requesterEmail = null): array
+    protected static function emailHeader(DefenderModel $defender, ?string $requesterEmail = null): array
     {
-        $headerName = static::emailHeaderName();
+        $headerName = static::emailHeaderName($defender);
         if ($headerName === '') {
             return [];
         }
 
         $email = trim((string) ($requesterEmail ?? ''));
         if ($email === '') {
-            return static::requestHeaders();
+            return static::requestHeadersFor($defender);
         }
 
         return [$headerName => $email];
     }
 
-    protected static function emailHeaderName(): string
+    protected static function emailHeaderName(DefenderModel $defender): string
     {
-        return trim((string) config(
-            'customization.backend.apis.defender.headers.email_header_key',
-            'X-Executor',
-        ));
+        return static::environmentValue($defender, 'SERVER_CONTROLLER_AUTHORIZATION_EMAIL', 'X-Executor');
     }
 
     protected static function certificatePath(string $defenderName): string
@@ -216,6 +238,51 @@ class Defender extends Connector
         }
 
         return $certificatePath;
+    }
+
+    protected static function environmentValue(DefenderModel $defender, string $key, string $fallback = ''): string
+    {
+        $variables = $defender->environment_variables;
+        if (! is_array($variables)) {
+            return $fallback;
+        }
+
+        if (array_key_exists($key, $variables) && (! is_array($variables[$key]))) {
+            return trim((string) $variables[$key]);
+        }
+
+        foreach ($variables as $item) {
+            if (! is_array($item) || (($item['key'] ?? null) !== $key)) {
+                continue;
+            }
+
+            $value = $item['value'] ?? $fallback;
+
+            return is_array($value)
+                ? $fallback
+                : trim((string) $value);
+        }
+
+        return $fallback;
+    }
+
+    protected static function boolFrom(DefenderModel $defender, string $key, bool $fallback): bool
+    {
+        $value = strtolower(static::environmentValue($defender, $key, $fallback ? 'true' : 'false'));
+
+        return in_array($value, ['1', 'true', 'yes', 'on'], true);
+    }
+
+    protected static function portFrom(DefenderModel $defender, string $key, string $fallback): string
+    {
+        $port = static::environmentValue($defender, $key, $fallback);
+        $number = (int) $port;
+
+        if (($number < 1) || ($number > 65535)) {
+            return $fallback;
+        }
+
+        return (string) $number;
     }
 
     protected static function isAbsolutePath(string $path): bool
