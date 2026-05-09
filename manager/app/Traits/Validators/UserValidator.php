@@ -2,7 +2,7 @@
 
 namespace App\Traits\Validators;
 
-use App\Services\Identification;
+use App\Rules\User\RootField;
 use Illuminate\Validation\Rule;
 
 trait UserValidator
@@ -56,13 +56,7 @@ trait UserValidator
         return [
             $constraint,
             'boolean',
-            function (string $attribute, mixed $value, $fail): void {
-                $wantsRoot = filter_var($value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) === true;
-
-                if ($wantsRoot && ! Identification::isRoot()) {
-                    $fail("The {$attribute} can only be used by authorized users.");
-                }
-            },
+            new RootField,
         ];
     }
 

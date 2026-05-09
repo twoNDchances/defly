@@ -4,32 +4,39 @@ namespace App\Http\Middleware;
 
 use App\Models\Key;
 use App\Models\User;
+use App\Services\ApiAuthentication;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Symfony\Component\HttpFoundation\Response;
 
-class AuthenticateApiKey
+class ApiToken
 {
     public function handle(Request $request, Closure $next): Response
     {
+        if ($request->isMethod('head')) {
+            return response()->json([
+                'message' => __('apis.messages.failed.method_not_allowed', ['method' => 'HEAD']),
+            ], Response::HTTP_METHOD_NOT_ALLOWED);
+        }
+
         $user = $this->authenticateBasic($request);
 
         if (! $user) {
-            return $this->unauthorized('Invalid basic authentication.', true);
+            return $this->unauthorized(__('apis.messages.failed.basic_authentication'), true);
         }
 
         $token = $this->getToken($request);
 
         if (blank($token)) {
-            return $this->unauthorized('Missing API token.');
+            return $this->unauthorized(__('apis.messages.failed.missing_token'));
         }
 
         $key = $this->findValidKey($user, $token);
 
         if (! $key) {
-            return $this->unauthorized('Invalid API token.');
+            return $this->unauthorized(__('apis.messages.failed.token'));
         }
 
         Auth::setUser($user);
@@ -61,14 +68,7 @@ class AuthenticateApiKey
 
     private function getToken(Request $request): mixed
     {
-        $location = config('customization.backend.apis.authentication.token_location', 'header');
-        $keyName = config('customization.backend.apis.authentication.token_key_name', 'X-Token-Key');
-
-        if ($location === 'body') {
-            return $request->input($keyName);
-        }
-
-        return $request->headers->get($keyName);
+        return ApiAuthentication::tokenFrom($request);
     }
 
     private function findValidKey(User $user, mixed $token): ?Key
