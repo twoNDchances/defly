@@ -103,6 +103,7 @@ trait RuleValidator
     {
         return [
             $constraint,
+            'nullable',
             Rule::exists('wordlists', 'id'),
         ];
     }

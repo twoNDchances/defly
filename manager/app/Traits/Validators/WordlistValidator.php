@@ -44,6 +44,7 @@ trait WordlistValidator
     {
         return [
             $constraint,
+            'nullable',
             'array',
             'min:1',
         ];

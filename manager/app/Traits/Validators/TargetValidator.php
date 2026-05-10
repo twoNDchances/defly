@@ -31,6 +31,7 @@ trait TargetValidator
     {
         return [
             ...((array) $constraint),
+            'nullable',
             Rule::exists('patterns', 'id'),
         ];
     }
