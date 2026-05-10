@@ -6,6 +6,7 @@ use App\Enums\Datatype;
 use App\Enums\Phase;
 use App\Enums\Type;
 use App\Http\Requests\TargetRequest;
+use App\Http\Requests\TargetRelationRequest;
 use App\Models\Target;
 use App\Services\ApiPayload;
 use Illuminate\Http\JsonResponse;
@@ -72,6 +73,52 @@ class TargetController extends Controller
                     'description' => 'Updated target description.',
                 ],
             ],
+            'list_engines' => [
+                'method' => 'GET',
+                'path' => '{target}/engines',
+            ],
+            'attach_engines' => [
+                'method' => 'POST',
+                'path' => '{target}/engines',
+                'body' => [
+                    'ids' => [
+                        '<engine-id-1>',
+                        '<engine-id-2>',
+                    ],
+                ],
+            ],
+            'detach_engines' => [
+                'method' => 'DELETE',
+                'path' => '{target}/engines',
+                'body' => [
+                    'ids' => [
+                        '<engine-id-1>',
+                    ],
+                ],
+            ],
+            'list_labels' => [
+                'method' => 'GET',
+                'path' => '{target}/labels',
+            ],
+            'attach_labels' => [
+                'method' => 'POST',
+                'path' => '{target}/labels',
+                'body' => [
+                    'ids' => [
+                        '<label-id-1>',
+                        '<label-id-2>',
+                    ],
+                ],
+            ],
+            'detach_labels' => [
+                'method' => 'DELETE',
+                'path' => '{target}/labels',
+                'body' => [
+                    'ids' => [
+                        '<label-id-1>',
+                    ],
+                ],
+            ],
         ]));
     }
 
@@ -92,6 +139,62 @@ class TargetController extends Controller
         $target->delete();
 
         return response()->noContent();
+    }
+
+    public function engines(TargetRelationRequest $request, Target $target): JsonResponse
+    {
+        return response()->json($target->engines()
+            ->latest()
+            ->get());
+    }
+
+    public function attachEngines(TargetRelationRequest $request, Target $target): JsonResponse
+    {
+        $ids = $request->validated('ids', []);
+        $relation = $target->engines();
+        $relation->syncWithoutDetaching($ids);
+        $this->syncRelationLocks($relation->getRelated()::class, $ids);
+
+        return response()->json($target->engines()
+            ->latest()
+            ->get());
+    }
+
+    public function detachEngines(TargetRelationRequest $request, Target $target): JsonResponse
+    {
+        $ids = $request->validated('ids', []);
+        $relation = $target->engines();
+        $relation->detach($ids);
+        $this->syncRelationLocks($relation->getRelated()::class, $ids);
+
+        return response()->json($target->engines()
+            ->latest()
+            ->get());
+    }
+
+    public function labels(TargetRelationRequest $request, Target $target): JsonResponse
+    {
+        return response()->json($target->labels()
+            ->latest()
+            ->get());
+    }
+
+    public function attachLabels(TargetRelationRequest $request, Target $target): JsonResponse
+    {
+        $target->labels()->syncWithoutDetaching($request->validated('ids', []));
+
+        return response()->json($target->labels()
+            ->latest()
+            ->get());
+    }
+
+    public function detachLabels(TargetRelationRequest $request, Target $target): JsonResponse
+    {
+        $target->labels()->detach($request->validated('ids', []));
+
+        return response()->json($target->labels()
+            ->latest()
+            ->get());
     }
 
     private function targetData(TargetRequest $request): array

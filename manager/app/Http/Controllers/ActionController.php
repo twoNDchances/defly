@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\Action\Type;
 use App\Enums\Method;
+use App\Http\Requests\ActionRelationRequest;
 use App\Http\Requests\ActionRequest;
 use App\Models\Action;
 use App\Services\ApiPayload;
@@ -161,6 +162,29 @@ class ActionController extends Controller
                     'description' => 'Updated action description.',
                 ],
             ],
+            'list_labels' => [
+                'method' => 'GET',
+                'path' => '{action}/labels',
+            ],
+            'attach_labels' => [
+                'method' => 'POST',
+                'path' => '{action}/labels',
+                'body' => [
+                    'ids' => [
+                        '<label-id-1>',
+                        '<label-id-2>',
+                    ],
+                ],
+            ],
+            'detach_labels' => [
+                'method' => 'DELETE',
+                'path' => '{action}/labels',
+                'body' => [
+                    'ids' => [
+                        '<label-id-1>',
+                    ],
+                ],
+            ],
         ]));
     }
 
@@ -181,6 +205,31 @@ class ActionController extends Controller
         $action->delete();
 
         return response()->noContent();
+    }
+
+    public function labels(ActionRelationRequest $request, Action $action): JsonResponse
+    {
+        return response()->json($action->labels()
+            ->latest()
+            ->get());
+    }
+
+    public function attachLabels(ActionRelationRequest $request, Action $action): JsonResponse
+    {
+        $action->labels()->syncWithoutDetaching($request->validated('ids', []));
+
+        return response()->json($action->labels()
+            ->latest()
+            ->get());
+    }
+
+    public function detachLabels(ActionRelationRequest $request, Action $action): JsonResponse
+    {
+        $action->labels()->detach($request->validated('ids', []));
+
+        return response()->json($action->labels()
+            ->latest()
+            ->get());
     }
 
     private function actionData(ActionRequest $request): array

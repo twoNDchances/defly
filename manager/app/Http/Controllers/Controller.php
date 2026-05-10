@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\Lock;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 
 abstract class Controller
@@ -19,5 +21,14 @@ abstract class Controller
     protected function onlyFields(array $data, array $fields): array
     {
         return array_intersect_key($data, array_flip($fields));
+    }
+
+    /**
+     * @param  class-string<Model>  $relatedModelClass
+     * @param  array<int, mixed>  $relatedIds
+     */
+    protected function syncRelationLocks(string $relatedModelClass, array $relatedIds): void
+    {
+        Lock::syncByRelationship($relatedModelClass, $relatedIds);
     }
 }

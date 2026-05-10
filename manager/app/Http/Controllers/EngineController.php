@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Enums\Datatype;
 use App\Enums\Engine\Hash;
 use App\Enums\Engine\Type as EngineType;
+use App\Http\Requests\EngineRelationRequest;
 use App\Http\Requests\EngineRequest;
 use App\Models\Engine;
 use App\Services\ApiPayload;
@@ -139,6 +140,29 @@ class EngineController extends Controller
                     'description' => 'Updated engine description.',
                 ],
             ],
+            'list_labels' => [
+                'method' => 'GET',
+                'path' => '{engine}/labels',
+            ],
+            'attach_labels' => [
+                'method' => 'POST',
+                'path' => '{engine}/labels',
+                'body' => [
+                    'ids' => [
+                        '<label-id-1>',
+                        '<label-id-2>',
+                    ],
+                ],
+            ],
+            'detach_labels' => [
+                'method' => 'DELETE',
+                'path' => '{engine}/labels',
+                'body' => [
+                    'ids' => [
+                        '<label-id-1>',
+                    ],
+                ],
+            ],
         ]));
     }
 
@@ -159,6 +183,31 @@ class EngineController extends Controller
         $engine->delete();
 
         return response()->noContent();
+    }
+
+    public function labels(EngineRelationRequest $request, Engine $engine): JsonResponse
+    {
+        return response()->json($engine->labels()
+            ->latest()
+            ->get());
+    }
+
+    public function attachLabels(EngineRelationRequest $request, Engine $engine): JsonResponse
+    {
+        $engine->labels()->syncWithoutDetaching($request->validated('ids', []));
+
+        return response()->json($engine->labels()
+            ->latest()
+            ->get());
+    }
+
+    public function detachLabels(EngineRelationRequest $request, Engine $engine): JsonResponse
+    {
+        $engine->labels()->detach($request->validated('ids', []));
+
+        return response()->json($engine->labels()
+            ->latest()
+            ->get());
     }
 
     private function engineData(EngineRequest $request): array

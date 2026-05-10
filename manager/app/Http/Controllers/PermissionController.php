@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\PermissionRequest;
+use App\Http\Requests\PermissionRelationRequest;
 use App\Models\Permission;
 use App\Services\ApiPayload;
 use Illuminate\Http\JsonResponse;
@@ -46,6 +47,75 @@ class PermissionController extends Controller
                     'description' => 'Updated permission description.',
                 ],
             ],
+            'list_users' => [
+                'method' => 'GET',
+                'path' => '{permission}/users',
+            ],
+            'attach_users' => [
+                'method' => 'POST',
+                'path' => '{permission}/users',
+                'body' => [
+                    'ids' => [
+                        '<user-id-1>',
+                        '<user-id-2>',
+                    ],
+                ],
+            ],
+            'detach_users' => [
+                'method' => 'DELETE',
+                'path' => '{permission}/users',
+                'body' => [
+                    'ids' => [
+                        '<user-id-1>',
+                    ],
+                ],
+            ],
+            'list_groups' => [
+                'method' => 'GET',
+                'path' => '{permission}/groups',
+            ],
+            'attach_groups' => [
+                'method' => 'POST',
+                'path' => '{permission}/groups',
+                'body' => [
+                    'ids' => [
+                        '<group-id-1>',
+                        '<group-id-2>',
+                    ],
+                ],
+            ],
+            'detach_groups' => [
+                'method' => 'DELETE',
+                'path' => '{permission}/groups',
+                'body' => [
+                    'ids' => [
+                        '<group-id-1>',
+                    ],
+                ],
+            ],
+            'list_labels' => [
+                'method' => 'GET',
+                'path' => '{permission}/labels',
+            ],
+            'attach_labels' => [
+                'method' => 'POST',
+                'path' => '{permission}/labels',
+                'body' => [
+                    'ids' => [
+                        '<label-id-1>',
+                        '<label-id-2>',
+                    ],
+                ],
+            ],
+            'detach_labels' => [
+                'method' => 'DELETE',
+                'path' => '{permission}/labels',
+                'body' => [
+                    'ids' => [
+                        '<label-id-1>',
+                    ],
+                ],
+            ],
         ]));
     }
 
@@ -66,6 +136,81 @@ class PermissionController extends Controller
         $permission->delete();
 
         return response()->noContent();
+    }
+
+    public function users(PermissionRelationRequest $request, Permission $permission): JsonResponse
+    {
+        return response()->json($permission->users()
+            ->latest()
+            ->get());
+    }
+
+    public function attachUsers(PermissionRelationRequest $request, Permission $permission): JsonResponse
+    {
+        $permission->users()->syncWithoutDetaching($request->validated('ids', []));
+
+        return response()->json($permission->users()
+            ->latest()
+            ->get());
+    }
+
+    public function detachUsers(PermissionRelationRequest $request, Permission $permission): JsonResponse
+    {
+        $permission->users()->detach($request->validated('ids', []));
+
+        return response()->json($permission->users()
+            ->latest()
+            ->get());
+    }
+
+    public function groups(PermissionRelationRequest $request, Permission $permission): JsonResponse
+    {
+        return response()->json($permission->groups()
+            ->latest()
+            ->get());
+    }
+
+    public function attachGroups(PermissionRelationRequest $request, Permission $permission): JsonResponse
+    {
+        $permission->groups()->syncWithoutDetaching($request->validated('ids', []));
+
+        return response()->json($permission->groups()
+            ->latest()
+            ->get());
+    }
+
+    public function detachGroups(PermissionRelationRequest $request, Permission $permission): JsonResponse
+    {
+        $permission->groups()->detach($request->validated('ids', []));
+
+        return response()->json($permission->groups()
+            ->latest()
+            ->get());
+    }
+
+    public function labels(PermissionRelationRequest $request, Permission $permission): JsonResponse
+    {
+        return response()->json($permission->labels()
+            ->latest()
+            ->get());
+    }
+
+    public function attachLabels(PermissionRelationRequest $request, Permission $permission): JsonResponse
+    {
+        $permission->labels()->syncWithoutDetaching($request->validated('ids', []));
+
+        return response()->json($permission->labels()
+            ->latest()
+            ->get());
+    }
+
+    public function detachLabels(PermissionRelationRequest $request, Permission $permission): JsonResponse
+    {
+        $permission->labels()->detach($request->validated('ids', []));
+
+        return response()->json($permission->labels()
+            ->latest()
+            ->get());
     }
 
     private function permissionData(PermissionRequest $request): array

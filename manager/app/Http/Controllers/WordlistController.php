@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\Wordlist\Type;
+use App\Http\Requests\WordlistRelationRequest;
 use App\Http\Requests\WordlistRequest;
 use App\Models\Wordlist;
 use App\Services\ApiPayload;
@@ -59,6 +60,29 @@ class WordlistController extends Controller
                     'description' => 'Updated wordlist description.',
                 ],
             ],
+            'list_labels' => [
+                'method' => 'GET',
+                'path' => '{wordlist}/labels',
+            ],
+            'attach_labels' => [
+                'method' => 'POST',
+                'path' => '{wordlist}/labels',
+                'body' => [
+                    'ids' => [
+                        '<label-id-1>',
+                        '<label-id-2>',
+                    ],
+                ],
+            ],
+            'detach_labels' => [
+                'method' => 'DELETE',
+                'path' => '{wordlist}/labels',
+                'body' => [
+                    'ids' => [
+                        '<label-id-1>',
+                    ],
+                ],
+            ],
         ]));
     }
 
@@ -79,6 +103,31 @@ class WordlistController extends Controller
         $wordlist->delete();
 
         return response()->noContent();
+    }
+
+    public function labels(WordlistRelationRequest $request, Wordlist $wordlist): JsonResponse
+    {
+        return response()->json($wordlist->labels()
+            ->latest()
+            ->get());
+    }
+
+    public function attachLabels(WordlistRelationRequest $request, Wordlist $wordlist): JsonResponse
+    {
+        $wordlist->labels()->syncWithoutDetaching($request->validated('ids', []));
+
+        return response()->json($wordlist->labels()
+            ->latest()
+            ->get());
+    }
+
+    public function detachLabels(WordlistRelationRequest $request, Wordlist $wordlist): JsonResponse
+    {
+        $wordlist->labels()->detach($request->validated('ids', []));
+
+        return response()->json($wordlist->labels()
+            ->latest()
+            ->get());
     }
 
     private function wordlistData(WordlistRequest $request): array

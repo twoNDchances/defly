@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Enums\Decision\Action as DecisionAction;
 use App\Enums\Decision\Condition;
 use App\Enums\Decision\Direction;
+use App\Http\Requests\DecisionRelationRequest;
 use App\Http\Requests\DecisionRequest;
 use App\Models\Decision;
 use App\Services\ApiPayload;
@@ -152,6 +153,29 @@ class DecisionController extends Controller
                     'description' => 'Updated decision description.',
                 ],
             ],
+            'list_labels' => [
+                'method' => 'GET',
+                'path' => '{decision}/labels',
+            ],
+            'attach_labels' => [
+                'method' => 'POST',
+                'path' => '{decision}/labels',
+                'body' => [
+                    'ids' => [
+                        '<label-id-1>',
+                        '<label-id-2>',
+                    ],
+                ],
+            ],
+            'detach_labels' => [
+                'method' => 'DELETE',
+                'path' => '{decision}/labels',
+                'body' => [
+                    'ids' => [
+                        '<label-id-1>',
+                    ],
+                ],
+            ],
         ]));
     }
 
@@ -172,6 +196,31 @@ class DecisionController extends Controller
         $decision->delete();
 
         return response()->noContent();
+    }
+
+    public function labels(DecisionRelationRequest $request, Decision $decision): JsonResponse
+    {
+        return response()->json($decision->labels()
+            ->latest()
+            ->get());
+    }
+
+    public function attachLabels(DecisionRelationRequest $request, Decision $decision): JsonResponse
+    {
+        $decision->labels()->syncWithoutDetaching($request->validated('ids', []));
+
+        return response()->json($decision->labels()
+            ->latest()
+            ->get());
+    }
+
+    public function detachLabels(DecisionRelationRequest $request, Decision $decision): JsonResponse
+    {
+        $decision->labels()->detach($request->validated('ids', []));
+
+        return response()->json($decision->labels()
+            ->latest()
+            ->get());
     }
 
     private function decisionData(DecisionRequest $request): array

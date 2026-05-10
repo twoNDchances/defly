@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Enums\Phase;
 use App\Enums\Rule\Comparator;
 use App\Http\Requests\RuleRequest;
+use App\Http\Requests\RuleRelationRequest;
 use App\Models\Rule;
 use App\Services\ApiPayload;
 use App\Traits\Filament\Specifics\Rule\RuleData;
@@ -139,6 +140,52 @@ class RuleController extends Controller
                     'description' => 'Updated rule description.',
                 ],
             ],
+            'list_actions' => [
+                'method' => 'GET',
+                'path' => '{rule}/actions',
+            ],
+            'attach_actions' => [
+                'method' => 'POST',
+                'path' => '{rule}/actions',
+                'body' => [
+                    'ids' => [
+                        '<action-id-1>',
+                        '<action-id-2>',
+                    ],
+                ],
+            ],
+            'detach_actions' => [
+                'method' => 'DELETE',
+                'path' => '{rule}/actions',
+                'body' => [
+                    'ids' => [
+                        '<action-id-1>',
+                    ],
+                ],
+            ],
+            'list_labels' => [
+                'method' => 'GET',
+                'path' => '{rule}/labels',
+            ],
+            'attach_labels' => [
+                'method' => 'POST',
+                'path' => '{rule}/labels',
+                'body' => [
+                    'ids' => [
+                        '<label-id-1>',
+                        '<label-id-2>',
+                    ],
+                ],
+            ],
+            'detach_labels' => [
+                'method' => 'DELETE',
+                'path' => '{rule}/labels',
+                'body' => [
+                    'ids' => [
+                        '<label-id-1>',
+                    ],
+                ],
+            ],
         ]));
     }
 
@@ -159,6 +206,62 @@ class RuleController extends Controller
         $rule->delete();
 
         return response()->noContent();
+    }
+
+    public function actions(RuleRelationRequest $request, Rule $rule): JsonResponse
+    {
+        return response()->json($rule->actions()
+            ->latest()
+            ->get());
+    }
+
+    public function attachActions(RuleRelationRequest $request, Rule $rule): JsonResponse
+    {
+        $ids = $request->validated('ids', []);
+        $relation = $rule->actions();
+        $relation->syncWithoutDetaching($ids);
+        $this->syncRelationLocks($relation->getRelated()::class, $ids);
+
+        return response()->json($rule->actions()
+            ->latest()
+            ->get());
+    }
+
+    public function detachActions(RuleRelationRequest $request, Rule $rule): JsonResponse
+    {
+        $ids = $request->validated('ids', []);
+        $relation = $rule->actions();
+        $relation->detach($ids);
+        $this->syncRelationLocks($relation->getRelated()::class, $ids);
+
+        return response()->json($rule->actions()
+            ->latest()
+            ->get());
+    }
+
+    public function labels(RuleRelationRequest $request, Rule $rule): JsonResponse
+    {
+        return response()->json($rule->labels()
+            ->latest()
+            ->get());
+    }
+
+    public function attachLabels(RuleRelationRequest $request, Rule $rule): JsonResponse
+    {
+        $rule->labels()->syncWithoutDetaching($request->validated('ids', []));
+
+        return response()->json($rule->labels()
+            ->latest()
+            ->get());
+    }
+
+    public function detachLabels(RuleRelationRequest $request, Rule $rule): JsonResponse
+    {
+        $rule->labels()->detach($request->validated('ids', []));
+
+        return response()->json($rule->labels()
+            ->latest()
+            ->get());
     }
 
     private function ruleData(RuleRequest $request): array

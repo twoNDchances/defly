@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\UserRequest;
+use App\Http\Requests\UserRelationRequest;
 use App\Models\User;
 use App\Services\ApiPayload;
 use Illuminate\Http\JsonResponse;
@@ -66,6 +67,75 @@ class UserController extends Controller
                 'path' => '{user}',
                 'body' => $update,
             ],
+            'list_permissions' => [
+                'method' => 'GET',
+                'path' => '{user}/permissions',
+            ],
+            'attach_permissions' => [
+                'method' => 'POST',
+                'path' => '{user}/permissions',
+                'body' => [
+                    'ids' => [
+                        '<permission-id-1>',
+                        '<permission-id-2>',
+                    ],
+                ],
+            ],
+            'detach_permissions' => [
+                'method' => 'DELETE',
+                'path' => '{user}/permissions',
+                'body' => [
+                    'ids' => [
+                        '<permission-id-1>',
+                    ],
+                ],
+            ],
+            'list_groups' => [
+                'method' => 'GET',
+                'path' => '{user}/groups',
+            ],
+            'attach_groups' => [
+                'method' => 'POST',
+                'path' => '{user}/groups',
+                'body' => [
+                    'ids' => [
+                        '<group-id-1>',
+                        '<group-id-2>',
+                    ],
+                ],
+            ],
+            'detach_groups' => [
+                'method' => 'DELETE',
+                'path' => '{user}/groups',
+                'body' => [
+                    'ids' => [
+                        '<group-id-1>',
+                    ],
+                ],
+            ],
+            'list_labels' => [
+                'method' => 'GET',
+                'path' => '{user}/labels',
+            ],
+            'attach_labels' => [
+                'method' => 'POST',
+                'path' => '{user}/labels',
+                'body' => [
+                    'ids' => [
+                        '<label-id-1>',
+                        '<label-id-2>',
+                    ],
+                ],
+            ],
+            'detach_labels' => [
+                'method' => 'DELETE',
+                'path' => '{user}/labels',
+                'body' => [
+                    'ids' => [
+                        '<label-id-1>',
+                    ],
+                ],
+            ],
         ]));
     }
 
@@ -86,6 +156,81 @@ class UserController extends Controller
         $user->delete();
 
         return response()->noContent();
+    }
+
+    public function permissions(UserRelationRequest $request, User $user): JsonResponse
+    {
+        return response()->json($user->permissions()
+            ->latest()
+            ->get());
+    }
+
+    public function attachPermissions(UserRelationRequest $request, User $user): JsonResponse
+    {
+        $user->permissions()->syncWithoutDetaching($request->validated('ids', []));
+
+        return response()->json($user->permissions()
+            ->latest()
+            ->get());
+    }
+
+    public function detachPermissions(UserRelationRequest $request, User $user): JsonResponse
+    {
+        $user->permissions()->detach($request->validated('ids', []));
+
+        return response()->json($user->permissions()
+            ->latest()
+            ->get());
+    }
+
+    public function groups(UserRelationRequest $request, User $user): JsonResponse
+    {
+        return response()->json($user->groups()
+            ->latest()
+            ->get());
+    }
+
+    public function attachGroups(UserRelationRequest $request, User $user): JsonResponse
+    {
+        $user->groups()->syncWithoutDetaching($request->validated('ids', []));
+
+        return response()->json($user->groups()
+            ->latest()
+            ->get());
+    }
+
+    public function detachGroups(UserRelationRequest $request, User $user): JsonResponse
+    {
+        $user->groups()->detach($request->validated('ids', []));
+
+        return response()->json($user->groups()
+            ->latest()
+            ->get());
+    }
+
+    public function labels(UserRelationRequest $request, User $user): JsonResponse
+    {
+        return response()->json($user->labels()
+            ->latest()
+            ->get());
+    }
+
+    public function attachLabels(UserRelationRequest $request, User $user): JsonResponse
+    {
+        $user->labels()->syncWithoutDetaching($request->validated('ids', []));
+
+        return response()->json($user->labels()
+            ->latest()
+            ->get());
+    }
+
+    public function detachLabels(UserRelationRequest $request, User $user): JsonResponse
+    {
+        $user->labels()->detach($request->validated('ids', []));
+
+        return response()->json($user->labels()
+            ->latest()
+            ->get());
     }
 
     public function verify($email, $token)
