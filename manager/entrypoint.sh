@@ -28,7 +28,13 @@ if [ "$#" -gt 0 ] && [ "$1" != "start" ]; then
 fi
 
 if [ -z "${APP_KEY:-}" ] && is_true "${GENERATE_APP_KEY:-true}"; then
-    php artisan key:generate --force
+    if [ -f .env ]; then
+        php artisan key:generate --force
+    else
+        APP_KEY="$(php artisan key:generate --show)"
+        export APP_KEY
+        echo "APP_KEY was generated for this container process. Set a persistent APP_KEY for production." >&2
+    fi
 fi
 
 if is_true "${RUN_MIGRATIONS:-true}"; then
