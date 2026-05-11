@@ -27,6 +27,10 @@ if [ "$#" -gt 0 ] && [ "$1" != "start" ]; then
     exec "$@"
 fi
 
+if [ -z "${APP_KEY:-}" ] && is_true "${GENERATE_APP_KEY:-true}"; then
+    php artisan key:generate --force
+fi
+
 if is_true "${RUN_MIGRATIONS:-true}"; then
     php artisan migrate --force
 fi

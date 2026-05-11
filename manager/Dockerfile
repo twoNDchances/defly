@@ -49,6 +49,7 @@ FROM base AS app
 ENV APP_ENV=production \
     APP_DEBUG=false \
     OCTANE_HTTPS=true \
+    GENERATE_APP_KEY=true \
     RUN_MIGRATIONS=true \
     RUN_SEEDERS=true \
     RUN_OPTIMIZE=true \
