@@ -1,13 +1,21 @@
 #!/usr/bin/env sh
 set -eu
 
-cd /app
+cd /var/www/html
 
 is_true() {
     case "${1:-}" in
         1|true|TRUE|yes|YES|on|ON) return 0 ;;
         *) return 1 ;;
     esac
+}
+
+app_host_from_url() {
+    value="${1#http://}"
+    value="${value#https://}"
+    value="${value%%/*}"
+    value="${value%%:*}"
+    printf '%s' "${value}"
 }
 
 mkdir -p \
@@ -17,7 +25,8 @@ mkdir -p \
     storage/framework/sessions \
     storage/framework/testing \
     storage/framework/views \
-    storage/logs
+    storage/logs \
+    /etc/apache2/ssl
 
 if is_true "${FIX_PERMISSIONS:-true}"; then
     chown -R www-data:www-data bootstrap/cache storage 2>/dev/null || true
@@ -25,6 +34,54 @@ fi
 
 if [ "$#" -gt 0 ] && [ "$1" != "start" ]; then
     exec "$@"
+fi
+
+TLS_COMMON_NAME="${TLS_COMMON_NAME:-${SERVER_NAME:-}}"
+
+if [ -z "${TLS_COMMON_NAME}" ] && [ -n "${APP_URL:-}" ]; then
+    TLS_COMMON_NAME="$(app_host_from_url "${APP_URL}")"
+fi
+
+if [ -z "${TLS_COMMON_NAME}" ]; then
+    TLS_COMMON_NAME="localhost"
+fi
+
+export APACHE_SERVER_NAME="${SERVER_NAME:-${TLS_COMMON_NAME}}"
+printf 'ServerName %s\n' "${APACHE_SERVER_NAME}" > /etc/apache2/conf-available/docker-server-name.conf
+a2enconf docker-server-name >/dev/null
+
+if [ ! -f /etc/apache2/ssl/server.crt ] || [ ! -f /etc/apache2/ssl/server.key ]; then
+    san="DNS:${TLS_COMMON_NAME}"
+
+    if printf '%s' "${TLS_COMMON_NAME}" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$'; then
+        san="IP:${TLS_COMMON_NAME}"
+    fi
+
+    cat > /tmp/self-signed-openssl.cnf <<EOF
+[req]
+distinguished_name = req_distinguished_name
+x509_extensions = v3_req
+prompt = no
+
+[req_distinguished_name]
+CN = ${TLS_COMMON_NAME}
+
+[v3_req]
+subjectAltName = ${san}
+EOF
+
+    openssl req \
+        -x509 \
+        -nodes \
+        -newkey rsa:4096 \
+        -sha256 \
+        -days "${TLS_DAYS:-3650}" \
+        -keyout /etc/apache2/ssl/server.key \
+        -out /etc/apache2/ssl/server.crt \
+        -config /tmp/self-signed-openssl.cnf
+
+    chmod 600 /etc/apache2/ssl/server.key
+    rm -f /tmp/self-signed-openssl.cnf
 fi
 
 if [ -z "${APP_KEY:-}" ] && is_true "${GENERATE_APP_KEY:-true}"; then
@@ -45,71 +102,8 @@ if is_true "${RUN_SEEDERS:-true}"; then
     php artisan db:seed --force
 fi
 
-OCTANE_HTTPS="${OCTANE_HTTPS:-true}"
-OCTANE_HOST="${OCTANE_HOST:-}"
-OCTANE_PORT="${OCTANE_PORT:-}"
-OCTANE_ADMIN_HOST="${OCTANE_ADMIN_HOST:-localhost}"
-OCTANE_ADMIN_PORT="${OCTANE_ADMIN_PORT:-2019}"
-OCTANE_WORKERS="${OCTANE_WORKERS:-auto}"
-OCTANE_MAX_REQUESTS="${OCTANE_MAX_REQUESTS:-500}"
-OCTANE_LOG_LEVEL="${OCTANE_LOG_LEVEL:-WARN}"
-OCTANE_HTTP_REDIRECT="${OCTANE_HTTP_REDIRECT:-true}"
-
-if [ -z "${OCTANE_HOST}" ] && [ -n "${SERVER_NAME:-}" ]; then
-    OCTANE_HOST="${SERVER_NAME}"
-fi
-
-if [ -z "${OCTANE_HOST}" ] && [ -n "${APP_URL:-}" ]; then
-    OCTANE_HOST="${APP_URL#http://}"
-    OCTANE_HOST="${OCTANE_HOST#https://}"
-    OCTANE_HOST="${OCTANE_HOST%%/*}"
-    OCTANE_HOST="${OCTANE_HOST%%:*}"
-
-    case "${OCTANE_HOST}" in
-        localhost|127.0.0.1|0.0.0.0) OCTANE_HOST="" ;;
-    esac
-fi
-
-if [ -z "${OCTANE_HOST}" ]; then
-    if is_true "${OCTANE_HTTPS}"; then
-        echo "OCTANE_HTTPS=true requires SERVER_NAME or OCTANE_HOST, for example SERVER_NAME=manager.example.com" >&2
-        exit 1
-    fi
-
-    OCTANE_HOST="0.0.0.0"
-fi
-
-if [ -z "${OCTANE_PORT}" ]; then
-    if is_true "${OCTANE_HTTPS}"; then
-        OCTANE_PORT=443
-    else
-        OCTANE_PORT=8000
-    fi
-fi
-
-set -- php artisan octane:frankenphp \
-    "--host=${OCTANE_HOST}" \
-    "--port=${OCTANE_PORT}" \
-    "--admin-host=${OCTANE_ADMIN_HOST}" \
-    "--admin-port=${OCTANE_ADMIN_PORT}" \
-    "--workers=${OCTANE_WORKERS}" \
-    "--max-requests=${OCTANE_MAX_REQUESTS}" \
-    "--log-level=${OCTANE_LOG_LEVEL}"
-
-if [ -n "${OCTANE_CADDYFILE:-}" ]; then
-    set -- "$@" "--caddyfile=${OCTANE_CADDYFILE}"
-fi
-
-if is_true "${OCTANE_HTTPS}"; then
-    set -- "$@" --https
-
-    if is_true "${OCTANE_HTTP_REDIRECT}"; then
-        set -- "$@" --http-redirect
-    fi
-fi
-
 if is_true "${RUN_OPTIMIZE:-true}"; then
     php artisan optimize
 fi
 
-exec "$@"
+exec apache2-foreground

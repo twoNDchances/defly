@@ -1,11 +1,24 @@
-FROM dunglas/frankenphp:php8.5-bookworm AS base
+FROM php:8.5-apache-bookworm AS base
 
-WORKDIR /app
+WORKDIR /var/www/html
 
 RUN set -eux; \
     apt-get update; \
-    apt-get install -y --no-install-recommends git unzip; \
-    install-php-extensions \
+    apt-get install -y --no-install-recommends \
+        ca-certificates \
+        git \
+        openssl \
+        unzip \
+        libfreetype6-dev \
+        libicu-dev \
+        libjpeg62-turbo-dev \
+        libonig-dev \
+        libpng-dev \
+        libsqlite3-dev \
+        libzip-dev \
+        $PHPIZE_DEPS; \
+    docker-php-ext-configure gd --with-freetype --with-jpeg; \
+    docker-php-ext-install -j"$(nproc)" \
         bcmath \
         exif \
         gd \
@@ -15,10 +28,41 @@ RUN set -eux; \
         pcntl \
         pdo_mysql \
         pdo_sqlite \
-        redis \
         zip; \
+    pecl install redis; \
+    docker-php-ext-enable redis; \
     cp "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"; \
-    rm -rf /var/lib/apt/lists/*
+    a2enmod headers rewrite ssl; \
+    mkdir -p /etc/apache2/ssl; \
+    printf '%s\n' \
+        '<VirtualHost *:80>' \
+        '    ServerName ${APACHE_SERVER_NAME}' \
+        '    RewriteEngine On' \
+        '    RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]' \
+        '</VirtualHost>' \
+        > /etc/apache2/sites-available/000-default.conf; \
+    printf '%s\n' \
+        '<IfModule mod_ssl.c>' \
+        '<VirtualHost *:443>' \
+        '    ServerName ${APACHE_SERVER_NAME}' \
+        '    DocumentRoot /var/www/html/public' \
+        '' \
+        '    SSLEngine on' \
+        '    SSLCertificateFile /etc/apache2/ssl/server.crt' \
+        '    SSLCertificateKeyFile /etc/apache2/ssl/server.key' \
+        '' \
+        '    <Directory /var/www/html/public>' \
+        '        AllowOverride All' \
+        '        Require all granted' \
+        '    </Directory>' \
+        '' \
+        '    ErrorLog ${APACHE_LOG_DIR}/error.log' \
+        '    CustomLog ${APACHE_LOG_DIR}/access.log combined' \
+        '</VirtualHost>' \
+        '</IfModule>' \
+        > /etc/apache2/sites-available/default-ssl.conf; \
+    a2ensite default-ssl; \
+    rm -rf /var/lib/apt/lists/* /tmp/pear
 
 RUN set -eux; \
     { \
@@ -48,24 +92,19 @@ FROM base AS app
 
 ENV APP_ENV=production \
     APP_DEBUG=false \
-    OCTANE_HTTPS=true \
-    GENERATE_APP_KEY=true \
     RUN_MIGRATIONS=true \
     RUN_SEEDERS=true \
     RUN_OPTIMIZE=true \
-    XDG_CONFIG_HOME=/config \
-    XDG_DATA_HOME=/data
+    APACHE_SERVER_NAME=localhost
 
 COPY . .
-COPY --from=vendor /app/vendor ./vendor
+COPY --from=vendor /var/www/html/vendor ./vendor
 
 RUN set -eux; \
-    chmod +x /app/entrypoint.sh; \
+    chmod +x /var/www/html/entrypoint.sh; \
     composer dump-autoload --no-dev --classmap-authoritative; \
     php artisan package:discover --ansi; \
     mkdir -p \
-        /config \
-        /data \
         bootstrap/cache \
         storage/app/public \
         storage/framework/cache/data \
@@ -73,9 +112,9 @@ RUN set -eux; \
         storage/framework/testing \
         storage/framework/views \
         storage/logs; \
-    chown -R www-data:www-data bootstrap/cache storage /config /data
+    chown -R www-data:www-data bootstrap/cache storage
 
-EXPOSE 80 443 443/udp
+EXPOSE 80 443
 
-ENTRYPOINT ["/app/entrypoint.sh"]
+ENTRYPOINT ["/var/www/html/entrypoint.sh"]
 CMD ["start"]
