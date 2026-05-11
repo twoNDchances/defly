@@ -18,7 +18,7 @@ class DashboardOverviewStats extends StatsOverviewWidget
 
     protected static bool $isDiscovered = false;
 
-    protected ?string $pollingInterval = '30s';
+    protected ?string $pollingInterval = '10s';
 
     protected function getStats(): array
     {

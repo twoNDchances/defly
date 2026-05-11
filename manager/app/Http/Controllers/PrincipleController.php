@@ -10,6 +10,7 @@ use App\Http\Requests\PrincipleRelationRequest;
 use App\Jobs\PrincipleValidation;
 use App\Models\Principle;
 use App\Services\ApiPayload;
+use App\Services\Identification;
 use App\Services\Logger;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response as HttpResponse;
@@ -192,7 +193,7 @@ class PrincipleController extends Controller
         $principle->validation_status = ValidationStatus::Pending;
         $principle->save();
 
-        PrincipleValidation::dispatch($principle->id);
+        PrincipleValidation::dispatch($principle->id, Identification::getEmail());
         Logger::log($principle, 'validate');
 
         return response()->json($principle->refresh());

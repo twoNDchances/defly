@@ -72,4 +72,10 @@ return [
             'cancel_bulk_button' => 'Hủy bỏ các mục đã chọn',
         ],
     ],
+    'report' => [
+        'buttons' => [
+            'review' => 'Đánh dấu đã xem xét',
+            'reviewAny' => 'Đánh dấu các mục đã chọn là đã xem xét',
+        ],
+    ],
 ];

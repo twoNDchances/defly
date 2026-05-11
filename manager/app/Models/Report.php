@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 
-#[Fillable(['metas', 'request_headers', 'request_body', 'response_headers', 'response_body', 'rule_details', 'triggered_by', 'created_by'])]
+#[Fillable(['metas', 'request_headers', 'request_body', 'response_headers', 'response_body', 'rule_details', 'triggered_by', 'created_by', 'is_reviewed'])]
 #[ObservedBy(ReportObserver::class)]
 class Report extends Model
 {
@@ -26,6 +26,7 @@ class Report extends Model
             'rule_details' => 'array',
             'triggered_by' => 'string',
             'created_by' => 'string',
+            'is_reviewed' => 'boolean',
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
         ];

@@ -38,6 +38,8 @@ class Security
         'implementAny' => 'Multi-implement',
         'suspend' => 'Suspend',
         'suspendAny' => 'Multi-suspend',
+        'review' => 'Review',
+        'reviewAny' => 'Multi-review',
     ];
 
     public static $excludeActionsByModel = [

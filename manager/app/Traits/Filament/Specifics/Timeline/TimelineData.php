@@ -12,6 +12,7 @@ use App\Models\Label;
 use App\Models\Pattern;
 use App\Models\Permission;
 use App\Models\Principle;
+use App\Models\Report;
 use App\Models\Rule;
 use App\Models\Target;
 use App\Models\User;
@@ -39,6 +40,7 @@ trait TimelineData
                 'revoke' => __('models.timeline.extras.action.revoke'),
                 'implement' => __('models.timeline.extras.action.implement'),
                 'suspend' => __('models.timeline.extras.action.suspend'),
+                'review' => __('models.timeline.extras.action.review'),
             ],
             'colors' => [
                 'create' => 'success',
@@ -54,6 +56,7 @@ trait TimelineData
                 'revoke' => 'pink',
                 'implement' => 'orange',
                 'suspend' => 'warning',
+                'review' => 'success',
             ],
         ];
     }
@@ -72,6 +75,7 @@ trait TimelineData
                 Pattern::class => __('models.pattern.name'),
                 Permission::class => __('models.permission.name'),
                 Principle::class => __('models.principle.name'),
+                Report::class => __('models.report.name'),
                 Rule::class => __('models.rule.name'),
                 Target::class => __('models.target.name'),
                 User::class => __('models.user.name'),
@@ -88,6 +92,7 @@ trait TimelineData
                 Pattern::class => 'gray',
                 Permission::class => 'indigo',
                 Principle::class => 'cyan',
+                Report::class => 'pink',
                 Rule::class => 'danger',
                 Target::class => 'blue',
                 User::class => 'success',

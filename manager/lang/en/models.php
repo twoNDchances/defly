@@ -380,6 +380,7 @@ return [
             'rule_details' => 'Rule details',
             'triggered_by' => 'Triggered by',
             'created_by' => 'Created by',
+            'is_reviewed' => 'Reviewed',
         ],
         'extras' => [
             'metas' => [
@@ -422,6 +423,7 @@ return [
                 'revoke' => 'Revoke',
                 'implement' => 'Implement',
                 'suspend' => 'Suspend',
+                'review' => 'Review',
             ],
         ],
     ],

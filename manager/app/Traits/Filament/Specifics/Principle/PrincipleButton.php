@@ -120,7 +120,7 @@ trait PrincipleButton
             function ($record) {
                 $record->validation_status = ValidationStatus::Pending;
                 $record->save();
-                PrincipleValidation::dispatch($record->id);
+                PrincipleValidation::dispatch($record->id, Identification::getEmail());
                 Logger::log($record, 'validate');
             },
         )
@@ -160,7 +160,7 @@ trait PrincipleButton
                     }
                     $record->validation_status = ValidationStatus::Pending;
                     $record->save();
-                    PrincipleValidation::dispatch($record->id);
+                    PrincipleValidation::dispatch($record->id, Identification::getEmail());
                 }
             }
         )

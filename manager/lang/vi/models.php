@@ -380,6 +380,7 @@ return [
             'rule_details' => 'Các chi tiết quy tắc',
             'triggered_by' => 'Kích hoạt bởi',
             'created_by' => 'Tạo bởi',
+            'is_reviewed' => 'Đã xem xét',
         ],
         'extras' => [
             'metas' => [
@@ -422,6 +423,7 @@ return [
                 'revoke' => 'Thu hồi',
                 'implement' => 'Thực hiện',
                 'suspend' => 'Đình chỉ',
+                'review' => 'Xem xét',
             ],
         ]
     ],

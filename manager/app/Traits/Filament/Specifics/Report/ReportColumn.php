@@ -23,4 +23,9 @@ trait ReportColumn
         return self::textColumn('createdBy.name', __('models.generals.bases.created_by'))
             ->badge();
     }
+
+    public static function getIsReviewed()
+    {
+        return self::booleanColumn('is_reviewed', __('models.report.fields.is_reviewed'));
+    }
 }

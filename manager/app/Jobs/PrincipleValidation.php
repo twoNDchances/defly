@@ -9,12 +9,14 @@ use App\Enums\Principle\ValidationStatus;
 use App\Enums\Rule\Comparator;
 use App\Enums\Type as TargetType;
 use App\Enums\Wordlist\Type as WordlistType;
+use App\Filament\Clusters\Initialization\Resources\Principles\PrincipleResource;
 use App\Models\Action;
 use App\Models\Principle;
 use App\Models\Rule;
 use App\Models\Target;
 use App\Models\Wordlist;
 use App\Services\Datatype as DatatypeService;
+use App\Services\Notification;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Storage;
@@ -56,10 +58,18 @@ class PrincipleValidation implements ShouldQueue
         Comparator::CheckRegExp->value,
     ];
 
-    public function __construct(public string $principleId) {}
+    public function __construct(
+        public string $principleId,
+        public ?string $requesterEmail = null,
+        public ?string $locale = null,
+    ) {
+        $this->locale ??= app()->getLocale();
+    }
 
     public function handle(): void
     {
+        $this->useLocale();
+
         $principle = Principle::query()
             ->with([
                 'rules' => fn ($query) => $query->with([
@@ -73,6 +83,13 @@ class PrincipleValidation implements ShouldQueue
             ->find($this->principleId);
 
         if (! $principle) {
+            Notification::sendToRequester(
+                requesterEmail: $this->requesterEmail,
+                title: __('notifications.principle.validation.skipped.title'),
+                body: __('notifications.principle.validation.skipped.missing'),
+                status: Notification::STATUS_WARNING,
+            );
+
             return;
         }
 
@@ -88,6 +105,8 @@ class PrincipleValidation implements ShouldQueue
                 'validation_status' => $validation['passed'] ? ValidationStatus::Passed : ValidationStatus::Failed,
                 'validation_details' => $validation['details'],
             ])->save();
+
+            $this->notifyValidationResult($principle, $validation);
         } catch (Throwable $exception) {
             report($exception);
 
@@ -99,7 +118,7 @@ class PrincipleValidation implements ShouldQueue
                     'errors' => [
                         [
                             'code' => 'principle.validation.exception',
-                            'message' => 'Unhandled exception while validating principle.',
+                            'message' => __('notifications.principle.validation.exception'),
                             'context' => [
                                 'exception' => $exception::class,
                                 'message' => $exception->getMessage(),
@@ -108,6 +127,8 @@ class PrincipleValidation implements ShouldQueue
                     ],
                 ],
             ])->save();
+
+            $this->notifyValidationException($principle, $exception);
         }
     }
 
@@ -706,5 +727,49 @@ class PrincipleValidation implements ShouldQueue
         $type = $value instanceof ActionType ? $value->value : (is_string($value) ? $value : null);
 
         return $type !== null ? ActionType::tryFrom($type)?->value : null;
+    }
+
+    protected function notifyValidationResult(Principle $principle, array $validation): void
+    {
+        $passed = (bool) ($validation['passed'] ?? false);
+        $errorsTotal = (int) data_get($validation, 'details.summary.errors_total', 0);
+
+        Notification::sendForRecord(
+            requesterEmail: $this->requesterEmail,
+            record: $principle,
+            title: $passed
+                ? __('notifications.principle.validation.passed.title')
+                : __('notifications.principle.validation.failed.title'),
+            body: __('notifications.principle.validation.finished', [
+                'name' => $principle->name,
+                'count' => $errorsTotal,
+            ]),
+            status: $passed ? Notification::STATUS_SUCCESS : Notification::STATUS_DANGER,
+            url: Notification::resourceUrl(PrincipleResource::class, $principle),
+            urlLabel: __('notifications.actions.view_principle'),
+        );
+    }
+
+    protected function notifyValidationException(Principle $principle, Throwable $exception): void
+    {
+        Notification::sendForRecord(
+            requesterEmail: $this->requesterEmail,
+            record: $principle,
+            title: __('notifications.principle.validation.failed.title'),
+            body: __('notifications.principle.validation.exception_body', [
+                'name' => $principle->name,
+                'message' => $exception->getMessage(),
+            ]),
+            status: Notification::STATUS_DANGER,
+            url: Notification::resourceUrl(PrincipleResource::class, $principle),
+            urlLabel: __('notifications.actions.view_principle'),
+        );
+    }
+
+    protected function useLocale(): void
+    {
+        if (filled($this->locale)) {
+            app()->setLocale($this->locale);
+        }
     }
 }

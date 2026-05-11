@@ -209,7 +209,7 @@ class DefenderController extends Controller
 
         $defender->forceFill([
             'deployment_status' => DeploymentStatus::Pending,
-            'deployment_details' => ['detail' => 'Cancel request queued.'],
+            'deployment_details' => ['detail' => __('notifications.defender.cancellation.queued')],
         ])->save();
 
         DefenderDeployment::dispatch(

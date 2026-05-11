@@ -11,6 +11,7 @@ class ReportTable
     public static function build()
     {
         return [
+            self::getIsReviewed(),
             self::getCreatedAt(),
             self::getTriggeredBy(),
             self::getCreatedBy(),

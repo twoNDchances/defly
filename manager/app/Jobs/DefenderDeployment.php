@@ -3,7 +3,9 @@
 namespace App\Jobs;
 
 use App\Enums\Defender\DeploymentStatus;
+use App\Filament\Resources\Defenders\DefenderResource;
 use App\Models\Defender;
+use App\Services\Notification;
 use App\Services\Orchestrator;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
@@ -22,10 +24,15 @@ class DefenderDeployment implements ShouldQueue
         public string $defenderId,
         public string $action = self::ACTION_DEPLOY,
         public ?string $requesterEmail = null,
-    ) {}
+        public ?string $locale = null,
+    ) {
+        $this->locale ??= app()->getLocale();
+    }
 
     public function handle(): void
     {
+        $this->useLocale();
+
         $defender = Defender::query()->find($this->defenderId);
         if (! $defender) {
             return;
@@ -48,7 +55,7 @@ class DefenderDeployment implements ShouldQueue
 
         $defender->forceFill([
             'deployment_status' => DeploymentStatus::Processing,
-            'deployment_details' => ['detail' => 'Deployment is being processed.'],
+            'deployment_details' => ['detail' => __('notifications.defender.deployment.processing')],
         ])->save();
 
         try {
@@ -62,13 +69,20 @@ class DefenderDeployment implements ShouldQueue
                     'deployment_details' => $this->responsePayload($response),
                 ])->save();
 
+                $this->notify(
+                    $defender,
+                    __('notifications.defender.deployment.completed.title'),
+                    __('notifications.defender.deployment.completed.body', ['name' => $defender->name]),
+                    Notification::STATUS_SUCCESS,
+                );
+
                 return;
             }
 
             $this->markFailed(
                 $defender,
                 [
-                    'detail' => 'Orchestrator deployment request failed.',
+                    'detail' => __('notifications.defender.deployment.request_failed'),
                     'status' => $response->status(),
                     'response' => $this->responsePayload($response),
                 ],
@@ -79,7 +93,7 @@ class DefenderDeployment implements ShouldQueue
             $this->markFailed(
                 $defender,
                 [
-                    'detail' => 'Unhandled exception while processing defender deployment.',
+                    'detail' => __('notifications.defender.deployment.exception'),
                     'exception' => $exception::class,
                     'message' => $exception->getMessage(),
                 ],
@@ -106,13 +120,20 @@ class DefenderDeployment implements ShouldQueue
                     'deployment_details' => null,
                 ])->save();
 
+                $this->notify(
+                    $defender,
+                    __('notifications.defender.cancellation.completed.title'),
+                    __('notifications.defender.cancellation.completed.body', ['name' => $defender->name]),
+                    Notification::STATUS_SUCCESS,
+                );
+
                 return;
             }
 
             $this->markFailed(
                 $defender,
                 [
-                    'detail' => 'Orchestrator cancel request failed.',
+                    'detail' => __('notifications.defender.cancellation.request_failed'),
                     'status' => $response->status(),
                     'response' => $this->responsePayload($response),
                 ],
@@ -123,7 +144,7 @@ class DefenderDeployment implements ShouldQueue
             $this->markFailed(
                 $defender,
                 [
-                    'detail' => 'Unhandled exception while canceling defender.',
+                    'detail' => __('notifications.defender.cancellation.exception'),
                     'exception' => $exception::class,
                     'message' => $exception->getMessage(),
                 ],
@@ -137,6 +158,15 @@ class DefenderDeployment implements ShouldQueue
             'deployment_status' => DeploymentStatus::Failed,
             'deployment_details' => $details,
         ])->save();
+
+        $this->notify(
+            $defender,
+            $this->normalizedAction() === self::ACTION_CANCEL
+                ? __('notifications.defender.cancellation.failed.title')
+                : __('notifications.defender.deployment.failed.title'),
+            $this->failureBody($defender, $details),
+            Notification::STATUS_DANGER,
+        );
     }
 
     protected function responsePayload(Response $response): array
@@ -158,5 +188,43 @@ class DefenderDeployment implements ShouldQueue
         return in_array($action, [self::ACTION_DEPLOY, self::ACTION_CANCEL], true)
             ? $action
             : self::ACTION_DEPLOY;
+    }
+
+    protected function notify(Defender $defender, string $title, ?string $body, string $status): void
+    {
+        Notification::sendForRecord(
+            requesterEmail: $this->requesterEmail,
+            record: $defender,
+            title: $title,
+            body: $body,
+            status: $status,
+            url: Notification::resourceUrl(DefenderResource::class, $defender),
+            urlLabel: __('notifications.actions.view_defender'),
+        );
+    }
+
+    protected function failureBody(Defender $defender, array $details): string
+    {
+        $detail = (string) ($details['detail'] ?? __('notifications.defender.failure.default_detail'));
+
+        if (isset($details['status'])) {
+            $detail .= ' ' . __('notifications.defender.failure.http_status', ['status' => $details['status']]);
+        }
+
+        if (isset($details['message'])) {
+            $detail .= " {$details['message']}";
+        }
+
+        return __('notifications.defender.failure.body', [
+            'name' => $defender->name,
+            'detail' => $detail,
+        ]);
+    }
+
+    protected function useLocale(): void
+    {
+        if (filled($this->locale)) {
+            app()->setLocale($this->locale);
+        }
     }
 }

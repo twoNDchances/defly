@@ -21,6 +21,7 @@ return new class extends Migration
             $table->json('rule_details')->nullable();
             $table->foreignUuid('triggered_by')->nullable()->index()->constrained('actions')->nullOnDelete();
             $table->foreignUuid('created_by')->nullable()->index()->constrained('defenders')->nullOnDelete();
+            $table->boolean('is_reviewed')->default(false);
             $table->timestamps();
         });
     }

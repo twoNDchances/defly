@@ -11,7 +11,7 @@ class TimelineActivityChart extends ChartWidget
 
     protected static bool $isDiscovered = false;
 
-    protected ?string $pollingInterval = '30s';
+    protected ?string $pollingInterval = '10s';
 
     protected int|string|array $columnSpan = 'full';
 

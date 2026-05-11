@@ -72,4 +72,10 @@ return [
             'cancel_bulk_button' => 'Cancel selected items',
         ],
     ],
+    'report' => [
+        'buttons' => [
+            'review' => 'Mark as reviewed',
+            'reviewAny' => 'Mark selected items as reviewed',
+        ],
+    ],
 ];

@@ -12,7 +12,7 @@ class HttpStatusChart extends ChartWidget
 
     protected static bool $isDiscovered = false;
 
-    protected ?string $pollingInterval = '30s';
+    protected ?string $pollingInterval = '10s';
 
     protected function getData(): array
     {

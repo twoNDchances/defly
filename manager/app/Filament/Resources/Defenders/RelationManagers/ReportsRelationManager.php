@@ -30,10 +30,14 @@ class ReportsRelationManager extends RelationManager
                 //
             ])
             ->recordActions([
-                self::buttonGroup(edit: false),
+                self::buttonGroup(edit: false, more: [
+                    self::reviewReportButton(),
+                ]),
             ])
             ->toolbarActions([
-                self::bulkButtonGroup(),
+                self::bulkButtonGroup(more: [
+                    self::reviewReportBulkButton(),
+                ]),
             ])
             ->poll('5s');
     }
