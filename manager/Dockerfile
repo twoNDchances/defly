@@ -4,37 +4,43 @@ WORKDIR /var/www/html
 
 ENV COMPOSER_ALLOW_SUPERUSER=1
 
+ARG PHP_EXTENSION_BUILD_JOBS=1
+
 RUN set -eux; \
     apt-get update; \
     apt-get install -y --no-install-recommends \
         ca-certificates \
         git \
-        libcurl4-openssl-dev \
         libfreetype6-dev \
         libicu-dev \
         libjpeg62-turbo-dev \
-        libonig-dev \
         libpng-dev \
         libzip-dev \
         openssl \
         unzip \
         $PHPIZE_DEPS; \
+    rm -rf /var/lib/apt/lists/*
+
+RUN set -eux; \
     docker-php-ext-configure gd --with-freetype --with-jpeg; \
-    docker-php-ext-install -j"$(nproc)" \
+    docker-php-ext-install -j"${PHP_EXTENSION_BUILD_JOBS}" \
         bcmath \
-        curl \
         exif \
         gd \
         intl \
-        mbstring \
         opcache \
         pcntl \
         pdo_mysql \
         zip; \
+    for extension in curl mbstring pdo_mysql zip intl gd pcntl "Zend OPcache"; do \
+        php -m | grep -Fx "$extension"; \
+    done
+
+RUN set -eux; \
     cp "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"; \
     a2enmod headers rewrite ssl; \
     mkdir -p /etc/apache2/ssl; \
-    rm -rf /var/lib/apt/lists/* /tmp/pear ~/.pearrc
+    rm -rf /tmp/pear ~/.pearrc
 
 RUN set -eux; \
     { \
