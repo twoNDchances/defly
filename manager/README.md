@@ -21,6 +21,30 @@ Laravel is a web application framework with expressive, elegant syntax. We belie
 
 Laravel is accessible, powerful, and provides tools required for large, robust applications.
 
+## Email Delivery
+
+This application is configured to send mail through Resend using the `resend/resend-laravel` package. Set these environment variables before sending real emails:
+
+```ini
+MAIL_MAILER=resend
+MAIL_FROM_ADDRESS="onboarding@resend.dev"
+MAIL_FROM_NAME="${APP_NAME}"
+RESEND_API_KEY=re_xxxxxxxxx
+```
+
+Verification emails are queued, so keep a queue worker running in environments that use `QUEUE_CONNECTION=database`:
+
+```bash
+php artisan queue:work
+```
+
+For production, verify a sending domain in Resend and replace `MAIL_FROM_ADDRESS` with an address from that domain. The package also registers `POST /resend/webhook`; register that HTTPS URL in the Resend dashboard when webhook events are needed, then set:
+
+```ini
+RESEND_WEBHOOK_SECRET=whsec_xxxxxxxxx
+RESEND_WEBHOOK_TOLERANCE=300
+```
+
 ## Learning Laravel
 
 Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
