@@ -6,6 +6,8 @@ use App\Observers\UserObserver;
 use App\Services\Identification;
 use App\Traits\Models\Labellable;
 use App\Traits\Models\Owner;
+use Filament\Models\Contracts\FilamentUser;
+use Filament\Panel;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
@@ -19,7 +21,7 @@ use Illuminate\Notifications\Notifiable;
 #[Fillable(['name', 'email', 'password', 'is_verified', 'is_root', 'is_activated', 'created_by', 'verification_token'])]
 #[Hidden(['password', 'remember_token', 'verification_token'])]
 #[ObservedBy(UserObserver::class)]
-class User extends Authenticatable
+class User extends Authenticatable implements FilamentUser
 {
     use HasFactory, HasUuids, Labellable, Notifiable, Owner;
 
@@ -44,6 +46,13 @@ class User extends Authenticatable
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
         ];
+    }
+
+    public function canAccessPanel(Panel $panel): bool
+    {
+        return $panel->getId() === 'defly-manager'
+            && $this->is_verified
+            && $this->is_activated;
     }
 
     #[Scope]

@@ -140,6 +140,12 @@ services:
       - manager_storage:/var/www/html/storage
       - orchestrator_tls:/var/www/html/storage/tls/orchestrator:ro
       - defender_tls:/var/www/html/storage/tls/defenders:ro
+    healthcheck:
+      test: ["CMD-SHELL", "curl -kfsS https://127.0.0.1/up > /dev/null"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 90s
     depends_on:
       mariadb:
         condition: service_healthy
@@ -172,7 +178,7 @@ services:
       mariadb:
         condition: service_healthy
       manager:
-        condition: service_started
+        condition: service_healthy
 
   defender:
     image: ${SERVER_DEFENDER_IMAGE:-defly-defender:latest}

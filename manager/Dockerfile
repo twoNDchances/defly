@@ -10,6 +10,7 @@ RUN set -eux; \
     apt-get update; \
     apt-get install -y --no-install-recommends \
         ca-certificates \
+        curl \
         git \
         libfreetype6-dev \
         libicu-dev \
