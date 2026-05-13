@@ -58,11 +58,19 @@ class ServerManagerOnlyMiddleware(ServerHelperMiddleware):
     def __init__(self, get_response):
         self.get_response = get_response
 
-    def __call__(self, request):
-        manager_host = getattr(settings, "SERVER_MANAGER", "manager").strip()
-        client_ip = self.get_client_ip(request)
+    @staticmethod
+    def allowed_manager_hosts() -> list[str]:
+        value = getattr(settings, "SERVER_MANAGER", "manager")
+        return [host.strip() for host in str(value).split(",") if host.strip()]
 
-        if manager_host and client_ip not in self.resolve_host_ips(manager_host):
+    def __call__(self, request):
+        client_ip = self.get_client_ip(request)
+        allowed_ips: set[str] = set()
+
+        for manager_host in self.allowed_manager_hosts():
+            allowed_ips.update(self.resolve_host_ips(manager_host))
+
+        if allowed_ips and client_ip not in allowed_ips:
             return JsonResponse(
                 {"detail": "Forbidden: client is not allowed."},
                 status=403,

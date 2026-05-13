@@ -42,18 +42,7 @@ trait DefenderField
 
     public static function setCommonEnvironmentVariables()
     {
-        $variables = [
-            ['key' => 'ABOUT_BANNER_ENABLE', 'value' => 'true'],
-            ['key' => 'ERROR_FILE_ENABLE', 'value' => 'false'],
-            ['key' => 'ERROR_DIRECTORY_PATH', 'value' => 'storage/errors'],
-            ['key' => 'DATABASE_HOST', 'value' => '127.0.0.1'],
-            ['key' => 'DATABASE_PORT', 'value' => '3306'],
-            ['key' => 'DATABASE_NAME', 'value' => 'defly_manager'],
-            ['key' => 'DATABASE_USER', 'value' => 'root'],
-            ['key' => 'DATABASE_PASS', 'value' => ''],
-            ['key' => 'DOCTOR_INTERVAL_UNIT', 'value' => 'minute'],
-            ['key' => 'DOCTOR_INTERVAL_COUNT', 'value' => '1'],
-        ];
+        $variables = self::commonEnvironmentVariables();
 
         $directoryPathRule = function (string $attribute, mixed $value, $fail): void {
             if (! filled($value)) {

@@ -1,0 +1,195 @@
+services:
+  mariadb:
+    image: mariadb:${MARIADB_VERSION:-11.4}
+    restart: unless-stopped
+    environment:
+      MARIADB_DATABASE: ${DB_DATABASE:-defly_manager}
+      MARIADB_USER: ${DB_USERNAME:-defly}
+      MARIADB_PASSWORD: ${DB_PASSWORD:-defly_secret}
+      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD:-defly_root_secret}
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mariadb-admin ping -h 127.0.0.1 -u root -p$${MARIADB_ROOT_PASSWORD} --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  orchestrator:
+    image: ${ORCHESTRATOR_IMAGE:-defly-orchestrator:latest}
+    build:
+      context: ./orchestrator
+    restart: unless-stopped
+    user: root
+    environment:
+      SECRET_KEY_FILE: ${ORCHESTRATOR_SECRET_KEY_FILE:-storage/secret/key.txt}
+      ALLOWED_HOSTS: ${ORCHESTRATOR_ALLOWED_HOSTS:-127.0.0.1,localhost,manager,orchestrator}
+      DB_HOST: mariadb
+      DB_PORT: 3306
+      DB_USER: ${DB_USERNAME:-defly}
+      DB_PASS: ${DB_PASSWORD:-defly_secret}
+      DB_NAME: ${DB_DATABASE:-defly_manager}
+      LANGUAGE_CODE: ${LANGUAGE_CODE:-vi-vn}
+      TIME_ZONE: ${TIMEZONE:-Asia/Ho_Chi_Minh}
+      USE_I18N: "true"
+      USE_TZ: "false"
+      SERVER_MANAGER: ${ORCHESTRATOR_ALLOWED_CLIENTS:-manager,worker}
+      SERVER_USERNAME: ${ORCHESTRATOR_USERNAME:-defly-orchestrator}
+      SERVER_PASSWORD: ${ORCHESTRATOR_PASSWORD:-P@55w0rd}
+      SERVER_EMAIL_HEADER_KEY: ${ORCHESTRATOR_EMAIL_HEADER_KEY:-X-Executor}
+      SERVER_PATH_PREFIX: ${ORCHESTRATOR_PATH_PREFIX:-api/v1}
+      SERVER_PATH_DEPLOYMENT: ${ORCHESTRATOR_PATH_DEPLOYMENT:-deployments}
+      SERVER_METHOD_DEPLOY: ${ORCHESTRATOR_METHOD_DEPLOY:-post}
+      SERVER_METHOD_FOLLOW: ${ORCHESTRATOR_METHOD_FOLLOW:-get}
+      SERVER_METHOD_CANCEL: ${ORCHESTRATOR_METHOD_CANCEL:-delete}
+      SERVER_DEFENDER_IMAGE: ${SERVER_DEFENDER_IMAGE:-defly-defender:latest}
+      SERVER_DEFENDER_TLS_VOLUME: ${SERVER_DEFENDER_TLS_VOLUME:-defender_tls}
+      ORCHESTRATOR_TLS_CERT_FILE: storage/tls/orchestrator.crt
+      ORCHESTRATOR_TLS_KEY_FILE: storage/tls/orchestrator.key
+    volumes:
+      - orchestrator_secret:/app/storage/secret
+      - orchestrator_tls:/app/storage/tls
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      mariadb:
+        condition: service_healthy
+
+  manager:
+    image: ${MANAGER_IMAGE:-defly-manager:latest}
+    build:
+      context: ./manager
+    restart: unless-stopped
+    environment: &manager_environment
+      APP_NAME: ${APP_NAME:-Defly Manager}
+      APP_ENV: ${APP_ENV:-production}
+      APP_KEY: ${APP_KEY:-}
+      APP_DEBUG: ${APP_DEBUG:-false}
+      APP_URL: ${APP_URL:-https://localhost}
+      APP_LOCALE: ${APP_LOCALE:-vi}
+      APP_FALLBACK_LOCALE: ${APP_FALLBACK_LOCALE:-en}
+      APP_FAKER_LOCALE: ${APP_FAKER_LOCALE:-en_US}
+      LOG_CHANNEL: ${LOG_CHANNEL:-stack}
+      LOG_STACK: ${LOG_STACK:-single}
+      LOG_DEPRECATIONS_CHANNEL: ${LOG_DEPRECATIONS_CHANNEL:-null}
+      LOG_LEVEL: ${LOG_LEVEL:-debug}
+      DB_CONNECTION: mysql
+      DB_HOST: mariadb
+      DB_PORT: 3306
+      DB_DATABASE: ${DB_DATABASE:-defly_manager}
+      DB_USERNAME: ${DB_USERNAME:-defly}
+      DB_PASSWORD: ${DB_PASSWORD:-defly_secret}
+      SESSION_DRIVER: ${SESSION_DRIVER:-database}
+      SESSION_LIFETIME: ${SESSION_LIFETIME:-120}
+      SESSION_ENCRYPT: ${SESSION_ENCRYPT:-false}
+      SESSION_PATH: /
+      SESSION_DOMAIN: ${SESSION_DOMAIN:-null}
+      BROADCAST_CONNECTION: ${BROADCAST_CONNECTION:-log}
+      FILESYSTEM_DISK: ${FILESYSTEM_DISK:-local}
+      QUEUE_CONNECTION: ${QUEUE_CONNECTION:-database}
+      CACHE_STORE: ${CACHE_STORE:-database}
+      MAIL_MAILER: ${MAIL_MAILER:-resend}
+      MAIL_SCHEME: ${MAIL_SCHEME:-null}
+      MAIL_HOST: ${MAIL_HOST:-127.0.0.1}
+      MAIL_PORT: ${MAIL_PORT:-2525}
+      MAIL_USERNAME: ${MAIL_USERNAME:-null}
+      MAIL_PASSWORD: ${MAIL_PASSWORD:-null}
+      MAIL_FROM_ADDRESS: ${MAIL_FROM_ADDRESS:-onboarding@resend.dev}
+      MAIL_FROM_NAME: ${MAIL_FROM_NAME:-Defly Manager}
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+      RESEND_DOMAIN: ${RESEND_DOMAIN:-null}
+      RESEND_PATH: ${RESEND_PATH:-resend}
+      RESEND_WEBHOOK_SECRET: ${RESEND_WEBHOOK_SECRET:-}
+      RESEND_WEBHOOK_TOLERANCE: ${RESEND_WEBHOOK_TOLERANCE:-300}
+      USER_NAME: ${USER_NAME:-root}
+      USER_EMAIL: ${USER_EMAIL:-root@defly.2ndproject.site}
+      USER_PASSWORD: ${USER_PASSWORD:-random}
+      TOKEN_LOCATION: ${TOKEN_LOCATION:-header}
+      TOKEN_KEY_NAME: ${TOKEN_KEY_NAME:-X-Token-Key}
+      USER_AGENT: ${USER_AGENT:-Defly/Manager}
+      TIMEZONE: ${TIMEZONE:-Asia/Ho_Chi_Minh}
+      API_PREFIX: ${API_PREFIX:-v1}
+      GUI_PREFIX: ${GUI_PREFIX:-defly-manager}
+      THEME_COLOR: ${THEME_COLOR:-violet}
+      ORCHESTRATOR_BASE_URL: https://orchestrator:8000
+      ORCHESTRATOR_PATH_PREFIX: ${ORCHESTRATOR_PATH_PREFIX:-api/v1}
+      ORCHESTRATOR_PATH_DEPLOYMENT: ${ORCHESTRATOR_PATH_DEPLOYMENT:-deployments}
+      ORCHESTRATOR_METHOD_DEPLOY: ${ORCHESTRATOR_METHOD_DEPLOY:-post}
+      ORCHESTRATOR_METHOD_FOLLOW: ${ORCHESTRATOR_METHOD_FOLLOW:-get}
+      ORCHESTRATOR_METHOD_CANCEL: ${ORCHESTRATOR_METHOD_CANCEL:-delete}
+      ORCHESTRATOR_USERNAME: ${ORCHESTRATOR_USERNAME:-defly-orchestrator}
+      ORCHESTRATOR_PASSWORD: ${ORCHESTRATOR_PASSWORD:-P@55w0rd}
+      ORCHESTRATOR_TLS_SKIP_VERIFY: ${ORCHESTRATOR_TLS_SKIP_VERIFY:-false}
+      ORCHESTRATOR_TLS_CERT_FILE: storage/tls/orchestrator/orchestrator.crt
+      ORCHESTRATOR_EMAIL_HEADER_KEY: ${ORCHESTRATOR_EMAIL_HEADER_KEY:-X-Executor}
+      DEFENDER_SERVER_TLS_SKIP_VERIFY: ${DEFENDER_SERVER_TLS_SKIP_VERIFY:-false}
+      DEFENDER_SERVER_TLS_DIRECTORY: storage/tls/defenders
+      RUN_MIGRATIONS: ${MANAGER_RUN_MIGRATIONS:-true}
+      RUN_SEEDERS: ${MANAGER_RUN_SEEDERS:-true}
+      RUN_OPTIMIZE: ${MANAGER_RUN_OPTIMIZE:-true}
+      FIX_PERMISSIONS: "true"
+      GENERATE_APP_KEY: ${GENERATE_APP_KEY:-true}
+      TLS_COMMON_NAME: ${MANAGER_TLS_COMMON_NAME:-localhost}
+    ports:
+      - "${MANAGER_HTTP_PORT:-80}:80"
+      - "${MANAGER_HTTPS_PORT:-443}:443"
+    volumes:
+      - manager_storage:/var/www/html/storage
+      - orchestrator_tls:/var/www/html/storage/tls/orchestrator:ro
+      - defender_tls:/var/www/html/storage/tls/defenders:ro
+    depends_on:
+      mariadb:
+        condition: service_healthy
+      orchestrator:
+        condition: service_started
+
+  worker:
+    image: ${MANAGER_IMAGE:-defly-manager:latest}
+    build:
+      context: ./manager
+    restart: unless-stopped
+    command:
+      - php
+      - artisan
+      - queue:work
+      - --sleep=3
+      - --tries=${WORKER_TRIES:-3}
+      - --timeout=${WORKER_TIMEOUT:-90}
+      - --max-time=${WORKER_MAX_TIME:-3600}
+    environment:
+      <<: *manager_environment
+      RUN_MIGRATIONS: "false"
+      RUN_SEEDERS: "false"
+      RUN_OPTIMIZE: "false"
+    volumes:
+      - manager_storage:/var/www/html/storage
+      - orchestrator_tls:/var/www/html/storage/tls/orchestrator:ro
+      - defender_tls:/var/www/html/storage/tls/defenders:ro
+    depends_on:
+      mariadb:
+        condition: service_healthy
+      manager:
+        condition: service_started
+
+  defender:
+    image: ${SERVER_DEFENDER_IMAGE:-defly-defender:latest}
+    build:
+      context: ./defender
+    profiles:
+      - build-only
+    restart: "no"
+
+volumes:
+  mariadb_data:
+    name: ${COMPOSE_PROJECT_NAME:-defly}_mariadb_data
+  manager_storage:
+    name: ${COMPOSE_PROJECT_NAME:-defly}_manager_storage
+  orchestrator_secret:
+    name: ${COMPOSE_PROJECT_NAME:-defly}_orchestrator_secret
+  orchestrator_tls:
+    name: ${COMPOSE_PROJECT_NAME:-defly}_orchestrator_tls
+  defender_tls:
+    name: ${COMPOSE_PROJECT_NAME:-defly}_${SERVER_DEFENDER_TLS_VOLUME:-defender_tls}

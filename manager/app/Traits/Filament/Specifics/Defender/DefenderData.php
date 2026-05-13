@@ -157,15 +157,17 @@ trait DefenderData
 
     protected static function commonEnvironmentVariables(): array
     {
+        $database = config('database.connections.mysql', []);
+
         return [
             ['key' => 'ABOUT_BANNER_ENABLE', 'value' => 'true'],
             ['key' => 'ERROR_FILE_ENABLE', 'value' => 'false'],
             ['key' => 'ERROR_DIRECTORY_PATH', 'value' => 'storage/errors'],
-            ['key' => 'DATABASE_HOST', 'value' => '127.0.0.1'],
-            ['key' => 'DATABASE_PORT', 'value' => '3306'],
-            ['key' => 'DATABASE_NAME', 'value' => 'defly_manager'],
-            ['key' => 'DATABASE_USER', 'value' => 'root'],
-            ['key' => 'DATABASE_PASS', 'value' => ''],
+            ['key' => 'DATABASE_HOST', 'value' => (string) ($database['host'] ?? 'mariadb')],
+            ['key' => 'DATABASE_PORT', 'value' => (string) ($database['port'] ?? '3306')],
+            ['key' => 'DATABASE_NAME', 'value' => (string) ($database['database'] ?? 'defly_manager')],
+            ['key' => 'DATABASE_USER', 'value' => (string) ($database['username'] ?? 'defly')],
+            ['key' => 'DATABASE_PASS', 'value' => (string) ($database['password'] ?? '')],
             ['key' => 'DOCTOR_INTERVAL_UNIT', 'value' => 'minute'],
             ['key' => 'DOCTOR_INTERVAL_COUNT', 'value' => '1'],
         ];
