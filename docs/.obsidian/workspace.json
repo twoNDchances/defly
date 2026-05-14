@@ -11,10 +11,14 @@
             "id": "96c54473edbbb96d",
             "type": "leaf",
             "state": {
-              "type": "empty",
-              "state": {},
+              "type": "markdown",
+              "state": {
+                "file": "Outline.md",
+                "mode": "source",
+                "source": false
+              },
               "icon": "lucide-file",
-              "title": "New tab"
+              "title": "Outline"
             }
           }
         ]
@@ -177,8 +181,12 @@
       "bases:Create new base": false
     }
   },
-  "active": "2b8a296cd8b4d147",
+  "active": "96c54473edbbb96d",
   "lastOpenFiles": [
-    "Untitled.md"
+    "en/README.en.md",
+    "vi/README.vi.md",
+    "Outline.md",
+    "en",
+    "vi"
   ]
 }
