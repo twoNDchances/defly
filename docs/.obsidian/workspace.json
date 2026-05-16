@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Outline.md",
+                "file": "vi/Overview.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Outline"
+              "title": "Overview"
             }
           }
         ]
@@ -183,9 +183,25 @@
   },
   "active": "96c54473edbbb96d",
   "lastOpenFiles": [
-    "en/README.en.md",
+    "en/README.md",
     "vi/README.vi.md",
+    "vi/README.md",
+    "vi/Reference.md",
+    "vi/Troubleshooting.md",
+    "vi/Security.md",
+    "vi/Development.md",
+    "vi/Operations.md",
+    "vi/API-Reference.md",
+    "vi/Defender-Guide.md",
+    "vi/Orchestrator-Guide.md",
+    "vi/Manager-Guide.md",
+    "vi/Architecture.md",
+    "vi/Configuration.md",
+    "vi/Installation.md",
+    "vi/Getting-Started.md",
+    "vi/Overview.md",
     "Outline.md",
+    "en/README.en.md",
     "en",
     "vi"
   ]
