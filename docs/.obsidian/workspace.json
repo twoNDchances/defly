@@ -4,21 +4,17 @@
     "type": "split",
     "children": [
       {
-        "id": "710b67efc4768cf8",
+        "id": "6f26396e1687db08",
         "type": "tabs",
         "children": [
           {
-            "id": "96c54473edbbb96d",
+            "id": "7a070b81bf100f59",
             "type": "leaf",
             "state": {
-              "type": "markdown",
-              "state": {
-                "file": "vi/Overview.md",
-                "mode": "source",
-                "source": false
-              },
+              "type": "empty",
+              "state": {},
               "icon": "lucide-file",
-              "title": "Overview"
+              "title": "New tab"
             }
           }
         ]
@@ -181,17 +177,18 @@
       "bases:Create new base": false
     }
   },
-  "active": "96c54473edbbb96d",
+  "active": "7a070b81bf100f59",
   "lastOpenFiles": [
     "en/README.md",
-    "vi/README.vi.md",
     "vi/README.md",
+    "vi/Overview.md",
+    "vi/API-Reference.md",
+    "vi/README.vi.md",
     "vi/Reference.md",
     "vi/Troubleshooting.md",
     "vi/Security.md",
     "vi/Development.md",
     "vi/Operations.md",
-    "vi/API-Reference.md",
     "vi/Defender-Guide.md",
     "vi/Orchestrator-Guide.md",
     "vi/Manager-Guide.md",
@@ -199,7 +196,6 @@
     "vi/Configuration.md",
     "vi/Installation.md",
     "vi/Getting-Started.md",
-    "vi/Overview.md",
     "Outline.md",
     "en/README.en.md",
     "en",
