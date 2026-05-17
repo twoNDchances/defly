@@ -13,7 +13,6 @@ use App\Enums\Phase;
 use App\Enums\Rule\Comparator;
 use App\Enums\Type as TargetType;
 use App\Enums\Wordlist\Type as WordlistType;
-use App\Jobs\PrincipleValidation;
 use App\Models\Action;
 use App\Models\Decision;
 use App\Models\Defender;
@@ -22,13 +21,8 @@ use App\Models\Permission;
 use App\Models\Principle;
 use App\Models\Rule;
 use App\Models\Target;
-use App\Models\User;
 use App\Models\Wordlist;
-use App\Services\Connector;
-use App\Traits\Requests\Authorization as RequestAuthorization;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Pivot;
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Str;
 use ReflectionMethod;
 
@@ -166,117 +160,5 @@ trait DomainTestHelpers
                 ...$environment,
             ],
         ]);
-    }
-}
-
-class ThrowingPrincipleValidation extends PrincipleValidation
-{
-    protected function validatePrinciple(Principle $principle): array
-    {
-        throw new \RuntimeException('validation exploded');
-    }
-}
-
-class ThrowingTargetForTrace extends Target
-{
-    public function getAttribute($key)
-    {
-        if ($key === 'datatype') {
-            throw new \RuntimeException('trace failed');
-        }
-
-        return parent::getAttribute($key);
-    }
-}
-
-class ThrowingWordlist extends Wordlist
-{
-    public function getAttribute($key)
-    {
-        if ($key === 'word_json') {
-            throw new \RuntimeException('json failed');
-        }
-
-        return parent::getAttribute($key);
-    }
-}
-
-class ConnectorHarness extends Connector
-{
-    protected static array $headers = [];
-
-    public static function configure(
-        ?string $baseUrl,
-        ?string $pathPrefix,
-        ?string $username,
-        ?string $password,
-        array $headers = [],
-    ): void {
-        static::$baseUrl = $baseUrl;
-        static::$pathPrefix = $pathPrefix;
-        static::$username = $username;
-        static::$password = $password;
-        static::$headers = $headers;
-    }
-
-    public static function baseUriPublic(): string
-    {
-        return static::baseUri();
-    }
-
-    protected static function requestHeaders(): array
-    {
-        return static::$headers;
-    }
-}
-
-class AuthorizationRequestHarness extends FormRequest
-{
-    use RequestAuthorization;
-
-    public function setTestUser(?User $user): void
-    {
-        $this->setUserResolver(fn () => $user);
-    }
-
-    public function allowsPublic(string $ability, mixed $target): bool
-    {
-        return $this->allows($ability, $target);
-    }
-
-    public function canAccessRecordPublic(Model $model, string $ability): bool
-    {
-        return $this->canAccessRecord($model, $ability);
-    }
-
-    public function paginationRulesPublic(): array
-    {
-        return $this->paginationRules();
-    }
-
-    public function modelDataPublic(Model $model, array $fields): array
-    {
-        return $this->modelData($model, $fields);
-    }
-
-    public function enumValuePublic(mixed $value): mixed
-    {
-        return $this->enumValue($value);
-    }
-}
-
-class RawDefenderForAuthorization extends Defender
-{
-    protected function casts()
-    {
-        return [];
-    }
-}
-
-class RawPrincipleForAuthorization extends Principle
-{
-    protected function casts()
-    {
-        return [];
     }
 }

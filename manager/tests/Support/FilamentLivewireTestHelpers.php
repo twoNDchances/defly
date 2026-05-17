@@ -8,6 +8,7 @@ use App\Enums\Decision\Action as DecisionAction;
 use App\Enums\Decision\Condition;
 use App\Enums\Decision\Direction;
 use App\Enums\Defender\DeploymentStatus;
+use App\Enums\Defender\Status as DefenderStatus;
 use App\Enums\Engine\Type as EngineType;
 use App\Enums\Phase;
 use App\Enums\Principle\ValidationStatus;
@@ -17,15 +18,23 @@ use App\Enums\Wordlist\Type as WordlistType;
 use App\Filament\Clusters\AccessControl\Resources\Groups\Pages\CreateGroup;
 use App\Filament\Clusters\AccessControl\Resources\Groups\Pages\EditGroup;
 use App\Filament\Clusters\AccessControl\Resources\Groups\Pages\ListGroups;
+use App\Filament\Clusters\AccessControl\Resources\Groups\RelationManagers\PermissionsRelationManager as GroupPermissionsRelationManager;
+use App\Filament\Clusters\AccessControl\Resources\Groups\RelationManagers\UsersRelationManager as GroupUsersRelationManager;
 use App\Filament\Clusters\AccessControl\Resources\Permissions\Pages\CreatePermission;
 use App\Filament\Clusters\AccessControl\Resources\Permissions\Pages\EditPermission;
 use App\Filament\Clusters\AccessControl\Resources\Permissions\Pages\ListPermissions;
+use App\Filament\Clusters\AccessControl\Resources\Permissions\RelationManagers\GroupsRelationManager as PermissionGroupsRelationManager;
+use App\Filament\Clusters\AccessControl\Resources\Permissions\RelationManagers\UsersRelationManager as PermissionUsersRelationManager;
 use App\Filament\Clusters\Authentication\Resources\Keys\Pages\CreateKey;
 use App\Filament\Clusters\Authentication\Resources\Keys\Pages\EditKey;
 use App\Filament\Clusters\Authentication\Resources\Keys\Pages\ListKeys;
+use App\Filament\Clusters\Authentication\Resources\Keys\RelationManagers\GroupsRelationManager as KeyGroupsRelationManager;
+use App\Filament\Clusters\Authentication\Resources\Keys\RelationManagers\PermissionsRelationManager as KeyPermissionsRelationManager;
 use App\Filament\Clusters\Authentication\Resources\Users\Pages\CreateUser;
 use App\Filament\Clusters\Authentication\Resources\Users\Pages\EditUser;
 use App\Filament\Clusters\Authentication\Resources\Users\Pages\ListUsers;
+use App\Filament\Clusters\Authentication\Resources\Users\RelationManagers\GroupsRelationManager as UserGroupsRelationManager;
+use App\Filament\Clusters\Authentication\Resources\Users\RelationManagers\PermissionsRelationManager as UserPermissionsRelationManager;
 use App\Filament\Clusters\Context\Resources\Engines\Pages\CreateEngine;
 use App\Filament\Clusters\Context\Resources\Engines\Pages\EditEngine;
 use App\Filament\Clusters\Context\Resources\Engines\Pages\ListEngines;
@@ -33,6 +42,7 @@ use App\Filament\Clusters\Context\Resources\Patterns\Pages\ListPatterns;
 use App\Filament\Clusters\Context\Resources\Targets\Pages\CreateTarget;
 use App\Filament\Clusters\Context\Resources\Targets\Pages\EditTarget;
 use App\Filament\Clusters\Context\Resources\Targets\Pages\ListTargets;
+use App\Filament\Clusters\Context\Resources\Targets\RelationManagers\EnginesRelationManager as TargetEnginesRelationManager;
 use App\Filament\Clusters\Initialization\Resources\Actions\Pages\CreateAction;
 use App\Filament\Clusters\Initialization\Resources\Actions\Pages\EditAction;
 use App\Filament\Clusters\Initialization\Resources\Actions\Pages\ListActions;
@@ -42,15 +52,31 @@ use App\Filament\Clusters\Initialization\Resources\Decisions\Pages\ListDecisions
 use App\Filament\Clusters\Initialization\Resources\Principles\Pages\CreatePrinciple;
 use App\Filament\Clusters\Initialization\Resources\Principles\Pages\EditPrinciple;
 use App\Filament\Clusters\Initialization\Resources\Principles\Pages\ListPrinciples;
+use App\Filament\Clusters\Initialization\Resources\Principles\RelationManagers\RulesRelationManager as PrincipleRulesRelationManager;
 use App\Filament\Clusters\Initialization\Resources\Rules\Pages\CreateRule;
 use App\Filament\Clusters\Initialization\Resources\Rules\Pages\EditRule;
 use App\Filament\Clusters\Initialization\Resources\Rules\Pages\ListRules;
+use App\Filament\Clusters\Initialization\Resources\Rules\RelationManagers\ActionsRelationManager as RuleActionsRelationManager;
 use App\Filament\Resources\Defenders\Pages\CreateDefender;
 use App\Filament\Resources\Defenders\Pages\EditDefender;
 use App\Filament\Resources\Defenders\Pages\ListDefenders;
+use App\Filament\Resources\Defenders\RelationManagers\DecisionsRelationManager as DefenderDecisionsRelationManager;
+use App\Filament\Resources\Defenders\RelationManagers\PrinciplesRelationManager as DefenderPrinciplesRelationManager;
+use App\Filament\Resources\Defenders\RelationManagers\ReportsRelationManager as DefenderReportsRelationManager;
 use App\Filament\Resources\Labels\Pages\CreateLabel;
 use App\Filament\Resources\Labels\Pages\EditLabel;
 use App\Filament\Resources\Labels\Pages\ListLabels;
+use App\Filament\Resources\Labels\RelationManagers\ActionsRelationManager as LabelActionsRelationManager;
+use App\Filament\Resources\Labels\RelationManagers\DecisionsRelationManager as LabelDecisionsRelationManager;
+use App\Filament\Resources\Labels\RelationManagers\DefendersRelationManager as LabelDefendersRelationManager;
+use App\Filament\Resources\Labels\RelationManagers\EnginesRelationManager as LabelEnginesRelationManager;
+use App\Filament\Resources\Labels\RelationManagers\GroupsRelationManager as LabelGroupsRelationManager;
+use App\Filament\Resources\Labels\RelationManagers\PermissionsRelationManager as LabelPermissionsRelationManager;
+use App\Filament\Resources\Labels\RelationManagers\PrinciplesRelationManager as LabelPrinciplesRelationManager;
+use App\Filament\Resources\Labels\RelationManagers\RulesRelationManager as LabelRulesRelationManager;
+use App\Filament\Resources\Labels\RelationManagers\TargetsRelationManager as LabelTargetsRelationManager;
+use App\Filament\Resources\Labels\RelationManagers\UsersRelationManager as LabelUsersRelationManager;
+use App\Filament\Resources\Labels\RelationManagers\WordlistsRelationManager as LabelWordlistsRelationManager;
 use App\Filament\Resources\Timelines\Pages\ListTimelines;
 use App\Filament\Resources\Wordlists\Pages\CreateWordlist;
 use App\Filament\Resources\Wordlists\Pages\EditWordlist;
@@ -75,7 +101,10 @@ use Filament\Facades\Filament;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Livewire\Features\SupportTesting\Testable;
 use Livewire\Livewire;
+use PHPUnit\Framework\AssertionFailedError;
+use Throwable;
 
 trait FilamentLivewireTestHelpers
 {
@@ -83,7 +112,7 @@ trait FilamentLivewireTestHelpers
 
     protected User $root;
 
-    protected function setUpFilamentLivewire(): void
+    protected function setUpFilamentLivewire()
     {
         Storage::fake('local');
         $this->registerSqliteJsonUnquoteFunction();
@@ -98,12 +127,12 @@ trait FilamentLivewireTestHelpers
         Filament::setCurrentPanel('defly-manager');
     }
 
-    protected function livewirePage(string $class, array $params = []): \Livewire\Features\SupportTesting\Testable
+    protected function livewirePage(string $class, array $params = []): Testable
     {
         try {
             return Livewire::test($class, $params);
-        } catch (\Throwable $exception) {
-            $this->fail("{$class} failed to render: {$exception->getMessage()}");
+        } catch (Throwable $exception) {
+            throw new AssertionFailedError("{$class} failed to render: {$exception->getMessage()}");
         }
     }
 
@@ -208,7 +237,7 @@ trait FilamentLivewireTestHelpers
         $defender = Defender::query()->create([
             'name' => 'defender-'.Str::lower(Str::random(6)),
             'proxy_port' => 9844,
-            'status' => \App\Enums\Defender\Status::Normal->value,
+            'status' => DefenderStatus::Normal->value,
             'deployment_status' => DeploymentStatus::Successful->value,
             'environment_variables' => ['PROXY_BACKEND_URL' => 'http://localhost'],
         ]);
@@ -325,31 +354,31 @@ trait FilamentLivewireTestHelpers
     protected function relationManagers(array $records): array
     {
         return [
-            [\App\Filament\Clusters\AccessControl\Resources\Groups\RelationManagers\PermissionsRelationManager::class, $records['group'], EditGroup::class],
-            [\App\Filament\Clusters\AccessControl\Resources\Groups\RelationManagers\UsersRelationManager::class, $records['group'], EditGroup::class],
-            [\App\Filament\Clusters\AccessControl\Resources\Permissions\RelationManagers\GroupsRelationManager::class, $records['permission'], EditPermission::class],
-            [\App\Filament\Clusters\AccessControl\Resources\Permissions\RelationManagers\UsersRelationManager::class, $records['permission'], EditPermission::class],
-            [\App\Filament\Clusters\Authentication\Resources\Keys\RelationManagers\GroupsRelationManager::class, $records['key'], EditKey::class],
-            [\App\Filament\Clusters\Authentication\Resources\Keys\RelationManagers\PermissionsRelationManager::class, $records['key'], EditKey::class],
-            [\App\Filament\Clusters\Authentication\Resources\Users\RelationManagers\GroupsRelationManager::class, $records['user'], EditUser::class],
-            [\App\Filament\Clusters\Authentication\Resources\Users\RelationManagers\PermissionsRelationManager::class, $records['user'], EditUser::class],
-            [\App\Filament\Clusters\Context\Resources\Targets\RelationManagers\EnginesRelationManager::class, $records['target'], EditTarget::class],
-            [\App\Filament\Clusters\Initialization\Resources\Principles\RelationManagers\RulesRelationManager::class, $records['principle'], EditPrinciple::class],
-            [\App\Filament\Clusters\Initialization\Resources\Rules\RelationManagers\ActionsRelationManager::class, $records['rule'], EditRule::class],
-            [\App\Filament\Resources\Defenders\RelationManagers\DecisionsRelationManager::class, $records['defender'], EditDefender::class],
-            [\App\Filament\Resources\Defenders\RelationManagers\PrinciplesRelationManager::class, $records['defender'], EditDefender::class],
-            [\App\Filament\Resources\Defenders\RelationManagers\ReportsRelationManager::class, $records['defender'], EditDefender::class],
-            [\App\Filament\Resources\Labels\RelationManagers\ActionsRelationManager::class, $records['label'], EditLabel::class],
-            [\App\Filament\Resources\Labels\RelationManagers\DecisionsRelationManager::class, $records['label'], EditLabel::class],
-            [\App\Filament\Resources\Labels\RelationManagers\DefendersRelationManager::class, $records['label'], EditLabel::class],
-            [\App\Filament\Resources\Labels\RelationManagers\EnginesRelationManager::class, $records['label'], EditLabel::class],
-            [\App\Filament\Resources\Labels\RelationManagers\GroupsRelationManager::class, $records['label'], EditLabel::class],
-            [\App\Filament\Resources\Labels\RelationManagers\PermissionsRelationManager::class, $records['label'], EditLabel::class],
-            [\App\Filament\Resources\Labels\RelationManagers\PrinciplesRelationManager::class, $records['label'], EditLabel::class],
-            [\App\Filament\Resources\Labels\RelationManagers\RulesRelationManager::class, $records['label'], EditLabel::class],
-            [\App\Filament\Resources\Labels\RelationManagers\TargetsRelationManager::class, $records['label'], EditLabel::class],
-            [\App\Filament\Resources\Labels\RelationManagers\UsersRelationManager::class, $records['label'], EditLabel::class],
-            [\App\Filament\Resources\Labels\RelationManagers\WordlistsRelationManager::class, $records['label'], EditLabel::class],
+            [GroupPermissionsRelationManager::class, $records['group'], EditGroup::class],
+            [GroupUsersRelationManager::class, $records['group'], EditGroup::class],
+            [PermissionGroupsRelationManager::class, $records['permission'], EditPermission::class],
+            [PermissionUsersRelationManager::class, $records['permission'], EditPermission::class],
+            [KeyGroupsRelationManager::class, $records['key'], EditKey::class],
+            [KeyPermissionsRelationManager::class, $records['key'], EditKey::class],
+            [UserGroupsRelationManager::class, $records['user'], EditUser::class],
+            [UserPermissionsRelationManager::class, $records['user'], EditUser::class],
+            [TargetEnginesRelationManager::class, $records['target'], EditTarget::class],
+            [PrincipleRulesRelationManager::class, $records['principle'], EditPrinciple::class],
+            [RuleActionsRelationManager::class, $records['rule'], EditRule::class],
+            [DefenderDecisionsRelationManager::class, $records['defender'], EditDefender::class],
+            [DefenderPrinciplesRelationManager::class, $records['defender'], EditDefender::class],
+            [DefenderReportsRelationManager::class, $records['defender'], EditDefender::class],
+            [LabelActionsRelationManager::class, $records['label'], EditLabel::class],
+            [LabelDecisionsRelationManager::class, $records['label'], EditLabel::class],
+            [LabelDefendersRelationManager::class, $records['label'], EditLabel::class],
+            [LabelEnginesRelationManager::class, $records['label'], EditLabel::class],
+            [LabelGroupsRelationManager::class, $records['label'], EditLabel::class],
+            [LabelPermissionsRelationManager::class, $records['label'], EditLabel::class],
+            [LabelPrinciplesRelationManager::class, $records['label'], EditLabel::class],
+            [LabelRulesRelationManager::class, $records['label'], EditLabel::class],
+            [LabelTargetsRelationManager::class, $records['label'], EditLabel::class],
+            [LabelUsersRelationManager::class, $records['label'], EditLabel::class],
+            [LabelWordlistsRelationManager::class, $records['label'], EditLabel::class],
         ];
     }
 }

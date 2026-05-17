@@ -10,14 +10,14 @@ use Illuminate\Support\Str;
 
 trait ValidationRuleTestHelpers
 {
-    protected function assertValidatorPasses(array $data, array $rules): void
+    protected function assertValidatorPasses(array $data, array $rules)
     {
         $validator = Validator::make($data, $rules);
 
         $this->assertTrue($validator->passes(), (string) $validator->errors());
     }
 
-    protected function assertValidatorFails(array $data, array $rules, string $field): void
+    protected function assertValidatorFails(array $data, array $rules, string $field)
     {
         $validator = Validator::make($data, $rules);
 

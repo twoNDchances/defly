@@ -28,7 +28,7 @@ use Illuminate\Support\Str;
 
 trait ApiRelationTestHelpers
 {
-    protected function attachListDetach(string $routePrefix, array $params, string $relatedId): void
+    protected function attachListDetach(string $routePrefix, array $params, string $relatedId)
     {
         $this->apiJson('GET', $this->apiRoute($routePrefix, 'index'), $params)->assertOk();
 

@@ -15,34 +15,44 @@ use App\Enums\Phase;
 use App\Enums\Principle\ValidationStatus;
 use App\Enums\Rule\Comparator;
 use App\Enums\Type as TargetType;
-use App\Filament\Widgets\Concerns\InteractsWithSecurityWidgetData;
+use App\Enums\Wordlist\Type as WordlistType;
+use App\Filament\Components\Action\ActionTable;
+use App\Filament\Components\Decision\DecisionForm;
+use App\Filament\Components\Decision\DecisionTable;
+use App\Filament\Components\Defender\DefenderForm;
+use App\Filament\Components\Defender\DefenderTable;
+use App\Filament\Components\Principle\PrincipleTable;
+use App\Filament\Components\Rule\RuleTable;
+use App\Filament\Components\Timeline\TimelineTable;
+use App\Filament\Components\User\UserTable;
 use App\Models\Action;
 use App\Models\Decision;
 use App\Models\Defender;
 use App\Models\Label;
+use App\Models\Permission;
 use App\Models\Principle;
 use App\Models\Report;
+use App\Models\Rule;
+use App\Models\Target;
 use App\Models\Timeline;
 use App\Models\User;
-use App\Traits\Filament\Specifics\Action\ActionData;
-use App\Traits\Filament\Specifics\Decision\DecisionData;
-use App\Traits\Filament\Specifics\Defender\DefenderData;
-use App\Traits\Filament\Specifics\Engine\EngineData;
-use App\Traits\Filament\Specifics\GeneralData;
-use App\Traits\Filament\Specifics\Rule\RuleData;
+use App\Models\Wordlist;
+use Closure;
 use Filament\Actions\Action as FilamentAction;
 use Filament\Actions\BulkAction;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Mockery;
+use PHPUnit\Framework\AssertionFailedError;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use ReflectionClass;
+use ReflectionFunction;
 use ReflectionMethod;
+use ReflectionProperty;
+use RuntimeException;
 
 trait FilamentTestHelpers
 {
@@ -106,7 +116,7 @@ trait FilamentTestHelpers
         return $arguments;
     }
 
-    protected function callFilamentAction(FilamentAction|BulkAction $action, mixed ...$arguments): void
+    protected function callFilamentAction(FilamentAction|BulkAction $action, mixed ...$arguments)
     {
         $closure = $action->getActionFunction();
 
@@ -115,15 +125,15 @@ trait FilamentTestHelpers
         $closure(...$arguments);
     }
 
-    protected function callAttachDetachLifecycleHooks(Defender $defender, Principle $principle, Decision $decision): void
+    protected function callAttachDetachLifecycleHooks(Defender $defender, Principle $principle, Decision $decision)
     {
-        $ruleTarget = \App\Models\Target::query()->create([
+        $ruleTarget = Target::query()->create([
             'name' => 'button-target-'.Str::lower(Str::random(6)),
             'phase' => Phase::One->value,
             'type' => TargetType::Getter->value,
             'datatype' => Datatype::String->value,
         ]);
-        $rule = \App\Models\Rule::query()->create([
+        $rule = Rule::query()->create([
             'name' => 'button-rule-'.Str::lower(Str::random(6)),
             'phase' => Phase::One->value,
             'target_id' => $ruleTarget->id,
@@ -133,72 +143,72 @@ trait FilamentTestHelpers
         ]);
 
         $defenderTable = $this->mockRelationTable($defender, new Principle());
-        $this->callFilamentAfter(\App\Filament\Components\Principle\PrincipleTable::attachPrinciplesAndLockButton(), ['recordId' => null], $defenderTable);
-        $this->callFilamentAfter(\App\Filament\Components\Principle\PrincipleTable::attachPrinciplesAndLockButton(), ['recordId' => [$principle->id]], $defenderTable);
-        $this->callFilamentAfter(\App\Filament\Components\Principle\PrincipleTable::detachPrinciplesAndUnlockButton(), null, $defenderTable);
-        $this->callFilamentAfter(\App\Filament\Components\Principle\PrincipleTable::detachPrinciplesAndUnlockButton(), $principle, $defenderTable);
-        $this->callFilamentAfter(\App\Filament\Components\Principle\PrincipleTable::detachPrinciplesAndUnlockBulkButton(), collect(), $defenderTable);
-        $this->callFilamentAfter(\App\Filament\Components\Principle\PrincipleTable::detachPrinciplesAndUnlockBulkButton(), collect([$principle]), $defenderTable);
+        $this->callFilamentAfter(PrincipleTable::attachPrinciplesAndLockButton(), ['recordId' => null], $defenderTable);
+        $this->callFilamentAfter(PrincipleTable::attachPrinciplesAndLockButton(), ['recordId' => [$principle->id]], $defenderTable);
+        $this->callFilamentAfter(PrincipleTable::detachPrinciplesAndUnlockButton(), null, $defenderTable);
+        $this->callFilamentAfter(PrincipleTable::detachPrinciplesAndUnlockButton(), $principle, $defenderTable);
+        $this->callFilamentAfter(PrincipleTable::detachPrinciplesAndUnlockBulkButton(), collect(), $defenderTable);
+        $this->callFilamentAfter(PrincipleTable::detachPrinciplesAndUnlockBulkButton(), collect([$principle]), $defenderTable);
 
         $decisionTable = $this->mockRelationTable($defender, new Decision());
-        $this->callFilamentAfter(\App\Filament\Components\Decision\DecisionTable::attachDecisionsAndLockButton(), ['recordId' => null], $decisionTable);
-        $this->callFilamentAfter(\App\Filament\Components\Decision\DecisionTable::attachDecisionsAndLockButton(), ['recordId' => [$decision->id]], $decisionTable);
-        $this->callFilamentAfter(\App\Filament\Components\Decision\DecisionTable::detachDecisionsAndUnlockButton(), null, $decisionTable);
-        $this->callFilamentAfter(\App\Filament\Components\Decision\DecisionTable::detachDecisionsAndUnlockButton(), $decision, $decisionTable);
-        $this->callFilamentAfter(\App\Filament\Components\Decision\DecisionTable::detachDecisionsAndUnlockBulkButton(), collect(), $decisionTable);
-        $this->callFilamentAfter(\App\Filament\Components\Decision\DecisionTable::detachDecisionsAndUnlockBulkButton(), collect([$decision]), $decisionTable);
+        $this->callFilamentAfter(DecisionTable::attachDecisionsAndLockButton(), ['recordId' => null], $decisionTable);
+        $this->callFilamentAfter(DecisionTable::attachDecisionsAndLockButton(), ['recordId' => [$decision->id]], $decisionTable);
+        $this->callFilamentAfter(DecisionTable::detachDecisionsAndUnlockButton(), null, $decisionTable);
+        $this->callFilamentAfter(DecisionTable::detachDecisionsAndUnlockButton(), $decision, $decisionTable);
+        $this->callFilamentAfter(DecisionTable::detachDecisionsAndUnlockBulkButton(), collect(), $decisionTable);
+        $this->callFilamentAfter(DecisionTable::detachDecisionsAndUnlockBulkButton(), collect([$decision]), $decisionTable);
 
-        $principleTable = $this->mockRelationTable($principle, new \App\Models\Rule());
-        $this->callFilamentAfter(\App\Filament\Components\Rule\RuleTable::attachRulesAndLockButton(), ['recordId' => null], $principleTable);
-        $this->callFilamentAfter(\App\Filament\Components\Rule\RuleTable::attachRulesAndLockButton(), ['recordId' => [$rule->id]], $principleTable);
-        $this->callFilamentAfter(\App\Filament\Components\Rule\RuleTable::detachRulesAndUnlockButton(), null, $principleTable);
-        $this->callFilamentAfter(\App\Filament\Components\Rule\RuleTable::detachRulesAndUnlockButton(), $rule, $principleTable);
-        $this->callFilamentAfter(\App\Filament\Components\Rule\RuleTable::detachRulesAndUnlockBulkButton(), collect(), $principleTable);
-        $this->callFilamentAfter(\App\Filament\Components\Rule\RuleTable::detachRulesAndUnlockBulkButton(), collect([$rule]), $principleTable);
+        $principleTable = $this->mockRelationTable($principle, new Rule());
+        $this->callFilamentAfter(RuleTable::attachRulesAndLockButton(), ['recordId' => null], $principleTable);
+        $this->callFilamentAfter(RuleTable::attachRulesAndLockButton(), ['recordId' => [$rule->id]], $principleTable);
+        $this->callFilamentAfter(RuleTable::detachRulesAndUnlockButton(), null, $principleTable);
+        $this->callFilamentAfter(RuleTable::detachRulesAndUnlockButton(), $rule, $principleTable);
+        $this->callFilamentAfter(RuleTable::detachRulesAndUnlockBulkButton(), collect(), $principleTable);
+        $this->callFilamentAfter(RuleTable::detachRulesAndUnlockBulkButton(), collect([$rule]), $principleTable);
     }
 
-    protected function callAdditionalSpecificButtonBranches(Defender $defender, Principle $principle, Decision $decision): void
+    protected function callAdditionalSpecificButtonBranches(Defender $defender, Principle $principle, Decision $decision)
     {
         $failureAction = new class
         {
             public int $failures = 0;
 
-            public function failure(): void
+            public function failure()
             {
                 $this->failures++;
             }
         };
 
-        $this->callFilamentAction(\App\Filament\Components\Decision\DecisionForm::testRequestButton(), '', $failureAction);
-        Http::fake(fn () => throw new \RuntimeException('request failed'));
-        $this->callFilamentAction(\App\Filament\Components\Decision\DecisionForm::testRequestButton(), 'https://example.test/fails', $failureAction);
+        $this->callFilamentAction(DecisionForm::testRequestButton(), '', $failureAction);
+        Http::fake(fn () => throw new RuntimeException('request failed'));
+        $this->callFilamentAction(DecisionForm::testRequestButton(), 'https://example.test/fails', $failureAction);
         $this->assertSame(2, $failureAction->failures);
         Http::fake(['*' => Http::response(['ok' => true])]);
 
-        $this->callFilamentAction(\App\Filament\Components\Decision\DecisionTable::implementDecisionButton(), $decision);
-        $this->callFilamentAction(\App\Filament\Components\Decision\DecisionTable::implementDecisionBulkButton($defender), collect());
-        $this->callFilamentAction(\App\Filament\Components\Decision\DecisionTable::suspendDecisionButton($defender), $decision);
-        $this->callFilamentAction(\App\Filament\Components\Decision\DecisionTable::suspendDecisionBulkButton($defender), collect([$decision]));
+        $this->callFilamentAction(DecisionTable::implementDecisionButton(), $decision);
+        $this->callFilamentAction(DecisionTable::implementDecisionBulkButton($defender), collect());
+        $this->callFilamentAction(DecisionTable::suspendDecisionButton($defender), $decision);
+        $this->callFilamentAction(DecisionTable::suspendDecisionBulkButton($defender), collect([$decision]));
 
-        $this->callFilamentAction(\App\Filament\Components\Principle\PrincipleTable::applyPrincipleButton(), $principle);
-        $this->callFilamentAction(\App\Filament\Components\Principle\PrincipleTable::applyPrincipleBulkButton($defender), collect());
-        $this->callFilamentAction(\App\Filament\Components\Principle\PrincipleTable::revokePrincipleButton($defender), $principle);
-        $this->callFilamentAction(\App\Filament\Components\Principle\PrincipleTable::revokePrincipleBulkButton($defender), collect([$principle]));
+        $this->callFilamentAction(PrincipleTable::applyPrincipleButton(), $principle);
+        $this->callFilamentAction(PrincipleTable::applyPrincipleBulkButton($defender), collect());
+        $this->callFilamentAction(PrincipleTable::revokePrincipleButton($defender), $principle);
+        $this->callFilamentAction(PrincipleTable::revokePrincipleBulkButton($defender), collect([$principle]));
 
         $pending = $this->filamentDefender(DeploymentStatus::Pending->value);
         $failed = $this->filamentDefender(DeploymentStatus::Failed->value);
-        $this->callFilamentAction(\App\Filament\Components\Defender\DefenderTable::deployDefenderButton(), $pending);
-        $this->callFilamentAction(\App\Filament\Components\Defender\DefenderTable::cancelDefenderButton(), $failed);
-        $this->callFilamentAction(\App\Filament\Components\Defender\DefenderForm::followDefenderButton(), null, fn (string $key, mixed $value) => $this->assertSame('log', $key));
-        Http::fake(fn () => throw new \RuntimeException('follow failed'));
-        $this->callFilamentAction(\App\Filament\Components\Defender\DefenderForm::followDefenderButton(), $defender, fn (string $key, mixed $value) => $this->assertSame('log', $key));
+        $this->callFilamentAction(DefenderTable::deployDefenderButton(), $pending);
+        $this->callFilamentAction(DefenderTable::cancelDefenderButton(), $failed);
+        $this->callFilamentAction(DefenderForm::followDefenderButton(), null, fn (string $key, mixed $value) => $this->assertSame('log', $key));
+        Http::fake(fn () => throw new RuntimeException('follow failed'));
+        $this->callFilamentAction(DefenderForm::followDefenderButton(), $defender, fn (string $key, mixed $value) => $this->assertSame('log', $key));
 
         $defender->forceFill(['last_response_details' => ['ok' => true]])->save();
-        $this->callFilamentAction(\App\Filament\Components\Defender\DefenderForm::refreshDefenderButton(), $defender, fn (string $key, mixed $value) => $this->assertSame('last_response_details', $key));
+        $this->callFilamentAction(DefenderForm::refreshDefenderButton(), $defender, fn (string $key, mixed $value) => $this->assertSame('last_response_details', $key));
         $defender->forceFill(['last_response_details' => 42])->save();
-        $this->callFilamentAction(\App\Filament\Components\Defender\DefenderForm::refreshDefenderButton(), $defender, fn (string $key, mixed $value) => $this->assertSame('last_response_details', $key));
+        $this->callFilamentAction(DefenderForm::refreshDefenderButton(), $defender, fn (string $key, mixed $value) => $this->assertSame('last_response_details', $key));
 
-        $timelineAction = \App\Filament\Components\Timeline\TimelineTable::openResourceButton();
+        $timelineAction = TimelineTable::openResourceButton();
         $this->assertFalse($this->callClosureProperty($timelineAction, 'isVisible', fn (string $key) => null));
         $this->assertTrue($this->callClosureProperty($timelineAction, 'isVisible', fn (string $key) => match ($key) {
             'resource_type' => Action::class,
@@ -213,7 +223,7 @@ trait FilamentTestHelpers
         }));
     }
 
-    protected function callGeneralButtonClosures(): void
+    protected function callGeneralButtonClosures()
     {
         $action = Action::query()->create([
             'name' => 'general-button-action-'.Str::lower(Str::random(6)),
@@ -227,33 +237,33 @@ trait FilamentTestHelpers
         $action->labels()->attach($label->id);
 
         $this->assertIsArray($this->callClosureProperty(
-            \App\Filament\Components\Action\ActionTable::createButton(),
+            ActionTable::createButton(),
             'mutateDataUsing',
             ['name' => 'created', 'type' => ActionType::Allow->value],
         ));
         $this->assertIsArray($this->callClosureProperty(
-            \App\Filament\Components\Action\ActionTable::viewButton(),
+            ActionTable::viewButton(),
             'mutateRecordDataUsing',
             ['type' => ActionType::Allow->value, 'configurations' => []],
         ));
         $this->assertIsArray($this->callClosureProperty(
-            \App\Filament\Components\Action\ActionTable::editButton(),
+            ActionTable::editButton(),
             'mutateRecordDataUsing',
             ['type' => ActionType::Allow->value, 'configurations' => []],
         ));
         $this->assertIsArray($this->callClosureProperty(
-            \App\Filament\Components\Action\ActionTable::editButton(),
+            ActionTable::editButton(),
             'mutateDataUsing',
             ['name' => 'edited', 'type' => ActionType::Allow->value],
         ));
 
         $table = $this->mockRelationTable($label, new Action());
-        $this->callFilamentAfter(\App\Filament\Components\Action\ActionTable::attachAndLockButton(), ['recordId' => null], $table);
-        $this->callFilamentAfter(\App\Filament\Components\Action\ActionTable::attachAndLockButton(), ['recordId' => [$action->id]], $table);
-        $this->callFilamentAfter(\App\Filament\Components\Action\ActionTable::detachAndUnlockButton(), null);
-        $this->callFilamentAfter(\App\Filament\Components\Action\ActionTable::detachAndUnlockButton(), $action);
+        $this->callFilamentAfter(ActionTable::attachAndLockButton(), ['recordId' => null], $table);
+        $this->callFilamentAfter(ActionTable::attachAndLockButton(), ['recordId' => [$action->id]], $table);
+        $this->callFilamentAfter(ActionTable::detachAndUnlockButton(), null);
+        $this->callFilamentAfter(ActionTable::detachAndUnlockButton(), $action);
 
-        $this->callFilamentAction(\App\Filament\Components\Action\ActionTable::deleteUnlockedBulkButton(), collect([$action]));
+        $this->callFilamentAction(ActionTable::deleteUnlockedBulkButton(), collect([$action]));
 
         $cloneSource = Action::query()->create([
             'name' => 'general-button-clone-'.Str::lower(Str::random(6)),
@@ -261,9 +271,9 @@ trait FilamentTestHelpers
             'is_locked' => true,
         ]);
         $cloneSource->labels()->attach($label->id);
-        $this->callFilamentAction(\App\Filament\Components\Action\ActionTable::cloneButton(), $cloneSource);
+        $this->callFilamentAction(ActionTable::cloneButton(), $cloneSource);
 
-        $detachAction = \App\Filament\Components\Action\ActionTable::detachAndUnlockBulkButton();
+        $detachAction = ActionTable::detachAndUnlockBulkButton();
         $relationship = Mockery::mock();
         $relationship->shouldReceive('getPivotAccessor')->andReturn('pivot');
         $relationship->shouldReceive('detach')->with($cloneSource)->once();
@@ -277,9 +287,9 @@ trait FilamentTestHelpers
         $regular = User::factory()->create(['is_root' => false, 'is_verified' => true, 'is_activated' => true]);
         $otherRoot = User::factory()->create(['is_root' => true, 'is_verified' => true, 'is_activated' => true]);
         $this->actingAs($current);
-        $this->callFilamentAction(\App\Filament\Components\User\UserTable::deleteMultiUserButton(), collect([$current, $regular]));
+        $this->callFilamentAction(UserTable::deleteMultiUserButton(), collect([$current, $regular]));
 
-        $permission = \App\Models\Permission::query()->create([
+        $permission = Permission::query()->create([
             'name' => 'button-permission-'.Str::lower(Str::random(6)),
             'applied_for' => 'User',
             'action' => 'view',
@@ -288,13 +298,13 @@ trait FilamentTestHelpers
         $livewire = Mockery::mock();
         $livewire->shouldReceive('getOwnerRecord')->andReturn($permission);
         $this->actingAs($regular);
-        $this->callFilamentAction(\App\Filament\Components\User\UserTable::detachMultiUserButton(), collect([$regular, $otherRoot]), $livewire);
+        $this->callFilamentAction(UserTable::detachMultiUserButton(), collect([$regular, $otherRoot]), $livewire);
         $this->actingAs($current);
     }
 
-    protected function callFilamentAfter(object $action, mixed ...$arguments): void
+    protected function callFilamentAfter(object $action, mixed ...$arguments)
     {
-        $reflection = new \ReflectionProperty($action, 'after');
+        $reflection = new ReflectionProperty($action, 'after');
         $closure = $reflection->getValue($action);
 
         $this->assertNotNull($closure, 'Filament action should expose an after hook.');
@@ -304,7 +314,7 @@ trait FilamentTestHelpers
 
     protected function callClosureProperty(object $object, string $property, mixed ...$arguments): mixed
     {
-        $reflection = new \ReflectionProperty($object, $property);
+        $reflection = new ReflectionProperty($object, $property);
         $closure = $reflection->getValue($object);
 
         $this->assertNotNull($closure, "{$property} should contain a closure.");
@@ -319,11 +329,11 @@ trait FilamentTestHelpers
         return $closure(...$arguments);
     }
 
-    protected function componentClosure(object $object, string $property): \Closure
+    protected function componentClosure(object $object, string $property): Closure
     {
-        $reflection = new \ReflectionProperty($object, $property);
+        $reflection = new ReflectionProperty($object, $property);
         $value = $reflection->getValue($object);
-        $closure = $value instanceof \Closure ? $value : collect($value)->first(fn ($item) => $item instanceof \Closure);
+        $closure = $value instanceof Closure ? $value : collect($value)->first(fn ($item) => $item instanceof Closure);
 
         $this->assertNotNull($closure, "{$property} should contain a closure.");
 
@@ -333,9 +343,9 @@ trait FilamentTestHelpers
     protected function formattedComponentState(object $component, mixed $state): mixed
     {
         $hydrated = $this->componentClosure($component, 'afterStateHydrated');
-        $callback = (new \ReflectionFunction($hydrated))->getStaticVariables()['callback'] ?? null;
+        $callback = (new ReflectionFunction($hydrated))->getStaticVariables()['callback'] ?? null;
 
-        $this->assertInstanceOf(\Closure::class, $callback);
+        $this->assertInstanceOf(Closure::class, $callback);
 
         return $callback($state);
     }
@@ -366,7 +376,7 @@ trait FilamentTestHelpers
         return $table;
     }
 
-    protected function assertWidgetPayloads(string $class, Defender $defender): void
+    protected function assertWidgetPayloads(string $class, Defender $defender)
     {
         $widget = new $class();
 
@@ -400,31 +410,31 @@ trait FilamentTestHelpers
         }
     }
 
-    protected function repeaterValueRules(object $repeater): \Closure
+    protected function repeaterValueRules(object $repeater): Closure
     {
-        $children = new \ReflectionProperty($repeater, 'childComponents');
+        $children = new ReflectionProperty($repeater, 'childComponents');
 
         $valueField = collect($children->getValue($repeater)['default'] ?? [])
             ->first(fn ($component) => method_exists($component, 'getName') && $component->getName() === 'value');
 
         $this->assertNotNull($valueField);
 
-        $reflection = new \ReflectionProperty($valueField, 'rules');
+        $reflection = new ReflectionProperty($valueField, 'rules');
 
         foreach ($reflection->getValue($valueField) as [$rule]) {
-            if ($rule instanceof \Closure) {
+            if ($rule instanceof Closure) {
                 return $rule;
             }
         }
 
-        $this->fail('Expected value field to expose closure rules.');
+        throw new AssertionFailedError('Expected value field to expose closure rules.');
     }
 
-    protected function filamentWordlist(): \App\Models\Wordlist
+    protected function filamentWordlist(): Wordlist
     {
-        return \App\Models\Wordlist::query()->create([
+        return Wordlist::query()->create([
             'name' => 'wordlist-'.Str::lower(Str::random(6)),
-            'type' => \App\Enums\Wordlist\Type::Json->value,
+            'type' => WordlistType::Json->value,
             'word_json' => [['word' => 'alpha']],
         ]);
     }
@@ -467,234 +477,5 @@ trait FilamentTestHelpers
         sort($classes);
 
         return $classes;
-    }
-}
-
-class FilamentActionDataHarness
-{
-    use ActionData;
-}
-
-class FilamentDecisionDataHarness
-{
-    use DecisionData;
-}
-
-class FilamentDefenderDataHarness
-{
-    use DefenderData;
-}
-
-class FilamentEngineDataHarness
-{
-    use EngineData;
-}
-
-class FilamentGeneralDataHarness
-{
-    use GeneralData;
-}
-
-class FilamentRuleDataHarness
-{
-    use RuleData;
-}
-
-class FieldHarness
-{
-    use \App\Traits\Filament\Generals\Components\Field;
-}
-
-class PrincipleFieldHarness
-{
-    use \App\Traits\Filament\Specifics\Principle\PrincipleField;
-}
-
-class EngineFieldHarness
-{
-    use \App\Traits\Filament\Specifics\Engine\EngineField;
-}
-
-class KeyColumnHarness
-{
-    use \App\Traits\Filament\Specifics\Key\KeyColumn;
-}
-
-class ButtonHarness
-{
-    use \App\Traits\Filament\Generals\Components\Button;
-
-    public static function createForm(array $data): array
-    {
-        return [...$data, 'created' => true];
-    }
-
-    public static function editForm(array $data): array
-    {
-        return [...$data, 'edited' => true];
-    }
-
-    public static function saveForm(array $data): array
-    {
-        return [...$data, 'saved' => true];
-    }
-}
-
-class EditPageHarness
-{
-    use \App\Traits\Filament\Generals\Pages\EditPage;
-
-    public array $refreshed = [];
-
-    public function refreshFormData(array $statePaths): void
-    {
-        $this->refreshed = $statePaths;
-    }
-
-    public function headerActionsPublic(): array
-    {
-        return $this->getHeaderActions();
-    }
-
-    public function beforeFillPublic(array $data): array
-    {
-        return $this->mutateFormDataBeforeFill($data);
-    }
-
-    public function beforeSavePublic(array $data): array
-    {
-        return $this->mutateFormDataBeforeSave($data);
-    }
-}
-
-class CreatePageHarness
-{
-    use \App\Traits\Filament\Generals\Pages\CreatePage;
-
-    public function beforeCreatePublic(array $data): array
-    {
-        return $this->mutateFormDataBeforeCreate($data);
-    }
-}
-
-class RedirectListPageHarness
-{
-    use \App\Traits\Filament\Generals\Pages\Navigations\RedirectListPage;
-
-    public function getResource(): string
-    {
-        return \App\Filament\Resources\Labels\LabelResource::class;
-    }
-
-    public function redirectUrlPublic(): string
-    {
-        return $this->getRedirectUrl();
-    }
-}
-
-class WidgetDataHarness
-{
-    use InteractsWithSecurityWidgetData;
-
-    public ?Model $record = null;
-
-    public function currentDefenderPublic(): ?Defender
-    {
-        return $this->currentDefender();
-    }
-
-    public function reportsQueryPublic(?Defender $defender = null): Builder
-    {
-        return $this->reportsQuery($defender);
-    }
-
-    public function timelinesQueryPublic(?Defender $defender = null): Builder
-    {
-        return $this->timelinesQuery($defender);
-    }
-
-    public function countTodayPublic(Builder $query): int
-    {
-        return $this->countToday($query);
-    }
-
-    public function dateCountSeriesPublic(Builder $query, int $days): array
-    {
-        return $this->dateCountSeries($query, $days);
-    }
-
-    public function topReportJsonValuesPublic(string $column, string $path, ?Defender $defender = null): Collection
-    {
-        return $this->topReportJsonValues($column, $path, $defender);
-    }
-
-    public function uniqueReportJsonCountPublic(string $column, string $path, ?Defender $defender = null): int
-    {
-        return $this->uniqueReportJsonCount($column, $path, $defender);
-    }
-
-    public function topTriggeredActionsPublic(?Defender $defender = null): Collection
-    {
-        return $this->topTriggeredActions($defender);
-    }
-
-    public function topReportingDefendersPublic(): Collection
-    {
-        return $this->topReportingDefenders();
-    }
-
-    public function groupedDefenderCountsPublic(string $column): Collection
-    {
-        return $this->groupedDefenderCounts($column);
-    }
-
-    public function groupedPrincipleValidationCountsPublic(): Collection
-    {
-        return $this->groupedPrincipleValidationCounts();
-    }
-
-    public function groupedTimelineActionsPublic(?Defender $defender = null): Collection
-    {
-        return $this->groupedTimelineActions($defender);
-    }
-
-    public function policyCoveragePublic(?Defender $defender): array
-    {
-        return $this->policyCoverage($defender);
-    }
-
-    public function reportScatterPointsPublic(?Defender $defender = null): array
-    {
-        return $this->reportScatterPoints($defender);
-    }
-
-    public function bubblePointsPublic(Collection $series): array
-    {
-        return $this->bubblePoints($series);
-    }
-
-    public function labelsOrEmptyPublic(Collection $series): array
-    {
-        return $this->labelsOrEmpty($series);
-    }
-
-    public function valuesOrZeroPublic(Collection $series): array
-    {
-        return $this->valuesOrZero($series);
-    }
-
-    public function formatNumberPublic(int|float $value): string
-    {
-        return $this->formatNumber($value);
-    }
-
-    public function chartPalettePublic(): array
-    {
-        return $this->chartPalette();
-    }
-
-    protected function jsonValueExpression(string $column, string $path): string
-    {
-        return "json_extract({$column}, '{$path}')";
     }
 }

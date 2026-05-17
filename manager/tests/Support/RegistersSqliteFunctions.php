@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\DB;
 
 trait RegistersSqliteFunctions
 {
-    protected function registerSqliteJsonUnquoteFunction(): void
+    protected function registerSqliteJsonUnquoteFunction()
     {
         $callback = fn ($value) => is_string($value) ? trim($value, '"') : $value;
         $pdo = DB::connection()->getPdo();
