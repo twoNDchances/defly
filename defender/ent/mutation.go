@@ -15,10 +15,10 @@ import (
 	"defly-defender/ent/principle"
 	"defly-defender/ent/report"
 	"defly-defender/ent/rule"
+	"defly-defender/ent/schema"
 	"defly-defender/ent/target"
 	"defly-defender/ent/user"
 	"defly-defender/ent/wordlist"
-	"defly-defender/internal/types"
 	"errors"
 	"fmt"
 	"sync"
@@ -9004,8 +9004,8 @@ type WordlistMutation struct {
 	name            *string
 	_type           *wordlist.Type
 	word_file       *string
-	word_json       *[]types.WordlistItem
-	appendword_json []types.WordlistItem
+	word_json       *[]schema.WordJson
+	appendword_json []schema.WordJson
 	word_count      *int
 	addword_count   *int
 	clearedFields   map[string]struct{}
@@ -9246,13 +9246,13 @@ func (m *WordlistMutation) ResetWordFile() {
 }
 
 // SetWordJSON sets the "word_json" field.
-func (m *WordlistMutation) SetWordJSON(ti []types.WordlistItem) {
-	m.word_json = &ti
+func (m *WordlistMutation) SetWordJSON(sj []schema.WordJson) {
+	m.word_json = &sj
 	m.appendword_json = nil
 }
 
 // WordJSON returns the value of the "word_json" field in the mutation.
-func (m *WordlistMutation) WordJSON() (r []types.WordlistItem, exists bool) {
+func (m *WordlistMutation) WordJSON() (r []schema.WordJson, exists bool) {
 	v := m.word_json
 	if v == nil {
 		return
@@ -9263,7 +9263,7 @@ func (m *WordlistMutation) WordJSON() (r []types.WordlistItem, exists bool) {
 // OldWordJSON returns the old "word_json" field's value of the Wordlist entity.
 // If the Wordlist object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *WordlistMutation) OldWordJSON(ctx context.Context) (v []types.WordlistItem, err error) {
+func (m *WordlistMutation) OldWordJSON(ctx context.Context) (v []schema.WordJson, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldWordJSON is only allowed on UpdateOne operations")
 	}
@@ -9277,13 +9277,13 @@ func (m *WordlistMutation) OldWordJSON(ctx context.Context) (v []types.WordlistI
 	return oldValue.WordJSON, nil
 }
 
-// AppendWordJSON adds ti to the "word_json" field.
-func (m *WordlistMutation) AppendWordJSON(ti []types.WordlistItem) {
-	m.appendword_json = append(m.appendword_json, ti...)
+// AppendWordJSON adds sj to the "word_json" field.
+func (m *WordlistMutation) AppendWordJSON(sj []schema.WordJson) {
+	m.appendword_json = append(m.appendword_json, sj...)
 }
 
 // AppendedWordJSON returns the list of values that were appended to the "word_json" field in this mutation.
-func (m *WordlistMutation) AppendedWordJSON() ([]types.WordlistItem, bool) {
+func (m *WordlistMutation) AppendedWordJSON() ([]schema.WordJson, bool) {
 	if len(m.appendword_json) == 0 {
 		return nil, false
 	}
@@ -9606,7 +9606,7 @@ func (m *WordlistMutation) SetField(name string, value ent.Value) error {
 		m.SetWordFile(v)
 		return nil
 	case wordlist.FieldWordJSON:
-		v, ok := value.([]types.WordlistItem)
+		v, ok := value.([]schema.WordJson)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}

@@ -5,9 +5,9 @@ package ent
 import (
 	"context"
 	"defly-defender/ent/rule"
+	"defly-defender/ent/schema"
 	"defly-defender/ent/target"
 	"defly-defender/ent/wordlist"
-	"defly-defender/internal/types"
 	"errors"
 	"fmt"
 
@@ -50,8 +50,8 @@ func (wc *WordlistCreate) SetNillableWordFile(s *string) *WordlistCreate {
 }
 
 // SetWordJSON sets the "word_json" field.
-func (wc *WordlistCreate) SetWordJSON(ti []types.WordlistItem) *WordlistCreate {
-	wc.mutation.SetWordJSON(ti)
+func (wc *WordlistCreate) SetWordJSON(sj []schema.WordJson) *WordlistCreate {
+	wc.mutation.SetWordJSON(sj)
 	return wc
 }
 

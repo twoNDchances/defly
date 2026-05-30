@@ -10,9 +10,9 @@ import (
 	"net/url"
 
 	"defly-defender/internal/configs"
+	"defly-defender/internal/firewall"
 	"defly-defender/internal/globals"
 	"defly-defender/internal/utilities"
-	"defly-defender/internal/waf"
 	"github.com/gin-gonic/gin"
 )
 
@@ -60,7 +60,7 @@ func (p Proxy) Boot() error {
 		return p.Error.LogError(err)
 	}
 
-	wafCore := waf.Factory{}.New(waf.Config{
+	firewallCore := firewall.Factory{}.New(firewall.Runtime{
 		ViolationScore:    p.Violation.Score,
 		ViolationLevel:    p.Violation.Level,
 		ReportDatabaseDSN: p.Database.DSN(),
@@ -75,13 +75,13 @@ func (p Proxy) Boot() error {
 		},
 	})
 	if globals.Defender != nil {
-		wafCore.Config.ReportDefenderID = globals.Defender.ID.String()
+		firewallCore.Runtime.ReportDefenderID = globals.Defender.ID.String()
 	}
 
 	reverseProxy := &httputil.ReverseProxy{
 		Rewrite: func(request *httputil.ProxyRequest) {
 			targetURL := target
-			tx := wafCore.TransactionFrom(request.In)
+			tx := firewallCore.TransactionFrom(request.In)
 			if tx != nil && tx.Result.RedirectURL != "" {
 				if parsed, err := url.Parse(tx.Result.RedirectURL); err == nil {
 					targetURL = parsed
@@ -97,15 +97,15 @@ func (p Proxy) Boot() error {
 			}
 		},
 		ModifyResponse: func(r *http.Response) error {
-			tx := wafCore.TransactionFrom(r.Request)
+			tx := firewallCore.TransactionFrom(r.Request)
 			if tx == nil {
-				tx = wafCore.NewBlankTransaction(r.Request)
+				tx = firewallCore.NewBlankTransaction(r.Request)
 			}
-			return wafCore.RunResponse(tx, r)
+			return firewallCore.RunResponse(tx, r)
 		},
 		ErrorHandler: func(writer http.ResponseWriter, request *http.Request, err error) {
 			body := []byte(`{"message":"backend unavailable"}`)
-			if tx := wafCore.TransactionFrom(request); tx != nil {
+			if tx := firewallCore.TransactionFrom(request); tx != nil {
 				captureReportResponse(tx, request, http.StatusBadGateway, "application/json", body)
 			}
 			writer.Header().Set("Content-Type", "application/json")
@@ -119,26 +119,33 @@ func (p Proxy) Boot() error {
 	}
 
 	proxy.Any("/*proxyPath", func(ctx *gin.Context) {
-		tx, err := wafCore.NewTransaction(ctx.Request)
+		requestCore := firewallCore
+		requestCore.Runtime.Principles = globals.Principles
+		requestCore.Runtime.Decisions = globals.Decisions
+		if globals.Defender != nil {
+			requestCore.Runtime.ReportDefenderID = globals.Defender.ID.String()
+		}
+
+		tx, err := requestCore.NewTransaction(ctx.Request)
 		if err != nil {
 			_ = p.Error.LogError(err)
-			ctx.JSON(http.StatusInternalServerError, gin.H{"message": "waf request capture failed"})
+			ctx.JSON(http.StatusInternalServerError, gin.H{"message": "firewall request capture failed"})
 			return
 		}
-		wafCore.RunRequest(tx)
-		if wafCore.Decisions().ApplyRequest(tx, ctx.Writer) {
+		requestCore.RunRequest(tx)
+		if requestCore.ApplyRequest(tx, ctx.Writer) {
 			captureResultReportResponse(tx, ctx.Request)
 			ctx.Abort()
 			return
 		}
-		wafCore.SetTransaction(ctx.Request, tx)
+		requestCore.SetTransaction(ctx.Request, tx)
 		reverseProxy.ServeHTTP(ctx.Writer, ctx.Request)
 	})
 	log.Println(utilities.Infof("Defender proxy is running at http://0.0.0.0:%s", p.Address.Port))
 	return p.Error.LogError(proxy.Run(fmt.Sprintf("%s:%s", p.Address.Host, p.Address.Port)))
 }
 
-func captureResultReportResponse(tx *waf.Transaction, request *http.Request) {
+func captureResultReportResponse(tx *firewall.Transaction, request *http.Request) {
 	if tx == nil || tx.ResultState() == nil {
 		return
 	}
@@ -166,7 +173,7 @@ func captureResultReportResponse(tx *waf.Transaction, request *http.Request) {
 	captureReportResponse(tx, request, status, contentType, body)
 }
 
-func captureReportResponse(tx *waf.Transaction, request *http.Request, status int, contentType string, body []byte) {
+func captureReportResponse(tx *firewall.Transaction, request *http.Request, status int, contentType string, body []byte) {
 	if tx == nil {
 		return
 	}
@@ -183,7 +190,7 @@ func captureReportResponse(tx *waf.Transaction, request *http.Request, status in
 	}
 	response.Header.Set("Content-Type", contentType)
 	if err := tx.CaptureResponse(response); err != nil {
-		log.Println("waf report could not capture synthetic response:", err)
+		log.Println("firewall report could not capture synthetic response:", err)
 	}
 	tx.MarkReportReady()
 }

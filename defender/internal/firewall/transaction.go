@@ -1,0 +1,694 @@
+package firewall
+
+import (
+	"bytes"
+	"compress/flate"
+	"compress/gzip"
+	"compress/lzw"
+	"compress/zlib"
+	"io"
+	"net"
+	"net/http"
+	"net/url"
+	"strconv"
+	"strings"
+	"sync"
+	"time"
+
+	"defly-defender/internal/firewall/state"
+	"github.com/andybalholm/brotli"
+	"github.com/klauspost/compress/zstd"
+)
+
+type Transaction struct {
+	Runtime           Runtime
+	Request           *http.Request
+	Response          *http.Response
+	RequestRaw        []byte
+	RequestBody       []byte
+	RequestFullURL    string
+	RequestURLPort    float64
+	ResponseRaw       []byte
+	ResponseBody      []byte
+	ResponseEncodings []string
+	Score             float64
+	Level             int
+	Vars              map[string]any
+	Result            state.Result
+	ReportReady       chan struct{}
+	reportReadyOnce   sync.Once
+}
+
+func (tx *Transaction) CaptureRequest() error {
+	if tx.Request == nil {
+		return nil
+	}
+	tx.RequestURLPort = requestURLPort(tx.Request)
+	tx.RequestFullURL = requestFullURL(tx.Request)
+
+	if tx.Request.Body != nil {
+		body, err := io.ReadAll(tx.Request.Body)
+		if err != nil {
+			return err
+		}
+		tx.RequestBody = body
+		tx.Request.Body = io.NopCloser(bytes.NewReader(body))
+		tx.Request.ContentLength = int64(len(body))
+	}
+
+	var raw bytes.Buffer
+	if err := tx.Request.Write(&raw); err != nil {
+		return err
+	}
+	tx.RequestRaw = raw.Bytes()
+	tx.Request.Body = io.NopCloser(bytes.NewReader(tx.RequestBody))
+	tx.Request.ContentLength = int64(len(tx.RequestBody))
+	return nil
+}
+
+func (tx *Transaction) CaptureResponse(response *http.Response) error {
+	tx.Response = response
+	if response == nil {
+		return nil
+	}
+
+	if response.Body != nil {
+		body, err := io.ReadAll(response.Body)
+		if err != nil {
+			return err
+		}
+		tx.ResponseEncodings = responseContentEncodings(response)
+		decoded, encodings, err := decodeResponseBody(body, tx.ResponseEncodings)
+		if err != nil {
+			tx.ResponseEncodings = nil
+			decoded = body
+		} else {
+			tx.ResponseEncodings = encodings
+		}
+		tx.ResponseBody = decoded
+		response.Body = io.NopCloser(bytes.NewReader(decoded))
+		response.ContentLength = int64(len(decoded))
+		response.Header.Set("Content-Length", tx.stringInt(len(decoded)))
+		clearResponseContentEncoding(response)
+	}
+
+	var raw bytes.Buffer
+	if err := response.Write(&raw); err != nil {
+		return err
+	}
+	tx.ResponseRaw = raw.Bytes()
+	return tx.restoreEncodedResponse()
+}
+
+func (tx *Transaction) AwaitReportReady(timeout time.Duration) bool {
+	if tx == nil || tx.ReportReady == nil {
+		return true
+	}
+	if timeout <= 0 {
+		<-tx.ReportReady
+		return true
+	}
+	timer := time.NewTimer(timeout)
+	defer timer.Stop()
+	select {
+	case <-tx.ReportReady:
+		return true
+	case <-timer.C:
+		return false
+	}
+}
+
+func (tx *Transaction) MarkReportReady() {
+	if tx == nil || tx.ReportReady == nil {
+		return
+	}
+	tx.reportReadyOnce.Do(func() {
+		close(tx.ReportReady)
+	})
+}
+
+func (tx *Transaction) SetResponseBody(body []byte) {
+	if tx.Response == nil {
+		return
+	}
+	tx.ResponseBody = body
+	_ = tx.restoreEncodedResponse()
+}
+
+func (tx *Transaction) SetRequestBody(body []byte) {
+	if tx.Request == nil {
+		return
+	}
+	tx.RequestBody = body
+	tx.Request.Body = io.NopCloser(bytes.NewReader(body))
+	tx.Request.ContentLength = int64(len(body))
+	tx.Request.Header.Set("Content-Length", tx.stringInt(len(body)))
+}
+
+func (tx *Transaction) SetAllow() {
+	tx.Result.Allow = true
+}
+
+func (tx *Transaction) IsAllowed() bool {
+	return tx != nil && tx.Result.Allow
+}
+
+func (tx *Transaction) SetDeny(status int, contentType string, body []byte) {
+	tx.Result.Deny = true
+	tx.Result.Status = status
+	tx.Result.ContentType = contentType
+	tx.Result.Body = body
+}
+
+func (tx *Transaction) IsDenied() bool {
+	return tx != nil && tx.Result.Deny
+}
+
+func (tx *Transaction) IsCancelled() bool {
+	return tx != nil && tx.Result.Cancel
+}
+
+func (tx *Transaction) AddScore(score float64) {
+	tx.Score += score
+}
+
+func (tx *Transaction) CurrentScore() float64 {
+	return tx.Score
+}
+
+func (tx *Transaction) SetScore(score float64) {
+	tx.Score = score
+}
+
+func (tx *Transaction) CurrentLevel() int {
+	return tx.Level
+}
+
+func (tx *Transaction) SetLevel(level int) {
+	tx.Level = level
+}
+
+func (tx *Transaction) SetVar(key string, value any) {
+	if tx.Vars == nil {
+		tx.Vars = make(map[string]any)
+	}
+	tx.Vars[key] = value
+}
+
+func (tx *Transaction) UnsetVar(key string) {
+	delete(tx.Vars, key)
+}
+
+func (tx *Transaction) ResultState() *state.Result {
+	if tx == nil {
+		return nil
+	}
+	return &tx.Result
+}
+
+func (tx *Transaction) ScoreValue() float64 {
+	if tx == nil {
+		return 0
+	}
+	return tx.Score
+}
+
+func (tx *Transaction) LevelValue() int {
+	if tx == nil {
+		return 0
+	}
+	return tx.Level
+}
+
+func (tx *Transaction) RequestObject() *http.Request {
+	if tx == nil {
+		return nil
+	}
+	return tx.Request
+}
+
+func (tx *Transaction) ResponseObject() *http.Response {
+	if tx == nil {
+		return nil
+	}
+	return tx.Response
+}
+
+func (tx *Transaction) RawRequest() []byte {
+	if tx == nil {
+		return nil
+	}
+	return tx.RequestRaw
+}
+
+func (tx *Transaction) RawResponse() []byte {
+	if tx == nil {
+		return nil
+	}
+	return tx.ResponseRaw
+}
+
+func (tx *Transaction) RequestBodyBytes() []byte {
+	if tx == nil {
+		return nil
+	}
+	return tx.RequestBody
+}
+
+func (tx *Transaction) ResponseBodyBytes() []byte {
+	if tx == nil {
+		return nil
+	}
+	return tx.ResponseBody
+}
+
+func (tx *Transaction) RequestHeaders() http.Header {
+	if tx == nil || tx.Request == nil {
+		return nil
+	}
+	return tx.Request.Header
+}
+
+func (tx *Transaction) ResponseHeaders() http.Header {
+	if tx == nil || tx.Response == nil {
+		return nil
+	}
+	return tx.Response.Header
+}
+
+func (tx *Transaction) RequestQuery() url.Values {
+	if tx == nil || tx.Request == nil || tx.Request.URL == nil {
+		return nil
+	}
+	return tx.Request.URL.Query()
+}
+
+func (tx *Transaction) RequestMethod() string {
+	if tx == nil || tx.Request == nil {
+		return ""
+	}
+	return tx.Request.Method
+}
+
+func (tx *Transaction) RequestProto() string {
+	if tx == nil || tx.Request == nil {
+		return ""
+	}
+	return tx.Request.Proto
+}
+
+func (tx *Transaction) RequestURL() string {
+	if tx == nil || tx.Request == nil || tx.Request.URL == nil {
+		return ""
+	}
+	return tx.Request.URL.String()
+}
+
+func (tx *Transaction) RequestFullURLValue() string {
+	if tx == nil {
+		return ""
+	}
+	if tx.RequestFullURL != "" {
+		return tx.RequestFullURL
+	}
+	return requestFullURL(tx.Request)
+}
+
+func (tx *Transaction) RequestRemoteAddr() string {
+	if tx == nil || tx.Request == nil {
+		return ""
+	}
+	return tx.Request.RemoteAddr
+}
+
+func (tx *Transaction) RequestPath() string {
+	if tx == nil || tx.Request == nil || tx.Request.URL == nil {
+		return ""
+	}
+	return tx.Request.URL.Path
+}
+
+func (tx *Transaction) RequestScheme() string {
+	if tx == nil || tx.Request == nil {
+		return ""
+	}
+	if tx.Request.URL != nil && tx.Request.URL.Scheme != "" {
+		return tx.Request.URL.Scheme
+	}
+	if tx.Request.TLS != nil {
+		return "https"
+	}
+	return "http"
+}
+
+func (tx *Transaction) RequestHost() string {
+	if tx == nil || tx.Request == nil {
+		return ""
+	}
+	return tx.Request.Host
+}
+
+func (tx *Transaction) RequestPort() float64 {
+	if tx == nil {
+		return 0
+	}
+	if tx.RequestURLPort > 0 {
+		return tx.RequestURLPort
+	}
+	return requestURLPort(tx.Request)
+}
+
+func (tx *Transaction) RequestContentType() string {
+	if tx == nil || tx.Request == nil {
+		return ""
+	}
+	return tx.Request.Header.Get("Content-Type")
+}
+
+func (tx *Transaction) RequestContentLength() int64 {
+	if tx == nil || tx.Request == nil {
+		return 0
+	}
+	return tx.Request.ContentLength
+}
+
+func (tx *Transaction) ResponseStatusCode() int {
+	if tx == nil || tx.Response == nil {
+		return 0
+	}
+	return tx.Response.StatusCode
+}
+
+func (tx *Transaction) ResponseProto() string {
+	if tx == nil || tx.Response == nil {
+		return ""
+	}
+	return tx.Response.Proto
+}
+
+func (tx *Transaction) ResponseContentType() string {
+	if tx == nil || tx.Response == nil {
+		return ""
+	}
+	return tx.Response.Header.Get("Content-Type")
+}
+
+func (tx *Transaction) ResponseContentLength() int64 {
+	if tx == nil || tx.Response == nil {
+		return 0
+	}
+	return tx.Response.ContentLength
+}
+
+func (tx *Transaction) VarValue(key string) (any, bool) {
+	if tx == nil {
+		return nil, false
+	}
+	value, ok := tx.Vars[key]
+	return value, ok
+}
+
+func requestURLPort(request *http.Request) float64 {
+	if request == nil {
+		return 0
+	}
+	if request.URL != nil {
+		if port := request.URL.Port(); port != "" {
+			return parsePort(port)
+		}
+	}
+	host := request.Host
+	if host == "" && request.URL != nil {
+		host = request.URL.Host
+	}
+	if host != "" {
+		if _, port, err := net.SplitHostPort(host); err == nil {
+			return parsePort(port)
+		}
+	}
+	if request.TLS != nil || (request.URL != nil && request.URL.Scheme == "https") {
+		return 443
+	}
+	return 80
+}
+
+func requestFullURL(request *http.Request) string {
+	if request == nil || request.URL == nil {
+		return ""
+	}
+	rawURL := strings.TrimSpace(request.URL.String())
+	if strings.HasPrefix(rawURL, "http://") || strings.HasPrefix(rawURL, "https://") {
+		return rawURL
+	}
+
+	host := strings.TrimSpace(request.Host)
+	if host == "" {
+		host = strings.TrimSpace(request.URL.Host)
+	}
+	if host == "" {
+		return rawURL
+	}
+
+	scheme := "http"
+	if request.URL.Scheme != "" {
+		scheme = request.URL.Scheme
+	} else if request.TLS != nil {
+		scheme = "https"
+	}
+
+	requestURI := request.URL.RequestURI()
+	if requestURI == "" {
+		requestURI = "/"
+	}
+	return scheme + "://" + host + requestURI
+}
+
+func parsePort(port string) float64 {
+	if port == "" {
+		return 0
+	}
+	value, _ := strconv.ParseFloat(port, 64)
+	return value
+}
+
+func (tx *Transaction) stringInt(value int) string {
+	if value == 0 {
+		return "0"
+	}
+	var buf [20]byte
+	i := len(buf)
+	for value > 0 {
+		i--
+		buf[i] = byte('0' + value%10)
+		value /= 10
+	}
+	return string(buf[i:])
+}
+
+func (tx *Transaction) restoreEncodedResponse() error {
+	if tx == nil || tx.Response == nil {
+		return nil
+	}
+	body := tx.ResponseBody
+	if len(tx.ResponseEncodings) > 0 {
+		encoded, err := encodeResponseBody(body, tx.ResponseEncodings)
+		if err != nil {
+			return err
+		}
+		body = encoded
+		tx.Response.Header.Set("Content-Encoding", responseHeaderEncodings(tx.ResponseEncodings))
+	} else {
+		clearResponseContentEncoding(tx.Response)
+	}
+	tx.Response.Body = io.NopCloser(bytes.NewReader(body))
+	tx.Response.ContentLength = int64(len(body))
+	tx.Response.Header.Set("Content-Length", tx.stringInt(len(body)))
+	return nil
+}
+
+func responseHeaderEncodings(encodings []string) string {
+	values := make([]string, 0, len(encodings))
+	for _, encoding := range encodings {
+		values = append(values, responseHeaderEncoding(encoding))
+	}
+	return strings.Join(values, ", ")
+}
+
+func responseHeaderEncoding(encoding string) string {
+	switch encoding {
+	case "deflate-raw":
+		return "deflate"
+	case "x-gzip":
+		return "gzip"
+	default:
+		return encoding
+	}
+}
+
+func responseContentEncodings(response *http.Response) []string {
+	if response == nil {
+		return nil
+	}
+	header := strings.TrimSpace(response.Header.Get("Content-Encoding"))
+	if header == "" {
+		return nil
+	}
+	parts := strings.Split(header, ",")
+	encodings := make([]string, 0, len(parts))
+	for _, part := range parts {
+		encoding := strings.TrimSpace(strings.ToLower(part))
+		switch encoding {
+		case "", "identity":
+			continue
+		case "gzip", "x-gzip", "deflate", "compress", "x-compress", "br", "zstd":
+			encodings = append(encodings, encoding)
+		default:
+			return nil
+		}
+	}
+	return encodings
+}
+
+func clearResponseContentEncoding(response *http.Response) {
+	if response == nil {
+		return
+	}
+	response.Header.Del("Content-Encoding")
+	response.Header.Del("Content-Length")
+}
+
+func decodeResponseBody(body []byte, encodings []string) ([]byte, []string, error) {
+	decoded := body
+	actual := append([]string(nil), encodings...)
+	for index := len(actual) - 1; index >= 0; index-- {
+		next, encoding, err := decodeSingleResponseBody(decoded, actual[index])
+		if err != nil {
+			return nil, nil, err
+		}
+		decoded = next
+		actual[index] = encoding
+	}
+	return decoded, actual, nil
+}
+
+func decodeSingleResponseBody(body []byte, encoding string) ([]byte, string, error) {
+	switch encoding {
+	case "gzip", "x-gzip":
+		reader, err := gzip.NewReader(bytes.NewReader(body))
+		if err != nil {
+			return nil, "", err
+		}
+		defer reader.Close()
+		decoded, err := io.ReadAll(reader)
+		return decoded, encoding, err
+	case "deflate":
+		zlibReader, err := zlib.NewReader(bytes.NewReader(body))
+		if err == nil {
+			defer zlibReader.Close()
+			decoded, err := io.ReadAll(zlibReader)
+			return decoded, "deflate", err
+		}
+		reader := flate.NewReader(bytes.NewReader(body))
+		defer reader.Close()
+		decoded, err := io.ReadAll(reader)
+		return decoded, "deflate-raw", err
+	case "compress", "x-compress":
+		reader := lzw.NewReader(bytes.NewReader(body), lzw.MSB, 8)
+		defer reader.Close()
+		decoded, err := io.ReadAll(reader)
+		return decoded, encoding, err
+	case "br":
+		decoded, err := io.ReadAll(brotli.NewReader(bytes.NewReader(body)))
+		return decoded, encoding, err
+	case "zstd":
+		decoder, err := zstd.NewReader(bytes.NewReader(body))
+		if err != nil {
+			return nil, "", err
+		}
+		defer decoder.Close()
+		decoded, err := decoder.DecodeAll(body, nil)
+		return decoded, encoding, err
+	default:
+		return body, encoding, nil
+	}
+}
+
+func encodeResponseBody(body []byte, encodings []string) ([]byte, error) {
+	encoded := body
+	for _, encoding := range encodings {
+		next, err := encodeSingleResponseBody(encoded, encoding)
+		if err != nil {
+			return nil, err
+		}
+		encoded = next
+	}
+	return encoded, nil
+}
+
+func encodeSingleResponseBody(body []byte, encoding string) ([]byte, error) {
+	var buffer bytes.Buffer
+	switch encoding {
+	case "gzip", "x-gzip":
+		writer := gzip.NewWriter(&buffer)
+		if _, err := writer.Write(body); err != nil {
+			_ = writer.Close()
+			return nil, err
+		}
+		if err := writer.Close(); err != nil {
+			return nil, err
+		}
+		return buffer.Bytes(), nil
+	case "deflate":
+		writer := zlib.NewWriter(&buffer)
+		if _, err := writer.Write(body); err != nil {
+			_ = writer.Close()
+			return nil, err
+		}
+		if err := writer.Close(); err != nil {
+			return nil, err
+		}
+		return buffer.Bytes(), nil
+	case "deflate-raw":
+		writer, err := flate.NewWriter(&buffer, flate.DefaultCompression)
+		if err != nil {
+			return nil, err
+		}
+		if _, err := writer.Write(body); err != nil {
+			_ = writer.Close()
+			return nil, err
+		}
+		if err := writer.Close(); err != nil {
+			return nil, err
+		}
+		return buffer.Bytes(), nil
+	case "compress", "x-compress":
+		writer := lzw.NewWriter(&buffer, lzw.MSB, 8)
+		if _, err := writer.Write(body); err != nil {
+			_ = writer.Close()
+			return nil, err
+		}
+		if err := writer.Close(); err != nil {
+			return nil, err
+		}
+		return buffer.Bytes(), nil
+	case "br":
+		writer := brotli.NewWriter(&buffer)
+		if _, err := writer.Write(body); err != nil {
+			_ = writer.Close()
+			return nil, err
+		}
+		if err := writer.Close(); err != nil {
+			return nil, err
+		}
+		return buffer.Bytes(), nil
+	case "zstd":
+		writer, err := zstd.NewWriter(&buffer)
+		if err != nil {
+			return nil, err
+		}
+		defer writer.Close()
+		return writer.EncodeAll(body, nil), nil
+	default:
+		return body, nil
+	}
+}
