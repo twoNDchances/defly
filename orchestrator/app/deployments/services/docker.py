@@ -8,6 +8,7 @@ from docker.errors import BuildError, ImageNotFound, NotFound
 
 COMPOSE_PROJECT_LABEL = "com.docker.compose.project"
 COMPOSE_SERVICE_LABEL = "com.docker.compose.service"
+COMPOSE_CONFIG_HASH_LABEL = "com.docker.compose.config-hash"
 COMPOSE_ONEOFF_LABEL = "com.docker.compose.oneoff"
 COMPOSE_VERSION_LABEL = "com.docker.compose.version"
 COMPOSE_PROJECT_CONFIG_FILES_LABEL = "com.docker.compose.project.config_files"
@@ -283,10 +284,16 @@ class DockerService:
         if not compose_project or not compose_service:
             return labels
 
+        # Compose v2 discovers project containers through project + config-hash
+        # labels. Attach dynamic Defenders to the current active service so a
+        # plain `docker compose down` includes them in teardown.
         labels.update(
             {
                 COMPOSE_PROJECT_LABEL: compose_project,
                 COMPOSE_SERVICE_LABEL: compose_service,
+                COMPOSE_CONFIG_HASH_LABEL: compose_labels.get(
+                    COMPOSE_CONFIG_HASH_LABEL, "defly-dynamic-defender"
+                ),
                 COMPOSE_ONEOFF_LABEL: "False",
                 "defly.compose.attached_service": compose_service,
             }

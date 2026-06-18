@@ -444,7 +444,7 @@ return [
             'deployment_status' => 'Trạng thái triển khai sẽ quyết định defender có thể bắt đầu sử dụng hay không',
             'deploymnet_details' => 'Chi tiết triển khai, mục đích để bạn nắm được defender đang có lỗi gì',
             'log' => 'Nhật ký defender mới nhất được trả về từ orchestrator',
-            'last_response_details' => 'Chi tiết phản hồi mới nhất từ Defly Defender, tách riêng cho yêu cầu principle và decision',
+            'last_response_details' => 'Chi tiết phản hồi mới nhất từ Defly Defender, tách riêng cho yêu cầu nguyên tắc và phán quyết',
         ],
         'extras' => [
             'status' => [
