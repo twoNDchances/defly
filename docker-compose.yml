@@ -12,6 +12,8 @@ services:
       - --collation-server=utf8mb4_unicode_ci
     volumes:
       - mariadb_data:/var/lib/mysql
+    networks:
+      - infrastructure
     healthcheck:
       test: ["CMD-SHELL", "mariadb-admin ping -h 127.0.0.1 -u root -p$${MARIADB_ROOT_PASSWORD} --silent"]
       interval: 10s
@@ -54,6 +56,8 @@ services:
       - orchestrator_secret:/app/storage/secret
       - orchestrator_tls:/app/storage/tls
       - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - infrastructure
     depends_on:
       mariadb:
         condition: service_healthy
@@ -140,6 +144,8 @@ services:
       - manager_storage:/var/www/html/storage
       - orchestrator_tls:/var/www/html/storage/tls/orchestrator:ro
       - defender_tls:/var/www/html/storage/tls/defenders:ro
+    networks:
+      - infrastructure
     healthcheck:
       test: ["CMD-SHELL", "curl -kfsS https://127.0.0.1/up > /dev/null"]
       interval: 10s
@@ -174,6 +180,8 @@ services:
       - manager_storage:/var/www/html/storage
       - orchestrator_tls:/var/www/html/storage/tls/orchestrator:ro
       - defender_tls:/var/www/html/storage/tls/defenders:ro
+    networks:
+      - infrastructure
     depends_on:
       mariadb:
         condition: service_healthy
@@ -187,6 +195,12 @@ services:
     profiles:
       - build-only
     restart: "no"
+    networks:
+      - infrastructure
+
+networks:
+  infrastructure:
+    name: ${COMPOSE_PROJECT_NAME:-defly}_infrastructure
 
 volumes:
   mariadb_data:

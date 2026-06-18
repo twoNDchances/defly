@@ -26,7 +26,7 @@ class SecurityWidgetDataTest extends TestCase
 
     public function test_security_widget_data_helpers_calculate_dashboard_series(): void
     {
-        $harness = new WidgetDataHarness();
+        $harness = new WidgetDataHarness;
         $defender = Defender::query()->create([
             'name' => 'widget-defender',
             'proxy_port' => 9948,
@@ -91,5 +91,58 @@ class SecurityWidgetDataTest extends TestCase
         $this->assertSame('1.5M', $harness->formatNumberPublic(1500000));
         $this->assertCount(8, $harness->chartPalettePublic());
         $this->assertNotEmpty($harness->bubblePointsPublic(collect(['a' => 5])));
+    }
+
+    public function test_security_widget_date_filters_limit_report_and_timeline_queries(): void
+    {
+        $harness = new WidgetDataHarness;
+        $defender = Defender::query()->create([
+            'name' => 'filtered-widget-defender',
+            'proxy_port' => 9951,
+            'status' => Status::Normal->value,
+            'deployment_status' => DeploymentStatus::Successful->value,
+            'environment_variables' => ['PROXY_BACKEND_URL' => 'http://localhost'],
+        ]);
+
+        Report::withoutEvents(fn () => Report::query()->create([
+            'metas' => ['ip' => '127.0.0.1', 'method' => 'get', 'status' => 200],
+            'created_by' => $defender->id,
+        ]));
+        Timeline::withoutEvents(fn () => Timeline::query()->create([
+            'action' => 'deploy',
+            'resource_type' => Defender::class,
+            'resource_id' => $defender->id,
+        ]));
+
+        $oldReport = Report::withoutEvents(fn () => Report::query()->create([
+            'metas' => ['ip' => '127.0.0.2', 'method' => 'post', 'status' => 403],
+            'created_by' => $defender->id,
+        ]));
+        $oldReport->forceFill([
+            'created_at' => now()->subDays(20),
+            'updated_at' => now()->subDays(20),
+        ])->saveQuietly();
+
+        $oldTimeline = Timeline::withoutEvents(fn () => Timeline::query()->create([
+            'action' => 'cancel',
+            'resource_type' => Defender::class,
+            'resource_id' => $defender->id,
+        ]));
+        $oldTimeline->forceFill([
+            'created_at' => now()->subDays(20),
+            'updated_at' => now()->subDays(20),
+        ])->saveQuietly();
+
+        $this->assertArrayHasKey('all', $harness->filtersPublic());
+
+        $harness->filter = '14';
+        $this->assertSame(14, $harness->selectedSecurityDateFilterDaysPublic());
+        $this->assertSame(1, $harness->filteredReportsQueryPublic($defender)->count());
+        $this->assertSame(1, $harness->filteredTimelinesQueryPublic($defender)->count());
+
+        $harness->filter = 'all';
+        $this->assertNull($harness->selectedSecurityDateFilterDaysPublic());
+        $this->assertSame(2, $harness->filteredReportsQueryPublic($defender)->count());
+        $this->assertSame(2, $harness->filteredTimelinesQueryPublic($defender)->count());
     }
 }

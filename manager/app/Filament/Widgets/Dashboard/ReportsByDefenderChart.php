@@ -13,9 +13,15 @@ class ReportsByDefenderChart extends ChartWidget
 
     protected ?string $pollingInterval = '10s';
 
+    protected bool $hasSecurityDateFilter = true;
+
+    protected bool $allowsAllSecurityDateFilter = true;
+
+    protected string $defaultSecurityDateFilter = 'all';
+
     protected function getData(): array
     {
-        $series = $this->topReportingDefenders();
+        $series = $this->topReportingDefenders(8, $this->filteredReportsQuery());
 
         return [
             'datasets' => [

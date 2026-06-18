@@ -13,13 +13,19 @@ class ReportsScatterChart extends ChartWidget
 
     protected ?string $pollingInterval = '10s';
 
+    protected bool $hasSecurityDateFilter = true;
+
+    protected bool $allowsAllSecurityDateFilter = true;
+
+    protected string $defaultSecurityDateFilter = 'all';
+
     protected function getData(): array
     {
         return [
             'datasets' => [
                 [
                     'label' => __('pages.customizations.dashboard.widgets.datasets.status_codes'),
-                    'data' => $this->reportScatterPoints(),
+                    'data' => $this->reportScatterPoints(null, 100, $this->filteredReportsQuery()),
                     'backgroundColor' => 'rgba(220, 38, 38, 0.35)',
                     'borderColor' => '#dc2626',
                 ],

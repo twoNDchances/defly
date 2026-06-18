@@ -14,9 +14,27 @@ class WidgetDataHarness
 
     public ?Model $record = null;
 
+    public ?string $filter = null;
+
+    protected bool $hasSecurityDateFilter = true;
+
+    protected bool $allowsAllSecurityDateFilter = true;
+
+    protected string $defaultSecurityDateFilter = 'all';
+
     public function currentDefenderPublic(): ?Defender
     {
         return $this->currentDefender();
+    }
+
+    public function filtersPublic(): ?array
+    {
+        return $this->getFilters();
+    }
+
+    public function selectedSecurityDateFilterDaysPublic(): ?int
+    {
+        return $this->selectedSecurityDateFilterDays();
     }
 
     public function reportsQueryPublic(?Defender $defender = null): Builder
@@ -24,9 +42,19 @@ class WidgetDataHarness
         return $this->reportsQuery($defender);
     }
 
+    public function filteredReportsQueryPublic(?Defender $defender = null): Builder
+    {
+        return $this->filteredReportsQuery($defender);
+    }
+
     public function timelinesQueryPublic(?Defender $defender = null): Builder
     {
         return $this->timelinesQuery($defender);
+    }
+
+    public function filteredTimelinesQueryPublic(?Defender $defender = null): Builder
+    {
+        return $this->filteredTimelinesQuery($defender);
     }
 
     public function countTodayPublic(Builder $query): int

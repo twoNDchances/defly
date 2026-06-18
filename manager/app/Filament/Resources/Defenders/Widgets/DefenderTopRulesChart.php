@@ -16,13 +16,20 @@ class DefenderTopRulesChart extends ChartWidget
 
     protected ?string $pollingInterval = '10s';
 
+    protected bool $hasSecurityDateFilter = true;
+
+    protected bool $allowsAllSecurityDateFilter = true;
+
+    protected string $defaultSecurityDateFilter = 'all';
+
     protected ?string $heading = null;
 
     protected int|string|array $columnSpan = 1;
 
     protected function getData(): array
     {
-        $series = $this->topReportJsonValues('rule_details', '$.rule.name', $this->currentDefender(), 8);
+        $defender = $this->currentDefender();
+        $series = $this->topReportJsonValues('rule_details', '$.rule.name', $defender, 8, $this->filteredReportsQuery($defender));
 
         return [
             'datasets' => [

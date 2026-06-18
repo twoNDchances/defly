@@ -16,13 +16,20 @@ class DefenderTrafficMethodChart extends ChartWidget
 
     protected ?string $pollingInterval = '10s';
 
+    protected bool $hasSecurityDateFilter = true;
+
+    protected bool $allowsAllSecurityDateFilter = true;
+
+    protected string $defaultSecurityDateFilter = 'all';
+
     protected ?string $heading = null;
 
     protected int|string|array $columnSpan = 1;
 
     protected function getData(): array
     {
-        $series = $this->topReportJsonValues('metas', '$.method', $this->currentDefender(), 8);
+        $defender = $this->currentDefender();
+        $series = $this->topReportJsonValues('metas', '$.method', $defender, 8, $this->filteredReportsQuery($defender));
         $labels = $series->keys()->map(fn (string $method): string => strtoupper($method))->all();
 
         return [

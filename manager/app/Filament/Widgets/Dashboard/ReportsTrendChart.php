@@ -13,11 +13,13 @@ class ReportsTrendChart extends ChartWidget
 
     protected ?string $pollingInterval = '10s';
 
+    protected bool $hasSecurityDateFilter = true;
+
     protected int|string|array $columnSpan = 1;
 
     protected function getData(): array
     {
-        $series = $this->dateCountSeries($this->reportsQuery(), 14);
+        $series = $this->dateCountSeries($this->reportsQuery(), $this->selectedSecurityDateFilterDays() ?? 14);
 
         return [
             'datasets' => [

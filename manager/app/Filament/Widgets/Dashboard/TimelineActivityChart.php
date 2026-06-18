@@ -13,11 +13,13 @@ class TimelineActivityChart extends ChartWidget
 
     protected ?string $pollingInterval = '10s';
 
+    protected bool $hasSecurityDateFilter = true;
+
     protected int|string|array $columnSpan = 'full';
 
     protected function getData(): array
     {
-        $series = $this->dateCountSeries($this->timelinesQuery(), 14);
+        $series = $this->dateCountSeries($this->timelinesQuery(), $this->selectedSecurityDateFilterDays() ?? 14);
 
         return [
             'datasets' => [

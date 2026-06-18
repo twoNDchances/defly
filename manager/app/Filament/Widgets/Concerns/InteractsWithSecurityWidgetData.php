@@ -34,6 +34,84 @@ trait InteractsWithSecurityWidgetData
                 ->where('resource_id', $defender->getKey()));
     }
 
+    protected function getFilters(): ?array
+    {
+        if (! $this->hasSecurityDateFilter()) {
+            return null;
+        }
+
+        $this->filter ??= $this->defaultSecurityDateFilter();
+
+        return $this->securityDateFilterOptions();
+    }
+
+    protected function hasSecurityDateFilter(): bool
+    {
+        return (bool) ($this->hasSecurityDateFilter ?? false);
+    }
+
+    protected function allowsAllSecurityDateFilter(): bool
+    {
+        return (bool) ($this->allowsAllSecurityDateFilter ?? false);
+    }
+
+    protected function defaultSecurityDateFilter(): string
+    {
+        $default = (string) ($this->defaultSecurityDateFilter ?? ($this->allowsAllSecurityDateFilter() ? 'all' : '14'));
+        $options = $this->securityDateFilterOptions();
+
+        return array_key_exists($default, $options) ? $default : (string) array_key_first($options);
+    }
+
+    protected function selectedSecurityDateFilterDays(): ?int
+    {
+        $filter = (string) ($this->filter ?? $this->defaultSecurityDateFilter());
+
+        if ($filter === 'all' && $this->allowsAllSecurityDateFilter()) {
+            return null;
+        }
+
+        $days = (int) $filter;
+
+        return in_array($days, [7, 14, 30, 90], true) ? $days : 14;
+    }
+
+    protected function securityDateFilterOptions(): array
+    {
+        $filters = [];
+
+        if ($this->allowsAllSecurityDateFilter()) {
+            $filters['all'] = __('pages.customizations.dashboard.widgets.filters.all_time');
+        }
+
+        foreach ([7, 14, 30, 90] as $days) {
+            $filters[(string) $days] = __('pages.customizations.dashboard.widgets.filters.last_days', ['days' => $days]);
+        }
+
+        return $filters;
+    }
+
+    protected function filteredReportsQuery(?Defender $defender = null): Builder
+    {
+        return $this->applySecurityDateFilter($this->reportsQuery($defender), 'reports.created_at');
+    }
+
+    protected function filteredTimelinesQuery(?Defender $defender = null): Builder
+    {
+        return $this->applySecurityDateFilter($this->timelinesQuery($defender), 'timelines.created_at');
+    }
+
+    protected function applySecurityDateFilter(Builder $query, string $column = 'created_at'): Builder
+    {
+        $days = $this->selectedSecurityDateFilterDays();
+
+        if ($days === null) {
+            return $query;
+        }
+
+        return $query->where($column, '>=', CarbonImmutable::now()->subDays($days - 1)->startOfDay());
+    }
+
     protected function countSince(Builder $query, CarbonInterface $start): int
     {
         return (int) (clone $query)
@@ -79,10 +157,11 @@ trait InteractsWithSecurityWidgetData
         string $path,
         ?Defender $defender = null,
         int $limit = 8,
+        ?Builder $query = null,
     ): Collection {
         $expression = $this->jsonValueExpression($column, $path);
 
-        return (clone $this->reportsQuery($defender))
+        return (clone ($query ?? $this->reportsQuery($defender)))
             ->selectRaw("{$expression} as label, COUNT(*) as aggregate")
             ->whereRaw("{$expression} IS NOT NULL")
             ->whereRaw("{$expression} <> ''")
@@ -119,9 +198,9 @@ trait InteractsWithSecurityWidgetData
             ]);
     }
 
-    protected function topReportingDefenders(int $limit = 8): Collection
+    protected function topReportingDefenders(int $limit = 8, ?Builder $query = null): Collection
     {
-        return Report::query()
+        return (clone ($query ?? Report::query()))
             ->leftJoin('defenders', 'defenders.id', '=', 'reports.created_by')
             ->selectRaw('defenders.name as label, COUNT(*) as aggregate')
             ->groupBy('defenders.id', 'defenders.name')
@@ -151,9 +230,9 @@ trait InteractsWithSecurityWidgetData
             ->map(fn (mixed $count): int => (int) $count);
     }
 
-    protected function groupedTimelineActions(?Defender $defender = null, int $limit = 8): Collection
+    protected function groupedTimelineActions(?Defender $defender = null, int $limit = 8, ?Builder $query = null): Collection
     {
-        return (clone $this->timelinesQuery($defender))
+        return (clone ($query ?? $this->timelinesQuery($defender)))
             ->selectRaw("COALESCE(action, 'unknown') as label, COUNT(*) as aggregate")
             ->groupByRaw("COALESCE(action, 'unknown')")
             ->orderByDesc('aggregate')
@@ -181,9 +260,9 @@ trait InteractsWithSecurityWidgetData
         ];
     }
 
-    protected function reportScatterPoints(?Defender $defender = null, int $limit = 100): array
+    protected function reportScatterPoints(?Defender $defender = null, int $limit = 100, ?Builder $query = null): array
     {
-        $reports = (clone $this->reportsQuery($defender))
+        $reports = (clone ($query ?? $this->reportsQuery($defender)))
             ->latest()
             ->limit($limit)
             ->get(['metas', 'created_at'])

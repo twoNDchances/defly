@@ -50,6 +50,10 @@ return [
                     'policy_coverage' => 'Mức phủ chính sách',
                     'top_sources' => 'Top IP nguồn nhiều nhất',
                 ],
+                'filters' => [
+                    'all_time' => 'Tất cả thời gian',
+                    'last_days' => ':days ngày gần nhất',
+                ],
                 'datasets' => [
                     'reports' => 'Báo cáo',
                     'timelines' => 'Sự kiện kiểm toán',

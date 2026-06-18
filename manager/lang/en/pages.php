@@ -50,6 +50,10 @@ return [
                     'policy_coverage' => 'Policy coverage',
                     'top_sources' => 'Top source IPs',
                 ],
+                'filters' => [
+                    'all_time' => 'All time',
+                    'last_days' => 'Last :days days',
+                ],
                 'datasets' => [
                     'reports' => 'Reports',
                     'timelines' => 'Audit events',

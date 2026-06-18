@@ -14,9 +14,15 @@ class HttpStatusChart extends ChartWidget
 
     protected ?string $pollingInterval = '10s';
 
+    protected bool $hasSecurityDateFilter = true;
+
+    protected bool $allowsAllSecurityDateFilter = true;
+
+    protected string $defaultSecurityDateFilter = 'all';
+
     protected function getData(): array
     {
-        $series = $this->topReportJsonValues('metas', '$.status', null, 8);
+        $series = $this->topReportJsonValues('metas', '$.status', null, 8, $this->filteredReportsQuery());
         $labels = $series->keys()
             ->map(fn (string $status): string => filled(Response::$statusTexts[(int) $status] ?? null)
                 ? "[{$status}] ".Response::$statusTexts[(int) $status]
