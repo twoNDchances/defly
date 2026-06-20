@@ -1,17 +1,16 @@
-# Bắt đầu
+# Bắt đầu nhanh
 
-Docker Compose là cách nhanh nhất để chạy thử toàn bộ Defly trên máy phát
-triển.
+Trang này đưa toàn bộ hệ thống lên bằng Docker Compose. Để hiểu vai trò từng dịch vụ, đọc [Tổng quan](Overview.md) trước.
 
-## Yêu cầu tối thiểu
+## Yêu cầu
 
 - Docker Engine hoặc Docker Desktop có Compose V2.
-- Cổng `80` và `443` đang rảnh, hoặc đổi `MANAGER_HTTP_PORT` và
-  `MANAGER_HTTPS_PORT` trong tệp `.env`.
+- Cổng `80` và `443` đang rảnh, hoặc đổi cổng Manager trong `.env`.
+- Máy chủ Docker có đủ tài nguyên để chạy MariaDB, Manager, Worker và Orchestrator.
 
-## Chạy nhanh
+## Khởi động
 
-Từ thư mục gốc của kho mã nguồn:
+Từ thư mục gốc:
 
 ```powershell
 Copy-Item .env.example .env
@@ -20,41 +19,57 @@ docker compose up -d --build
 docker compose ps
 ```
 
+Image Defender cần được dựng trước vì [Orchestrator](Orchestrator-Guide.md) dùng image này để triển khai container động.
+
 Mở Manager tại:
 
 ```text
 https://localhost/defly-manager
 ```
 
-Nếu `USER_PASSWORD=random`, đọc mật khẩu người dùng đầu tiên bằng lệnh:
+Nếu `USER_PASSWORD=random`, đọc thông tin xác thực khởi tạo:
 
 ```powershell
 docker compose exec manager sh -lc "cat /var/www/html/credentials.txt"
 ```
 
-## Kiểm tra lần đầu
+Trình duyệt có thể cảnh báo chứng chỉ tự ký trong môi trường cục bộ.
 
-1. Đăng nhập Manager bằng `USER_EMAIL` và mật khẩu đã cấu hình hoặc mật khẩu
-   được tạo tự động.
-2. Tạo mục tiêu hoặc ứng dụng phía sau cần bảo vệ.
-3. Tạo bản ghi Defender với cổng proxy phù hợp.
-4. Triển khai Defender từ Manager.
-5. Gửi yêu cầu qua cổng proxy của Defender.
-6. Kiểm tra quyết định, báo cáo và nhật ký trong Manager.
+## Kiểm tra dịch vụ
+
+```powershell
+docker compose logs -f mariadb orchestrator manager worker
+```
+
+Chỉ tiếp tục khi Manager truy cập được, Worker đang chạy và Orchestrator kết nối được Docker.
+
+## Tạo chính sách tối thiểu
+
+Trước khi thao tác, đọc tuyến [Target](CoreConcepts/Target.md) -> [Engine](CoreConcepts/Engine.md) -> [Rule](CoreConcepts/Rule.md) -> [Action](CoreConcepts/Action.md) -> [Principle](CoreConcepts/Principle.md) -> [Decision](CoreConcepts/Decision.md).
+
+Một chính sách thử nghiệm nên bắt đầu bằng ghi nhật ký hoặc tạo báo cáo thay vì chặn:
+
+1. Chọn một Pattern hoặc tạo Target đọc rõ một trường trong yêu cầu.
+2. Tạo Rule với phép so sánh phù hợp kiểu dữ liệu của Target.
+3. Gắn Action `log` hoặc `report` vào Rule.
+4. Tạo Principle cùng giai đoạn và thêm Rule.
+5. Kiểm tra Principle cho đến khi trạng thái là `passed`.
 
 ## Tạo Defender đầu tiên
 
-Khi tạo Defender trong Manager, cần chọn mục tiêu cần bảo vệ và cổng proxy mà
-Defender sẽ mở ra ngoài. Cổng này phải chưa bị dịch vụ khác sử dụng trên máy
-chạy Docker.
+1. Tạo bản ghi [Defender](CoreConcepts/Defender.md) với tên và cổng proxy chưa được sử dụng.
+2. Cấu hình URL máy chủ phía sau trong nhóm biến proxy.
+3. Áp dụng Principle và cài đặt Decision cần thiết.
+4. Dùng thao tác triển khai trong Manager.
+5. Theo dõi `deployment_status` và nhật ký triển khai.
 
-Sau khi lưu bản ghi, dùng thao tác triển khai trong Manager. Manager sẽ đưa yêu
-cầu vào hàng đợi, tiến trình hàng đợi sẽ gọi Orchestrator, rồi Orchestrator tạo
-container Defender tương ứng.
+## Kiểm tra proxy
 
-## Kiểm tra proxy và WAF
+Gửi yêu cầu qua cổng proxy của Defender, không gửi trực tiếp tới máy chủ phía sau. Sau đó kiểm tra:
 
-Sau khi Defender chạy, gửi một yêu cầu HTTP hoặc HTTPS qua cổng proxy của
-Defender. Nếu cấu hình đúng, Defender sẽ chuyển tiếp yêu cầu về ứng dụng phía
-sau, đồng thời ghi lại kết quả xử lý trong phần quyết định, báo cáo hoặc nhật
-ký.
+- Máy chủ phía sau có nhận yêu cầu không.
+- Nhật ký Defender có lỗi không.
+- [Report](CoreConcepts/Report.md) có được tạo khi hành động tương ứng chạy không.
+- Điểm và Decision có đúng kỳ vọng không.
+
+Nếu triển khai thất bại, chuyển tới [Khắc phục sự cố](Troubleshooting.md). Nếu cần cấu hình chi tiết, đọc [Cài đặt](Installation.md) và [Cấu hình](Configuration.md).

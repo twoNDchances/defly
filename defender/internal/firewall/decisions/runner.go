@@ -3,13 +3,22 @@ package decisions
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 
 	"defly-defender/ent"
 	entdecision "defly-defender/ent/decision"
 	"defly-defender/internal/firewall/state"
+)
+
+const (
+	defaultRequestSaveDirectory = "storage/requests"
+	requestSaveTimeFormat       = "20060102-150405.000000000"
 )
 
 type Transaction interface {
@@ -123,7 +132,57 @@ func applyDecision(tx Transaction, decision Decision) {
 	case entdecision.ActionForceNoCache:
 		result.ForceNoCache = true
 	case entdecision.ActionSave:
+		saveRequest(tx, decision.ConfigurationsValue())
 	}
+}
+
+func saveRequest(tx Transaction, config map[string]any) {
+	raw := tx.RawRequest()
+	if len(raw) == 0 {
+		return
+	}
+	directory := strings.TrimSpace(stringConfig(config, "directory", defaultRequestSaveDirectory))
+	if directory == "" {
+		directory = defaultRequestSaveDirectory
+	}
+	if err := os.MkdirAll(directory, 0755); err != nil {
+		log.Println("firewall save decision could not create directory:", err)
+		return
+	}
+	filename := requestSaveFilename(config)
+	if err := os.WriteFile(filepath.Join(directory, filename), raw, 0600); err != nil {
+		log.Println("firewall save decision could not write request:", err)
+	}
+}
+
+func requestSaveFilename(config map[string]any) string {
+	name := sanitizeFilenamePart(stringConfig(config, "name", "request"))
+	if name == "" {
+		name = "request"
+	}
+	timestamp := time.Now().UTC().Format(requestSaveTimeFormat)
+	if strings.EqualFold(stringConfig(config, "position", "prefix"), "suffix") {
+		return timestamp + "-" + name + ".http"
+	}
+	return name + "-" + timestamp + ".http"
+}
+
+func sanitizeFilenamePart(value string) string {
+	value = strings.TrimSpace(value)
+	if value == "" {
+		return ""
+	}
+	var builder strings.Builder
+	builder.Grow(len(value))
+	for _, character := range value {
+		switch character {
+		case '/', '\\', ':', '*', '?', '"', '<', '>', '|', '\r', '\n', '\t':
+			builder.WriteByte('_')
+		default:
+			builder.WriteRune(character)
+		}
+	}
+	return strings.Trim(builder.String(), " .")
 }
 
 func applyDeny(result *state.Result, decision Decision) {

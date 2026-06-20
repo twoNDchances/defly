@@ -1,111 +1,89 @@
 # Hướng dẫn Defender
 
-Defender là chương trình Go chịu trách nhiệm nhận truy cập, áp dụng WAF và
-chuyển tiếp yêu cầu tới ứng dụng phía sau.
+Defender là chương trình Go chạy API điều khiển, proxy ngược và tường lửa trong thời gian chạy. Khái niệm bản ghi triển khai được giải thích tại [Defender](CoreConcepts/Defender.md).
 
-## Thành phần chính
+## Thành phần khi chạy
 
-Defender gồm các phần chính:
+- Máy chủ điều khiển: API nội bộ, mặc định dùng cổng `9947`.
+- Proxy: cổng nhận lưu lượng ứng dụng, mặc định `9948` khi chạy thủ công.
+- Lõi tường lửa: thu thập giao dịch HTTP, chạy các giai đoạn, Principle, Action và Decision.
+- Doctor: theo dõi tình trạng và phát hiện trạng thái bất thường.
+- Bộ ghi nhật ký và lưu lỗi: ghi dữ liệu vận hành.
 
-- API điều khiển: điểm truy cập nội bộ để Manager kiểm tra hoặc điều khiển
-  Defender.
-- Máy chủ proxy: nhận truy cập từ máy khách và chuyển tiếp về ứng dụng phía
-  sau.
-- Bộ máy WAF: chạy các pha xử lý, khớp quy tắc và thực thi hành động.
-- Quyết định: kết quả từng lần xử lý quy tắc hoặc hành động.
-- Báo cáo: dữ liệu dùng để theo dõi và điều tra.
-- Tệp nhật ký và lỗi: dữ liệu phục vụ kiểm tra khi Defender gặp sự cố.
-- Tạo TLS: tạo chứng chỉ để Manager xác minh khi không bỏ qua kiểm tra TLS.
+API điều khiển không nên mở công khai. Manager là bên gọi chính và có thể xác minh TLS theo [Cấu hình](Configuration.md#kết-nối-tới-defender).
 
-## API điều khiển
+## Khởi tạo giao dịch HTTP
 
-API điều khiển dùng cho Manager và các thành phần nội bộ. Không nên mở API này
-ra mạng công khai nếu không có lớp bảo vệ phù hợp.
+Khi proxy nhận yêu cầu, Defender thu thập yêu cầu nguyên bản, nội dung, URL, cổng và siêu dữ liệu. Nội dung được đọc rồi phục hồi để máy chủ phía sau vẫn nhận được dữ liệu.
 
-Cổng mặc định:
+Giao dịch HTTP giữ:
 
-```text
-9947
+- Yêu cầu và phản hồi hiện tại.
+- Yêu cầu/phản hồi nguyên bản.
+- Điểm và cấp độ.
+- Biến trong quá trình chạy cho `setter`/`getter`.
+- Kết quả cho phép, chặn, hủy, viết lại và các cờ phản hồi.
+
+## Các giai đoạn yêu cầu
+
+1. Giai đoạn `1`: toàn bộ yêu cầu.
+2. Giai đoạn `2`: tiêu đề HTTP, tham số truy vấn và siêu dữ liệu của yêu cầu.
+3. Giai đoạn `3`: nội dung và tệp của yêu cầu.
+
+Ở mỗi giai đoạn, Defender chạy [Principle](CoreConcepts/Principle.md) đúng giai đoạn và cấp độ. Sau giai đoạn `3`, [Decision](CoreConcepts/Decision.md) hướng yêu cầu được đánh giá.
+
+Nếu bị `deny`, Defender trả phản hồi chặn. Nếu bị `cancel`, kết nối bị đóng. Nếu được phép, yêu cầu có thể được viết lại rồi chuyển tới máy chủ phía sau.
+
+## Các giai đoạn phản hồi
+
+Defender thu thập phản hồi từ máy chủ phía sau, giải nén nội dung nếu cần để tường lửa đọc, rồi chạy:
+
+4. Giai đoạn `4`: tiêu đề HTTP và siêu dữ liệu của phản hồi.
+5. Giai đoạn `5`: nội dung phản hồi.
+6. Giai đoạn `6`: toàn bộ phản hồi.
+
+Sau Decision hướng phản hồi, Defender áp dụng việc viết lại tiêu đề HTTP hoặc nội dung, chặn, vô hiệu bộ nhớ đệm hoặc làm hết hạn cookie, rồi phục hồi cách mã hóa nội dung trước khi trả cho máy khách.
+
+## Target và Engine
+
+[Target](CoreConcepts/Target.md) chỉ đọc dữ liệu khi giai đoạn khớp. Nếu có [Pattern](CoreConcepts/Pattern.md), Defender gọi bộ trích xuất theo tên Pattern. Nếu Target dạng mảng dùng [Wordlist](CoreConcepts/Wordlist.md), mỗi dòng được xem là khóa cần đọc.
+
+Giá trị sau đó đi qua [Engine](CoreConcepts/Engine.md). Chuỗi Engine dừng khi kiểu dữ liệu không khớp.
+
+## Rule và Principle
+
+[Rule](CoreConcepts/Rule.md) so sánh giá trị cuối với giá trị đối chiếu. Trong Principle, các Rule kết hợp bằng AND. Defender chỉ chạy Action sau khi toàn bộ Rule khớp.
+
+Principle được chạy theo cấp độ tăng dần. Action `level` có thể mở rộng hoặc thu hẹp phần Principle còn lại trong giai đoạn mà không chạy lại phần đã qua.
+
+## Action và Decision
+
+[Action](CoreConcepts/Action.md) chạy trong Principle và có thể ghi nhật ký/báo cáo, đặt biến, cộng điểm hoặc chặn ngay. [Decision](CoreConcepts/Decision.md) chạy sau Principle và dùng tổng điểm.
+
+Sự phân biệt này giúp chính sách tách việc phát hiện khỏi phán quyết: nhiều Rule có thể cộng điểm trước khi một Decision quyết định cho phép, chặn hoặc viết lại dữ liệu.
+
+## Report và tệp điều tra
+
+Action `report` ghi [Report](CoreConcepts/Report.md) vào cơ sở dữ liệu. Decision `save` ghi yêu cầu nguyên bản vào `storage/requests`. Nhật ký tường lửa mặc định có thể nằm ở `storage/logs/firewall.log`.
+
+Các dữ liệu này có thể chứa thông tin bí mật và nội dung người dùng; xem [Bảo mật](Security.md#dữ-liệu-waf-và-quyền-riêng-tư).
+
+## Chạy thủ công
+
+Xem [Cài đặt Defender thủ công](Installation.md#4-defender). Cơ sở dữ liệu phải được Manager chạy migration và tạo dữ liệu khởi đầu trước.
+
+## Kiểm thử thay đổi
+
+Từ thư mục `defender`:
+
+```powershell
+go test ./...
 ```
 
-## Máy chủ proxy
+Khi sửa firewall, chạy tối thiểu:
 
-Máy chủ proxy là cổng mà máy khách gửi truy cập vào. Defender xử lý truy cập
-qua WAF rồi chuyển tiếp tới ứng dụng phía sau nếu yêu cầu được cho qua.
-
-Cổng mặc định khi chạy thủ công:
-
-```text
-9948
+```powershell
+go test ./internal/firewall/...
 ```
 
-Khi triển khai bằng Orchestrator, cổng proxy lấy từ bản ghi Defender trong
-Manager.
-
-## Bộ máy WAF
-
-Bộ máy WAF đọc cấu hình từ cơ sở dữ liệu và áp dụng các nguyên tắc được gắn với
-Defender. Mỗi nguyên tắc gồm nhiều quy tắc, mỗi quy tắc có điều kiện khớp và
-hành động tương ứng.
-
-## Pha xử lý yêu cầu
-
-Defender có thể xử lý cả yêu cầu và phản hồi. Trong mỗi pha, Defender lấy dữ
-liệu liên quan, so khớp với mẫu đã cấu hình và quyết định hành động cần thực
-hiện.
-
-## Khớp quy tắc
-
-Quy tắc nên được viết đủ hẹp để tránh chặn nhầm truy cập hợp lệ. Khi kiểm thử
-quy tắc mới, nên bắt đầu bằng hành động ghi nhận trước, sau đó mới chuyển sang
-hành động chặn nếu kết quả phù hợp.
-
-## Hành động
-
-Hành động cho Defender biết cách xử lý khi quy tắc khớp. Các hành động thường
-gặp:
-
-- cho qua truy cập
-- chặn truy cập
-- ghi nhận để điều tra
-- tạo báo cáo hoặc nhật ký
-
-## Quyết định và báo cáo
-
-Quyết định cho biết Defender đã xử lý một yêu cầu hoặc phản hồi như thế nào.
-Báo cáo cung cấp dữ liệu rộng hơn để theo dõi tình hình và điều tra sự kiện.
-
-Khi cần kiểm tra một sự kiện, nên bắt đầu từ quyết định, sau đó xem báo cáo và
-nhật ký liên quan.
-
-## Nhật ký và tệp lỗi
-
-Nhật ký và tệp lỗi giúp xác định Defender có khởi động đúng không, có đọc được
-cấu hình không, có kết nối được cơ sở dữ liệu không và có chuyển tiếp được về
-ứng dụng phía sau không.
-
-Khi Defender được Orchestrator triển khai, các tệp này thường nằm trong volume
-riêng của từng Defender.
-
-## Tạo TLS
-
-Defender có thể tạo chứng chỉ TLS để Manager xác minh kết nối. Nếu
-`DEFENDER_SERVER_TLS_SKIP_VERIFY=false`, Manager cần đọc được tệp `.crt` của
-Defender trong thư mục được cấu hình.
-
-## Biến môi trường
-
-Khi chạy thủ công, Defender cần các biến sau:
-
-```text
-DATABASE_HOST
-DATABASE_PORT
-DATABASE_NAME
-DATABASE_USER
-DATABASE_PASS
-DEFENDER_NAME
-PROXY_BACKEND_URL
-```
-
-Khi chạy qua Orchestrator, các giá trị này được tạo từ bản ghi Defender và cấu
-hình chung của hệ thống.
+Thay đổi Pattern, phép so sánh, Action hoặc Decision cần kiểm thử cả dữ liệu đầu vào, kết quả giao dịch HTTP và dữ liệu báo cáo.

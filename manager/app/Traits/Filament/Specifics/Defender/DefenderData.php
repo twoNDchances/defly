@@ -190,7 +190,7 @@ trait DefenderData
             ['key' => 'SERVER_CONTROLLER_METHOD_IMPLEMENT', 'value' => 'put'],
             ['key' => 'SERVER_CONTROLLER_METHOD_SUSPEND', 'value' => 'delete'],
             ['key' => 'SERVER_CONTROLLER_AUTHORIZATION_EMAIL', 'value' => 'X-Executor'],
-            ['key' => 'SERVER_SECURITY_MANAGER', 'value' => 'manager'],
+            ['key' => 'SERVER_SECURITY_MANAGER', 'value' => 'worker'],
             ['key' => 'SERVER_SECURITY_USERNAME', 'value' => 'defly-defender'],
             ['key' => 'SERVER_SECURITY_PASSWORD', 'value' => 'P@55w0rd'],
         ];

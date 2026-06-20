@@ -1,75 +1,94 @@
 # Bảo mật
 
-Defly quản lý chính sách bảo vệ ứng dụng web, nên cấu hình bảo mật cần được
-kiểm tra kỹ trước khi vận hành thật.
+Defly vừa quản lý chính sách bảo mật vừa có quyền điều khiển Docker, vì vậy cần bảo vệ cả lớp điều khiển lẫn dữ liệu WAF.
 
-## Mô hình xác thực
+## Ranh giới tin cậy
 
-Manager là nơi quản lý người dùng, nhóm và quyền. Người dùng đăng nhập vào
-Manager để cấu hình mục tiêu, quy tắc, nguyên tắc và Defender.
+| Ranh giới | Cơ chế chính |
+| --- | --- |
+| Người dùng -> giao diện Manager | Xác thực Laravel/Filament và [Permission](CoreConcepts/Permission.md). |
+| Máy khách -> Manager API | Basic Auth và [Key](CoreConcepts/Key.md). |
+| Worker -> Orchestrator | Basic Auth, danh sách bên gọi được phép và TLS. |
+| Manager -> Defender API | Authorization nội bộ và TLS. |
+| Orchestrator -> Docker | Docker socket hoặc API đặc quyền cao. |
+| Máy khách -> Defender proxy | Chính sách WAF và cấu hình TLS/proxy. |
 
-API của Manager dùng khóa API theo cấu hình `TOKEN_KEY_NAME`, mặc định là:
+## Người dùng, nhóm và quyền
 
-```text
-X-Token-Key
-```
+Áp dụng nguyên tắc quyền tối thiểu qua [Group](CoreConcepts/Group.md). Tách ít nhất các vai trò:
 
-Manager hoặc tiến trình hàng đợi gọi Orchestrator bằng Basic Auth.
+- Quản trị người dùng/khóa.
+- Xây dựng và kiểm tra chính sách.
+- Áp dụng chính sách và triển khai Defender.
+- Xem báo cáo chứa dữ liệu nhạy cảm.
 
-## Mô hình phân quyền
+Rà soát định kỳ người dùng không còn hoạt động và thành viên trong nhóm.
 
-Nên cấp quyền theo nhóm, tránh cấp quyền trực tiếp cho từng người dùng nếu
-không cần thiết. Các quyền nhạy cảm như triển khai Defender, hủy triển khai,
-quản lý khóa API và quản lý người dùng nên được giới hạn cho nhóm vận hành phù
-hợp.
-
-## TLS giữa các dịch vụ
-
-Manager có thể xác minh TLS khi gọi Orchestrator và Defender.
-
-Các biến quan trọng:
-
-```text
-ORCHESTRATOR_TLS_SKIP_VERIFY
-ORCHESTRATOR_TLS_CERT_FILE
-DEFENDER_SERVER_TLS_SKIP_VERIFY
-DEFENDER_SERVER_TLS_DIRECTORY
-```
-
-Trong môi trường vận hành thật, nên xác minh TLS bằng chứng chỉ tin cậy thay vì
-bỏ qua xác minh.
-
-## Rủi ro Docker socket và Docker API
-
-Docker socket và Docker API có quyền rất mạnh. Nếu kẻ tấn công truy cập được,
-họ có thể tạo container, đọc volume hoặc thay đổi hệ thống.
-
-Khuyến nghị:
-
-- không mở TCP Docker API ra mạng công khai
-- chỉ bật TCP Docker API trên máy phát triển cục bộ đáng tin cậy
-- giới hạn mạng có thể truy cập Orchestrator
-- bảo vệ máy chạy Orchestrator như một thành phần có đặc quyền cao
-
-## Dữ liệu nhạy cảm
+## Thông tin xác thực và bí mật
 
 Không đưa các dữ liệu sau vào kho mã nguồn:
 
-- tệp `.env` thật
-- mật khẩu thật
-- khóa API thật
-- khóa riêng TLS
-- tệp bí mật được sinh ra
-- dữ liệu sao lưu cơ sở dữ liệu
+- `.env` thật.
+- Mật khẩu cơ sở dữ liệu hoặc Orchestrator.
+- API token.
+- Khóa bí mật TLS.
+- Tệp bí mật Django.
+- Bản sao cơ sở dữ liệu hoặc báo cáo từ môi trường thật.
 
-## Danh sách kiểm tra cho môi trường vận hành thật
+Token Manager API được băm khi lưu. Vì không thể đọc lại token gốc, hãy phân phối một lần qua kênh an toàn và thu hồi khi mất kiểm soát.
 
-- Đặt `APP_DEBUG=false`.
-- Đặt `APP_KEY` ổn định và không chia sẻ công khai.
-- Đặt mật khẩu cơ sở dữ liệu đủ mạnh.
-- Đặt mật khẩu Orchestrator đủ mạnh.
-- Xác minh TLS giữa Manager, Orchestrator và Defender.
-- Hạn chế đường mạng tới Docker API.
-- Xoay vòng khóa API và mật khẩu theo lịch.
-- Sao lưu cơ sở dữ liệu định kỳ.
-- Kiểm tra quyền người dùng và nhóm sau mỗi lần thay đổi nhân sự.
+## TLS giữa các dịch vụ
+
+Trong môi trường thật, đặt:
+
+```text
+ORCHESTRATOR_TLS_SKIP_VERIFY=false
+DEFENDER_SERVER_TLS_SKIP_VERIFY=false
+```
+
+Manager phải đọc đúng chứng chỉ `.crt`. Khóa bí mật chỉ cần ở máy chủ tương ứng. Không dùng chứng chỉ tự ký thiếu quản lý vòng đời cho hệ thống phân tán lâu dài.
+
+## Tiến trình nền Docker
+
+Tiến trình Docker có thể tạo container đặc quyền, gắn hệ thống tệp và đọc ổ dữ liệu. Cần xem Orchestrator như một thành phần có quyền cao trên máy chủ.
+
+- Ưu tiên Unix socket trên máy chủ được kiểm soát.
+- Không mở TCP `2375` ra mạng công khai.
+- Nếu dùng TCP, đặt sau mạng riêng và TLS/mTLS phù hợp.
+- Giới hạn máy chủ có thể gọi Orchestrator.
+- Theo dõi container và image ngoài dự kiến.
+
+## Dữ liệu WAF và quyền riêng tư
+
+[Report](CoreConcepts/Report.md), hành động ghi nhật ký và Decision `save` có thể lưu tiêu đề HTTP, cookie, token, nội dung hoặc dữ liệu cá nhân.
+
+- Chỉ thu thập phần cần điều tra.
+- Hạn chế quyền xem báo cáo và ổ dữ liệu.
+- Đặt thời hạn lưu giữ và quy trình xóa.
+- Mã hóa bản sao lưu.
+- Không gửi dữ liệu nhạy cảm qua Action `request` nếu điểm nhận không đáng tin.
+
+## An toàn chính sách
+
+Một [Rule](CoreConcepts/Rule.md) hoặc [Decision](CoreConcepts/Decision.md) sai có thể chặn lưu lượng hợp lệ.
+
+Quy trình khuyến nghị:
+
+1. Kiểm thử Target và Engine bằng dữ liệu đại diện.
+2. Bắt đầu bằng Action `log`, `report` hoặc `suspect`.
+3. Kiểm tra [Principle](CoreConcepts/Principle.md).
+4. Áp dụng trên môi trường thử nghiệm.
+5. Theo dõi trường hợp nhận diện nhầm.
+6. Chỉ chuyển sang chặn/hủy khi có tiêu chí khôi phục rõ ràng.
+
+## Danh sách kiểm tra môi trường thật
+
+- `APP_DEBUG=false`.
+- Bí mật và mật khẩu đủ mạnh, có lịch xoay vòng.
+- Bật xác minh TLS giữa các dịch vụ.
+- Docker API không mở công khai.
+- Cơ sở dữ liệu và ổ dữ liệu được sao lưu.
+- Báo cáo/yêu cầu nguyên bản có thời hạn lưu giữ.
+- Người dùng/nhóm/quyền được rà soát.
+- Principle đã có trạng thái `passed` và Decision được kiểm thử ở cả hai hướng.
+- Có cách bỏ qua hoặc khôi phục chính sách khi chặn nhầm.

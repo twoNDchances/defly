@@ -1,114 +1,109 @@
 # Khắc phục sự cố
 
-Phần này liệt kê các lỗi thường gặp và hướng kiểm tra nhanh.
+Chẩn đoán theo tuyến [Manager](Manager-Guide.md) -> Worker -> [Orchestrator](Orchestrator-Guide.md) -> Docker -> [Defender](CoreConcepts/Defender.md) -> máy chủ phía sau -> chính sách. Dừng tại lớp đầu tiên bị lỗi.
 
-## Manager không kết nối được Orchestrator
-
-Kiểm tra:
-
-- `ORCHESTRATOR_BASE_URL` có đúng không
-- tên máy hoặc DNS có phân giải được không
-- `ORCHESTRATOR_USERNAME` và `ORCHESTRATOR_PASSWORD` có khớp không
-- Orchestrator có cho phép máy gọi trong `SERVER_MANAGER` không
-- cấu hình TLS và tệp `.crt` có đúng không
-- tiến trình hàng đợi có đang chạy không
-
-## Orchestrator không truy cập được Docker
+## Manager không gọi được Orchestrator
 
 Kiểm tra:
 
-- `SERVER_DOCKER_BASE_URL` có đúng không
-- Docker Desktop đã bật TCP Docker API chưa, nếu dùng `tcp://localhost:2375`
-- tiến trình Orchestrator có quyền đọc `/var/run/docker.sock` không, nếu dùng
-  Linux
-- Orchestrator có chạy trong môi trường nhìn thấy Docker daemon không
+- `ORCHESTRATOR_BASE_URL` và DNS.
+- Basic Auth hai phía có khớp không.
+- Bên gọi có nằm trong `SERVER_MANAGER` không.
+- Đường dẫn/phương thức triển khai, theo dõi, hủy có giống nhau không.
+- Chứng chỉ TLS và `ORCHESTRATOR_TLS_SKIP_VERIFY`.
+- Worker có đang chạy không.
 
-## Không tìm thấy image Defender
-
-Triệu chứng thường gặp là triển khai thất bại vì Docker không tìm thấy
-`SERVER_DEFENDER_IMAGE`.
-
-Cách xử lý:
+Xem nhật ký:
 
 ```powershell
-docker compose build defender
+docker compose logs -f manager worker orchestrator
 ```
 
-Hoặc dựng trực tiếp:
+## Tác vụ hàng đợi không chạy
+
+Triệu chứng: Manager đã nhận thao tác nhưng trạng thái triển khai không đổi.
 
 ```powershell
-docker build -t defly-defender:latest ./defender
-```
-
-Sau đó kiểm tra lại giá trị `SERVER_DEFENDER_IMAGE`.
-
-## Xác minh chứng chỉ TLS thất bại
-
-Kiểm tra:
-
-- đường dẫn `.crt` trong `ORCHESTRATOR_TLS_CERT_FILE`
-- thư mục trong `DEFENDER_SERVER_TLS_DIRECTORY`
-- junction hoặc symlink có trỏ đúng thư mục không
-- volume TLS có được gắn đúng khi chạy bằng Docker Compose không
-- tên tệp chứng chỉ Defender có khớp với `DEFENDER_NAME` không
-
-Khi phát triển cục bộ, có thể tạm đặt biến bỏ qua xác minh TLS. Không nên dùng
-cách này cho môi trường vận hành thật.
-
-## Kết nối cơ sở dữ liệu thất bại
-
-Kiểm tra:
-
-- `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD`
-- `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASS`, `DB_NAME` bên Orchestrator
-- `DATABASE_HOST`, `DATABASE_PORT`, `DATABASE_NAME`, `DATABASE_USER`,
-  `DATABASE_PASS` bên Defender
-- MariaDB hoặc MySQL có đang chạy không
-- migration của Manager đã chạy chưa
-
-## Tác vụ hàng đợi bị kẹt
-
-Kiểm tra:
-
-- dịch vụ `worker` có đang chạy không
-- `QUEUE_CONNECTION=database` có đúng không
-- bảng hàng đợi trong cơ sở dữ liệu có tồn tại không
-- nhật ký của `worker`
-- nhật ký của Manager khi tạo tác vụ
-
-Lệnh xem nhật ký:
-
-```powershell
+docker compose ps worker
 docker compose logs -f worker
 ```
 
-## Cổng đã được sử dụng
+Kiểm tra `QUEUE_CONNECTION`, bảng hàng đợi, thời gian chờ/số lần thử và kết nối cơ sở dữ liệu. Khởi động lại Worker sau khi đổi biến môi trường hoặc mã nguồn tác vụ.
 
-Nếu Docker không mở được cổng `80` hoặc `443`, đổi:
+## Orchestrator không truy cập Docker
 
-```text
-MANAGER_HTTP_PORT
-MANAGER_HTTPS_PORT
+Kiểm tra `SERVER_DOCKER_BASE_URL`, quyền socket và khả năng truy cập tiến trình Docker từ môi trường chạy Orchestrator.
+
+Với Docker Desktop, TCP `2375` phải được bật nếu cấu hình dùng TCP. Chỉ dùng cách này trên máy phát triển tin cậy.
+
+## Không tìm thấy image Defender
+
+```powershell
+docker compose build defender
+docker image inspect defly-defender:latest
 ```
 
-Nếu Defender không mở được cổng proxy, đổi cổng trong bản ghi Defender rồi
-triển khai lại.
+Tên image được kiểm tra phải khớp `SERVER_DEFENDER_IMAGE`.
 
-## Lỗi quyền trên thư mục lưu trữ
+## Defender không thuộc dự án Compose
 
-Kiểm tra:
+Kiểm tra nhãn và mạng:
 
-- volume có được gắn đúng không
-- thư mục `storage` có quyền ghi không
-- người dùng chạy container hoặc tiến trình có quyền ghi không
-- tệp sinh ra có bị khóa bởi tiến trình khác không
+```powershell
+docker inspect <defender-container>
+```
 
-## Defender không chuyển tiếp được về ứng dụng phía sau
+Container cần có `com.docker.compose.project`, `com.docker.compose.service`, `com.docker.compose.config-hash` và mạng `${COMPOSE_PROJECT_NAME}_infrastructure`. Hãy triển khai lại Defender sau khi nâng cấp Orchestrator có logic nhận diện ngữ cảnh Compose.
 
-Kiểm tra:
+## Cổng bị sử dụng
 
-- `PROXY_BACKEND_URL` có đúng không
-- Defender có cùng mạng với ứng dụng phía sau không
-- ứng dụng phía sau có đang chạy không
-- quy tắc WAF có đang chặn yêu cầu không
-- nhật ký và quyết định của Defender ghi gì
+Nếu Manager không mở được cổng `80/443`, đổi `MANAGER_HTTP_PORT` hoặc `MANAGER_HTTPS_PORT`.
+
+Nếu Defender triển khai lỗi do cổng, đổi `proxy_port` trong bản ghi [Defender](CoreConcepts/Defender.md), rồi triển khai lại. Không dùng cùng cổng máy chủ cho hai Defender.
+
+## Kết nối cơ sở dữ liệu thất bại
+
+Đối chiếu ba bộ tên biến:
+
+- Manager: `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD`.
+- Orchestrator: `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASS`.
+- Defender: `DATABASE_HOST`, `DATABASE_PORT`, `DATABASE_NAME`, `DATABASE_USER`, `DATABASE_PASS`.
+
+Chạy migration từ Manager. Không tạo lược đồ riêng từ Orchestrator hoặc Defender.
+
+## Xác minh TLS thất bại
+
+Kiểm tra chứng chỉ tồn tại, chưa hết hạn, đúng tên máy chủ và bên gọi đọc được. Với Defender, tên tệp phải khớp tên Defender mà Manager dùng để tìm chứng chỉ.
+
+Chỉ tạm bỏ qua xác minh để phân biệt lỗi tin cậy trong môi trường cục bộ; sau đó sửa chứng chỉ thay vì giữ cấu hình không an toàn.
+
+## Defender không gọi được máy chủ phía sau
+
+Kiểm tra theo thứ tự:
+
+1. `PROXY_BACKEND_URL`.
+2. Máy chủ phía sau đang lắng nghe đúng địa chỉ/cổng.
+3. DNS bên trong container.
+4. Defender và máy chủ phía sau có mạng chung hoặc tuyến phù hợp.
+5. Thời gian chờ/TLS của proxy.
+6. Chính sách có chặn/hủy yêu cầu không.
+
+## Yêu cầu bị chặn ngoài ý muốn
+
+1. Xem [Report](CoreConcepts/Report.md) và chi tiết Rule.
+2. Xác định giá trị Target sau chuỗi Engine.
+3. Kiểm tra phép so sánh, cờ đảo kết quả và Wordlist.
+4. Kiểm tra toàn bộ Rule trong [Principle](CoreConcepts/Principle.md).
+5. Kiểm tra Action nào cộng điểm.
+6. Kiểm tra [Decision](CoreConcepts/Decision.md) nào khớp điểm.
+7. Dùng [Timeline](CoreConcepts/Timeline.md) để tìm thay đổi gần nhất.
+
+Tạm chuyển hành động chặn sang ghi nhật ký/tạo báo cáo hoặc thu hồi Principle nếu cần khôi phục lưu lượng.
+
+## Không có Report
+
+Report chỉ được tạo khi Action `report` thực sự chạy. Kiểm tra Rule/Principle có khớp, Action có nằm sau `allow`/`deny` không, chuỗi kết nối cơ sở dữ liệu của Defender và nhật ký lỗi tạo báo cáo.
+
+## Lỗi quyền vùng lưu trữ
+
+Kiểm tra đường gắn, người sở hữu và quyền ghi của `storage/errors`, `storage/logs`, `storage/requests`, tệp Wordlist và TLS. Việc tạo lại container không sửa được quyền sai trong ổ dữ liệu.

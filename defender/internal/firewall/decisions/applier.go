@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"time"
 )
 
 type Applier struct{}
@@ -91,12 +92,32 @@ func (Applier) ApplyResponse(tx interface {
 		response.Header.Set("Expires", "0")
 	}
 	if result.EraseCookies {
-		response.Header.Del("Set-Cookie")
+		eraseCookies(tx, response)
 	}
 	if result.BodyRewritten {
 		tx.SetResponseBody(result.BodyRewrite)
 	}
 	return nil
+}
+
+func eraseCookies(tx Transaction, response *http.Response) {
+	if response == nil {
+		return
+	}
+	response.Header.Del("Set-Cookie")
+	request := tx.RequestObject()
+	if request == nil {
+		return
+	}
+	for _, cookie := range request.Cookies() {
+		response.Header.Add("Set-Cookie", (&http.Cookie{
+			Name:    cookie.Name,
+			Value:   "",
+			Path:    "/",
+			Expires: time.Unix(0, 0).UTC(),
+			MaxAge:  -1,
+		}).String())
+	}
 }
 
 func applyRequestMutation(tx interface {

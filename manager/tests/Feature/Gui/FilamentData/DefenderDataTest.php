@@ -17,6 +17,7 @@ class DefenderDataTest extends TestCase
 
         $this->assertSame('db', $saved['environment_variables']['DATABASE_HOST']);
         $this->assertSame('9443', $saved['environment_variables']['SERVER_PORT']);
+        $this->assertSame('worker', $saved['environment_variables']['SERVER_SECURITY_MANAGER']);
         $this->assertArrayHasKey('common_environment_variables', FilamentDefenderDataHarness::loadForm($saved));
     }
 }

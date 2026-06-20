@@ -340,7 +340,12 @@ func sendRequest(config map[string]any, client *http.Client) {
 		return
 	}
 	method := strings.ToUpper(stringConfig(config, "method", http.MethodGet))
-	body := strings.NewReader(stringConfig(config, "body", ""))
+	bodyText := stringConfig(config, "body", "")
+	requestURL = urlWithBodyQuery(requestURL, method, bodyText)
+	var body io.Reader
+	if method != http.MethodGet {
+		body = strings.NewReader(bodyText)
+	}
 	request, err := http.NewRequest(method, requestURL, body)
 	if err != nil {
 		log.Println(err)
@@ -359,6 +364,28 @@ func sendRequest(config map[string]any, client *http.Client) {
 	}
 	_, _ = io.Copy(io.Discard, response.Body)
 	_ = response.Body.Close()
+}
+
+func urlWithBodyQuery(requestURL string, method string, body string) string {
+	if method != http.MethodGet || strings.TrimSpace(body) == "" {
+		return requestURL
+	}
+	parsedURL, err := url.Parse(requestURL)
+	if err != nil {
+		return requestURL
+	}
+	bodyQuery, err := url.ParseQuery(body)
+	if err != nil {
+		return requestURL
+	}
+	query := parsedURL.Query()
+	for key, values := range bodyQuery {
+		for _, value := range values {
+			query.Add(key, value)
+		}
+	}
+	parsedURL.RawQuery = query.Encode()
+	return parsedURL.String()
 }
 
 func logClientIP(tx Transaction) string {

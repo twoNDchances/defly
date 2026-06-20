@@ -1,50 +1,54 @@
 # Tổng quan
 
-Defly là một hệ thống tường lửa ứng dụng web (WAF) mã nguồn mở. Hệ thống này
-giúp quản lý chính sách bảo vệ, triển khai Defender và áp dụng các chính sách
-đó lên luồng truy cập đi qua proxy.
+Defly là một tường lửa ứng dụng web gồm nhiều dịch vụ. Hệ thống tách [Manager](Manager-Guide.md) quản trị chính sách, [Orchestrator](Orchestrator-Guide.md) điều phối container và [Defender](CoreConcepts/Defender.md) xử lý lưu lượng để mỗi trách nhiệm có ranh giới rõ ràng.
 
 ## Defly giải quyết vấn đề gì
 
-Defly gom giao diện quản trị, bộ điều phối triển khai và Defender vào cùng một
-kho mã nguồn. Cách tổ chức này giúp việc cấu hình quy tắc, triển khai Defender
-và vận hành WAF nhất quán hơn giữa môi trường phát triển cục bộ và môi trường
-Docker.
+Defly hỗ trợ:
 
-Các tình huống sử dụng chính:
+- Quản lý người dùng, quyền và khóa API cho hệ thống bảo mật.
+- Xây dựng chính sách từ dữ liệu HTTP đến hành động bảo vệ.
+- Triển khai nhiều WAF cho nhiều máy chủ phía sau.
+- Theo dõi báo cáo, trạng thái và lịch sử thay đổi.
+- Chạy toàn bộ hệ thống bằng Docker Compose hoặc phát triển từng dịch vụ độc lập.
 
-- Quản lý người dùng, nhóm, quyền và khóa API cho hệ thống bảo vệ ứng dụng web.
-- Tạo mục tiêu, bộ máy xử lý, mẫu khớp, danh sách từ, hành động, quy tắc và
-  nguyên tắc cho WAF.
-- Triển khai nhiều Defender từ Manager thông qua Orchestrator.
-- Đưa truy cập đi qua Defender để ghi quyết định, báo cáo, nhật ký và áp dụng
-  hành động bảo vệ.
-- Vận hành toàn bộ hệ thống bằng Docker Compose hoặc cài thủ công khi phát
-  triển từng dịch vụ.
+Nếu chưa biết cấu trúc chính sách, xem [Các khái niệm cốt lõi](CoreConcepts/README.md).
 
-## Các dịch vụ chính
+## Thành phần
 
-- `manager`: ứng dụng Laravel/Filament dùng để quản trị người dùng, quyền,
-  mục tiêu, bộ máy xử lý, quy tắc, nguyên tắc, quyết định, Defender, báo cáo và
-  dòng thời gian.
-- `orchestrator`: dịch vụ Django ASGI được Manager gọi để triển khai, theo dõi
-  nhật ký và hủy container Defender thông qua Docker.
-- `defender`: chương trình Go chạy API điều khiển Defender, bộ máy WAF và proxy
-  ngược cho lưu lượng cần bảo vệ.
-- `mariadb`: cơ sở dữ liệu dùng chung cho Manager, Orchestrator, tiến trình hàng
-  đợi và các Defender đã triển khai.
-- `worker`: tiến trình hàng đợi Laravel xử lý các tác vụ nền, đặc biệt là triển
-  khai, hủy triển khai và theo dõi nhật ký từ Manager sang Orchestrator.
+| Dịch vụ | Trách nhiệm |
+| --- | --- |
+| [Manager](Manager-Guide.md) | Giao diện Laravel/Filament và API quản trị cấu hình, quyền, chính sách, Defender và báo cáo. |
+| Worker | Xử lý hàng đợi Laravel cho các thao tác như triển khai, hủy và theo dõi nhật ký. |
+| [Orchestrator](Orchestrator-Guide.md) | Nhận yêu cầu từ Worker, điều khiển Docker và cập nhật trạng thái triển khai. |
+| [Defender](CoreConcepts/Defender.md) | Proxy ngược và WAF thực thi chính sách trên yêu cầu/phản hồi HTTP. |
+| MariaDB | Cơ sở dữ liệu chung có lược đồ do Manager sở hữu; các dịch vụ đọc hoặc ghi theo trách nhiệm. |
 
-## Luồng hoạt động tổng quan
+[Defender](CoreConcepts/Defender.md) là cả khái niệm cấu hình trong Manager và tiến trình Go chạy thực tế.
 
-1. Quản trị viên cấu hình mục tiêu, bộ máy xử lý, mẫu khớp, hành động, quy tắc
-   và nguyên tắc trong Manager.
-2. Manager lưu cấu hình vào MariaDB và tạo tác vụ nền khi cần triển khai
-   Defender.
-3. Tiến trình hàng đợi gọi Orchestrator bằng Basic Auth và gửi kèm email của
-   người thực hiện.
-4. Orchestrator dùng Docker API để tạo hoặc cập nhật container Defender.
-5. Defender đọc cấu hình từ cơ sở dữ liệu, mở API điều khiển và mở cổng proxy.
-6. Lưu lượng đi qua proxy của Defender, bộ máy WAF khớp quy tắc rồi ghi quyết
-   định và báo cáo.
+## Hai luồng chính
+
+### Luồng cấu hình và triển khai
+
+1. [User](CoreConcepts/User.md) tạo chính sách và bản ghi Defender trong Manager.
+2. Manager lưu dữ liệu vào MariaDB.
+3. Worker gọi Orchestrator bằng Basic Auth.
+4. Orchestrator tạo container Defender trên máy chủ Docker.
+5. Defender đọc chính sách đã được áp dụng từ cơ sở dữ liệu.
+
+### Luồng lưu lượng
+
+1. Máy khách gửi yêu cầu tới cổng proxy của Defender.
+2. Defender xử lý ba giai đoạn của yêu cầu.
+3. Các [Principle](CoreConcepts/Principle.md) đánh giá quy tắc và chạy hành động.
+4. Các [Decision](CoreConcepts/Decision.md) hướng yêu cầu được xét theo điểm.
+5. Nếu được phép, yêu cầu đi đến máy chủ phía sau.
+6. Phản hồi quay lại qua ba giai đoạn phản hồi và Decision hướng phản hồi.
+7. Defender trả dữ liệu cho máy khách và có thể tạo [Report](CoreConcepts/Report.md).
+
+## Nên đọc tiếp gì
+
+- Muốn chạy thử: [Bắt đầu nhanh](Getting-Started.md).
+- Muốn hiểu hệ thống: [Kiến trúc](Architecture.md).
+- Muốn tạo chính sách: [Các khái niệm cốt lõi](CoreConcepts/README.md).
+- Muốn triển khai thật: [Cài đặt](Installation.md), [Cấu hình](Configuration.md) và [Bảo mật](Security.md).

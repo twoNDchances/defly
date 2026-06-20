@@ -1,104 +1,160 @@
-# Tài liệu tham chiếu API
+# Tham chiếu API
 
-Phần này mô tả các nhóm API chính của Defly. Chi tiết từng yêu cầu và phản hồi
-cần được bổ sung thêm khi giao kèo API ổn định.
+Defly có API của [Manager](Manager-Guide.md), [Orchestrator](Orchestrator-Guide.md) và [Defender](CoreConcepts/Defender.md), mỗi API có mục đích cùng cơ chế xác thực khác nhau. Tất cả ví dụ dưới đây dùng tiền tố mặc định; xem [Cấu hình](Configuration.md) nếu hệ thống đã đổi đường dẫn hoặc phương thức.
 
 ## Manager API
 
-Manager API phục vụ các tích hợp gọi vào hệ thống quản trị. Tiền tố mặc định:
+Đường dẫn gốc mặc định:
 
 ```text
-v1
+/api/v1
 ```
 
-Khóa API mặc định được gửi qua tiêu đề HTTP:
+### Xác thực
+
+Mỗi yêu cầu cần đồng thời:
+
+1. HTTP Basic Auth, tên đăng nhập là email [User](CoreConcepts/User.md) và mật khẩu là mật khẩu người dùng.
+2. [Key](CoreConcepts/Key.md) thuộc chính người dùng đó, mặc định nằm trong tiêu đề HTTP `X-Token-Key`.
+
+Ví dụ:
+
+```powershell
+$headers = @{
+    Accept = "application/json"
+    "X-Token-Key" = "<api-token>"
+}
+
+Invoke-RestMethod `
+    -Uri "https://localhost/api/v1/me" `
+    -Authentication Basic `
+    -Credential (Get-Credential) `
+    -Headers $headers
+```
+
+Key phải chưa hết hạn. Basic Auth đúng nhưng thiếu hoặc sai khóa vẫn trả `401`.
+
+### Thao tác thêm, đọc, sửa, xóa tài nguyên
+
+Các tài nguyên chính:
 
 ```text
-X-Token-Key
+users
+groups
+permissions
+labels
+wordlists
+patterns
+engines
+targets
+actions
+rules
+principles
+decisions
+defenders
+timelines
 ```
 
-Các giá trị này có thể đổi bằng `API_PREFIX` và `TOKEN_KEY_NAME` trong cấu hình
-Manager.
+Các thao tác thông thường dùng:
+
+| Phương thức | Đường dẫn | Ý nghĩa |
+| --- | --- | --- |
+| `GET` | `/{resources}` | Danh sách có phân trang. |
+| `POST` | `/{resources}` | Tạo mới. |
+| `GET` | `/{resources}/{id}` | Xem chi tiết. |
+| `PUT` | `/{resources}/{id}` | Thay toàn bộ dữ liệu bắt buộc. |
+| `PATCH` | `/{resources}/{id}` | Cập nhật một phần. |
+| `DELETE` | `/{resources}/{id}` | Xóa. |
+
+`patterns` chỉ hỗ trợ liệt kê/xem. `timelines` chỉ hỗ trợ liệt kê/xem/xóa.
+
+Nhiều tài nguyên có `GET /{resources}/payload` để trả ví dụ yêu cầu theo giao kèo hiện tại.
+
+### Quan hệ
+
+Quan hệ dùng mẫu đường dẫn:
+
+| Phương thức | Đường dẫn | Ý nghĩa |
+| --- | --- | --- |
+| `GET` | `/{resources}/{id}/{relation}` | Danh sách liên kết. |
+| `POST` | `/{resources}/{id}/{relation}` | Gắn các ID. |
+| `DELETE` | `/{resources}/{id}/{relation}` | Gỡ các ID. |
+
+Dữ liệu gửi khi gắn/gỡ thường chứa:
+
+```json
+{
+  "ids": ["<uuid-1>", "<uuid-2>"]
+}
+```
+
+Ví dụ quan hệ: người dùng-quyền, nhóm-người dùng, Target-Engine, Rule-Action, Principle-Rule, tài nguyên-Label và Defender-Principle/Decision.
+
+### Điểm cuối chính sách và Defender
+
+| Phương thức | Đường dẫn | Ý nghĩa |
+| --- | --- | --- |
+| `POST` | `/principles/{id}/validate` | Kiểm tra [Principle](CoreConcepts/Principle.md). |
+| `POST` | `/defenders/{id}/deploy` | Tạo tác vụ triển khai. |
+| `POST` | `/defenders/{id}/follow` | Tạo tác vụ theo dõi nhật ký. |
+| `POST` | `/defenders/{id}/cancel` | Tạo tác vụ hủy triển khai. |
+| `POST` | `/defenders/{d}/principles/{p}/apply` | Áp dụng Principle. |
+| `POST` | `/defenders/{d}/principles/{p}/revoke` | Thu hồi Principle. |
+| `POST` | `/defenders/{d}/decisions/{x}/implement` | Cài [Decision](CoreConcepts/Decision.md). |
+| `POST` | `/defenders/{d}/decisions/{x}/suspend` | Tạm ngưng Decision. |
+| `GET` | `/defenders/{d}/reports` | Danh sách [Report](CoreConcepts/Report.md). |
 
 ## Orchestrator API
 
-Orchestrator API nhận yêu cầu từ Manager hoặc tiến trình hàng đợi. Tiền tố mặc
-định:
+Đường dẫn gốc mặc định:
 
 ```text
-api/v1
+/api/v1/deployments/{defender_id}
 ```
 
-Tài nguyên triển khai mặc định:
+API dùng Basic Auth. Thông tin xác thực `ORCHESTRATOR_USERNAME`/`ORCHESTRATOR_PASSWORD` của Manager phải khớp `SERVER_USERNAME`/`SERVER_PASSWORD`.
+
+| Phương thức mặc định | Hành động | Phản hồi điển hình |
+| --- | --- | --- |
+| `POST` | Triển khai Defender | `200`, chi tiết triển khai. |
+| `GET` | Theo dõi nhật ký | `200`, phần nhật ký gần nhất. |
+| `DELETE` | Hủy Defender | `200`, chi tiết hủy. |
+
+Phương thức có thể đổi bằng biến môi trường ở cả hai phía. Orchestrator còn kiểm tra bên gọi qua `SERVER_MANAGER` và nhận email người thực hiện qua tiêu đề HTTP được cấu hình.
+
+Mã lỗi thường gặp:
+
+- `400`: biến môi trường Defender không hợp lệ.
+- `401`/`403`: xác thực hoặc bên gọi không hợp lệ.
+- `404`: Defender, container hoặc nhật ký không tồn tại.
+- `409`: theo dõi khi trạng thái triển khai chưa là `successful`.
+- `500`: Docker hoặc quá trình triển khai thất bại.
+
+## API điều khiển Defender
+
+Địa chỉ gốc mặc định:
 
 ```text
-deployments
+http://<defender-host>:9947/api/v1
 ```
 
-Orchestrator dùng Basic Auth với thông tin xác thực lấy từ:
+API này dùng để đồng bộ chính sách trên một Defender đang chạy:
+
+| Phương thức mặc định | Đường dẫn | Ý nghĩa |
+| --- | --- | --- |
+| `PUT` | `/principles` | Áp dụng Principle. |
+| `DELETE` | `/principles` | Thu hồi Principle. |
+| `PUT` | `/decisions` | Cài Decision. |
+| `DELETE` | `/decisions` | Tạm ngưng Decision. |
+
+Phương thức và đường dẫn có thể đổi bằng biến môi trường máy chủ của Defender. Yêu cầu được bảo vệ bởi lớp xác thực quyền và thông tin người thực thi; API này là nội bộ, không nên công bố ra Internet.
+
+## Tiêu đề HTTP và nội dung dùng chung
 
 ```text
-ORCHESTRATOR_USERNAME
-ORCHESTRATOR_PASSWORD
-SERVER_USERNAME
-SERVER_PASSWORD
+Accept: application/json
+Content-Type: application/json
+Accept-Language: vi
 ```
 
-Các thao tác chính:
-
-- triển khai Defender
-- theo dõi nhật ký
-- hủy triển khai
-
-## Defender API
-
-Defender API là API điều khiển của từng Defender. Manager dùng API này để kiểm
-tra hoặc điều khiển Defender sau khi triển khai.
-
-API này nên được xem là API nội bộ. Không nên mở ra mạng công khai nếu chưa có
-lớp bảo vệ phù hợp.
-
-## Xác thực
-
-Defly dùng nhiều cơ chế xác thực tùy đường đi:
-
-- Người dùng đăng nhập vào Manager qua cơ chế xác thực của Laravel/Filament.
-- Tích hợp gọi Manager API bằng khóa API.
-- Manager hoặc tiến trình hàng đợi gọi Orchestrator bằng Basic Auth.
-- Manager gọi Defender qua API điều khiển, có thể kèm xác minh TLS tùy cấu
-  hình.
-
-## Tiêu đề HTTP thường dùng
-
-Các tiêu đề HTTP quan trọng:
-
-```text
-X-Token-Key
-Authorization
-```
-
-Orchestrator cũng có thể nhận thêm tiêu đề HTTP chứa email người thực hiện, tùy cấu
-hình `SERVER_EMAIL_HEADER_KEY`.
-
-## Ví dụ cần bổ sung
-
-Các ví dụ sau nên được bổ sung khi API ổn định:
-
-- yêu cầu triển khai Defender
-- phản hồi triển khai thành công
-- phản hồi triển khai thất bại
-- yêu cầu theo dõi nhật ký
-- yêu cầu hủy triển khai
-- định dạng lỗi chung
-
-## Mã trạng thái
-
-Các mã trạng thái cần quy ước rõ:
-
-- yêu cầu hợp lệ và xử lý thành công
-- yêu cầu hợp lệ nhưng tác vụ đang chạy
-- dữ liệu gửi lên không hợp lệ
-- xác thực thất bại
-- không có quyền truy cập
-- tài nguyên không tồn tại
-- lỗi nội bộ khi triển khai hoặc gọi Docker
+Manager API hỗ trợ ngôn ngữ qua `Accept-Language`. Lỗi kiểm tra dữ liệu thường trả `422` kèm danh sách lỗi theo trường. Tác vụ triển khai có thể trả thành công ở tầng Manager trước khi Orchestrator hoàn tất, vì vậy cần theo dõi `deployment_status` thay vì chỉ dựa vào phản hồi lúc tạo tác vụ.

@@ -46,7 +46,7 @@ trait EngineValidator
         return [$constraint, 'nullable', Rule::enum(Hash::class)];
     }
 
-    private static function validateSeparator($constraint = 'required_if:type,merge,split')
+    private static function validateSeparator($constraint = 'nullable')
     {
         return [$constraint, 'nullable', 'string', 'max:255'];
     }

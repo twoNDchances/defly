@@ -74,11 +74,13 @@ trait EngineData
 
     public static function saveForm($data)
     {
+        $separator = $data['separator'] ?? null;
+
         $data['configurations'] = match ($data['type']) {
             Type::IndexOf->value => ['position' => $data['position']],
 
             Type::Merge->value,
-            Type::Split->value => ['separator' => $data['separator']],
+            Type::Split->value => filled($separator) ? ['separator' => $separator] : null,
 
             Type::Addition->value,
             Type::Subtraction->value,
@@ -120,14 +122,18 @@ trait EngineData
 
     public static function loadForm($data)
     {
-        $configurations = $data['configurations'];
+        $configurations = $data['configurations'] ?? [];
+        if (! is_array($configurations)) {
+            $configurations = [];
+        }
+
         switch ($data['type']) {
             case Type::IndexOf->value:
-                $data['position'] = $configurations['position'];
+                $data['position'] = $configurations['position'] ?? null;
                 break;
             case Type::Merge->value:
             case Type::Split->value:
-                $data['separator'] = $configurations['separator'];
+                $data['separator'] = $configurations['separator'] ?? null;
                 break;
             case Type::Addition->value:
             case Type::Subtraction->value:
@@ -135,10 +141,10 @@ trait EngineData
             case Type::Division->value:
             case Type::PowerOf->value:
             case Type::Remainder->value:
-                $data['digit'] = $configurations['digit'];
+                $data['digit'] = $configurations['digit'] ?? null;
                 break;
             case Type::Hash->value:
-                $data['hash_method'] = $configurations['hash_method'];
+                $data['hash_method'] = $configurations['hash_method'] ?? null;
                 break;
             default:
                 break;

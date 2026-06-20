@@ -1,85 +1,82 @@
 # Kiến trúc
 
-Defly tách trách nhiệm thành nhiều dịch vụ để Manager không trực tiếp điều
-khiển Docker, và Defender có thể chạy độc lập theo từng mục tiêu cần bảo vệ.
+Defly tách quản trị, điều phối và xử lý lưu lượng thành các dịch vụ độc lập. [Manager](Manager-Guide.md) không điều khiển Docker trực tiếp; [Defender](CoreConcepts/Defender.md) không sở hữu lược đồ cơ sở dữ liệu.
 
 ## Sơ đồ hệ thống
 
 ```text
-Trình duyệt hoặc quản trị viên
+Quản trị viên
     |
     v
-Manager UI/API -- hàng đợi --> Worker
-    |                          |
-    |                          v
-    |                    Orchestrator -- Docker API --> Container Defender
-    |                          |
-    v                          v
-MariaDB <------------------- Defender
-                               |
-Máy khách cần bảo vệ -> Proxy Defender -> Ứng dụng phía sau
+Manager UI/API ----> MariaDB
+    |
+    v
+Laravel Queue ----> Worker ----Basic Auth----> Orchestrator ----> Docker API
+                                                        |
+                                                        v
+Máy khách -> Defender proxy ----> Máy chủ đích     Container Defender
+                  |
+                  +---- đọc chính sách / ghi báo cáo -> MariaDB
 ```
 
-## Quyền sở hữu dữ liệu
+## Quyền sở hữu
 
-- Manager sở hữu lược đồ cơ sở dữ liệu và migration chính.
-- Orchestrator đọc và ghi các bảng cần cho vòng đời triển khai.
-- Defender đọc cấu hình khi chạy và ghi quyết định, báo cáo, nhật ký liên quan
-  đến WAF.
+| Thành phần | Sở hữu |
+| --- | --- |
+| Manager | Lược đồ, migration, dữ liệu khởi tạo, giao diện/API và chính sách. |
+| Worker | Thực thi tác vụ nền do Manager tạo. |
+| Orchestrator | Vòng đời container Defender, mạng, ổ dữ liệu và ánh xạ cổng. |
+| Defender | Giao dịch HTTP, trạng thái điểm/cấp độ, nhật ký và việc thực thi WAF. |
+| MariaDB | Lưu dữ liệu chung, nhưng lược đồ do Manager quản lý. |
 
-## Luồng Manager đến Orchestrator
+## Chuỗi xử lý chính sách
 
-Manager không gọi Docker trực tiếp. Khi người dùng yêu cầu triển khai, Manager
-tạo tác vụ nền. Tiến trình hàng đợi lấy tác vụ đó và gọi điểm truy cập triển
-khai của Orchestrator bằng Basic Auth.
+Chính sách đi theo thứ tự:
 
-Yêu cầu gửi sang Orchestrator có kèm email của người thực hiện để phục vụ nhật
-ký kiểm toán và hiển thị trong Manager.
+```text
+Pattern/Wordlist -> Target -> Engine -> Rule -> Action -> Principle -> Decision
+```
 
-## Luồng Orchestrator đến Docker
+- [Pattern](CoreConcepts/Pattern.md) và [Wordlist](CoreConcepts/Wordlist.md) cung cấp dữ liệu tái sử dụng.
+- [Target](CoreConcepts/Target.md) chọn dữ liệu HTTP.
+- [Engine](CoreConcepts/Engine.md) biến đổi giá trị.
+- [Rule](CoreConcepts/Rule.md) so sánh.
+- [Action](CoreConcepts/Action.md) cập nhật giao dịch HTTP hoặc tạo tác động.
+- [Principle](CoreConcepts/Principle.md) kết hợp các quy tắc bằng AND rồi điều phối hành động.
+- [Decision](CoreConcepts/Decision.md) đưa ra phán quyết theo điểm.
 
-Orchestrator dùng Docker API để:
+## Vòng đời HTTP
 
-- tạo container Defender
-- gắn container vào mạng Compose phù hợp
-- gắn volume TLS, lỗi và nhật ký
-- mở cổng proxy đã cấu hình
-- cập nhật trạng thái triển khai về cơ sở dữ liệu
+Defender thu thập yêu cầu trước khi chạy từng giai đoạn:
 
-Orchestrator phải truy cập được Docker daemon được khai báo trong
-`SERVER_DOCKER_BASE_URL`.
+1. Toàn bộ yêu cầu.
+2. Tiêu đề HTTP, tham số truy vấn và siêu dữ liệu của yêu cầu.
+3. Nội dung và tệp của yêu cầu.
 
-## Luồng Manager đến API điều khiển Defender
+Sau các Principle của yêu cầu, Decision hướng yêu cầu được chạy. Nếu không bị `deny` hoặc `cancel`, yêu cầu được chuyển tiếp đến máy chủ phía sau.
 
-Sau khi Defender được triển khai, Manager có thể gọi API điều khiển của Defender
-để kiểm tra hoặc điều khiển tiến trình chạy. Việc xác minh TLS phụ thuộc vào
-`DEFENDER_SERVER_TLS_SKIP_VERIFY` và thư mục chứng chỉ trong
-`DEFENDER_SERVER_TLS_DIRECTORY`.
+Khi máy chủ phía sau trả dữ liệu, Defender chạy:
 
-## Luồng proxy của Defender
+4. Tiêu đề HTTP và siêu dữ liệu của phản hồi.
+5. Nội dung phản hồi.
+6. Toàn bộ phản hồi.
 
-Khi truy cập đi qua proxy của Defender:
+Cuối cùng, Decision hướng phản hồi được áp dụng trước khi trả cho máy khách. Chi tiết giai đoạn và loại nằm tại [Target](CoreConcepts/Target.md#sáu-giai-đoạn-http).
 
-1. Defender nhận yêu cầu từ máy khách.
-2. Bộ máy WAF chạy các pha xử lý yêu cầu.
-3. Quy tắc được khớp với dữ liệu trong yêu cầu.
-4. Hành động tương ứng được áp dụng, ví dụ cho qua, chặn hoặc ghi nhật ký.
-5. Nếu yêu cầu được cho qua, Defender chuyển tiếp tới ứng dụng phía sau.
-6. Phản hồi đi ngược lại qua Defender và có thể tiếp tục được xử lý.
-7. Defender ghi quyết định và báo cáo để Manager hiển thị.
+## Luồng triển khai
 
-## Chia sẻ chứng chỉ TLS
+Manager tạo tác vụ nền. Worker gọi Orchestrator bằng thông tin xác thực và thông tin người dùng thực hiện. Orchestrator kiểm tra yêu cầu, dùng Docker API để tạo container, gắn mạng `defly_infrastructure`, các ổ dữ liệu TLS/nhật ký/lỗi và cập nhật trạng thái.
 
-Orchestrator và Defender có thể tạo chứng chỉ TLS. Manager cần đọc được tệp
-`.crt` tương ứng nếu cấu hình yêu cầu xác minh TLS.
+Container động được gắn nhãn dự án/cấu hình Compose để lệnh `docker compose down` của dự án có thể nhận diện và dừng cùng hệ thống.
 
-Khi chạy bằng Docker Compose, các volume TLS đã được gắn sẵn. Khi chạy thủ công,
-cần tạo junction hoặc symlink để Manager đọc được chứng chỉ từ thư mục của
-Orchestrator hoặc Defender.
+## Cơ sở dữ liệu
 
-## Tiến trình hàng đợi
+Manager, Orchestrator và Defender dùng chung cơ sở dữ liệu nhưng không có quyền sở hữu ngang nhau. Migration chỉ chạy từ Manager. Orchestrator và Defender phải tương thích với lược đồ hiện tại.
 
-Các thao tác có thể mất thời gian, như triển khai Defender hoặc theo dõi nhật
-ký, được đẩy sang tiến trình hàng đợi. Cách này giúp giao diện và API của
-Manager không phải chờ trực tiếp trong khi Orchestrator đang làm việc với
-Docker.
+## TLS và ranh giới tin cậy
+
+Manager có thể xác minh TLS khi gọi Orchestrator và API điều khiển Defender. Orchestrator có quyền cao vì truy cập tiến trình Docker. Xem [Bảo mật](Security.md) trước khi mở Docker API hoặc API điều khiển ra ngoài máy chủ tin cậy.
+
+## Hàng đợi
+
+Các thao tác triển khai, hủy và theo dõi nhật ký có thể kéo dài nên đi qua Worker. Nếu giao diện đã tạo yêu cầu nhưng trạng thái không thay đổi, hãy kiểm tra Worker trước Orchestrator; xem [Khắc phục sự cố](Troubleshooting.md#tác-vụ-hàng-đợi-không-chạy).

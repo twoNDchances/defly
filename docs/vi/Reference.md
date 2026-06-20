@@ -1,94 +1,101 @@
-# Tham chiếu
+# Tham chiếu nhanh
 
-Phần này gom các thông tin tra cứu nhanh khi làm việc với Defly.
+Trang này dùng để tra cứu. Phần giải thích đầy đủ nằm trong các trang được liên kết.
 
-## Cấu trúc thư mục
+## Cấu trúc kho mã nguồn
 
 ```text
 defly/
-  defender/       Chương trình Defender viết bằng Go
-  docs/           Tài liệu
-  manager/        Ứng dụng Manager viết bằng Laravel/Filament
-  orchestrator/   Dịch vụ Orchestrator viết bằng Django ASGI
-  workflows/      Tệp tham chiếu quy trình
+  manager/          Laravel/Filament, lược đồ và giao diện/API
+  orchestrator/     Django ASGI, triển khai qua Docker
+  defender/         Go, API điều khiển, proxy và tường lửa
+  docs/vi/          Tài liệu tiếng Việt
+  architectures/    Sơ đồ kiến trúc
   docker-compose.yml
   .env.example
 ```
 
 ## Cổng mặc định
 
-- Manager HTTP: `80`
-- Manager HTTPS: `443`
-- Manager khi chạy thủ công: `8080`
-- Orchestrator khi phát triển: `8000`
-- API điều khiển Defender: `9947`
-- Proxy Defender: `9948`
+| Thành phần | Cổng |
+| --- | --- |
+| Manager HTTP | `80` |
+| Manager HTTPS | `443` |
+| Manager chạy thủ công | `8080` |
+| Orchestrator cục bộ | `8000` |
+| Defender control API | `9947` |
+| Defender proxy thủ công | `9948` |
 
-## Thông tin mặc định và đường dẫn
+Cổng proxy khi triển khai lấy từ bản ghi [Defender](CoreConcepts/Defender.md).
 
-- Địa chỉ Manager khi chạy bằng Docker: `https://localhost/defly-manager`
-- Tiền tố giao diện Manager: `defly-manager`
-- Tiền tố API Manager: `v1`
-- Tiền tố API Orchestrator: `api/v1`
-- Người dùng Manager được seed mặc định: xem `USER_EMAIL` trong `.env`
-- Mật khẩu đầu tiên: xem `USER_PASSWORD`, hoặc tệp thông tin xác thực nếu dùng
-  `random`
+## URL mặc định
 
-## Nhóm biến môi trường quan trọng
+| API/giao diện | Đường dẫn |
+| --- | --- |
+| Manager UI | `/defly-manager` |
+| Manager API | `/api/v1` |
+| API triển khai Orchestrator | `/api/v1/deployments/{defender_id}` |
+| API điều khiển Defender | `/api/v1/principles`, `/api/v1/decisions` |
 
-Biến cơ sở dữ liệu chung:
+## Docker
 
-```text
-DB_HOST
-DB_PORT
-DB_DATABASE
-DB_USERNAME
-DB_PASSWORD
-```
+| Tài nguyên | Tên mặc định |
+| --- | --- |
+| Dự án Compose | `defly` |
+| Mạng hạ tầng | `defly_infrastructure` |
+| Image Defender | `defly-defender:latest` |
+| Ổ dữ liệu TLS Defender | `defly_defender_tls` |
 
-Biến Orchestrator:
+Tên thực tế thay đổi theo `COMPOSE_PROJECT_NAME` và `SERVER_DEFENDER_TLS_VOLUME`.
 
-```text
-ORCHESTRATOR_BASE_URL
-ORCHESTRATOR_USERNAME
-ORCHESTRATOR_PASSWORD
-SERVER_DOCKER_BASE_URL
-SERVER_DEFENDER_IMAGE
-SERVER_DEFENDER_TLS_VOLUME
-```
-
-Biến Defender:
+## Chuỗi xử lý WAF
 
 ```text
-DATABASE_HOST
-DATABASE_PORT
-DATABASE_NAME
-DATABASE_USER
-DATABASE_PASS
-DEFENDER_NAME
-PROXY_BACKEND_URL
+Wordlist/Pattern -> Target -> Engine -> Rule -> Action -> Principle -> Decision
 ```
 
-Biến TLS:
+Xem [mục lục khái niệm](CoreConcepts/README.md) để đọc theo thứ tự.
+
+## Giai đoạn
+
+| Số | Giai đoạn |
+| --- | --- |
+| `1` | Toàn bộ yêu cầu |
+| `2` | Tiêu đề HTTP/truy vấn/siêu dữ liệu yêu cầu |
+| `3` | Nội dung/tệp yêu cầu |
+| `4` | Tiêu đề HTTP/siêu dữ liệu phản hồi |
+| `5` | Nội dung phản hồi |
+| `6` | Toàn bộ phản hồi |
+
+Chi tiết loại hợp lệ tại [Target](CoreConcepts/Target.md#loại-hợp-lệ-theo-giai-đoạn).
+
+## Trạng thái
+
+Trạng thái kiểm tra Principle:
 
 ```text
-ORCHESTRATOR_TLS_SKIP_VERIFY
-ORCHESTRATOR_TLS_CERT_FILE
-DEFENDER_SERVER_TLS_SKIP_VERIFY
-DEFENDER_SERVER_TLS_DIRECTORY
+pending | validating | failed | passed
 ```
 
-## Thuật ngữ
+Trạng thái triển khai Defender:
 
-- Mục tiêu: ứng dụng phía sau hoặc tài nguyên cần bảo vệ.
-- Bộ máy xử lý: cấu hình xử lý quy tắc.
-- Mẫu khớp: mẫu dữ liệu dùng để so khớp.
-- Danh sách từ: danh sách giá trị dùng trong mẫu khớp hoặc quy tắc.
-- Hành động: việc Defender thực hiện khi quy tắc khớp.
-- Quy tắc: điều kiện kiểm tra và hành động tương ứng.
-- Nguyên tắc: bộ chính sách gồm nhiều quy tắc.
-- Defender: chương trình áp dụng nguyên tắc và xử lý truy cập qua proxy.
-- Quyết định: kết quả WAF cho một yêu cầu hoặc phản hồi.
-- Báo cáo: dữ liệu ghi nhận để theo dõi và điều tra.
-- Orchestrator: dịch vụ điều phối việc triển khai Defender qua Docker.
-- Manager: giao diện và API quản trị của Defly.
+```text
+pending | processing | failed | successful
+```
+
+Trạng thái chạy Defender:
+
+```text
+normal | abnormal
+```
+
+## Tài liệu theo nhu cầu
+
+- Cài hệ thống: [Cài đặt](Installation.md)
+- Cách tổ chức cấu hình: [Cấu hình](Configuration.md)
+- Danh sách biến môi trường: [Biến môi trường](Environment-Variables.md)
+- Dùng giao diện: [Hướng dẫn Manager](Manager-Guide.md)
+- Vận hành container: [Hướng dẫn Orchestrator](Orchestrator-Guide.md)
+- Hiểu quá trình chạy tường lửa: [Hướng dẫn Defender](Defender-Guide.md)
+- Gọi API: [Tham chiếu API](API-Reference.md)
+- Xử lý lỗi: [Khắc phục sự cố](Troubleshooting.md)

@@ -1,38 +1,57 @@
 # Label
 
-`App\Models\Label`
+Label là siêu dữ liệu màu dùng để phân loại và lọc tài nguyên trong Manager. Label không tham gia logic tường lửa, không thay đổi quyền và không được Defender nạp để xử lý HTTP.
 
-Label là nhãn phân loại dùng chung cho nhiều loại tài nguyên. Label giúp lọc, nhóm và nhận diện nhanh các cấu hình trong manager mà không làm thay đổi logic runtime.
+## Các trường cấu hình
 
-## Trường dữ liệu
-
-| Trường | Kiểu | Ý nghĩa |
+| Trường | Bắt buộc | Ràng buộc |
 | --- | --- | --- |
-| `id` | `string` | UUID của label. |
-| `name` | `string` | Tên nhãn. |
-| `color` | `string` | Màu hiển thị của nhãn. |
-| `description` | `string` | Mô tả ý nghĩa nhãn. |
-| `created_by` | `string` | User tạo label. |
-| `created_at`, `updated_at` | `datetime` | Thời điểm tạo và cập nhật. |
+| `name` | Có | Duy nhất, viết thường theo dạng kebab-case, tối đa 255 ký tự. |
+| `color` | Có | Mã màu hex hợp lệ. |
+| `description` | Không | Giải thích quy ước sử dụng label. |
 
-## Quan hệ
+Label có UUID, `created_by` và thời điểm tạo/cập nhật.
 
-Label dùng quan hệ polymorphic qua bảng `labels_resources`.
+## Tài nguyên hỗ trợ
 
-| Quan hệ | Tài nguyên được gắn nhãn |
-| --- | --- |
-| `users()` | `User` |
-| `permissions()` | `Permission` |
-| `groups()` | `Group` |
-| `wordlists()` | `Wordlist` |
-| `engines()` | `Engine` |
-| `targets()` | `Target` |
-| `actions()` | `Action` |
-| `rules()` | `Rule` |
-| `principles()` | `Principle` |
-| `decisions()` | `Decision` |
-| `defenders()` | `Defender` |
+Label dùng quan hệ đa hình `labels_resources` và hiện hỗ trợ:
 
-## Ghi chú vận hành
+- [User](User.md)
+- [Group](Group.md)
+- [Permission](Permission.md)
+- [Wordlist](Wordlist.md)
+- [Engine](Engine.md)
+- [Target](Target.md)
+- [Action](Action.md)
+- [Rule](Rule.md)
+- [Principle](Principle.md)
+- [Decision](Decision.md)
+- [Defender](Defender.md)
 
-Label là metadata quản trị. Firewall runtime không dùng label để đánh giá request hoặc response.
+Pattern, Key, Report và Timeline không có quan hệ Label trong mô hình dữ liệu hiện tại.
+
+## Cách sử dụng
+
+Một tài nguyên có thể có nhiều Label và một Label có thể gắn nhiều loại tài nguyên. Một số quy ước hữu ích:
+
+- Môi trường: `production`, `staging`, `development`.
+- Mức độ quản trị: `critical`, `experimental`, `legacy`.
+- Nhóm chính sách: `authentication`, `upload`, `api-abuse`.
+- Trạng thái nghiệp vụ bổ sung: `needs-review`, `approved`.
+
+Không nên dùng Label để mô phỏng trạng thái đã có trường riêng, ví dụ `validation_status`, `deployment_status`, `is_applied` hoặc `is_implemented`, vì Label không được quy trình cập nhật tự động.
+
+## Label không thay thế Permission
+
+Gắn Label `production` vào Defender không hạn chế ai được triển khai. Gắn Label `approved` vào Principle không thay thế trạng thái kiểm tra `passed`. Mọi kiểm tra truy cập vẫn do [Permission](Permission.md), lớp chính sách, trạng thái khóa và trạng thái bản ghi quyết định.
+
+## Lịch sử thao tác
+
+Tạo, sửa và xóa Label được ghi vào [Timeline](Timeline.md). Quan hệ Label phục vụ tìm kiếm/trình bày và không được đưa vào báo cáo tường lửa.
+
+## Danh sách kiểm tra
+
+- Xây dựng bộ tên Label nhất quán trước khi dùng rộng rãi.
+- Dùng màu để hỗ trợ nhận diện, không làm nguồn sự thật duy nhất.
+- Không dùng Label thay cho Permission hoặc trạng thái quy trình.
+- Xóa Label thận trọng vì nó có thể đang gắn với nhiều loại tài nguyên.

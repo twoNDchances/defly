@@ -1,35 +1,25 @@
 # Cấu hình
 
-Defly dùng nhiều tệp `.env` vì mỗi dịch vụ có trách nhiệm riêng. Khi chạy bằng
-Docker Compose, tệp `.env` ở thư mục gốc là nguồn cấu hình chính. Khi chạy thủ
-công, từng dịch vụ cũng cần tệp `.env` riêng.
+Defly dùng một `.env` gốc cho [Docker Compose](Installation.md#docker-compose) và `.env` riêng cho từng dịch vụ khi chạy thủ công. Không đưa bí mật thật vào kho mã nguồn. Danh sách đầy đủ, giá trị mặc định và ràng buộc của từng biến nằm tại [Biến môi trường](Environment-Variables.md).
 
-## Tệp `.env` ở thư mục gốc
+## Cấu hình Docker Compose
 
-Tệp `.env` ở thư mục gốc được Docker Compose dùng để cấu hình toàn bộ hệ
-thống. Các nhóm biến quan trọng:
+Tệp `.env` ở thư mục gốc điều khiển image, cơ sở dữ liệu, cổng, thông tin xác thực và các biến được truyền vào dịch vụ.
 
-- Docker và image: `COMPOSE_PROJECT_NAME`, `MANAGER_IMAGE`,
-  `ORCHESTRATOR_IMAGE`, `SERVER_DEFENDER_IMAGE`.
-- Cơ sở dữ liệu: `MARIADB_VERSION`, `MARIADB_ROOT_PASSWORD`, `DB_DATABASE`,
-  `DB_USERNAME`, `DB_PASSWORD`.
-- Môi trường chạy Manager: `APP_NAME`, `APP_ENV`, `APP_KEY`, `APP_DEBUG`,
-  `APP_URL`, `APP_LOCALE`, `MANAGER_HTTP_PORT`, `MANAGER_HTTPS_PORT`.
-- Người dùng khởi tạo: `USER_NAME`, `USER_EMAIL`, `USER_PASSWORD`.
-- Giao kèo giữa Manager và Orchestrator: `ORCHESTRATOR_PATH_PREFIX`,
-  `ORCHESTRATOR_PATH_DEPLOYMENT`, `ORCHESTRATOR_METHOD_DEPLOY`,
-  `ORCHESTRATOR_METHOD_FOLLOW`, `ORCHESTRATOR_METHOD_CANCEL`,
-  `ORCHESTRATOR_USERNAME`, `ORCHESTRATOR_PASSWORD`.
-- Triển khai Defender: `SERVER_DEFENDER_TLS_VOLUME`,
-  `DEFENDER_SERVER_TLS_SKIP_VERIFY`.
-- Tiến trình hàng đợi: `WORKER_TRIES`, `WORKER_TIMEOUT`, `WORKER_MAX_TIME`.
+### Dự án và image
 
-## Tệp `manager/.env`
+| Biến | Ý nghĩa |
+| --- | --- |
+| `COMPOSE_PROJECT_NAME` | Tiền tố mạng, ổ dữ liệu và nhãn Compose; mặc định `defly`. |
+| `MANAGER_IMAGE` | Image Manager. |
+| `ORCHESTRATOR_IMAGE` | Image Orchestrator. |
+| `SERVER_DEFENDER_IMAGE` | Image dùng để tạo [Defender](CoreConcepts/Defender.md). |
 
-`manager/.env` cấu hình ứng dụng Laravel, cơ sở dữ liệu, thư điện tử, tiền tố
-API, kết nối tới Orchestrator và cách xác minh TLS của Defender.
+Mạng chính có tên `${COMPOSE_PROJECT_NAME}_infrastructure`.
 
-Các biến thường cần đổi khi chạy thủ công:
+### Cơ sở dữ liệu
+
+Các dịch vụ phải trỏ tới cùng cơ sở dữ liệu:
 
 ```text
 DB_HOST
@@ -37,27 +27,97 @@ DB_PORT
 DB_DATABASE
 DB_USERNAME
 DB_PASSWORD
+MARIADB_ROOT_PASSWORD
+```
+
+Manager dùng `DB_USERNAME`/`DB_PASSWORD`; Compose ánh xạ sang tên biến phù hợp cho Orchestrator và Defender.
+
+### Manager và người dùng khởi tạo
+
+```text
+APP_NAME
+APP_ENV
+APP_KEY
+APP_DEBUG
+APP_URL
+APP_LOCALE
+MANAGER_HTTP_PORT
+MANAGER_HTTPS_PORT
+USER_NAME
+USER_EMAIL
+USER_PASSWORD
+```
+
+Trong môi trường thật, đặt `APP_DEBUG=false` và dùng `APP_KEY` ổn định.
+
+### Worker
+
+```text
+WORKER_TRIES
+WORKER_TIMEOUT
+WORKER_MAX_TIME
+```
+
+Worker xử lý triển khai, hủy và theo dõi nhật ký. Thời gian chờ phải đủ dài để Docker tải image, dựng và khởi động container nhưng không nên che giấu tác vụ bị treo.
+
+## Manager
+
+`manager/.env` cấu hình Laravel, cơ sở dữ liệu, thư điện tử, API và phần gọi Orchestrator/Defender.
+
+### Kết nối tới Orchestrator
+
+```text
 ORCHESTRATOR_BASE_URL
 ORCHESTRATOR_USERNAME
 ORCHESTRATOR_PASSWORD
 ORCHESTRATOR_TLS_SKIP_VERIFY
 ORCHESTRATOR_TLS_CERT_FILE
+ORCHESTRATOR_PATH_PREFIX
+ORCHESTRATOR_PATH_DEPLOYMENT
+ORCHESTRATOR_METHOD_DEPLOY
+ORCHESTRATOR_METHOD_FOLLOW
+ORCHESTRATOR_METHOD_CANCEL
+```
+
+Tên đăng nhập/mật khẩu phải khớp `SERVER_USERNAME`/`SERVER_PASSWORD` phía Orchestrator. Đường dẫn và phương thức ở hai bên cũng phải mô tả cùng một giao kèo API.
+
+### Kết nối tới Defender
+
+```text
 DEFENDER_SERVER_TLS_SKIP_VERIFY
 DEFENDER_SERVER_TLS_DIRECTORY
 ```
 
-Khi `ORCHESTRATOR_TLS_SKIP_VERIFY=false`, Manager cần đọc được tệp chứng chỉ
-được khai báo trong `ORCHESTRATOR_TLS_CERT_FILE`.
+Khi bật xác minh, Manager tìm chứng chỉ theo tên Defender trong thư mục đã cấu hình.
 
-Khi `DEFENDER_SERVER_TLS_SKIP_VERIFY=false`, Manager cần đọc được thư mục chứng
-chỉ Defender trong `DEFENDER_SERVER_TLS_DIRECTORY`.
+### Manager API
 
-## Tệp `orchestrator/.env`
+```text
+TOKEN_LOCATION
+TOKEN_KEY_NAME
+USER_AGENT
+API_PREFIX
+GUI_PREFIX
+```
 
-`orchestrator/.env` cấu hình Django, cơ sở dữ liệu, Docker API và giao kèo API
-mà Manager sẽ gọi.
+Mặc định tiền tố API là `v1`, tiền tố giao diện là `defly-manager` và tiêu đề HTTP chứa [Key](CoreConcepts/Key.md) là `X-Token-Key`.
 
-Các biến chính:
+### Thư điện tử
+
+```text
+MAIL_MAILER
+MAIL_FROM_ADDRESS
+MAIL_FROM_NAME
+RESEND_API_KEY
+RESEND_DOMAIN
+RESEND_PATH
+```
+
+Chỉ cấu hình Resend khi dùng mailer tương ứng. Webhook cần secret riêng trong Manager.
+
+## Orchestrator
+
+`orchestrator/.env` cấu hình Django, cơ sở dữ liệu, Docker và API nhận từ Manager.
 
 ```text
 SECRET_KEY_FILE
@@ -81,13 +141,13 @@ SERVER_DEFENDER_TLS_VOLUME
 SERVER_DOCKER_BASE_URL
 ```
 
-`SERVER_MANAGER` là danh sách máy được phép gọi Orchestrator.
-`SERVER_USERNAME` và `SERVER_PASSWORD` phải khớp với cấu hình bên Manager.
+`SERVER_MANAGER` giới hạn máy chủ được phép gọi. `SERVER_DOCKER_BASE_URL` trao quyền điều khiển Docker nên cần được bảo vệ như thông tin xác thực đặc quyền.
 
-## Biến môi trường của Defender
+## Defender
 
-Khi chạy thủ công, Defender cần thông tin cơ sở dữ liệu, tên Defender và địa chỉ
-ứng dụng phía sau:
+Defender có ba nhóm cấu hình: dùng chung, máy chủ điều khiển và proxy. Khi Orchestrator triển khai, các giá trị được dựng từ bản ghi Defender cùng cấu hình hệ thống.
+
+### Biến dùng chung
 
 ```text
 DATABASE_HOST
@@ -96,51 +156,35 @@ DATABASE_NAME
 DATABASE_USER
 DATABASE_PASS
 DEFENDER_NAME
+```
+
+Ngoài cơ sở dữ liệu còn có đường dẫn lưu trữ lỗi, Wordlist và dữ liệu trong quá trình chạy.
+
+### Máy chủ điều khiển
+
+Máy chủ này cung cấp API điều khiển, mặc định ở cổng `9947`. Nhóm biến này cấu hình địa chỉ, TLS, ghi nhật ký và Manager tin cậy. `SERVER_SECURITY_MANAGER` mặc định là `worker` để các tác vụ quản lý đi qua đúng tiến trình.
+
+### Proxy
+
+```text
 PROXY_BACKEND_URL
 ```
 
-Khi triển khai bằng Orchestrator, các giá trị này được dựng từ bản ghi Defender,
-cơ sở dữ liệu chung và cấu hình triển khai.
+Proxy mặc định ở cổng `9948`, nhận lưu lượng ứng dụng và chuyển tiếp tới máy chủ phía sau. Các biến khác điều khiển TLS, thời gian chờ, ghi nhật ký, theo dõi sức khỏe và điểm theo mức độ nghiêm trọng.
 
-## Thư điện tử và Resend
+Điểm `info`, `notice`, `warning`, `error`, `critical`, `alert`, `emergency` được [Action](CoreConcepts/Action.md#suspect) `suspect` sử dụng.
 
-Manager dùng các biến sau để gửi thư:
+## TLS, ổ dữ liệu và mạng
 
-```text
-MAIL_MAILER
-MAIL_FROM_ADDRESS
-MAIL_FROM_NAME
-RESEND_API_KEY
-RESEND_DOMAIN
-RESEND_PATH
-```
+- TLS Defender dùng ổ dữ liệu `${COMPOSE_PROJECT_NAME}_${SERVER_DEFENDER_TLS_VOLUME}`.
+- Nhật ký và lỗi dùng ổ dữ liệu riêng theo Defender.
+- Tất cả dịch vụ Compose và Defender động dùng mạng `${COMPOSE_PROJECT_NAME}_infrastructure`.
+- Cổng proxy lấy từ bản ghi Defender và được công bố trên máy chủ Docker.
 
-Nếu có webhook của Resend, cần cấu hình thêm khóa bí mật tương ứng trong
-Manager.
+## Kiểm tra sau khi đổi cấu hình
 
-## Mã truy cập API
-
-Manager API dùng các biến sau để xác định cách đọc mã truy cập:
-
-```text
-TOKEN_LOCATION
-TOKEN_KEY_NAME
-USER_AGENT
-API_PREFIX
-GUI_PREFIX
-```
-
-Giá trị mặc định của `TOKEN_KEY_NAME` là `X-Token-Key`. Giá trị mặc định của
-`API_PREFIX` là `v1`.
-
-## TLS, cổng, volume và mạng
-
-- TLS từ Manager tới Orchestrator dùng `ORCHESTRATOR_TLS_SKIP_VERIFY` và
-  `ORCHESTRATOR_TLS_CERT_FILE`.
-- TLS từ Manager tới Defender dùng `DEFENDER_SERVER_TLS_SKIP_VERIFY` và
-  `DEFENDER_SERVER_TLS_DIRECTORY`.
-- Các cổng chính của Compose là `MANAGER_HTTP_PORT`, `MANAGER_HTTPS_PORT` và
-  cổng proxy trong từng bản ghi Defender.
-- TLS của Defender dùng volume chung `SERVER_DEFENDER_TLS_VOLUME`.
-- Lỗi và nhật ký của Defender dùng volume riêng cho từng Defender, do
-  Orchestrator tạo khi triển khai.
+1. So sánh biến giao kèo ở cả hai phía Manager và Orchestrator.
+2. Chạy `docker compose config` để xem cấu hình Compose sau khi tổng hợp.
+3. Khởi động lại dịch vụ bị ảnh hưởng.
+4. Triển khai lại Defender nếu biến môi trường hoặc ổ dữ liệu thay đổi.
+5. Kiểm tra nhật ký và tình trạng sức khỏe trước khi gửi lưu lượng thật.

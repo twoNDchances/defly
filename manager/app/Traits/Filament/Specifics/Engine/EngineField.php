@@ -150,10 +150,9 @@ trait EngineField
             '@',
         )
             ->helperText(__('forms.engine.extras.configurations.separator'))
-            ->required($condition)
             ->disabled(fn ($get) => ! $condition($get))
             ->visible($condition)
-            ->rules(fn ($get) => self::validateSeparator($condition($get) ? 'required' : 'nullable'));
+            ->rules(self::validateSeparator());
     }
 
     public static function setOutputDatatype()

@@ -1,129 +1,124 @@
 # Vận hành
 
-Phần này gom các thao tác vận hành thường dùng khi chạy Defly bằng Docker
-Compose.
+Trang này dành cho hệ thống Docker Compose. Đọc [Kiến trúc](Architecture.md) và [Cấu hình](Configuration.md) trước khi thay đổi mạng, ổ dữ liệu hoặc thông tin xác thực.
 
-## Khởi động, dừng và khởi động lại
-
-Khởi động toàn bộ hệ thống:
+## Khởi động và dừng
 
 ```powershell
 docker compose up -d --build
-```
-
-Xem trạng thái:
-
-```powershell
 docker compose ps
 ```
 
-Khởi động lại:
+Khởi động lại dịch vụ tĩnh:
 
 ```powershell
-docker compose restart
+docker compose restart manager worker orchestrator
 ```
 
-Dừng container nhưng giữ dữ liệu:
+Dừng dự án nhưng giữ ổ dữ liệu:
 
 ```powershell
 docker compose down
 ```
 
-Dừng container và xóa volume có tên:
+[Defender](CoreConcepts/Defender.md) do Orchestrator tạo mang các nhãn Compose của dự án hiện tại, nên `docker compose down` có thể nhận diện và dừng cùng hệ thống.
+
+Xóa cả ổ dữ liệu có tên:
 
 ```powershell
 docker compose down -v
 ```
 
-Chỉ dùng `down -v` khi thật sự muốn xóa cơ sở dữ liệu và dữ liệu chạy.
+Lệnh cuối xóa cơ sở dữ liệu và các ổ lưu trữ. Chỉ chạy sau khi đã sao lưu và xác nhận đúng dự án.
 
 ## Xem nhật ký
 
-Theo dõi nhật ký của các dịch vụ chính:
-
 ```powershell
-docker compose logs -f mariadb orchestrator manager worker
+docker compose logs -f mariadb manager worker orchestrator
 ```
 
-Theo dõi riêng một dịch vụ:
+Có thể xem nhật ký Defender động qua thao tác theo dõi trong Manager hoặc qua Docker:
 
 ```powershell
-docker compose logs -f manager
-docker compose logs -f orchestrator
-docker compose logs -f worker
+docker ps --filter "label=com.docker.compose.project=defly"
+docker logs -f <defender-container>
 ```
 
-Nhật ký của Defender được triển khai động có thể nằm trong volume riêng hoặc
-được xem qua chức năng theo dõi nhật ký trong Manager.
+Nếu đổi `COMPOSE_PROJECT_NAME`, hãy thay điều kiện lọc tương ứng.
 
-## Sao lưu và khôi phục cơ sở dữ liệu
+## Kiểm tra sức khỏe theo từng lớp
 
-Cơ sở dữ liệu MariaDB là nơi giữ cấu hình chính và dữ liệu vận hành. Cần sao
-lưu trước khi nâng cấp image, đổi migration hoặc xóa volume.
+Kiểm tra theo thứ tự để tránh chẩn đoán sai:
 
-Khi khôi phục, cần đảm bảo Manager, Orchestrator và Defender đang trỏ tới cùng
-một cơ sở dữ liệu đã được khôi phục.
+1. MariaDB hoạt động bình thường và nhận kết nối.
+2. Giao diện/API Manager trả phản hồi.
+3. Worker đang lấy tác vụ.
+4. Orchestrator gọi được Docker.
+5. Defender có trạng thái triển khai `successful` và sức khỏe `normal`.
+6. Proxy Defender gọi được máy chủ phía sau.
+7. Chính sách tạo nhật ký/báo cáo đúng kỳ vọng.
 
-## Xoay vòng thông tin xác thực
+Không kiểm tra Rule trước khi mạng hoặc máy chủ phía sau hoạt động.
 
-Các thông tin nên xoay vòng định kỳ:
+## Sao lưu
 
-- mật khẩu cơ sở dữ liệu
-- mật khẩu Orchestrator
-- khóa API của Manager
-- khóa hoặc chứng chỉ TLS
-- mật khẩu người dùng quản trị
+Cơ sở dữ liệu chứa chính sách, người dùng, trạng thái triển khai, báo cáo và lịch sử thao tác. Nơi lưu trữ có thể chứa tệp Wordlist, TLS, nhật ký, lỗi và yêu cầu nguyên bản.
 
-Sau khi đổi mật khẩu Orchestrator, phải cập nhật cả Manager và Orchestrator để
-hai bên tiếp tục khớp nhau.
+Trước khi nâng cấp hoặc xóa ổ dữ liệu:
 
-## Xoay vòng tệp TLS
+1. Dump MariaDB.
+2. Sao lưu các ổ dữ liệu cần giữ.
+3. Ghi lại thẻ phiên bản image và `.env` đang dùng.
+4. Kiểm tra khả năng khôi phục trên môi trường riêng.
 
-Khi thay chứng chỉ TLS, kiểm tra:
+Khi khôi phục, Manager, Orchestrator và Defender phải cùng trỏ tới cơ sở dữ liệu đã khôi phục, đồng thời lược đồ phải tương thích với image.
 
-- Manager có đọc được tệp `.crt` mới không
-- đường dẫn trong `ORCHESTRATOR_TLS_CERT_FILE` còn đúng không
-- thư mục `DEFENDER_SERVER_TLS_DIRECTORY` còn đúng không
-- volume TLS của Defender có được gắn đúng không
+## Nâng cấp
 
-Nếu đang phát triển cục bộ và chưa cần xác minh TLS, có thể tạm đặt biến bỏ qua
-xác minh, nhưng không nên dùng cách này cho môi trường vận hành thật.
-
-## Nâng cấp image
-
-Trước khi nâng cấp image:
-
-1. Sao lưu cơ sở dữ liệu.
-2. Kiểm tra thay đổi trong `.env.example`.
-3. Dựng lại image Defender nếu có thay đổi trong thư mục `defender`.
-4. Chạy lại Docker Compose.
-5. Kiểm tra Manager, Orchestrator và Defender.
-
-Lệnh thường dùng:
+1. Đọc thay đổi `.env.example` của cả ba dịch vụ.
+2. Sao lưu cơ sở dữ liệu và vùng lưu trữ.
+3. Tải/dựng image mới.
+4. Chạy migration Manager.
+5. Khởi động dịch vụ tĩnh.
+6. Dựng lại image Defender.
+7. Triển khai lại từng Defender có kiểm soát.
+8. Gửi yêu cầu kiểm tra nhanh và kiểm tra [Report](CoreConcepts/Report.md).
 
 ```powershell
 docker compose build defender
 docker compose up -d --build
 ```
 
-## Tăng số tiến trình hàng đợi
+## Xoay vòng thông tin xác thực
 
-Có thể tăng số tiến trình hàng đợi khi có nhiều tác vụ nền:
+Các thông tin xác thực cần lịch xoay vòng:
+
+- Mật khẩu cơ sở dữ liệu.
+- Basic Auth Manager-Orchestrator.
+- [Key](CoreConcepts/Key.md) của Manager API.
+- Mật khẩu người dùng quản trị.
+- Chứng chỉ TLS/khóa bí mật.
+
+Khi đổi thông tin xác thực giữa hai dịch vụ, hãy cập nhật cả hai phía trước khi khởi động lại để giảm thời gian gián đoạn.
+
+## TLS
+
+Khi thay chứng chỉ:
+
+1. Giữ đúng tên tệp mà bên gọi tìm kiếm.
+2. Kiểm tra ổ dữ liệu hoặc đường dẫn gắn vào container.
+3. Kiểm tra quyền đọc chứng chỉ và quyền bảo vệ khóa bí mật.
+4. Khởi động lại dịch vụ máy chủ.
+5. Xác nhận bên gọi không cần `skip_verify`.
+
+## Mở rộng số lượng Worker
 
 ```powershell
 docker compose up -d --scale worker=3
 ```
 
-Cần theo dõi tải cơ sở dữ liệu và số lượng tác vụ đang chờ để chọn số tiến
-trình phù hợp.
+Theo dõi độ dài hàng đợi, tải cơ sở dữ liệu và các tác vụ triển khai trùng nhau. Tăng số Worker không làm máy chủ Docker có thêm tài nguyên.
 
-## Kiểm tra sức khỏe hệ thống
+## Lưu giữ dữ liệu WAF
 
-Kiểm tra thực tế nên đi qua ba lớp:
-
-1. Manager UI/API truy cập được.
-2. Orchestrator nhận được yêu cầu từ tiến trình hàng đợi.
-3. Proxy của Defender trả được phản hồi từ ứng dụng phía sau và ghi được quyết
-   định hoặc báo cáo.
-
-Nếu một lớp thất bại, xử lý lớp đó trước khi kiểm tra tiếp lớp sau.
+[Report](CoreConcepts/Report.md), nhật ký và yêu cầu nguyên bản có thể tăng nhanh và chứa dữ liệu nhạy cảm. Cần chính sách lưu giữ, giới hạn quyền đọc và quy trình xóa phù hợp. Không dựa vào việc tạo lại container để dọn ổ dữ liệu.

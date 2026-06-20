@@ -1,45 +1,78 @@
 # User
 
-`App\Models\User`
+User là tài khoản con người dùng để đăng nhập Defly Manager, sở hữu tài nguyên và làm chủ thể phân quyền. User có thể nhận [Permission](Permission.md) trực tiếp hoặc gián tiếp qua [Group](Group.md).
 
-User là tài khoản quản trị trong manager. User có thể đăng nhập Filament, sở hữu tài nguyên cấu hình, thuộc group và có permission trực tiếp.
+## Các trường cấu hình
 
-## Trường dữ liệu
-
-| Trường | Kiểu | Ý nghĩa |
+| Trường | Bắt buộc | Ràng buộc và ý nghĩa |
 | --- | --- | --- |
-| `id` | `string` | UUID của user. |
-| `name` | `string` | Tên hiển thị. |
-| `email` | `string` | Email đăng nhập. |
-| `email_verified_at` | `datetime` | Thời điểm xác thực email. |
-| `password` | `hashed` | Mật khẩu đã hash, bị ẩn khi serialize. |
-| `is_verified` | `boolean` | Tài khoản đã xác minh. |
-| `is_root` | `boolean` | Tài khoản root. |
-| `is_activated` | `boolean` | Tài khoản đang được kích hoạt. |
-| `verification_token` | `string` | Token xác minh, bị ẩn khi serialize. |
-| `created_by` | `string` | User tạo tài khoản này. |
-| `created_at`, `updated_at` | `datetime` | Thời điểm tạo và cập nhật. |
+| `name` | Có | Chuỗi tối đa 255 ký tự. |
+| `email` | Có | Email hợp lệ, duy nhất, tối đa 255 ký tự. |
+| `password` | Khi tạo | Từ 4 đến 255 ký tự; được băm trước khi lưu. |
+| `is_activated` | Có | Cho phép hoặc vô hiệu hóa tài khoản; mặc định `true`. |
+| `is_root` | Có điều kiện | Quyền quản trị cao nhất; chỉ tài khoản root hiện tại được nhìn thấy/chỉnh trường này. |
+| `is_verified` | Khi tạo | Đánh dấu email đã xác minh; mặc định `true`, chỉ chỉnh khi tạo. |
 
-## Quan hệ sở hữu tài nguyên
+Khi sửa User, để trống mật khẩu sẽ giữ nguyên giá trị băm hiện tại. Mật khẩu, token ghi nhớ đăng nhập và token xác minh bị ẩn khỏi dữ liệu trả ra.
 
-User có các quan hệ `hasMany` tới tài nguyên do mình tạo: `getUsers()`, `getGroups()`, `getPermissions()`, `getLabels()`, `getWordlists()`, `getEngines()`, `getTargets()`, `getActions()`, `getRules()`, `getPrinciples()`, `getDecisions()`, `getDefenders()`, `getKeys()`, `getTimelines()`.
+## Điều kiện đăng nhập Manager
 
-## Quan hệ phân quyền
+User chỉ được truy cập giao diện `defly-manager` khi đồng thời:
 
-| Quan hệ | Kiểu | Ý nghĩa |
-| --- | --- | --- |
-| `groups()` | many-to-many | Group của user qua `users_groups`. |
-| `permissions()` | many-to-many | Permission gắn trực tiếp qua `users_permissions`. |
-| `labels()` | morph many-to-many | Nhãn quản trị user. |
+```text
+is_verified = true
+AND is_activated = true
+```
 
-## Scope và truy cập
+`is_verified` xác nhận quy trình email. `is_activated` là công tắc quản trị. Một User đã được xác minh nhưng bị vô hiệu hóa vẫn không vào giao diện và không được [lớp `Security`](Permission.md#cách-lớp-security-đánh-giá-quyền) cấp quyền.
 
-| Thành phần | Ý nghĩa |
-| --- | --- |
-| `canAccessPanel()` | Chỉ cho vào panel `defly-manager` khi user đã verified và activated. |
-| `excludeCurrent` | Loại user hiện tại khỏi query. |
-| `excludeRoot` | Ẩn root với user không phải root. |
+## Xác minh email
 
-## Ghi chú vận hành
+Khi tạo User:
 
-User là chủ sở hữu mặc định của nhiều cấu hình firewall. Khi lọc dữ liệu theo owner, hệ thống dựa vào `created_by`.
+- Nếu `is_verified = false`, Manager tạo UUID `verification_token` và đưa email xác minh vào hàng đợi.
+- Nếu `is_verified = true`, Manager gọi `markEmailAsVerified()` và lưu `email_verified_at`.
+- Lỗi đưa email vào hàng đợi được ghi vào nhật ký ứng dụng; User vẫn được tạo.
+
+Trường `is_verified` trên biểu mẫu chỉ xuất hiện lúc tạo, không phải công tắc sửa tùy ý sau đó.
+
+## User root
+
+User root bỏ qua kiểm tra quyền khi chủ thể phân quyền là chính User đó. User root vẫn phải có `is_verified` và `is_activated`.
+
+Chỉ User đang là root mới có thể tạo hoặc chỉnh `is_root`. Với User không phải root, danh sách quản trị cũng loại các tài khoản root khỏi truy vấn để tránh lộ hoặc thao tác ngoài thẩm quyền.
+
+Khi API dùng [Key](Key.md) có `is_reused = false`, chủ thể quyền là Key chứ không phải User. Trong trường hợp đó, quyền root của người sở hữu không tự động truyền sang Key.
+
+## Quyền trực tiếp và qua Group
+
+User có hai nguồn quyền:
+
+1. Quan hệ `users_permissions`: quyền gắn trực tiếp.
+2. Quan hệ `users_groups` -> `groups_permissions`: quyền từ mọi Group mà User tham gia.
+
+Chỉ cần một nguồn cấp đúng `applied_for + action` là được phép. Quyền `all` trên mô hình dữ liệu bao phủ mọi hành động của mô hình đó. Hệ thống hiện không có quyền từ chối; các nguồn quyền được hợp nhất theo phép OR.
+
+Xem thuật toán đầy đủ tại [Permission](Permission.md#cách-lớp-security-đánh-giá-quyền).
+
+## Quyền sở hữu
+
+Các mô hình dữ liệu quản trị lưu `created_by` trỏ về User tạo chúng. User có quan hệ sở hữu với Group, Permission, Label, Wordlist, Engine, Target, Action, Rule, Principle, Decision, Defender, Key và Timeline.
+
+Quyền sở hữu và quyền thao tác là hai khái niệm khác nhau:
+
+- `created_by` cho biết ai tạo/sở hữu bản ghi và phục vụ truy vết.
+- Permission quyết định User có thể thực hiện hành động nào.
+- Một số chính sách/truy vấn có thể áp thêm giới hạn bản ghi, khóa hoặc trạng thái ngoài Permission.
+
+## Timeline
+
+Tạo, cập nhật và xóa User qua HTTP được ghi vào [Timeline](Timeline.md) nếu yêu cầu có ngữ cảnh người dùng. Timeline giữ User thực thi, IP, phương thức, đường dẫn, hành động và ID tài nguyên.
+
+## Danh sách kiểm tra quản trị
+
+- Dùng email duy nhất và kiểm tra hàng đợi thư khi tạo User chưa xác minh.
+- Vô hiệu hóa bằng `is_activated` thay vì xóa khi cần giữ lịch sử kiểm tra.
+- Chỉ cấp root cho tài khoản quản trị tối cao.
+- Ưu tiên Group cho bộ quyền dùng chung, Permission trực tiếp cho ngoại lệ nhỏ.
+- Kiểm tra khóa API riêng vì Key có thể không tái sử dụng quyền của User.

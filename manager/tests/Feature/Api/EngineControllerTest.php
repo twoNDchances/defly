@@ -38,6 +38,22 @@ class EngineControllerTest extends ApiTestCase
         ])->assertUnprocessable()->assertJsonValidationErrors(['type']);
     }
 
+    public function test_engines_store_allows_optional_separator_for_merge_and_split(): void
+    {
+        foreach ([
+            ['name' => 'array-merge-no-separator', 'input_datatype' => Datatype::Array->value, 'type' => EngineType::Merge->value, 'output_datatype' => Datatype::String->value],
+            ['name' => 'string-split-no-separator', 'input_datatype' => Datatype::String->value, 'type' => EngineType::Split->value, 'output_datatype' => Datatype::Array->value],
+        ] as $payload) {
+            $payload['name'] = $payload['name'].'-'.Str::lower(Str::random(6));
+
+            $response = $this->apiJson('POST', $this->apiRoute('engines', 'store'), [], $payload)
+                ->assertCreated();
+
+            $engine = Engine::query()->findOrFail((string) $response->json('id'));
+            $this->assertNull($engine->configurations);
+        }
+    }
+
     public function test_engines_api_crud_validation_and_put_patch_behavior(): void
     {
         $this->apiJson('GET', $this->apiRoute('engines', 'index'))->assertOk();

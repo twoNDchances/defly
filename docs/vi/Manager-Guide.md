@@ -1,106 +1,107 @@
 # Hướng dẫn Manager
 
-Manager là ứng dụng Laravel/Filament dùng để quản trị Defly. Khi chạy bằng
-Docker Compose, địa chỉ mặc định là:
+Manager là giao diện Laravel/Filament để quản trị truy cập, xây dựng chính sách, triển khai [Defender](CoreConcepts/Defender.md) và điều tra [Report](CoreConcepts/Report.md).
+
+Địa chỉ mặc định khi chạy bằng Compose:
 
 ```text
 https://localhost/defly-manager
 ```
 
-## Bảng điều khiển
+## Bắt đầu từ bảng điều khiển
 
-Bảng điều khiển hiển thị trạng thái vận hành và các tín hiệu tổng quan của hệ
-thống. Đây là nơi nên kiểm tra đầu tiên sau khi đăng nhập để biết Manager,
-Orchestrator và các Defender có hoạt động bình thường hay không.
+Bảng điều khiển dùng để xem thông tin tổng quan trước khi thay đổi cấu hình: trạng thái Defender, tình hình triển khai, báo cáo gần đây và xu hướng. Biểu đồ có bộ lọc thời gian hoặc phạm vi khi dữ liệu hỗ trợ.
 
-## Người dùng, nhóm và quyền
+Bảng điều khiển không thay thế nhật ký. Khi thấy trạng thái bất thường, hãy mở Defender, chi tiết triển khai hoặc báo cáo liên quan.
 
-Manager quản lý truy cập theo ba lớp:
+## Quản trị truy cập
 
-- Người dùng: tài khoản đăng nhập vào Manager.
-- Nhóm: tập hợp người dùng có cùng vai trò vận hành.
-- Quyền: khả năng xem, tạo, sửa, xóa hoặc thực hiện thao tác cụ thể.
+Đọc các khái niệm theo thứ tự:
 
-Nên cấp quyền theo nhóm thay vì cấp trực tiếp cho từng người dùng, trừ trường
-hợp cần ngoại lệ rõ ràng.
+1. [User](CoreConcepts/User.md)
+2. [Group](CoreConcepts/Group.md)
+3. [Permission](CoreConcepts/Permission.md)
+4. [Key](CoreConcepts/Key.md)
 
-## Khóa API
+Nên cấp quyền theo nhóm. Chỉ cấp trực tiếp cho người dùng hoặc khóa khi có ngoại lệ rõ ràng. Khóa API cần có thời hạn, mục đích và người sở hữu cụ thể.
 
-Khóa API dùng cho các tích hợp gọi vào Manager API. Khi tạo khóa, cần giới hạn
-quyền theo đúng mục đích sử dụng và thu hồi khóa không còn dùng nữa.
+## Phân loại tài nguyên
 
-Mặc định Manager đọc khóa từ tiêu đề HTTP `X-Token-Key`, tùy theo cấu hình
-`TOKEN_KEY_NAME`.
+[Label](CoreConcepts/Label.md) giúp nhóm cấu hình theo ứng dụng, môi trường hoặc nhóm phụ trách. Label không thay đổi quá trình chạy WAF và không thay thế quyền.
 
-## Nhãn
+## Xây dựng chính sách
 
-Nhãn giúp phân loại dữ liệu trong Manager. Có thể dùng nhãn để nhóm mục tiêu,
-Defender, quy tắc hoặc các đối tượng vận hành liên quan đến cùng một hệ thống.
+Không bắt đầu từ Principle. Hãy tạo thành phần theo hướng từ dữ liệu đến phán quyết.
 
-## Mục tiêu
+### 1. Dữ liệu tái sử dụng
 
-Mục tiêu mô tả ứng dụng phía sau hoặc tài nguyên cần bảo vệ. Khi tạo mục tiêu,
-cần khai báo địa chỉ mà Defender sẽ chuyển tiếp yêu cầu đến.
+- [Wordlist](CoreConcepts/Wordlist.md) cho danh sách khóa, giá trị hoặc biểu thức chính quy.
+- [Pattern](CoreConcepts/Pattern.md) cho bộ trích xuất tích hợp sẵn mà Defender đã hỗ trợ.
 
-Mỗi Defender thường gắn với một mục tiêu cụ thể, để việc theo dõi quyết định và
-báo cáo rõ ràng hơn.
+Pattern hệ thống thường bị khóa vì phải đồng bộ với mã nguồn Defender.
 
-## Bộ máy xử lý
+### 2. Target
 
-Bộ máy xử lý xác định cách Defly xử lý quy tắc WAF. Cấu hình này là nền tảng để
-các quy tắc và nguyên tắc được áp dụng nhất quán khi Defender chạy.
+[Target](CoreConcepts/Target.md) chọn giai đoạn, loại và kiểu dữ liệu. Nếu dùng Pattern, Pattern quyết định kiểu dữ liệu. Nếu Target là mảng và không có Pattern, cần Wordlist chứa tên trường.
 
-## Mẫu khớp và danh sách từ
+Sau khi chọn Target, có thể gắn [Engine](CoreConcepts/Engine.md) theo thứ tự để chuẩn hóa dữ liệu. Kiểm tra kiểu dữ liệu đầu vào/đầu ra của từng bước.
 
-Mẫu khớp mô tả dữ liệu cần tìm trong yêu cầu hoặc phản hồi. Danh sách từ chứa
-nhiều giá trị có thể được dùng lại trong mẫu khớp hoặc quy tắc.
+### 3. Rule
 
-Nên tách dữ liệu có thể tái sử dụng vào danh sách từ để tránh lặp cấu hình ở
-nhiều quy tắc.
+[Rule](CoreConcepts/Rule.md) kết hợp Target, phép so sánh, giá trị đối chiếu hoặc Wordlist. Phép so sánh phải phù hợp với kiểu dữ liệu sau chuỗi Engine.
 
-## Hành động
+Đặt tên Rule theo điều kiện, không theo hành động. Ví dụ `request-body-has-password-field` rõ hơn `deny-bad-request`.
 
-Hành động xác định Defender phải làm gì khi quy tắc khớp. Các hành động thường
-gặp là cho qua, chặn hoặc ghi nhận để điều tra.
+### 4. Action
 
-Khi thay đổi hành động của quy tắc đang áp dụng, cần kiểm tra tác động trước
-khi triển khai lại Defender.
+[Action](CoreConcepts/Action.md) mô tả tác động khi Rule khớp. Trong giai đoạn thử nghiệm, ưu tiên `log`, `report` hoặc `suspect` trước `deny`.
 
-## Quy tắc
+`allow` và `deny` dừng các hành động phía sau, nên thứ tự gắn có ý nghĩa.
 
-Quy tắc ghép mục tiêu, mẫu khớp và hành động thành điều kiện kiểm tra cụ thể.
-Một quy tắc tốt nên có phạm vi rõ, tên dễ hiểu và hành động phù hợp với mức độ
-rủi ro.
+### 5. Principle
 
-## Nguyên tắc
+[Principle](CoreConcepts/Principle.md) nhóm các Rule cùng giai đoạn bằng AND. Chọn cấp độ theo độ nghiêm ngặt, sắp thứ tự Rule và chạy kiểm tra hợp lệ.
 
-Nguyên tắc là bộ chính sách gồm nhiều quy tắc. Defender áp dụng nguyên tắc để
-quyết định cách xử lý truy cập đi qua proxy.
+Không áp dụng Principle có trạng thái `pending`, `validating` hoặc `failed` cho Defender. Sau khi sửa thành phần phụ thuộc, hãy kiểm tra lại.
 
-Nên nhóm các quy tắc cùng mục đích vào một nguyên tắc, ví dụ bảo vệ đăng nhập,
-lọc đầu vào hoặc ghi nhận hành vi đáng ngờ.
+### 6. Decision
 
-## Quyết định
+[Decision](CoreConcepts/Decision.md) so sánh điểm và áp dụng hành động cuối theo hướng. Sắp Decision cụ thể trước Decision tổng quát; kiểm tra hành động có phù hợp với yêu cầu/phản hồi không.
 
-Quyết định là kết quả xử lý từng yêu cầu hoặc phản hồi. Dữ liệu này cho biết
-quy tắc nào đã khớp, hành động nào được áp dụng và Defender đã xử lý ra sao.
+## Tạo và triển khai Defender
 
-## Defender
+Trong biểu mẫu Defender:
 
-Khu vực Defender dùng để khai báo tiến trình chạy, cổng proxy, mục tiêu và thao
-tác triển khai. Các thao tác chính gồm:
+1. Đặt tên ổn định.
+2. Chọn cổng proxy chưa sử dụng.
+3. Cấu hình URL máy chủ phía sau và các biến môi trường cần thiết.
+4. Áp dụng Principle đã có trạng thái `passed`.
+5. Cài Decision đúng hướng.
+6. Lưu rồi chạy triển khai.
 
-- triển khai Defender
-- hủy triển khai đang chạy
-- theo dõi nhật ký triển khai
-- kiểm tra trạng thái Defender
+Manager tạo tác vụ; Worker gọi [Orchestrator](Orchestrator-Guide.md). Theo dõi `deployment_status`, `deployment_details` và nhật ký. `successful` chỉ mô tả kết quả triển khai, còn `status` mô tả sức khỏe trong quá trình chạy.
 
-Trước khi triển khai, cần chắc chắn cổng proxy chưa bị dùng bởi dịch vụ khác.
+## Cập nhật chính sách đang chạy
 
-## Báo cáo và dòng thời gian
+Khi thay Target, Engine, Action hoặc Rule dùng chung:
 
-Báo cáo ghi nhận dữ liệu phục vụ theo dõi và điều tra. Dòng thời gian giúp xem
-lịch sử thay đổi hoặc sự kiện quan trọng trong hệ thống.
+1. Xác định tất cả Principle phụ thuộc.
+2. Kiểm tra lại Principle.
+3. Kiểm tra Defender đang áp dụng Principle đó.
+4. Triển khai hoặc đồng bộ lại theo quy trình hiện tại.
+5. Gửi yêu cầu thử và kiểm tra báo cáo/nhật ký.
 
-Khi điều tra sự cố, nên xem theo thứ tự: quyết định, báo cáo, nhật ký Defender,
-rồi dòng thời gian thay đổi cấu hình.
+Không đổi trực tiếp chính sách trên môi trường thật khi chưa có bước quan sát trước bằng nhật ký/báo cáo.
+
+## Điều tra
+
+Đọc dữ liệu theo thứ tự:
+
+1. [Report](CoreConcepts/Report.md): yêu cầu nào, Rule nào và giá trị nào khớp.
+2. Nhật ký Defender: quá trình chạy đã đi đến đâu và gặp lỗi gì.
+3. Chi tiết triển khai: container có đúng image, mạng và biến môi trường không.
+4. [Timeline](CoreConcepts/Timeline.md): ai vừa thay đổi chính sách hoặc Defender.
+
+## Thao tác nhạy cảm
+
+Quản lý người dùng, khóa, triển khai, hủy Defender và sửa Decision chặn cần quyền riêng. Xem [Bảo mật](Security.md) trước khi phân quyền cho môi trường thật.
