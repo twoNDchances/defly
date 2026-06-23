@@ -31,6 +31,7 @@ class ReportPolicy
         if ($report->is_reviewed) {
             return false;
         }
+
         return $this->checkAccess($user, $report, 'review');
     }
 

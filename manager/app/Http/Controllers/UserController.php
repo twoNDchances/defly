@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\UserRequest;
 use App\Http\Requests\UserRelationRequest;
+use App\Http\Requests\UserRequest;
 use App\Models\User;
 use App\Services\ApiPayload;
 use Illuminate\Http\JsonResponse;
@@ -239,12 +239,13 @@ class UserController extends Controller
         if (! $user) {
             abort(404);
         }
-        $user->markEmailAsVerified();
-        $user->update([
-            'verification_token' => null,
-            'is_verified' => true,
-        ]);
-        Auth::login($user, true);
+        User::withoutEvents(function () use ($user): void {
+            $user->verification_token = null;
+            $user->is_verified = true;
+            $user->markEmailAsVerified();
+
+            Auth::login($user, true);
+        });
 
         return response()->redirectTo(route('filament.defly-manager.pages.dashboard'));
     }

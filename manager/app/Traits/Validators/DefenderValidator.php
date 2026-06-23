@@ -2,8 +2,6 @@
 
 namespace App\Traits\Validators;
 
-use App\Enums\Defender\DeploymentStatus;
-use App\Enums\Defender\Status;
 use Illuminate\Validation\Rule;
 
 trait DefenderValidator

@@ -78,4 +78,24 @@ return [
             'reviewAny' => 'Mark selected items as reviewed',
         ],
     ],
+    'timeline' => [
+        'tabs' => [
+            'mine' => 'My timeline',
+            'all' => 'All timelines',
+        ],
+        'filters' => [
+            'user' => 'User',
+            'system' => 'System / no user',
+            'resource' => 'Resource',
+            'action' => 'Action',
+            'method' => 'HTTP method',
+            'period' => 'Time period',
+            'from' => 'From date',
+            'until' => 'Until date',
+            'indicators' => [
+                'from' => 'From :date',
+                'until' => 'Until :date',
+            ],
+        ],
+    ],
 ];

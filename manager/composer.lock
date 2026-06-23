@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "9c5caba6fc0777f1119d4a3880e8a66a",
+    "content-hash": "0317035e987efef2c9c405fcde9da033",
     "packages": [
         {
             "name": "blade-ui-kit/blade-heroicons",
@@ -616,69 +616,6 @@
                 }
             ],
             "time": "2026-03-16T11:29:23+00:00"
-        },
-        {
-            "name": "devletes/filament-timeline-view",
-            "version": "v1.1.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/devletes/filament-timeline-view.git",
-                "reference": "436bc75c8f703232315b7c87517250b91e47e477"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/devletes/filament-timeline-view/zipball/436bc75c8f703232315b7c87517250b91e47e477",
-                "reference": "436bc75c8f703232315b7c87517250b91e47e477",
-                "shasum": ""
-            },
-            "require": {
-                "filament/tables": "^5.0",
-                "php": "^8.2"
-            },
-            "require-dev": {
-                "filament/filament": "^5.0",
-                "laravel/pint": "^1.18",
-                "orchestra/testbench": "^9.0|^10.0",
-                "pestphp/pest": "^3.8",
-                "pestphp/pest-plugin-laravel": "^3.0"
-            },
-            "type": "library",
-            "extra": {
-                "laravel": {
-                    "providers": [
-                        "Devletes\\FilamentTimelineView\\TimelineViewServiceProvider"
-                    ]
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Devletes\\FilamentTimelineView\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Devletes",
-                    "email": "packages@devletes.com"
-                }
-            ],
-            "description": "Render Filament Tables as a chronological timeline.",
-            "keywords": [
-                "filament",
-                "filament-plugin",
-                "filament-table",
-                "laravel",
-                "table",
-                "timeline"
-            ],
-            "support": {
-                "issues": "https://github.com/devletes/filament-timeline-view/issues",
-                "source": "https://github.com/devletes/filament-timeline-view/tree/v1.1.0"
-            },
-            "time": "2026-05-13T19:55:30+00:00"
         },
         {
             "name": "dflydev/dot-access-data",

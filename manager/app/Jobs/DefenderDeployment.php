@@ -208,7 +208,7 @@ class DefenderDeployment implements ShouldQueue
         $detail = (string) ($details['detail'] ?? __('notifications.defender.failure.default_detail'));
 
         if (isset($details['status'])) {
-            $detail .= ' ' . __('notifications.defender.failure.http_status', ['status' => $details['status']]);
+            $detail .= ' '.__('notifications.defender.failure.http_status', ['status' => $details['status']]);
         }
 
         if (isset($details['message'])) {

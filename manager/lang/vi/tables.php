@@ -78,4 +78,24 @@ return [
             'reviewAny' => 'Đánh dấu các mục đã chọn là đã xem xét',
         ],
     ],
+    'timeline' => [
+        'tabs' => [
+            'mine' => 'Dòng thời gian của tôi',
+            'all' => 'Tất cả dòng thời gian',
+        ],
+        'filters' => [
+            'user' => 'Người dùng',
+            'system' => 'Hệ thống / không có người dùng',
+            'resource' => 'Tài nguyên',
+            'action' => 'Hành động',
+            'method' => 'Phương thức HTTP',
+            'period' => 'Khoảng thời gian',
+            'from' => 'Từ ngày',
+            'until' => 'Đến ngày',
+            'indicators' => [
+                'from' => 'Từ ngày :date',
+                'until' => 'Đến ngày :date',
+            ],
+        ],
+    ],
 ];

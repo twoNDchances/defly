@@ -326,7 +326,7 @@ class DefenderCommunication implements ShouldQueue
     {
         return __(
             "notifications.communication.titles.{$resourceType}.{$this->normalizedAction()}."
-            . ($successful ? 'completed' : 'failed')
+            .($successful ? 'completed' : 'failed')
         );
     }
 

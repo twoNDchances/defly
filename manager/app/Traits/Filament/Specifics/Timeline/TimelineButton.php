@@ -30,12 +30,20 @@ use App\Models\Rule;
 use App\Models\Target;
 use App\Models\User;
 use App\Models\Wordlist;
+use App\Services\Identification;
 use App\Traits\Filament\Generals\Components\Button;
 use Filament\Support\Icons\Heroicon;
 
 trait TimelineButton
 {
     use Button;
+
+    public static function deleteTimelineBulkButton()
+    {
+        return self::deleteBulkButton()
+            ->visible(fn ($livewire): bool => ($livewire->activeTab ?? null) !== 'all'
+                || Identification::isRoot());
+    }
 
     public static function openResourceButton()
     {

@@ -3,8 +3,9 @@
 namespace App\Filament\Resources\Timelines\Tables;
 
 use App\Filament\Components\Timeline\TimelineTable;
-use Filament\Tables\Grouping\Group;
+use App\Services\Identification;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class TimelinesTable
 {
@@ -12,18 +13,17 @@ class TimelinesTable
     {
         return $table
             ->columns(TimelineTable::build())
-            ->filters([
-                //
-            ])
+            ->modifyQueryUsing(fn (Builder $query): Builder => Identification::isRoot()
+                ? $query
+                : $query->where('created_by', Identification::getId()))
+            ->filters(TimelineTable::buildFilters())
+            ->filtersFormColumns(2)
             ->recordActions([
                 TimelineTable::buttonGroup(edit: false),
             ])
-            ->defaultGroup(
-                Group::make('created_at')
-                ->date()
-                ->orderQueryUsing(fn ($query) => $query->orderByDesc('created_at'))
-                ->collapsible()
-            )
-            ->asDoubleSidedTimeline();
+            ->toolbarActions([
+                TimelineTable::bulkButtonGroup(false, [TimelineTable::deleteTimelineBulkButton()]),
+            ])
+            ->defaultSort('created_at', 'desc');
     }
 }

@@ -425,6 +425,6 @@ return [
                 'suspend' => 'Đình chỉ',
                 'review' => 'Xem xét',
             ],
-        ]
+        ],
     ],
 ];
