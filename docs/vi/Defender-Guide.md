@@ -10,7 +10,7 @@ Defender là chương trình Go chạy API điều khiển, proxy ngược và t
 - Doctor: theo dõi tình trạng và phát hiện trạng thái bất thường.
 - Bộ ghi nhật ký và lưu lỗi: ghi dữ liệu vận hành.
 
-API điều khiển không nên mở công khai. Manager là bên gọi chính và có thể xác minh TLS theo [Cấu hình](Configuration.md#kết-nối-tới-defender).
+API điều khiển không nên mở công khai. Manager là bên gọi chính và có thể xác minh TLS theo [Cấu hình](Configuration.md#manager-và-defender).
 
 ## Khởi tạo giao dịch HTTP
 

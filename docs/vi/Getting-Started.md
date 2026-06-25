@@ -1,75 +1,45 @@
 # Bắt đầu nhanh
 
-Trang này đưa toàn bộ hệ thống lên bằng Docker Compose. Để hiểu vai trò từng dịch vụ, đọc [Tổng quan](Overview.md) trước.
+Trang này bắt đầu sau khi Defly đã được cài và các service khỏe mạnh. Lệnh cài đặt và
+yêu cầu hệ thống nằm trong [Cài đặt](Installation.md); chẩn đoán service nằm trong
+[Vận hành](Operations.md#kiểm-tra-sức-khỏe-theo-từng-lớp).
 
-## Yêu cầu
+## 1. Đăng nhập và xem Dashboard
 
-- Docker Engine hoặc Docker Desktop có Compose V2.
-- Cổng `80` và `443` đang rảnh, hoặc đổi cổng Manager trong `.env`.
-- Máy chủ Docker có đủ tài nguyên để chạy MariaDB, Manager, Worker và Orchestrator.
+Mở Manager, đăng nhập bằng tài khoản bootstrap và xác nhận phần database, queue,
+Orchestrator, Defender không báo lỗi hạ tầng. Đổi password bootstrap tạm thời trước
+khi tạo thêm user.
 
-## Khởi động
+## 2. Thiết lập quyền truy cập
 
-Từ thư mục gốc:
+Tạo một role operator với quyền tối thiểu trước khi thêm nhiều user; automation nên
+dùng API Key thay vì password dùng chung. Làm theo các bước cụ thể tại
+[Quản trị truy cập](Manager-Guide.md#quản-trị-truy-cập); thứ tự ưu tiên quyền thuộc
+các trang concept User, Group, Permission và Key được dẫn từ đó.
 
-```powershell
-Copy-Item .env.example .env
-docker compose build defender
-docker compose up -d --build
-docker compose ps
-```
+## 3. Tạo policy đầu tiên an toàn
 
-Image Defender cần được dựng trước vì [Orchestrator](Orchestrator-Guide.md) dùng image này để triển khai container động.
+Dùng [Xây dựng chính sách](Manager-Guide.md#xây-dựng-chính-sách) cho thứ tự thao tác
+trên form và [Khái niệm cốt lõi](CoreConcepts/README.md) cho quy tắc model. Ở lần đầu,
+chỉ chọn một tín hiệu request hẹp, dùng `log` hoặc `report` thay vì `deny`, validate
+Principle và xử lý hết lỗi. Cách này tạo bằng chứng quan sát mà không dễ gây outage.
 
-Mở Manager tại:
+## 4. Tạo Defender đầu tiên
 
-```text
-https://localhost/defly-manager
-```
+Làm theo [Tạo và triển khai Defender](Manager-Guide.md#tạo-và-triển-khai-defender).
+Với instance đầu tiên, dùng tên duy nhất, proxy port chưa bị chiếm và backend URL truy
+cập được từ bên trong container. Chờ `deployment_status=successful` rồi mới apply hoặc
+implement policy. Ý nghĩa từng state thuộc [Defender](CoreConcepts/Defender.md).
 
-Nếu `USER_PASSWORD=random`, đọc thông tin xác thực khởi tạo:
+## 5. Xác minh hành vi
 
-```powershell
-docker compose exec manager sh -lc "cat /var/www/html/credentials.txt"
-```
+Gửi traffic kiểm thử qua proxy Defender rồi kiểm tra theo thứ tự:
 
-Trình duyệt có thể cảnh báo chứng chỉ tự ký trong môi trường cục bộ.
+- backend nhận traffic được allow;
+- log Defender không có lỗi transport/runtime;
+- Rule dự kiến đã match;
+- Action dự kiến tạo log hoặc Report;
+- score và Decision đúng với test case.
 
-## Kiểm tra dịch vụ
-
-```powershell
-docker compose logs -f mariadb orchestrator manager worker
-```
-
-Chỉ tiếp tục khi Manager truy cập được, Worker đang chạy và Orchestrator kết nối được Docker.
-
-## Tạo chính sách tối thiểu
-
-Trước khi thao tác, đọc tuyến [Target](CoreConcepts/Target.md) -> [Engine](CoreConcepts/Engine.md) -> [Rule](CoreConcepts/Rule.md) -> [Action](CoreConcepts/Action.md) -> [Principle](CoreConcepts/Principle.md) -> [Decision](CoreConcepts/Decision.md).
-
-Một chính sách thử nghiệm nên bắt đầu bằng ghi nhật ký hoặc tạo báo cáo thay vì chặn:
-
-1. Chọn một Pattern hoặc tạo Target đọc rõ một trường trong yêu cầu.
-2. Tạo Rule với phép so sánh phù hợp kiểu dữ liệu của Target.
-3. Gắn Action `log` hoặc `report` vào Rule.
-4. Tạo Principle cùng giai đoạn và thêm Rule.
-5. Kiểm tra Principle cho đến khi trạng thái là `passed`.
-
-## Tạo Defender đầu tiên
-
-1. Tạo bản ghi [Defender](CoreConcepts/Defender.md) với tên và cổng proxy chưa được sử dụng.
-2. Cấu hình URL máy chủ phía sau trong nhóm biến proxy.
-3. Áp dụng Principle và cài đặt Decision cần thiết.
-4. Dùng thao tác triển khai trong Manager.
-5. Theo dõi `deployment_status` và nhật ký triển khai.
-
-## Kiểm tra proxy
-
-Gửi yêu cầu qua cổng proxy của Defender, không gửi trực tiếp tới máy chủ phía sau. Sau đó kiểm tra:
-
-- Máy chủ phía sau có nhận yêu cầu không.
-- Nhật ký Defender có lỗi không.
-- [Report](CoreConcepts/Report.md) có được tạo khi hành động tương ứng chạy không.
-- Điểm và Decision có đúng kỳ vọng không.
-
-Nếu triển khai thất bại, chuyển tới [Khắc phục sự cố](Troubleshooting.md). Nếu cần cấu hình chi tiết, đọc [Cài đặt](Installation.md) và [Cấu hình](Configuration.md).
+Chỉ đổi Action sang `deny` sau khi case đúng, sai, malformed và bypass đều cho kết quả
+mong đợi. Khi một tầng lỗi, tra [Khắc phục sự cố](Troubleshooting.md) theo triệu chứng.

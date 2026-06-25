@@ -20,19 +20,19 @@ If the policy structure is unfamiliar, read [Core Concepts](CoreConcepts/README.
 | --- | --- |
 | [Manager](Manager-Guide.md) | Laravel/Filament UI and API for configuration, access control, policies, Defenders, and reports. |
 | Worker | Processes Laravel queue jobs such as deployment, cancellation, and log following. |
-| [Orchestrator](Orchestrator-Guide.md) | Receives requests from Worker, controls Docker, and updates deployment status. |
+| [Orchestrator](Orchestrator-Guide.md) | Receives internal requests, controls Docker, and updates deployment status. |
 | [Defender](CoreConcepts/Defender.md) | Reverse proxy and WAF that enforces policies on HTTP requests and responses. |
 | MariaDB | Shared database whose schema is owned by Manager; each service reads or writes according to its responsibility. |
 
 [Defender](CoreConcepts/Defender.md) refers both to a configuration record in Manager and to the running Go process.
 
-## Two Main Flows
+## Main Flows
 
 ### Configuration and Deployment
 
 1. A [User](CoreConcepts/User.md) creates policies and a Defender record in Manager.
 2. Manager stores the data in MariaDB.
-3. Worker calls Orchestrator with Basic Auth.
+3. Worker makes an authenticated internal call to Orchestrator.
 4. Orchestrator creates a Defender container on the Docker host.
 5. Defender reads its applied policies from the database.
 

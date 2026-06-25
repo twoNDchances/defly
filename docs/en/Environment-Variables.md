@@ -18,6 +18,70 @@ Do not treat two variables as interchangeable only because they carry the same v
 - Passwords, application keys, and API keys in example files are placeholders. Replace them before production use.
 - After changing Laravel `.env`, clear or rebuild the configuration cache. With Compose, run `docker compose config` to inspect final values before restarting services.
 
+## Variables You Need to Reconfigure
+
+After copying `.env.example` to `.env`, do not keep every example value unchanged. This section identifies what to edit first without requiring you to read every reference table.
+
+### Required Before Production Use
+
+| Variable | Why It Must Change | Recommended Value |
+| --- | --- | --- |
+| `MARIADB_ROOT_PASSWORD` | The example protects the MariaDB administrator account. | A strong, unique password stored in a secret manager. |
+| `DB_PASSWORD` | Manager, Orchestrator, and Defender use it to access application data. | A strong application password distinct from the `root` password. |
+| `ORCHESTRATOR_PASSWORD` | Protects an API with Docker control privileges. | A strong random password matching Orchestrator `SERVER_PASSWORD`. |
+| `APP_KEY` | Encrypts Laravel cookies, sessions, and data. A process-local generated key is not persistent. | Output from `php artisan key:generate --show`, kept stable after launch. |
+| `USER_EMAIL` | The bootstrap administrator should not use the example address. | The initial administrator's real email. |
+| `USER_PASSWORD` | `random` is suitable for bootstrap only when retrieved and stored securely; never use a fixed example password. | A strong password, or keep `random` and retrieve it once from `credentials.txt`. |
+| `APP_URL` | Affects generated links, cookies, and hostname behavior. | The real Manager HTTPS URL, such as `https://manager.example.com`. |
+
+After changing database or Orchestrator credentials, update both sides according to [Cross-service Mapping](#cross-service-mapping).
+
+### Change for Your Infrastructure
+
+| Variable | When to Change It |
+| --- | --- |
+| `COMPOSE_PROJECT_NAME` | Change before first startup for a project name other than `defly`; changing it later creates a new network/volume set. |
+| `MANAGER_IMAGE`, `ORCHESTRATOR_IMAGE`, `SERVER_DEFENDER_IMAGE` | When using your own registry, namespace, or version tags. `SERVER_DEFENDER_IMAGE` must exist on Orchestrator's Docker host. |
+| `MANAGER_HTTP_PORT`, `MANAGER_HTTPS_PORT` | When ports `80`/`443` are occupied or Manager runs behind a reverse proxy. |
+| `MANAGER_TLS_COMMON_NAME` | When the generated self-signed certificate must match a domain/IP other than `localhost`. Configure the external TLS termination point when certificates are managed elsewhere. |
+| `ORCHESTRATOR_ALLOWED_HOSTS` | Add only the domains/IPs used to reach Orchestrator; avoid `*` in production unless explicitly required. |
+| `ORCHESTRATOR_ALLOWED_CLIENTS` | Must include the real Orchestrator callers. Default Compose requires `worker`; manual deployments may use another host/IP. |
+| `TIMEZONE`, `LANGUAGE_CODE` | When the system uses another timezone or language. Consistent timezones simplify Timeline, Report, and log correlation. |
+| `SERVER_DEFENDER_TLS_VOLUME` | Only when intentionally renaming TLS storage and updating both Compose and Orchestrator. |
+| `WORKER_TIMEOUT`, `WORKER_TRIES`, `WORKER_MAX_TIME` | When image retrieval/deployment exceeds defaults or needs another retry policy. |
+
+### When Using Resend
+
+Compose defaults to `MAIL_MAILER=resend`. To send verification or notification mail through Resend, configure:
+
+| Variable | Requirement |
+| --- | --- |
+| `MAIL_MAILER` | Keep `resend`. |
+| `RESEND_API_KEY` | Required; use a real Resend API key and never commit it. |
+| `MAIL_FROM_ADDRESS` | Address on a domain verified by Resend. `onboarding@resend.dev` is suitable only for limited testing. |
+| `MAIL_FROM_NAME` | Sender name shown to recipients. |
+
+`RESEND_DOMAIN`, `RESEND_PATH`, `RESEND_WEBHOOK_SECRET`, and `RESEND_WEBHOOK_TOLERANCE` are present in the example but are not currently read directly by application code. They are not required merely to send mail. If real delivery is not needed yet, use `MAIL_MAILER=log` to write messages to logs instead of calling Resend.
+
+### When Creating a Defender
+
+Review at least these variables on every Defender record in Manager:
+
+| Variable | Requirement |
+| --- | --- |
+| `PROXY_BACKEND_URL` | Must point to a backend reachable **from the Defender container**; do not use `localhost` when the backend is in another container/host. |
+| `DATABASE_HOST`, `DATABASE_NAME`, `DATABASE_USER`, `DATABASE_PASS` | Must use the same database as Manager. Manager pre-fills its current connection, but verify it outside Compose. |
+| `SERVER_SECURITY_USERNAME`, `SERVER_SECURITY_PASSWORD` | Replace example Basic Auth credentials and ensure Manager uses matching values for control API calls. |
+| `SERVER_SECURITY_MANAGER` | Default Compose uses `worker`; manual execution must use the actual caller host/IP. |
+| `PROXY_TRUSTED_ENABLE`, `PROXY_TRUSTED_LIST` | Enable only behind known trusted proxies with a correctly restricted IP/CIDR list. |
+| `PROXY_SEVERITY_*`, `PROXY_VIOLATION_LEVEL`, `PROXY_VIOLATION_SCORE` | Keep defaults initially; change only after designing score accumulation and Decision thresholds. |
+
+Orchestrator overrides `DEFENDER_NAME` and `PROXY_PORT` from the Defender record during deployment, so they do not need manual edits inside the environment object.
+
+### Do Not Use TLS Skips as a Permanent Fix
+
+Use `ORCHESTRATOR_TLS_SKIP_VERIFY=true` and `DEFENDER_SERVER_TLS_SKIP_VERIFY=true` only temporarily in development to isolate certificate problems. Production should keep both `false`, provide correct certificates, and fix hostname/trust paths instead of disabling verification.
+
 ## Root Docker Compose `.env`
 
 Create the root `.env` from `.env.example`. Values in this section are interpolated by Docker Compose; containers receive the variable names declared in `docker-compose.yml`.
@@ -176,6 +240,7 @@ For manual execution, copy `manager/.env.example` to `manager/.env`. Variables a
 | Variable | Example Default | Meaning |
 | --- | --- | --- |
 | `ORCHESTRATOR_BASE_URL` | `https://orchestrator:8000` | Full Orchestrator URL. Outside Compose, use a reachable address such as `https://127.0.0.1:8000`. |
+| `ORCHESTRATOR_TIMEOUT` | `90` | Maximum seconds Manager waits for an Orchestrator HTTP response. Increase it only when deployment, cancellation, or log-following calls need more time. |
 | `ORCHESTRATOR_TLS_CERT_FILE` | `storage/tls/orchestrator/orchestrator.crt` | Certificate used to verify Orchestrator when TLS verification is enabled. |
 | `DEFENDER_SERVER_TLS_DIRECTORY` | `storage/tls/defenders` | Defender certificate directory; Manager reads `<defender-name>.crt`. |
 
@@ -360,7 +425,7 @@ Control methods accept only `post`, `put`, `patch`, or `delete`. Manager must us
 | `ORCHESTRATOR_EMAIL_HEADER_KEY` | `SERVER_EMAIL_HEADER_KEY` | Executor header name. |
 | `ORCHESTRATOR_PATH_PREFIX` | `SERVER_PATH_PREFIX` | Orchestrator API prefix. |
 | `ORCHESTRATOR_PATH_DEPLOYMENT` | `SERVER_PATH_DEPLOYMENT` | Deployment path. |
-| `ORCHESTRATOR_METHOD_*` | `SERVER_METHOD_*` | Methods for each deployment operation. |
+| `ORCHESTRATOR_METHOD_*` | `SERVER_METHOD_*` | Methods for deployment operations. |
 | Manager Defender client settings | `SERVER_CONTROLLER_*`, `SERVER_SECURITY_*` | Defender control API paths, methods, and Basic Auth. |
 | `SERVER_DEFENDER_IMAGE` | Orchestrator `SERVER_DEFENDER_IMAGE` | Deployed Defender image. |
 | `SERVER_DEFENDER_TLS_VOLUME` | Compose `defender_tls` volume | Shared certificate storage. |

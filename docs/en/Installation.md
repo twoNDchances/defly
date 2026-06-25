@@ -32,7 +32,7 @@ USER_EMAIL
 USER_PASSWORD
 ```
 
-See [Configuration](Configuration.md#docker-compose-configuration) for complete descriptions.
+See [Environment Variables](Environment-Variables.md#root-docker-compose-env) for complete descriptions.
 
 ### 2. Build the Defender Image
 
@@ -87,7 +87,7 @@ Database, storage, TLS, log, and error volumes outlive containers. Do not use `d
 
 ### 6. Create a Defender
 
-After signing in, follow [Getting Started](Getting-Started.md#create-the-first-defender). The Defender configuration model is described in [Defender](CoreConcepts/Defender.md).
+After signing in, follow [Getting Started](Getting-Started.md#4-create-the-first-defender). The Defender configuration model is described in [Defender](CoreConcepts/Defender.md).
 
 ## Manual Installation
 

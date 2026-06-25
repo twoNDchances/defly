@@ -18,6 +18,70 @@ Không dùng chung một tên biến chỉ vì giá trị giống nhau. Docker C
 - Mật khẩu, khóa ứng dụng và khóa API trong các tệp mẫu chỉ là giá trị minh họa. Phải thay chúng trước khi dùng trong môi trường thật.
 - Sau khi đổi `.env` của Laravel, cần xóa hoặc tạo lại bộ nhớ đệm cấu hình. Với Compose, chạy `docker compose config` để xem giá trị cuối cùng trước khi khởi động lại dịch vụ.
 
+## Những biến cần cấu hình lại
+
+Sau khi sao chép `.env.example` thành `.env`, không nên giữ nguyên toàn bộ giá trị mẫu. Danh sách dưới đây giúp xác định biến nào cần sửa trước, thay vì phải đọc từng bảng tham chiếu.
+
+### Bắt buộc đổi trước khi dùng thật
+
+| Biến | Lý do cần đổi | Giá trị nên dùng |
+| --- | --- | --- |
+| `MARIADB_ROOT_PASSWORD` | Giá trị mẫu bảo vệ tài khoản quản trị MariaDB. | Mật khẩu mạnh, riêng biệt và lưu trong hệ thống quản lý bí mật. |
+| `DB_PASSWORD` | Manager, Orchestrator và Defender cùng dùng mật khẩu này để truy cập dữ liệu. | Mật khẩu ứng dụng mạnh, khác mật khẩu `root`. |
+| `ORCHESTRATOR_PASSWORD` | Bảo vệ API có quyền điều khiển Docker. | Mật khẩu ngẫu nhiên mạnh; phải khớp `SERVER_PASSWORD` phía Orchestrator. |
+| `APP_KEY` | Dùng để mã hóa cookie, phiên và dữ liệu Laravel. Khóa tạm trong container không bền vững. | Kết quả của `php artisan key:generate --show`, giữ ổn định sau khi đưa hệ thống vào sử dụng. |
+| `USER_EMAIL` | Tài khoản quản trị khởi tạo không nên dùng địa chỉ mẫu. | Email thật của quản trị viên ban đầu. |
+| `USER_PASSWORD` | `random` phù hợp để khởi tạo cục bộ nhưng cần được lấy và lưu an toàn; mật khẩu cố định mẫu tuyệt đối không dùng thật. | Mật khẩu mạnh hoặc giữ `random` rồi lấy một lần từ `credentials.txt`. |
+| `APP_URL` | Ảnh hưởng liên kết được sinh, cookie và tên máy chủ. | URL HTTPS thật của Manager, ví dụ `https://manager.example.com`. |
+
+Sau khi đổi thông tin cơ sở dữ liệu hoặc Orchestrator, phải cập nhật đồng thời mọi phía theo [bảng ánh xạ](#ánh-xạ-giữa-các-dịch-vụ).
+
+### Cần đổi theo hạ tầng triển khai
+
+| Biến | Khi nào cần đổi |
+| --- | --- |
+| `COMPOSE_PROJECT_NAME` | Đổi trước lần khởi động đầu tiên nếu muốn tên dự án khác `defly`; không nên đổi sau đó vì sẽ tạo bộ mạng/ổ dữ liệu mới. |
+| `MANAGER_IMAGE`, `ORCHESTRATOR_IMAGE`, `SERVER_DEFENDER_IMAGE` | Khi dùng registry, namespace hoặc thẻ phiên bản riêng. `SERVER_DEFENDER_IMAGE` phải tồn tại trên Docker host của Orchestrator. |
+| `MANAGER_HTTP_PORT`, `MANAGER_HTTPS_PORT` | Khi cổng `80`/`443` đã được dùng hoặc Manager nằm sau proxy ngược. |
+| `MANAGER_TLS_COMMON_NAME` | Khi chứng chỉ tự ký cần khớp tên miền/IP khác `localhost`. Với chứng chỉ do hệ thống bên ngoài quản lý, cấu hình nơi kết thúc TLS tương ứng. |
+| `ORCHESTRATOR_ALLOWED_HOSTS` | Bổ sung đúng tên miền/IP dùng để gọi Orchestrator; không mở rộng thành `*` trong môi trường thật nếu không cần thiết. |
+| `ORCHESTRATOR_ALLOWED_CLIENTS` | Phải chứa nguồn thực sự gọi Orchestrator. Với Compose mặc định cần `worker`; khi chạy thủ công có thể là IP/tên máy khác. |
+| `TIMEZONE`, `LANGUAGE_CODE` | Khi hệ thống dùng múi giờ hoặc ngôn ngữ khác. Giữ múi giờ đồng nhất giúp đối chiếu Timeline, Report và nhật ký. |
+| `SERVER_DEFENDER_TLS_VOLUME` | Chỉ đổi khi đã chủ động đặt tên ổ TLS khác và cập nhật cả Compose lẫn Orchestrator. |
+| `WORKER_TIMEOUT`, `WORKER_TRIES`, `WORKER_MAX_TIME` | Khi tải image hoặc triển khai Defender thường lâu hơn giới hạn mặc định, hoặc cần chính sách thử lại khác. |
+
+### Khi sử dụng Resend
+
+Compose mặc định đặt `MAIL_MAILER=resend`. Nếu muốn Manager gửi thư xác minh hoặc thông báo qua Resend, cần cấu hình:
+
+| Biến | Yêu cầu |
+| --- | --- |
+| `MAIL_MAILER` | Giữ `resend`. |
+| `RESEND_API_KEY` | Bắt buộc; dùng khóa API thật từ Resend và không đưa vào kho mã nguồn. |
+| `MAIL_FROM_ADDRESS` | Địa chỉ thuộc miền đã xác minh trong Resend. `onboarding@resend.dev` chỉ phù hợp để thử nghiệm theo giới hạn của Resend. |
+| `MAIL_FROM_NAME` | Tên người gửi hiển thị cho người nhận. |
+
+`RESEND_DOMAIN`, `RESEND_PATH`, `RESEND_WEBHOOK_SECRET` và `RESEND_WEBHOOK_TOLERANCE` đang có trong tệp mẫu nhưng mã ứng dụng hiện chưa đọc trực tiếp. Không cần đặt chúng chỉ để gửi thư. Nếu chưa muốn gửi thư thật, có thể dùng `MAIL_MAILER=log` để nội dung thư đi vào nhật ký thay vì gọi Resend.
+
+### Khi tạo Defender
+
+Mỗi bản ghi Defender cần được xem lại ít nhất các biến sau trong Manager:
+
+| Biến | Yêu cầu |
+| --- | --- |
+| `PROXY_BACKEND_URL` | Bắt buộc trỏ tới máy chủ phía sau mà **container Defender** truy cập được; không dùng `localhost` nếu máy chủ phía sau nằm ở container/máy khác. |
+| `DATABASE_HOST`, `DATABASE_NAME`, `DATABASE_USER`, `DATABASE_PASS` | Phải trỏ cùng cơ sở dữ liệu với Manager. Manager tự điền theo kết nối hiện tại, nhưng vẫn cần kiểm tra khi chạy ngoài Compose. |
+| `SERVER_SECURITY_USERNAME`, `SERVER_SECURITY_PASSWORD` | Đổi thông tin Basic Auth mẫu và bảo đảm phía Manager dùng đúng giá trị khi gọi API điều khiển. |
+| `SERVER_SECURITY_MANAGER` | Với Compose mặc định là `worker`; khi chạy thủ công phải là tên/IP nguồn thực sự gọi Defender. |
+| `PROXY_TRUSTED_ENABLE`, `PROXY_TRUSTED_LIST` | Chỉ bật khi Defender nằm sau proxy tin cậy và danh sách IP/CIDR đã được giới hạn đúng. |
+| `PROXY_SEVERITY_*`, `PROXY_VIOLATION_LEVEL`, `PROXY_VIOLATION_SCORE` | Giữ mặc định khi bắt đầu; chỉ đổi sau khi đã thiết kế cách cộng điểm và ngưỡng Decision. |
+
+`DEFENDER_NAME` và `PROXY_PORT` được Orchestrator ghi đè từ bản ghi Defender khi triển khai, vì vậy không cần sửa thủ công trong đối tượng biến môi trường.
+
+### Không nên bật để xử lý nhanh lỗi TLS
+
+`ORCHESTRATOR_TLS_SKIP_VERIFY=true` và `DEFENDER_SERVER_TLS_SKIP_VERIFY=true` chỉ nên dùng tạm trong môi trường phát triển để xác định lỗi chứng chỉ. Môi trường thật nên giữ cả hai là `false`, cung cấp đúng chứng chỉ và sửa tên máy chủ/đường dẫn tin cậy thay vì bỏ xác minh.
+
 ## `.env` gốc của Docker Compose
 
 Tạo `.env` từ `.env.example` tại thư mục gốc. Các giá trị trong phần này chỉ được Docker Compose nội suy; container nhận tên biến được khai báo trong `docker-compose.yml`.
@@ -362,7 +426,7 @@ Các cặp sau phải cùng giá trị hoặc mô tả cùng giao kèo:
 | `ORCHESTRATOR_EMAIL_HEADER_KEY` | `SERVER_EMAIL_HEADER_KEY` | Tên tiêu đề HTTP mang người thực thi. |
 | `ORCHESTRATOR_PATH_PREFIX` | `SERVER_PATH_PREFIX` | Tiền tố API Orchestrator. |
 | `ORCHESTRATOR_PATH_DEPLOYMENT` | `SERVER_PATH_DEPLOYMENT` | Đường dẫn triển khai. |
-| `ORCHESTRATOR_METHOD_*` | `SERVER_METHOD_*` | Phương thức của từng thao tác triển khai. |
+| `ORCHESTRATOR_METHOD_*` | `SERVER_METHOD_*` | Phương thức của các thao tác triển khai. |
 | Cấu hình gọi Defender trong Manager | `SERVER_CONTROLLER_*`, `SERVER_SECURITY_*` | Đường dẫn, phương thức và Basic Auth của API điều khiển Defender. |
 | `SERVER_DEFENDER_IMAGE` | `SERVER_DEFENDER_IMAGE` của Orchestrator | Image dùng để triển khai Defender. |
 | `SERVER_DEFENDER_TLS_VOLUME` | ổ `defender_tls` của Compose | Nơi chia sẻ chứng chỉ giữa Defender và Manager. |

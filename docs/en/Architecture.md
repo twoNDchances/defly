@@ -31,43 +31,31 @@ Client -> Defender proxy ----> Backend server      Defender container
 
 ## Policy Pipeline
 
-Policies follow this order:
+At the architectural level, policy data moves in this order:
 
 ```text
 Pattern/Wordlist -> Target -> Engine -> Rule -> Action -> Principle -> Decision
 ```
 
-- [Pattern](CoreConcepts/Pattern.md) and [Wordlist](CoreConcepts/Wordlist.md) provide reusable data.
-- [Target](CoreConcepts/Target.md) selects HTTP data.
-- [Engine](CoreConcepts/Engine.md) transforms values.
-- [Rule](CoreConcepts/Rule.md) compares values.
-- [Action](CoreConcepts/Action.md) updates the HTTP transaction or creates a side effect.
-- [Principle](CoreConcepts/Principle.md) combines rules with AND and coordinates their actions.
-- [Decision](CoreConcepts/Decision.md) renders a verdict from the score.
+This is an execution/readability sequence, not a claim that every neighboring model
+has a direct database relationship. Model meaning, compatibility, and persisted
+relationships belong in [Core Concepts](CoreConcepts/README.md).
 
 ## HTTP Lifecycle
 
-Defender captures the request before running each phase:
-
-1. Full request.
-2. Request headers, query parameters, and metadata.
-3. Request body and files.
-
-After the request Principles, request-direction Decisions run. Unless the transaction reaches `deny` or `cancel`, the request is forwarded to the backend.
-
-When the backend returns data, Defender runs:
-
-4. Response headers and metadata.
-5. Response body.
-6. Full response.
-
-Finally, response-direction Decisions are applied before data is returned to the client. See [Target](CoreConcepts/Target.md#six-http-phases) for phase and type details.
+Defender evaluates three request phases, applies request-direction Decisions, proxies
+allowed traffic to the backend, then evaluates three response phases and
+response-direction Decisions before returning data. Exact phase extraction belongs in
+[Target](CoreConcepts/Target.md#six-http-phases); runtime ordering belongs in the
+[Defender Guide](Defender-Guide.md).
 
 ## Deployment Flow
 
-Manager creates a background job. Worker calls Orchestrator with credentials and executor information. Orchestrator validates the request, uses the Docker API to create a container, attaches the `defly_infrastructure` network and TLS/log/error volumes, maps the port, and updates deployment status.
-
-Dynamic containers receive Compose project and configuration labels so the project's `docker compose down` command can discover and stop them with the rest of the system.
+Manager creates a background job. Worker calls Orchestrator with the executor identity,
+Orchestrator authorizes the requested lifecycle action, and only then may it change
+Docker state. Orchestrator creates or removes the Defender container and reports the
+resulting status to Manager. Container labels, networks, volumes, ports, and cleanup
+behavior are owned by [Orchestrator](Orchestrator-Guide.md#deployment-lifecycle).
 
 ## Database
 

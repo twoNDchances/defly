@@ -1,190 +1,71 @@
 # Configuration
 
-Defly uses a root `.env` for [Docker Compose](Installation.md#docker-compose) and service-specific `.env` files for manual execution. Never commit real secrets. See [Environment Variables](Environment-Variables.md) for every variable, default, and constraint.
+This page explains how Defly configuration is divided and which values must agree
+between services. The exhaustive variable reference belongs in
+[Environment Variables](Environment-Variables.md).
 
-## Docker Compose Configuration
+## Configuration Sources
 
-The root `.env` controls images, the database, ports, credentials, and values passed into services.
+| Runtime | Source | Purpose |
+| --- | --- | --- |
+| Docker Compose stack | Root `.env` | Images, published ports, shared credentials, database, volumes, and values injected into containers |
+| Manual Manager | `manager/.env` | Laravel, queue, mail, Manager API, and outbound service connections |
+| Manual Orchestrator | `orchestrator/.env` | Django, Docker access, and internal API |
+| Defender | Defender record and deployment environment | Backend, control server, proxy behavior, logging, and scoring |
 
-### Project and Images
+Do not maintain the same deployment through multiple sources. Compose deployments
+should treat the root `.env` and rendered `docker compose config` as authoritative;
+manual runs should use each service's local `.env`.
 
-| Variable | Meaning |
-| --- | --- |
-| `COMPOSE_PROJECT_NAME` | Prefix for Compose networks, volumes, and labels; default `defly`. |
-| `MANAGER_IMAGE` | Manager image. |
-| `ORCHESTRATOR_IMAGE` | Orchestrator image. |
-| `SERVER_DEFENDER_IMAGE` | Image used to create [Defenders](CoreConcepts/Defender.md). |
-
-The primary network is named `${COMPOSE_PROJECT_NAME}_infrastructure`.
+## Cross-service Contracts
 
 ### Database
 
-All services must point to the same database:
+Manager owns the schema and migrations. Manager, Orchestrator, and every Defender
+must resolve the same database server, database name, and compatible credentials.
+Run Manager migrations before starting code that expects a newer schema.
 
-```text
-DB_HOST
-DB_PORT
-DB_DATABASE
-DB_USERNAME
-DB_PASSWORD
-MARIADB_ROOT_PASSWORD
-```
+### Manager and Orchestrator
 
-Manager uses `DB_USERNAME`/`DB_PASSWORD`; Compose maps them to the names expected by Orchestrator and Defender.
+The caller and receiver must agree on:
 
-### Manager and Bootstrap User
+- Basic Auth username and password
+- deployment path segments
+- HTTP methods for deploy, follow, and cancel
+- executor-email header name
+- TLS verification policy
 
-```text
-APP_NAME
-APP_ENV
-APP_KEY
-APP_DEBUG
-APP_URL
-APP_LOCALE
-MANAGER_HTTP_PORT
-MANAGER_HTTPS_PORT
-USER_NAME
-USER_EMAIL
-USER_PASSWORD
-```
+A mismatch is a transport/configuration failure, not a policy failure. Variable names
+on each side are mapped in
+[Cross-service Mapping](Environment-Variables.md#cross-service-mapping).
 
-Set `APP_DEBUG=false` and use a stable `APP_KEY` in production.
+### Orchestrator and Docker
 
-### Worker
+Orchestrator needs privileged Docker access, the Defender image name, and the shared
+TLS volume key. In Compose it discovers the current project/network context from its
+own container and applies that context to dynamic Defenders. Protect Docker access as
+described in [Security](Security.md#docker-daemon).
 
-```text
-WORKER_TRIES
-WORKER_TIMEOUT
-WORKER_MAX_TIME
-```
+### Manager and Defender
 
-Worker handles deployment, cancellation, and log-following jobs. Its timeout must allow Docker to obtain, create, and start a container without hiding a genuinely stuck job.
+Manager control jobs identify a Defender by name and verify its control-server TLS
+certificate when verification is enabled. Certificate naming and shared storage must
+therefore remain consistent across Manager, Orchestrator, and Defender.
 
-## Manager
+## Environment Choices
 
-`manager/.env` configures Laravel, the database, mail, APIs, and calls to Orchestrator and Defender.
+Local evaluation may use self-signed TLS and development credentials on a trusted
+host. Production configuration is a separate security profile, not a collection of
+one-off variable changes. Apply the complete controls in
+[Security](Security.md#production-checklist) instead of copying a partial checklist
+from this page.
 
-### Orchestrator Connection
+## Applying a Change
 
-```text
-ORCHESTRATOR_BASE_URL
-ORCHESTRATOR_USERNAME
-ORCHESTRATOR_PASSWORD
-ORCHESTRATOR_TLS_SKIP_VERIFY
-ORCHESTRATOR_TLS_CERT_FILE
-ORCHESTRATOR_PATH_PREFIX
-ORCHESTRATOR_PATH_DEPLOYMENT
-ORCHESTRATOR_METHOD_DEPLOY
-ORCHESTRATOR_METHOD_FOLLOW
-ORCHESTRATOR_METHOD_CANCEL
-```
-
-The username and password must match Orchestrator's `SERVER_USERNAME` and `SERVER_PASSWORD`. Paths and methods on both sides must describe the same API contract.
-
-### Defender Connection
-
-```text
-DEFENDER_SERVER_TLS_SKIP_VERIFY
-DEFENDER_SERVER_TLS_DIRECTORY
-```
-
-When verification is enabled, Manager looks up a certificate by Defender name in the configured directory.
-
-### Manager API
-
-```text
-TOKEN_LOCATION
-TOKEN_KEY_NAME
-USER_AGENT
-API_PREFIX
-GUI_PREFIX
-```
-
-The default API prefix is `v1`, the UI prefix is `defly-manager`, and the default [Key](CoreConcepts/Key.md) header is `X-Token-Key`.
-
-### Mail
-
-```text
-MAIL_MAILER
-MAIL_FROM_ADDRESS
-MAIL_FROM_NAME
-RESEND_API_KEY
-RESEND_DOMAIN
-RESEND_PATH
-```
-
-Configure Resend only when using its mailer. Webhooks require a separate secret in Manager.
-
-## Orchestrator
-
-`orchestrator/.env` configures Django, the database, Docker, and the API receiving requests from Manager.
-
-```text
-SECRET_KEY_FILE
-ALLOWED_HOSTS
-DB_HOST
-DB_PORT
-DB_USER
-DB_PASS
-DB_NAME
-SERVER_MANAGER
-SERVER_USERNAME
-SERVER_PASSWORD
-SERVER_EMAIL_HEADER_KEY
-SERVER_PATH_PREFIX
-SERVER_PATH_DEPLOYMENT
-SERVER_METHOD_DEPLOY
-SERVER_METHOD_FOLLOW
-SERVER_METHOD_CANCEL
-SERVER_DEFENDER_IMAGE
-SERVER_DEFENDER_TLS_VOLUME
-SERVER_DOCKER_BASE_URL
-```
-
-`SERVER_MANAGER` limits allowed callers. `SERVER_DOCKER_BASE_URL` grants Docker control and must be protected like a privileged credential.
-
-## Defender
-
-Defender has three configuration groups: common, control server, and proxy. During deployment, values are assembled from the Defender record and system configuration.
-
-### Common Variables
-
-```text
-DATABASE_HOST
-DATABASE_PORT
-DATABASE_NAME
-DATABASE_USER
-DATABASE_PASS
-DEFENDER_NAME
-```
-
-Other common settings control error storage, Wordlists, and runtime data.
-
-### Control Server
-
-The control server exposes its API on port `9947` by default. Its variables configure addressing, TLS, logging, and the trusted Manager. The Manager form defaults `SERVER_SECURITY_MANAGER` to `worker` so control jobs originate from the correct process.
-
-### Proxy
-
-```text
-PROXY_BACKEND_URL
-```
-
-The proxy listens on port `9948` by default and forwards application traffic to the backend. Other variables control TLS, timeouts, logging, health monitoring, and severity scores.
-
-The `info`, `notice`, `warning`, `error`, `critical`, `alert`, and `emergency` scores are used by the [`suspect` Action](CoreConcepts/Action.md#suspect).
-
-## TLS, Volumes, and Networks
-
-- Defender TLS uses `${COMPOSE_PROJECT_NAME}_${SERVER_DEFENDER_TLS_VOLUME}`.
-- Each Defender receives separate log and error volumes.
-- Static Compose services and dynamic Defenders use `${COMPOSE_PROJECT_NAME}_infrastructure`.
-- The proxy port comes from the Defender record and is published on the Docker host.
-
-## Checks After Configuration Changes
-
-1. Compare contract variables on both Manager and Orchestrator.
-2. Run `docker compose config` to inspect the rendered Compose configuration.
-3. Restart the affected service.
-4. Redeploy a Defender when its environment or volumes change.
-5. Check logs and health before sending real traffic.
+1. Find the variable and constraints in [Environment Variables](Environment-Variables.md).
+2. Identify every side of its cross-service contract.
+3. Update the authoritative configuration source.
+4. Inspect `docker compose config` for Compose deployments.
+5. Restart only affected static services.
+6. Redeploy Defenders when image, environment, network, volume, or published-port data changed.
+7. Verify the relevant layer using [Operations](Operations.md#layered-health-checks).

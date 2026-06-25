@@ -175,7 +175,7 @@ Xem cấu trúc đầy đủ tại [Report](Report.md).
 | `alert` | `6` |
 | `emergency` | `7` |
 
-Điểm thực tế lấy từ các biến `PROXY_SEVERITY_*` của [Defender](Defender.md#biến-proxy). Action cộng điểm mức độ nghiêm trọng vào điểm hiện tại. Nếu bảng ánh xạ trong quá trình chạy không có mức tương ứng, giá trị Go mặc định là `0`.
+Điểm thực tế lấy từ các [biến môi trường](../Environment-Variables.md#proxy-và-điểm-vi-phạm) `PROXY_SEVERITY_*` của Defender. Action cộng điểm mức độ nghiêm trọng vào điểm hiện tại. Nếu bảng ánh xạ trong quá trình chạy không có mức tương ứng, giá trị Go mặc định là `0`.
 
 ## `setter`
 

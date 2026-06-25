@@ -175,7 +175,7 @@ Required `suspect_severity` accepts:
 | `alert` | `6` |
 | `emergency` | `7` |
 
-Actual scores come from Defender `PROXY_SEVERITY_*` [proxy variables](Defender.md#proxy-variables). The Action adds that severity value to current score. A missing runtime mapping contributes Go's default `0`.
+Actual scores come from Defender `PROXY_SEVERITY_*` [environment variables](../Environment-Variables.md#proxy-and-violation-scores). The Action adds that severity value to current score. A missing runtime mapping contributes Go's default `0`.
 
 ## `setter`
 

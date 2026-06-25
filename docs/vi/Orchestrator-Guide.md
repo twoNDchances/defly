@@ -1,91 +1,75 @@
 # Hướng dẫn Orchestrator
 
-Orchestrator là dịch vụ Django nhận yêu cầu từ Manager/Worker và điều khiển Docker để triển khai [Defender](CoreConcepts/Defender.md).
+Orchestrator là ranh giới Django ASGI giữa Manager/Worker và Docker. Trang này mô tả hành vi triển khai Docker. Hình dạng endpoint nằm trong [Tham chiếu API](API-Reference.md), còn biến nằm trong [Biến môi trường](Environment-Variables.md).
 
 ## Trách nhiệm
 
-- Xác thực Basic Auth và máy chủ gọi.
-- Đọc bản ghi Defender cùng cấu hình triển khai.
-- Tạo, thay thế hoặc gỡ container.
-- Gắn mạng, ổ dữ liệu, cổng và biến môi trường.
-- Theo dõi nhật ký container.
-- Cập nhật trạng thái và lỗi về cơ sở dữ liệu.
+Orchestrator:
 
-Orchestrator không tạo migration và không quyết định chính sách WAF.
+- xác thực caller nội bộ và xác định người thực hiện;
+- kiểm tra action Defender trước mọi Docker side effect;
+- tạo, thay thế, follow và xóa container Defender;
+- gán image, environment, port, network, volume và Compose label;
+- ghi deployment state/detail vào database dùng chung.
 
-## Vòng đời triển khai
+Nó không sở hữu migration database, semantics WAF hay các nút lifecycle
+trong Manager.
 
-Trạng thái thường đi qua:
+## Vòng đời deployment
 
-```text
-pending -> processing -> successful
-					  -> failed
-```
+Manager ghi nhận ý định và Worker thực hiện queued call. Sau đó Orchestrator:
 
-Luồng:
+1. xác thực Basic Auth và host caller được phép;
+2. xác định email người thực hiện và quyền Defender cần thiết;
+3. khóa/nạp deployment state của Defender;
+4. đọc Docker Compose context nếu đang chạy trong Compose;
+5. tạo, start, thay thế hoặc xóa container;
+6. lưu `successful` hoặc `failed` cùng detail có thể xử lý.
 
-1. Manager tạo tác vụ.
-2. Worker gọi điểm cuối triển khai.
-3. Orchestrator xác thực bên gọi và tải Defender.
-4. Dịch vụ Docker xác định ngữ cảnh Compose hiện tại từ container Orchestrator.
-5. Container Defender được tạo với image, biến môi trường, ổ dữ liệu, mạng và nhãn Compose.
-6. Trạng thái cùng thông tin chi tiết được ghi lại.
+State model thuộc [Defender](CoreConcepts/Defender.md). Ownership queue và retry thuộc
+[Vận hành](Operations.md).
 
-## Nhận diện Docker Compose
+## Compose context
 
-Defender động kế thừa các nhãn Compose quan trọng như dự án, dịch vụ, mã băm cấu hình, thư mục làm việc và tệp cấu hình. Nhờ đó Docker Compose nhận container là thành viên của dự án hiện tại và `docker compose down` có thể dừng cùng hệ thống.
+Defender động nhận project label, network membership hiện tại và service label riêng.
+Nhờ vậy Compose nhận nó là thành viên cùng project mà không nhầm với Orchestrator. Bên
+ngoài Compose không có project context để suy ra và Docker dùng network mặc định.
 
-Nhãn dịch vụ của Defender được tạo riêng để tránh trùng với Orchestrator, trong khi nhãn dự án vẫn giữ cùng dự án.
+Khi Defender không tới được MariaDB hoặc backend, hãy kiểm tra network/DNS container
+trước khi điều tra policy.
 
-## Mạng
+## Tài nguyên container
 
-Orchestrator đọc mạng của container hiện tại và gắn Defender vào các mạng tương ứng. Trong hệ thống mặc định, mạng chính là:
+- Image lấy từ tên Defender image đã cấu hình.
+- Proxy port lấy từ bản ghi Defender và publish trên host.
+- TLS dùng volume Defender TLS chung.
+- Log và error dùng volume riêng theo Defender.
+- Environment được ghép từ cấu hình hệ thống và bản ghi Defender.
 
-```text
-${COMPOSE_PROJECT_NAME}_infrastructure
-```
+Thay container không đồng nghĩa xóa dữ liệu bền vững. Tên volume, mặc định và key cấu
+hình thuộc [Biến môi trường](Environment-Variables.md).
 
-Nếu Defender không tới được cơ sở dữ liệu hoặc máy chủ phía sau, hãy kiểm tra kết nối mạng trước khi kiểm tra chính sách WAF.
+## Bảo mật Docker
 
-## Ổ dữ liệu
+Docker access tương đương quyền quản trị host. Ưu tiên Unix socket local hoặc endpoint
+được bảo vệ đúng cách; không mở Docker TCP API không xác thực. Giới hạn container,
+credential và network Orchestrator theo [Bảo mật](Security.md#tiến-trình-nền-docker).
 
-- TLS dùng ổ dữ liệu chung từ `SERVER_DEFENDER_TLS_VOLUME`.
-- Nhật ký và lỗi dùng ổ dữ liệu riêng cho từng Defender.
-- Tên ổ dữ liệu Compose có thể có tiền tố từ `COMPOSE_PROJECT_NAME`.
+## Xác thực và phân quyền
 
-Không xóa ổ dữ liệu khi chỉ muốn triển khai lại container.
+Transport authentication và caller allowlist chạy trước handler. Deployment middleware
+ánh xạ method của route thành `deploy`, `follow` hoặc `cancel`, rồi kiểm tra action đó
+trên model Defender cho người thực hiện. Thiếu identity, permission hoặc contract khớp
+sẽ fail trước khi gọi Docker.
 
-## Docker API
+Header, method và status response chính xác thuộc
+[Tham chiếu API](API-Reference.md#orchestrator-api). Mapping credential giữa service
+thuộc [Cấu hình](Configuration.md#manager-và-orchestrator).
 
-`SERVER_DOCKER_BASE_URL` có thể là TCP hoặc Unix socket:
+## Follow và cancel
 
-```text
-tcp://localhost:2375
-unix:///var/run/docker.sock
-```
+Follow trả output container cho Manager. Cancel dừng/xóa deployment và cập nhật state.
+Cả hai bắt đầu từ job Worker; nếu Manager có vẻ bị kẹt, kiểm tra queue trước khi retry
+Docker action.
 
-Quyền Docker gần tương đương quyền quản trị cao nhất trên máy chủ. Không mở TCP Docker API ra mạng không tin cậy; xem [Bảo mật](Security.md#tiến-trình-nền-docker).
-
-## Xác thực API
-
-Manager dùng `ORCHESTRATOR_USERNAME` và `ORCHESTRATOR_PASSWORD`. Orchestrator dùng `SERVER_USERNAME` và `SERVER_PASSWORD`. Hai cặp phải khớp.
-
-`SERVER_MANAGER` giới hạn bên gọi. Tiêu đề HTTP chứa email do `SERVER_EMAIL_HEADER_KEY` xác định và dùng để kiểm tra lịch sử thao tác.
-
-## Theo dõi nhật ký và hủy
-
-Theo dõi nhật ký sẽ đọc đầu ra của container để Manager hiển thị. Hủy sẽ dừng/gỡ Defender tương ứng và cập nhật trạng thái triển khai. Cả hai thao tác đi qua Worker nên cần kiểm tra hàng đợi nếu giao diện không cập nhật.
-
-## Khi triển khai thất bại
-
-Kiểm tra theo thứ tự:
-
-1. Worker có gọi được Orchestrator không.
-2. Thông tin xác thực và danh sách bên gọi được phép có đúng không.
-3. Orchestrator có truy cập Docker không.
-4. `SERVER_DEFENDER_IMAGE` có tồn tại không.
-5. Cổng proxy có trùng không.
-6. Mạng và ổ dữ liệu có tồn tại và có quyền phù hợp không.
-7. Defender có kết nối được cơ sở dữ liệu và máy chủ phía sau không.
-
-Chi tiết lệnh kiểm tra nằm tại [Khắc phục sự cố](Troubleshooting.md).
+Lệnh chẩn đoán và thứ tự triệu chứng nằm trong [Khắc phục sự cố](Troubleshooting.md).

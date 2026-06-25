@@ -32,7 +32,7 @@ USER_EMAIL
 USER_PASSWORD
 ```
 
-Ý nghĩa đầy đủ nằm tại [Cấu hình](Configuration.md#cấu-hình-docker-compose).
+Ý nghĩa đầy đủ nằm tại [Biến môi trường](Environment-Variables.md#env-gốc-của-docker-compose).
 
 ### 2. Dựng image Defender
 
@@ -87,7 +87,7 @@ Các ổ dữ liệu cơ sở dữ liệu, lưu trữ, TLS, nhật ký và lỗi
 
 ### 6. Tạo Defender
 
-Sau khi đăng nhập, làm theo [Bắt đầu nhanh](Getting-Started.md#tạo-defender-đầu-tiên). Khái niệm cấu hình một Defender được giải thích tại [Defender](CoreConcepts/Defender.md).
+Sau khi đăng nhập, làm theo [Bắt đầu nhanh](Getting-Started.md#4-tạo-defender-đầu-tiên). Khái niệm cấu hình một Defender được giải thích tại [Defender](CoreConcepts/Defender.md).
 
 ## Cài thủ công
 

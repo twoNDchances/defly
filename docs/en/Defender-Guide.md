@@ -10,7 +10,7 @@ Defender is a Go program running a control API, reverse proxy, and runtime firew
 - Doctor: monitors health and detects abnormal status.
 - Log and error writers: persist operational data.
 
-Do not expose the control API publicly. Manager is its primary caller and can verify TLS as described in [Configuration](Configuration.md#defender-connection).
+Do not expose the control API publicly. Manager is its primary caller and can verify TLS as described in [Configuration](Configuration.md#manager-and-defender).
 
 ## HTTP Transaction Initialization
 

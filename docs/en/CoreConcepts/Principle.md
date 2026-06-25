@@ -106,7 +106,7 @@ Only `passed` Principles are listed/applied through the standard flow. Defender 
 
 `revoke` removes the Principle from runtime and is valid only when already applied; success sets `is_applied = false`. Attached does not mean running, and detaching should not replace revocation while policy remains active.
 
-See [Defender](Defender.md#policy-management) for communication details.
+See [Defender](Defender.md#policy-activation) for the attachment and activation state contract.
 
 ## Relationship Locking
 

@@ -106,7 +106,7 @@ Chỉ Principle có trạng thái `passed` mới được liệt kê/áp dụng 
 
 `revoke` gửi yêu cầu xóa Principle khỏi quá trình chạy và chỉ hợp lệ khi Principle đã được áp dụng; khi thành công, `is_applied = false`. Gắn không có nghĩa là đã chạy trong Defender, và tháo quan hệ không nên thay thế thu hồi khi chính sách vẫn đang hoạt động.
 
-Chi tiết giao tiếp nằm tại [Defender](Defender.md#quản-lý-chính-sách).
+Xem [Defender](Defender.md#kích-hoạt-policy) để hiểu contract giữa trạng thái attach và activate.
 
 ## Khóa do quan hệ
 
