@@ -6,6 +6,8 @@ from django.conf import settings
 from docker import DockerClient
 from docker.errors import BuildError, ImageNotFound, NotFound
 
+from app.bases.exceptions import DockerServiceError
+
 COMPOSE_PROJECT_LABEL = "com.docker.compose.project"
 COMPOSE_SERVICE_LABEL = "com.docker.compose.service"
 COMPOSE_CONFIG_HASH_LABEL = "com.docker.compose.config-hash"
@@ -27,13 +29,13 @@ class DockerService:
         if raw_environment_variables is None:
             return {}
         if not isinstance(raw_environment_variables, dict):
-            raise ValueError("environment_variables must be a JSON object.")
+            raise DockerServiceError("environment_variables must be a JSON object.")
 
         normalized_variables: dict[str, str] = {}
         for key, value in raw_environment_variables.items():
             normalized_key = str(key).strip()
             if not normalized_key:
-                raise ValueError("environment_variables contains an empty key.")
+                raise DockerServiceError("environment_variables contains an empty key.")
             normalized_variables[normalized_key] = "" if value is None else str(value)
 
         return normalized_variables
@@ -43,7 +45,7 @@ class DockerService:
         normalized_name = sub(r"[^a-zA-Z0-9_.-]", "-", defender_name.strip()).lower()
         normalized_name = normalized_name.strip(".-_")
         if not normalized_name:
-            raise RuntimeError("Invalid defender name for Docker container.")
+            raise DockerServiceError("Invalid defender name for Docker container.")
         return normalized_name
 
     @staticmethod
@@ -60,11 +62,11 @@ class DockerService:
                 getattr(settings, "SERVER_DEFENDER_IMAGE", "")
             ).strip()
             if not image_reference:
-                raise RuntimeError("SERVER_DEFENDER_IMAGE cannot be empty.")
+                raise DockerServiceError("SERVER_DEFENDER_IMAGE cannot be empty.")
             try:
                 client.images.get(image_reference)
             except ImageNotFound as exception:
-                raise RuntimeError(
+                raise DockerServiceError(
                     f"Docker image {image_reference!r} does not exist. Build or pull "
                     "the image before deploying this Defender."
                 ) from exception
@@ -327,7 +329,7 @@ class DockerService:
         try:
             client.volumes.get(volume_name)
         except NotFound as exception:
-            raise RuntimeError(
+            raise DockerServiceError(
                 f"Docker volume {volume_name!r} does not exist. Create it with "
                 "Docker Compose before deploying this Defender."
             ) from exception

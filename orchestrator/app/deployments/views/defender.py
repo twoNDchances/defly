@@ -1,50 +1,46 @@
 from asyncio import to_thread
 
-from django.conf import settings
-from django.http import HttpRequest, HttpResponseNotAllowed, JsonResponse
+from django.core.exceptions import PermissionDenied
+from django.http import HttpRequest, JsonResponse
 from django.utils import timezone
-from django.views import View
 from docker.errors import APIError, BuildError, DockerException
 
+from app.bases.exceptions import DockerServiceError
+from app.bases.views import ConfiguredMethodView
 from app.deployments.models import Defenders
 from app.deployments.services.docker import DockerService
+from app.deployments.services.permissions import DefenderPermissionService
 
 
-class DefenderView(View):
-    async def get(self, request: HttpRequest, *args, **kwargs):
-        return await self._handle_action(request, *args, **kwargs)
+class DefenderView(ConfiguredMethodView):
+    method_handler_names = {
+        "SERVER_METHOD_DEPLOY": "_deploy_defender",
+        "SERVER_METHOD_FOLLOW": "_follow_defender",
+        "SERVER_METHOD_CANCEL": "_cancel_defender",
+    }
 
-    async def post(self, request: HttpRequest, *args, **kwargs):
-        return await self._handle_action(request, *args, **kwargs)
+    async def dispatch(self, request: HttpRequest, *args, **kwargs):
+        action = getattr(request, "defender_action", None)
+        if action is None:
+            action = DefenderPermissionService.resolve_action_from_method(
+                request.method
+            )
 
-    async def put(self, request: HttpRequest, *args, **kwargs):
-        return await self._handle_action(request, *args, **kwargs)
+        if action is not None:
+            try:
+                await DefenderPermissionService.validate_action(
+                    user=getattr(request, "executor_user", None),
+                    action=action,
+                )
+            except PermissionDenied:
+                return JsonResponse(
+                    {"detail": "Forbidden: user does not have permission."},
+                    status=403,
+                )
 
-    async def patch(self, request: HttpRequest, *args, **kwargs):
-        return await self._handle_action(request, *args, **kwargs)
+        return await super().dispatch(request, *args, **kwargs)
 
-    async def delete(self, request: HttpRequest, *args, **kwargs):
-        return await self._handle_action(request, *args, **kwargs)
-
-    async def _handle_action(self, request: HttpRequest, *args, **kwargs):
-        method = request.method.lower()
-        deploy_method = settings.SERVER_METHOD_DEPLOY.lower()
-        follow_method = settings.SERVER_METHOD_FOLLOW.lower()
-        cancel_method = settings.SERVER_METHOD_CANCEL.lower()
-
-        if method == deploy_method:
-            return await self._deploy_defender(*args, **kwargs)
-        if method == follow_method:
-            return await self._follow_defender(*args, **kwargs)
-        if method == cancel_method:
-            return await self._cancel_defender(*args, **kwargs)
-
-        allowed_methods = sorted(
-            {deploy_method.upper(), follow_method.upper(), cancel_method.upper()}
-        )
-        return HttpResponseNotAllowed(allowed_methods)
-
-    async def _deploy_defender(self, *args, **kwargs):
+    async def _deploy_defender(self, request: HttpRequest, *args, **kwargs):
         defender_id = kwargs.get("defender_id")
         defender = await Defenders.objects.filter(id=defender_id).afirst()
         if defender is None:
@@ -54,7 +50,7 @@ class DefenderView(View):
             environment_variables = DockerService.normalize_environment_variables(
                 defender.environment_variables
             )
-        except ValueError as exception:
+        except DockerServiceError as exception:
             error_logs = DockerService.split_lines_preserve_newline(str(exception))
             await self._mark_failed(defender_id=defender_id, error_logs=error_logs)
             return JsonResponse({"detail": str(exception)}, status=400)
@@ -72,7 +68,7 @@ class DefenderView(View):
                 proxy_port=defender.proxy_port,
                 environment_variables=environment_variables,
             )
-        except (BuildError, APIError, DockerException, RuntimeError) as exception:
+        except (BuildError, APIError, DockerException, DockerServiceError) as exception:
             docker_error = DockerService.stringify_deploy_error(exception)
             container_logs = None
             try:
@@ -80,14 +76,14 @@ class DefenderView(View):
                     DockerService.get_container_error_logs,
                     defender_name=defender.name,
                 )
-            except DockerException, RuntimeError:
+            except DockerException, DockerServiceError:
                 container_logs = None
             try:
                 await to_thread(
                     DockerService.cleanup_container,
                     defender_name=defender.name,
                 )
-            except DockerException, RuntimeError:
+            except DockerException, DockerServiceError:
                 pass
             error_logs = container_logs if container_logs is not None else docker_error
             await self._mark_failed(defender_id=defender_id, error_logs=error_logs)
@@ -109,7 +105,7 @@ class DefenderView(View):
             }
         )
 
-    async def _follow_defender(self, *args, **kwargs):
+    async def _follow_defender(self, request: HttpRequest, *args, **kwargs):
         defender_id = kwargs.get("defender_id")
         defender = await Defenders.objects.filter(id=defender_id).afirst()
         if defender is None:
@@ -126,7 +122,7 @@ class DefenderView(View):
                 DockerService.get_container_logs,
                 defender_name=defender.name,
             )
-        except (DockerException, RuntimeError) as exception:
+        except (DockerException, DockerServiceError) as exception:
             error_logs = DockerService.stringify_deploy_error(exception)
             return JsonResponse(
                 {"detail": "Failed to follow defender logs.", "error": error_logs},
@@ -147,7 +143,7 @@ class DefenderView(View):
             }
         )
 
-    async def _cancel_defender(self, *args, **kwargs):
+    async def _cancel_defender(self, request: HttpRequest, *args, **kwargs):
         defender_id = kwargs.get("defender_id")
         defender = await Defenders.objects.filter(id=defender_id).afirst()
         if defender is None:
@@ -163,7 +159,7 @@ class DefenderView(View):
                 DockerService.cancel_container,
                 defender_name=defender.name,
             )
-        except (APIError, DockerException, RuntimeError) as exception:
+        except (APIError, DockerException, DockerServiceError) as exception:
             error_logs = DockerService.stringify_deploy_error(exception)
             await self._mark_failed(defender_id=defender_id, error_logs=error_logs)
             return JsonResponse(

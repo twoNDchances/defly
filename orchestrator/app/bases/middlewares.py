@@ -11,6 +11,11 @@ from django.http.request import HttpRequest
 
 class ServerHelperMiddleware:
     @staticmethod
+    def resolve_header_meta_key(header_name: str) -> str:
+        normalized_header_name = header_name.strip().upper().replace("-", "_")
+        return f"HTTP_{normalized_header_name}"
+
+    @staticmethod
     def get_client_ip(request: HttpRequest) -> str:
         forwarded_for = request.META.get("HTTP_X_FORWARDED_FOR", "")
         if forwarded_for:
