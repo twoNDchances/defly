@@ -32,12 +32,20 @@ env = Env(
     SERVER_EMAIL_HEADER_KEY=(str, "X-Executor"),
     SERVER_PATH_PREFIX=(str, "api/v1"),
     SERVER_PATH_DEPLOYMENT=(str, "deployments"),
+    SERVER_PATH_ASSISTANT=(str, "assistant"),
+    SERVER_METHOD_ASSISTANT=(str, "get"),
     SERVER_METHOD_DEPLOY=(str, "post"),
     SERVER_METHOD_FOLLOW=(str, "get"),
     SERVER_METHOD_CANCEL=(str, "delete"),
     SERVER_DEFENDER_IMAGE=(str, "defly-defender:latest"),
     SERVER_DEFENDER_TLS_VOLUME=(str, "defender_tls"),
     SERVER_DOCKER_BASE_URL=(str, "tcp://localhost:2375"),
+    AI_BASE_URL=(str, "https://api.openai.com/v1"),
+    AI_MODEL=(str, "gpt-4.1-mini"),
+    AI_TIMEOUT=(float, 90.0),
+    AI_MAX_MESSAGES=(int, 40),
+    AI_MAX_MESSAGE_CHARACTERS=(int, 4000),
+    AI_API_KEY=(str, ""),
 )
 
 Env.read_env(BASE_DIR / ".env")
@@ -58,6 +66,7 @@ ALLOWED_HOSTS = env.list("ALLOWED_HOSTS")
 
 INSTALLED_APPS = [
     "app.bases",
+    "app.assistant",
     "app.deployments",
 ]
 
@@ -66,6 +75,7 @@ MIDDLEWARE = [
     "app.bases.middlewares.ServerManagerOnlyMiddleware",
     "app.bases.middlewares.ServerBasicAuthMiddleware",
     "app.deployments.middlewares.ServerPermissionMiddleware",
+    "app.assistant.middlewares.ServerPermissionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
@@ -127,6 +137,12 @@ SERVER_PATH_PREFIX = validate_path_value(
 SERVER_PATH_DEPLOYMENT = validate_path_value(
     "SERVER_PATH_DEPLOYMENT", env.str("SERVER_PATH_DEPLOYMENT")
 )
+SERVER_PATH_ASSISTANT = validate_path_value(
+    "SERVER_PATH_ASSISTANT", env.str("SERVER_PATH_ASSISTANT")
+)
+SERVER_METHOD_ASSISTANT = validate_http_method(
+    "SERVER_METHOD_ASSISTANT", env.str("SERVER_METHOD_ASSISTANT")
+)
 SERVER_METHOD_DEPLOY = validate_http_method(
     "SERVER_METHOD_DEPLOY", env.str("SERVER_METHOD_DEPLOY")
 )
@@ -152,3 +168,12 @@ SERVER_DEFENDER_TLS_VOLUME = require_non_empty(
     "SERVER_DEFENDER_TLS_VOLUME",
     env.str("SERVER_DEFENDER_TLS_VOLUME"),
 )
+
+# AI assistant
+
+AI_BASE_URL = require_non_empty("AI_BASE_URL", env.str("AI_BASE_URL"))
+AI_MODEL = require_non_empty("AI_MODEL", env.str("AI_MODEL"))
+AI_TIMEOUT = env.float("AI_TIMEOUT")
+AI_MAX_MESSAGES = max(0, env.int("AI_MAX_MESSAGES"))
+AI_MAX_MESSAGE_CHARACTERS = max(0, env.int("AI_MAX_MESSAGE_CHARACTERS"))
+AI_API_KEY = env.str("AI_API_KEY").strip()

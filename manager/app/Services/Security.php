@@ -40,6 +40,8 @@ class Security
         'suspendAny' => 'Multi-suspend',
         'review' => 'Review',
         'reviewAny' => 'Multi-review',
+        'chat' => 'Chat',
+        'pin' => 'Pin',
     ];
 
     public static $excludeActionsByModel = [

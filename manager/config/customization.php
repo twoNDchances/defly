@@ -22,6 +22,7 @@ return [
             'user_agent' => env('USER_AGENT', 'Defly/Manager'),
             'orchestrator' => [
                 'base_url' => env('ORCHESTRATOR_BASE_URL', 'http://orchestrator:8000'),
+                'timeout' => max(1, (int) env('ORCHESTRATOR_TIMEOUT', 90)),
                 'paths' => [
                     'prefix' => env('ORCHESTRATOR_PATH_PREFIX', 'api/v1'),
                     'deployment' => [
@@ -48,6 +49,20 @@ return [
                             'cancel' => (function () {
                                 $default = 'delete';
                                 $method = Str::lower(env('ORCHESTRATOR_METHOD_CANCEL', $default));
+                                if (! in_array($method, ['get', 'post', 'put', 'patch', 'delete'], true)) {
+                                    return $default;
+                                }
+
+                                return $method;
+                            })(),
+                        ],
+                    ],
+                    'assistant' => [
+                        'path' => env('ORCHESTRATOR_PATH_ASSISTANT', 'assistant'),
+                        'methods' => [
+                            'chat' => (function () {
+                                $default = 'get';
+                                $method = Str::lower(env('ORCHESTRATOR_METHOD_ASSISTANT', $default));
                                 if (! in_array($method, ['get', 'post', 'put', 'patch', 'delete'], true)) {
                                     return $default;
                                 }

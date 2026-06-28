@@ -7,6 +7,24 @@ use Override;
 
 class Orchestrator extends Connector
 {
+    public static function chat(
+        string $conservationId,
+        ?string $requesterEmail = null,
+    ): Response {
+        return static::send(
+            static::assistantPath($conservationId),
+            config('customization.backend.apis.orchestrator.paths.assistant.methods.chat', 'get'),
+            headers: static::emailHeader($requesterEmail),
+        );
+    }
+
+    protected static function assistantPath(string $conservationId): string
+    {
+        return trim((string) config('customization.backend.apis.orchestrator.paths.assistant.path', 'assistant'), '/')
+            .'/'
+            .rawurlencode(trim($conservationId, '/'));
+    }
+
     public static function deploy(
         string $defenderId,
         array $data = [],
@@ -80,12 +98,18 @@ class Orchestrator extends Connector
     #[Override]
     protected static function requestOptions(): array
     {
+        $options = [
+            'timeout' => (float) config(
+                'customization.backend.apis.orchestrator.timeout',
+                90,
+            ),
+        ];
         $skipVerify = (bool) config(
             'customization.backend.apis.orchestrator.tls.skip_verify',
             false,
         );
         if ($skipVerify) {
-            return ['verify' => false];
+            return $options + ['verify' => false];
         }
 
         $configuredPath = (string) config(
@@ -101,7 +125,7 @@ class Orchestrator extends Connector
             $certificatePath = base_path($certificatePath);
         }
 
-        return ['verify' => $certificatePath];
+        return $options + ['verify' => $certificatePath];
     }
 
     #[Override]

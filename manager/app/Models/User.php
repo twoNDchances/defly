@@ -140,6 +140,11 @@ class User extends Authenticatable implements FilamentUser
         return $this->hasMany(Timeline::class, $this->getCreatedByField());
     }
 
+    public function getConservations()
+    {
+        return $this->hasMany(Conservation::class, $this->getCreatedByField());
+    }
+
     public function groups()
     {
         return $this->belongsToMany(Group::class, 'users_groups', 'user', 'group');
