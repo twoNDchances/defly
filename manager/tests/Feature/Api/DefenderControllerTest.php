@@ -2,11 +2,54 @@
 
 namespace Tests\Feature\Api;
 
+use App\Models\Key;
+use App\Models\User;
+use App\Services\ApiAuthentication;
+
 class DefenderControllerTest extends ApiTestCase
 {
-    public function test_defenders_payload_endpoint_is_accessible(): void
+    public function test_defenders_payload_endpoint_requires_permission_and_masks_sensitive_defaults(): void
     {
-        $this->apiJson('GET', $this->apiRoute('defenders', 'payload'))->assertOk();
+        config()->set('database.connections.mysql.host', 'secret-db-host');
+        config()->set('database.connections.mysql.database', 'secret-db-name');
+        config()->set('database.connections.mysql.username', 'secret-db-user');
+        config()->set('database.connections.mysql.password', 'secret-db-pass');
+
+        $response = $this->apiJson('GET', $this->apiRoute('defenders', 'payload'))
+            ->assertOk();
+
+        $variables = $response->json('store.body.environment_variables');
+
+        $this->assertSame('<database-host>', $variables['DATABASE_HOST'] ?? null);
+        $this->assertSame('<database-name>', $variables['DATABASE_NAME'] ?? null);
+        $this->assertSame('<database-user>', $variables['DATABASE_USER'] ?? null);
+        $this->assertSame('<database-password>', $variables['DATABASE_PASS'] ?? null);
+        $this->assertSame('<defender-password>', $variables['SERVER_SECURITY_PASSWORD'] ?? null);
+        $this->assertStringNotContainsString('secret-db-pass', json_encode($response->json()));
+
+        $regularPassword = 'regular-pass';
+        $regularToken = 'regular-defender-payload-token';
+        $regular = User::factory()->create([
+            'email' => 'regular-defender-payload@example.com',
+            'password' => $regularPassword,
+            'is_root' => false,
+            'is_verified' => true,
+            'is_activated' => true,
+        ]);
+        Key::withoutEvents(fn () => Key::query()->create([
+            'name' => 'regular-defender-payload-token',
+            'token' => $regularToken,
+            'is_reused' => true,
+            'created_by' => $regular->id,
+        ]));
+
+        $this->withBasicAuth($regular->email, $regularPassword)
+            ->withHeaders([
+                'Accept' => 'application/json',
+                ApiAuthentication::tokenKeyName() => $regularToken,
+            ])
+            ->getJson(route($this->apiRoute('defenders', 'payload')))
+            ->assertForbidden();
     }
 
     public function test_defenders_api_crud_validation_and_put_patch_behavior(): void

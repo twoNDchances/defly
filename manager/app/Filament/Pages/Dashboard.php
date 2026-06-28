@@ -14,6 +14,11 @@ use App\Filament\Widgets\Dashboard\TimelineActionsChart;
 use App\Filament\Widgets\Dashboard\TimelineActivityChart;
 use App\Filament\Widgets\Dashboard\TopRulesRadarChart;
 use App\Filament\Widgets\Dashboard\TrafficMethodChart;
+use App\Models\Defender;
+use App\Models\Principle;
+use App\Models\Report;
+use App\Models\Timeline;
+use App\Services\Security;
 use BackedEnum;
 use Filament\Pages\Page;
 use Filament\Support\Icons\Heroicon;
@@ -33,6 +38,14 @@ class Dashboard extends Page
     public function getTitle(): string|Htmlable
     {
         return __('pages.customizations.dashboard.title');
+    }
+
+    public static function canAccess(): bool
+    {
+        return Security::can(Defender::class, 'viewAny')
+            || Security::can(Principle::class, 'viewAny')
+            || Security::can(Report::class, 'viewAny')
+            || Security::can(Timeline::class, 'viewAny');
     }
 
     protected function getHeaderWidgets(): array

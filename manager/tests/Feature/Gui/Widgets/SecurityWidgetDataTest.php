@@ -16,6 +16,7 @@ use App\Models\Defender;
 use App\Models\Principle;
 use App\Models\Report;
 use App\Models\Timeline;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Support\WidgetDataHarness;
 use Tests\TestCase;
@@ -26,6 +27,12 @@ class SecurityWidgetDataTest extends TestCase
 
     public function test_security_widget_data_helpers_calculate_dashboard_series(): void
     {
+        $this->actingAs(User::factory()->create([
+            'is_root' => true,
+            'is_verified' => true,
+            'is_activated' => true,
+        ]));
+
         $harness = new WidgetDataHarness;
         $defender = Defender::query()->create([
             'name' => 'widget-defender',
@@ -95,6 +102,12 @@ class SecurityWidgetDataTest extends TestCase
 
     public function test_security_widget_date_filters_limit_report_and_timeline_queries(): void
     {
+        $this->actingAs(User::factory()->create([
+            'is_root' => true,
+            'is_verified' => true,
+            'is_activated' => true,
+        ]));
+
         $harness = new WidgetDataHarness;
         $defender = Defender::query()->create([
             'name' => 'filtered-widget-defender',
@@ -144,5 +157,29 @@ class SecurityWidgetDataTest extends TestCase
         $this->assertNull($harness->selectedSecurityDateFilterDaysPublic());
         $this->assertSame(2, $harness->filteredReportsQueryPublic($defender)->count());
         $this->assertSame(2, $harness->filteredTimelinesQueryPublic($defender)->count());
+    }
+
+    public function test_security_widget_queries_return_empty_without_permissions(): void
+    {
+        $this->actingAs(User::factory()->create([
+            'is_root' => false,
+            'is_verified' => true,
+            'is_activated' => true,
+        ]));
+
+        Defender::query()->create([
+            'name' => 'hidden-widget-defender',
+            'proxy_port' => 9952,
+            'status' => Status::Normal->value,
+            'deployment_status' => DeploymentStatus::Successful->value,
+            'environment_variables' => ['PROXY_BACKEND_URL' => 'http://localhost'],
+        ]);
+
+        $harness = new WidgetDataHarness;
+
+        $this->assertSame(0, $harness->reportsQueryPublic()->count());
+        $this->assertSame(0, $harness->timelinesQueryPublic()->count());
+        $this->assertSame(0, $harness->groupedDefenderCountsPublic('status')->sum());
+        $this->assertSame(0, $harness->groupedPrincipleValidationCountsPublic()->sum());
     }
 }

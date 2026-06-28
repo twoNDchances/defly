@@ -6,9 +6,11 @@ use App\Models\Defender;
 use App\Models\Principle;
 use App\Models\Report;
 use App\Models\Timeline;
+use App\Services\Security;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 
 trait InteractsWithSecurityWidgetData
@@ -20,14 +22,44 @@ trait InteractsWithSecurityWidgetData
         return $record instanceof Defender ? $record : null;
     }
 
+    /**
+     * @param  class-string<Model>  $modelClass
+     */
+    protected function emptyQuery(string $modelClass): Builder
+    {
+        return $modelClass::query()->whereRaw('1 = 0');
+    }
+
+    protected function defendersQuery(): Builder
+    {
+        return Security::can(Defender::class, 'viewAny')
+            ? Defender::query()
+            : $this->emptyQuery(Defender::class);
+    }
+
+    protected function principlesQuery(): Builder
+    {
+        return Security::can(Principle::class, 'viewAny')
+            ? Principle::query()
+            : $this->emptyQuery(Principle::class);
+    }
+
     protected function reportsQuery(?Defender $defender = null): Builder
     {
+        if (! Security::can(Report::class, 'viewAny')) {
+            return $this->emptyQuery(Report::class);
+        }
+
         return Report::query()
-            ->when($defender, fn (Builder $query): Builder => $query->where('created_by', $defender->getKey()));
+            ->when($defender, fn (Builder $query): Builder => $query->where('reports.created_by', $defender->getKey()));
     }
 
     protected function timelinesQuery(?Defender $defender = null): Builder
     {
+        if (! Security::can(Timeline::class, 'viewAny')) {
+            return $this->emptyQuery(Timeline::class);
+        }
+
         return Timeline::query()
             ->when($defender, fn (Builder $query): Builder => $query
                 ->where('resource_type', Defender::class)
@@ -185,9 +217,8 @@ trait InteractsWithSecurityWidgetData
 
     protected function topTriggeredActions(?Defender $defender = null, int $limit = 8): Collection
     {
-        return Report::query()
+        return $this->reportsQuery($defender)
             ->leftJoin('actions', 'actions.id', '=', 'reports.triggered_by')
-            ->when($defender, fn (Builder $query): Builder => $query->where('reports.created_by', $defender->getKey()))
             ->selectRaw('actions.name as label, COUNT(*) as aggregate')
             ->groupBy('actions.name')
             ->orderByDesc('aggregate')
@@ -200,7 +231,7 @@ trait InteractsWithSecurityWidgetData
 
     protected function topReportingDefenders(int $limit = 8, ?Builder $query = null): Collection
     {
-        return (clone ($query ?? Report::query()))
+        return (clone ($query ?? $this->reportsQuery()))
             ->leftJoin('defenders', 'defenders.id', '=', 'reports.created_by')
             ->selectRaw('defenders.name as label, COUNT(*) as aggregate')
             ->groupBy('defenders.id', 'defenders.name')
@@ -214,7 +245,7 @@ trait InteractsWithSecurityWidgetData
 
     protected function groupedDefenderCounts(string $column, string $fallback = 'unknown'): Collection
     {
-        return Defender::query()
+        return $this->defendersQuery()
             ->selectRaw("COALESCE({$column}, ?) as label, COUNT(*) as aggregate", [$fallback])
             ->groupBy($column)
             ->pluck('aggregate', 'label')
@@ -223,7 +254,7 @@ trait InteractsWithSecurityWidgetData
 
     protected function groupedPrincipleValidationCounts(): Collection
     {
-        return Principle::query()
+        return $this->principlesQuery()
             ->selectRaw('COALESCE(validation_status, ?) as label, COUNT(*) as aggregate', ['unknown'])
             ->groupBy('validation_status')
             ->pluck('aggregate', 'label')

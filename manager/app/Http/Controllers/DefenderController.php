@@ -44,7 +44,7 @@ class DefenderController extends Controller
         return response()->json($defender, SymfonyResponse::HTTP_CREATED);
     }
 
-    public function payload(): JsonResponse
+    public function payload(DefenderRequest $request): JsonResponse
     {
         return response()->json(ApiPayload::resource('defenders', [
             'store' => [
@@ -52,7 +52,7 @@ class DefenderController extends Controller
                 'body' => [
                     'name' => 'primary-defender',
                     'proxy_port' => 9948,
-                    'environment_variables' => $this->defaultEnvironmentVariables(),
+                    'environment_variables' => $this->payloadEnvironmentVariables(),
                     'description' => 'Defender API example.',
                 ],
             ],
@@ -459,6 +459,18 @@ class DefenderController extends Controller
             ...self::environmentVariablesToMap(self::serverEnvironmentVariables()),
             ...self::environmentVariablesToMap(self::proxyEnvironmentVariables()),
         ];
+    }
+
+    private function payloadEnvironmentVariables(): array
+    {
+        return array_replace($this->defaultEnvironmentVariables(), [
+            'DATABASE_HOST' => '<database-host>',
+            'DATABASE_PORT' => '<database-port>',
+            'DATABASE_NAME' => '<database-name>',
+            'DATABASE_USER' => '<database-user>',
+            'DATABASE_PASS' => '<database-password>',
+            'SERVER_SECURITY_PASSWORD' => '<defender-password>',
+        ]);
     }
 
     private function defenderPrinciple(Defender $defender, Principle $principle): ?Principle

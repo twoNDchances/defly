@@ -3,73 +3,22 @@
 namespace App\Http\Requests;
 
 use App\Models\User;
-use App\Services\Security;
-use App\Traits\Requests\Error;
-use Illuminate\Contracts\Validation\ValidationRule;
-use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
+use Illuminate\Database\Eloquent\Model;
 
-class UserRelationRequest extends FormRequest
+class UserRelationRequest extends RelationRequest
 {
-    use Error;
-
-    /**
-     * Determine if the user is authorized to make this request.
-     */
-    public function authorize(): bool
+    protected function routeKey(): string
     {
-        $user = $this->route('user');
-
-        return match (true) {
-            $this->isMethod('get'),
-            $this->isMethod('post'),
-            $this->isMethod('delete') => $user instanceof User && $this->canAccessUserForUpdate($user),
-            default => false,
-        };
+        return 'user';
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, ValidationRule|array<mixed>|string>
-     */
-    public function rules(): array
+    protected function canViewOwnerRecord(Model $record): bool
     {
-        return match (true) {
-            $this->isMethod('get') => [],
-            $this->isMethod('post'),
-            $this->isMethod('delete') => [
-                'ids' => ['required', 'array', 'min:1'],
-                'ids.*' => ['required', 'string', 'distinct', Rule::exists($this->relationTable(), 'id')],
-            ],
-            default => [],
-        };
+        return $record instanceof User && $this->canAccessUserRecord($record, 'view');
     }
 
-    private function canAccessUserForUpdate(User $user): bool
+    protected function canUpdateOwnerRecord(Model $record): bool
     {
-        $currentUser = $this->user();
-
-        if (! $currentUser instanceof User) {
-            return false;
-        }
-
-        if (! $currentUser->is_root && $user->is_root) {
-            return false;
-        }
-
-        if ($currentUser->is($user)) {
-            return false;
-        }
-
-        return Security::can(User::class, 'update', $currentUser);
-    }
-
-    private function relationTable(): string
-    {
-        $routeName = (string) $this->route()?->getName();
-        $segments = explode('.', $routeName);
-
-        return $segments[3] ?? '';
+        return $record instanceof User && $this->canAccessUserRecord($record, 'update');
     }
 }

@@ -6,8 +6,6 @@ use App\Enums\Defender\DeploymentStatus;
 use App\Enums\Defender\Status;
 use App\Enums\Principle\ValidationStatus;
 use App\Filament\Widgets\Concerns\InteractsWithSecurityWidgetData;
-use App\Models\Defender;
-use App\Models\Principle;
 use Filament\Support\Icons\Heroicon;
 use Filament\Widgets\StatsOverviewWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
@@ -26,14 +24,16 @@ class DashboardOverviewStats extends StatsOverviewWidget
         $timelineQuery = $this->timelinesQuery();
         $reportSeries = $this->dateCountSeries($reportQuery, 7);
         $timelineSeries = $this->dateCountSeries($timelineQuery, 7);
+        $defenderQuery = $this->defendersQuery();
+        $principleQuery = $this->principlesQuery();
 
-        $defenders = Defender::query()->count();
-        $normalDefenders = Defender::query()->where('status', Status::Normal->value)->count();
-        $abnormalDefenders = Defender::query()->where('status', Status::Abnormal->value)->count();
-        $failedDeployments = Defender::query()->where('deployment_status', DeploymentStatus::Failed->value)->count();
-        $processingDeployments = Defender::query()->where('deployment_status', DeploymentStatus::Processing->value)->count();
-        $passedPrinciples = Principle::query()->where('validation_status', ValidationStatus::Passed->value)->count();
-        $principles = Principle::query()->count();
+        $defenders = (clone $defenderQuery)->count();
+        $normalDefenders = (clone $defenderQuery)->where('status', Status::Normal->value)->count();
+        $abnormalDefenders = (clone $defenderQuery)->where('status', Status::Abnormal->value)->count();
+        $failedDeployments = (clone $defenderQuery)->where('deployment_status', DeploymentStatus::Failed->value)->count();
+        $processingDeployments = (clone $defenderQuery)->where('deployment_status', DeploymentStatus::Processing->value)->count();
+        $passedPrinciples = (clone $principleQuery)->where('validation_status', ValidationStatus::Passed->value)->count();
+        $principles = (clone $principleQuery)->count();
         $topIp = $this->topReportJsonValues('metas', '$.ip', null, 1)->keys()->first()
             ?? __('pages.customizations.dashboard.widgets.empty.none');
 
