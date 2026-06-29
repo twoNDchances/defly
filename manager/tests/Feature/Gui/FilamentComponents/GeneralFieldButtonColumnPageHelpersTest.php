@@ -145,7 +145,7 @@ class GeneralFieldButtonColumnPageHelpersTest extends TestCase
             ['type' => EngineType::Lower->value],
         ));
         $this->assertIsArray($this->invokePageMethod(
-            \App\Filament\Clusters\Infrastructure\Resources\Defenders\Pages\CreateDefender::class,
+            \App\Filament\Resources\Defenders\Pages\CreateDefender::class,
             'mutateFormDataBeforeCreate',
             [
                 'common_environment_variables' => [],

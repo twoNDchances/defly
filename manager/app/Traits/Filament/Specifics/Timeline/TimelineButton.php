@@ -13,7 +13,7 @@ use App\Filament\Clusters\Initialization\Resources\Actions\ActionResource;
 use App\Filament\Clusters\Initialization\Resources\Decisions\DecisionResource;
 use App\Filament\Clusters\Initialization\Resources\Principles\PrincipleResource;
 use App\Filament\Clusters\Initialization\Resources\Rules\RuleResource;
-use App\Filament\Clusters\Infrastructure\Resources\Defenders\DefenderResource;
+use App\Filament\Resources\Defenders\DefenderResource;
 use App\Filament\Resources\Labels\LabelResource;
 use App\Filament\Resources\Wordlists\WordlistResource;
 use App\Models\Action;

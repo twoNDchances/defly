@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Clusters\Infrastructure\Resources\Defenders\Schemas;
+namespace App\Filament\Resources\Defenders\Schemas;
 
 use App\Filament\Components\Defender\DefenderForm as Form;
 use Filament\Schemas\Schema;

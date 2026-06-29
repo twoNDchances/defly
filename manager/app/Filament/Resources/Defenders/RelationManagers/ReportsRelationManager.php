@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Clusters\Infrastructure\Resources\Defenders\RelationManagers;
+namespace App\Filament\Resources\Defenders\RelationManagers;
 
 use App\Filament\Components\Report\ReportForm;
 use App\Filament\Components\Report\ReportTable;
