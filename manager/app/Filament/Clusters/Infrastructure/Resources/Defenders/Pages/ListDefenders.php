@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Resources\Defenders\Pages;
+namespace App\Filament\Clusters\Infrastructure\Resources\Defenders\Pages;
 
-use App\Filament\Resources\Defenders\DefenderResource;
+use App\Filament\Clusters\Infrastructure\Resources\Defenders\DefenderResource;
 use App\Traits\Filament\Generals\Pages\ListPage;
 use Filament\Resources\Pages\ListRecords;
 

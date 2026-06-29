@@ -11,5 +11,6 @@ return [
         'access_control' => 'Access control',
         'context' => 'Context',
         'initialization' => 'Initialization',
+        'infrastructure' => 'Infrastructure',
     ],
 ];

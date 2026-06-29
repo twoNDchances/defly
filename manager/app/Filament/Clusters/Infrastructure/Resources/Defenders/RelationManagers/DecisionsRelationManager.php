@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Resources\Defenders\RelationManagers;
+namespace App\Filament\Clusters\Infrastructure\Resources\Defenders\RelationManagers;
 
 use App\Filament\Components\Decision\DecisionForm;
 use App\Filament\Components\Decision\DecisionTable;

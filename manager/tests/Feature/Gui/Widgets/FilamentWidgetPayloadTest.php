@@ -63,7 +63,7 @@ class FilamentWidgetPayloadTest extends TestCase
             $this->assertWidgetPayloads($class, $defender);
         }
 
-        foreach ($this->classesUnder(app_path('Filament/Resources/Defenders/Widgets'), fn (string $file) => str_ends_with($file, '.php')) as $class) {
+        foreach ($this->classesUnder(app_path('Filament/Clusters/Infrastructure/Resources/Defenders/Widgets'), fn (string $file) => str_ends_with($file, '.php')) as $class) {
             $this->assertWidgetPayloads($class, $defender);
         }
     }

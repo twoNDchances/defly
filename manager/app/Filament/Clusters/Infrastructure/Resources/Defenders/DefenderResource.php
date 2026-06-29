@@ -1,28 +1,30 @@
 <?php
 
-namespace App\Filament\Resources\Defenders;
+namespace App\Filament\Clusters\Infrastructure\Resources\Defenders;
 
-use App\Filament\Resources\Defenders\Pages\CreateDefender;
-use App\Filament\Resources\Defenders\Pages\EditDefender;
-use App\Filament\Resources\Defenders\Pages\ListDefenders;
-use App\Filament\Resources\Defenders\RelationManagers\DecisionsRelationManager;
-use App\Filament\Resources\Defenders\RelationManagers\PrinciplesRelationManager;
-use App\Filament\Resources\Defenders\RelationManagers\ReportsRelationManager;
-use App\Filament\Resources\Defenders\Schemas\DefenderForm;
-use App\Filament\Resources\Defenders\Tables\DefendersTable;
+use App\Filament\Clusters\Infrastructure\InfrastructureCluster;
+use App\Filament\Clusters\Infrastructure\Resources\Defenders\Pages\CreateDefender;
+use App\Filament\Clusters\Infrastructure\Resources\Defenders\Pages\EditDefender;
+use App\Filament\Clusters\Infrastructure\Resources\Defenders\Pages\ListDefenders;
+use App\Filament\Clusters\Infrastructure\Resources\Defenders\RelationManagers\DecisionsRelationManager;
+use App\Filament\Clusters\Infrastructure\Resources\Defenders\RelationManagers\PrinciplesRelationManager;
+use App\Filament\Clusters\Infrastructure\Resources\Defenders\RelationManagers\ReportsRelationManager;
+use App\Filament\Clusters\Infrastructure\Resources\Defenders\Schemas\DefenderForm;
+use App\Filament\Clusters\Infrastructure\Resources\Defenders\Tables\DefendersTable;
 use App\Models\Defender;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
-use UnitEnum;
 
 class DefenderResource extends Resource
 {
     protected static ?string $model = Defender::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedServerStack;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedServer;
+
+    protected static ?string $cluster = InfrastructureCluster::class;
 
     protected static ?string $recordTitleAttribute = 'name';
 
@@ -54,11 +56,6 @@ class DefenderResource extends Resource
             'create' => CreateDefender::route('/create'),
             'edit' => EditDefender::route('/{record}/edit'),
         ];
-    }
-
-    public static function getNavigationGroup(): string|UnitEnum|null
-    {
-        return __('navigations.groups.management');
     }
 
     public static function getModelLabel(): string

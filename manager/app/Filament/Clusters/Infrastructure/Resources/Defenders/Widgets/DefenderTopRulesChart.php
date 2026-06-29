@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Filament\Resources\Defenders\Widgets;
+namespace App\Filament\Clusters\Infrastructure\Resources\Defenders\Widgets;
 
 use App\Filament\Widgets\Concerns\InteractsWithSecurityWidgetData;
 use Filament\Widgets\ChartWidget;
 use Illuminate\Database\Eloquent\Model;
 
-class DefenderTrafficMethodChart extends ChartWidget
+class DefenderTopRulesChart extends ChartWidget
 {
     use InteractsWithSecurityWidgetData;
 
@@ -29,28 +29,28 @@ class DefenderTrafficMethodChart extends ChartWidget
     protected function getData(): array
     {
         $defender = $this->currentDefender();
-        $series = $this->topReportJsonValues('metas', '$.method', $defender, 8, $this->filteredReportsQuery($defender));
-        $labels = $series->keys()->map(fn (string $method): string => strtoupper($method))->all();
+        $series = $this->topReportJsonValues('rule_details', '$.rule.name', $defender, 8, $this->filteredReportsQuery($defender));
 
         return [
             'datasets' => [
                 [
-                    'label' => __('pages.customizations.dashboard.widgets.datasets.methods'),
+                    'label' => __('pages.customizations.dashboard.widgets.datasets.rules'),
                     'data' => $this->valuesOrZero($series),
                     'backgroundColor' => $this->chartPalette(),
+                    'borderRadius' => 6,
                 ],
             ],
-            'labels' => $labels === [] ? [__('pages.customizations.dashboard.widgets.empty.none')] : $labels,
+            'labels' => $this->labelsOrEmpty($series),
         ];
     }
 
     public function getHeading(): ?string
     {
-        return __('pages.customizations.dashboard.widgets.charts.traffic_method');
+        return __('pages.customizations.dashboard.widgets.charts.top_rules');
     }
 
     protected function getType(): string
     {
-        return 'polarArea';
+        return 'bar';
     }
 }

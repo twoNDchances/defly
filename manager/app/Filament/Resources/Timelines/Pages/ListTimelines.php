@@ -7,6 +7,7 @@ use App\Services\Identification;
 use App\Traits\Filament\Generals\Pages\ListPage;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Schemas\Components\Tabs\Tab;
+use Filament\Support\Icons\Heroicon;
 use Illuminate\Database\Eloquent\Builder;
 
 class ListTimelines extends ListRecords
@@ -23,9 +24,11 @@ class ListTimelines extends ListRecords
 
         return [
             'mine' => Tab::make(__('tables.timeline.tabs.mine'))
+                ->icon(Heroicon::OutlinedUserCircle)
                 ->modifyQueryUsing(fn (Builder $query): Builder => $query
                     ->where('created_by', Identification::getId())),
-            'all' => Tab::make(__('tables.timeline.tabs.all')),
+            'all' => Tab::make(__('tables.timeline.tabs.all'))
+                ->icon(Heroicon::OutlinedGlobeAlt),
         ];
     }
 }

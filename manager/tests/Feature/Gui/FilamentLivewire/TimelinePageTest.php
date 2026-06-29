@@ -2,7 +2,9 @@
 
 namespace Tests\Feature\Gui\FilamentLivewire;
 
+use App\Filament\Components\Timeline\TimelineTable;
 use App\Filament\Resources\Timelines\Pages\ListTimelines;
+use App\Models\Conservation;
 use App\Models\Label;
 use App\Models\Permission;
 use App\Models\Timeline;
@@ -21,6 +23,20 @@ class TimelinePageTest extends TestCase
         parent::setUp();
 
         $this->setUpFilamentLivewire();
+    }
+
+    public function test_timeline_resource_type_uses_localized_conversation_label(): void
+    {
+        $locale = app()->getLocale();
+        app()->setLocale('vi');
+
+        try {
+            $options = TimelineTable::resourceTypeOptionsAndColors()['options'];
+
+            $this->assertSame('Hội thoại', $options[Conservation::class]);
+        } finally {
+            app()->setLocale($locale);
+        }
     }
 
     public function test_current_user_can_bulk_delete_selected_timelines(): void

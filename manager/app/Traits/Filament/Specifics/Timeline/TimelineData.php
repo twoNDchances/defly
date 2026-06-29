@@ -3,6 +3,7 @@
 namespace App\Traits\Filament\Specifics\Timeline;
 
 use App\Models\Action;
+use App\Models\Conservation;
 use App\Models\Decision;
 use App\Models\Defender;
 use App\Models\Engine;
@@ -66,6 +67,7 @@ trait TimelineData
         return [
             'options' => [
                 Action::class => __('models.action.name'),
+                Conservation::class => __('models.conservation.name'),
                 Decision::class => __('models.decision.name'),
                 Defender::class => __('models.defender.name'),
                 Engine::class => __('models.engine.name'),
@@ -83,6 +85,7 @@ trait TimelineData
             ],
             'colors' => [
                 Action::class => 'warning',
+                Conservation::class => 'purple',
                 Decision::class => 'orange',
                 Defender::class => 'rose',
                 Engine::class => 'sky',

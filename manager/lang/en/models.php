@@ -60,6 +60,9 @@ return [
             'is_activated' => 'Is activated',
         ],
     ],
+    'conservation' => [
+        'name' => 'Conversation',
+    ],
     'label' => [
         'name' => 'Label',
         'fields' => [

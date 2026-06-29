@@ -60,6 +60,9 @@ return [
             'is_activated' => 'Được kích hoạt',
         ],
     ],
+    'conservation' => [
+        'name' => 'Hội thoại',
+    ],
     'label' => [
         'name' => 'Nhãn',
         'fields' => [

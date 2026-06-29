@@ -1,13 +1,12 @@
 <?php
 
-namespace App\Filament\Resources\Defenders\Widgets;
+namespace App\Filament\Clusters\Infrastructure\Resources\Defenders\Widgets;
 
 use App\Filament\Widgets\Concerns\InteractsWithSecurityWidgetData;
 use Filament\Widgets\ChartWidget;
 use Illuminate\Database\Eloquent\Model;
-use Symfony\Component\HttpFoundation\Response;
 
-class DefenderHttpStatusChart extends ChartWidget
+class DefenderTopSourcesChart extends ChartWidget
 {
     use InteractsWithSecurityWidgetData;
 
@@ -30,32 +29,28 @@ class DefenderHttpStatusChart extends ChartWidget
     protected function getData(): array
     {
         $defender = $this->currentDefender();
-        $series = $this->topReportJsonValues('metas', '$.status', $defender, 8, $this->filteredReportsQuery($defender));
-        $labels = $series->keys()
-            ->map(fn (string $status): string => filled(Response::$statusTexts[(int) $status] ?? null)
-                ? "[{$status}] ".Response::$statusTexts[(int) $status]
-                : $status)
-            ->all();
+        $series = $this->topReportJsonValues('metas', '$.ip', $defender, 8, $this->filteredReportsQuery($defender));
 
         return [
             'datasets' => [
                 [
-                    'label' => __('pages.customizations.dashboard.widgets.datasets.status_codes'),
+                    'label' => __('pages.customizations.dashboard.widgets.datasets.ips'),
                     'data' => $this->valuesOrZero($series),
                     'backgroundColor' => $this->chartPalette(),
+                    'borderRadius' => 6,
                 ],
             ],
-            'labels' => $labels === [] ? [__('pages.customizations.dashboard.widgets.empty.none')] : $labels,
+            'labels' => $this->labelsOrEmpty($series),
         ];
     }
 
     public function getHeading(): ?string
     {
-        return __('pages.customizations.dashboard.widgets.charts.http_status');
+        return __('pages.customizations.dashboard.widgets.charts.top_sources');
     }
 
     protected function getType(): string
     {
-        return 'doughnut';
+        return 'bar';
     }
 }

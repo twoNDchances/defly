@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Resources\Defenders\Pages;
+namespace App\Filament\Clusters\Infrastructure\Resources\Defenders\Pages;
 
-use App\Filament\Resources\Defenders\DefenderResource;
+use App\Filament\Clusters\Infrastructure\Resources\Defenders\DefenderResource;
 use App\Traits\Filament\Generals\Pages\CreatePage;
 use App\Traits\Filament\Generals\Pages\Navigations\RedirectListPage;
 use App\Traits\Filament\Specifics\Defender\DefenderData;

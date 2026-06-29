@@ -3,7 +3,7 @@
 namespace App\Jobs;
 
 use App\Enums\Defender\DeploymentStatus;
-use App\Filament\Resources\Defenders\DefenderResource;
+use App\Filament\Clusters\Infrastructure\Resources\Defenders\DefenderResource;
 use App\Models\Decision;
 use App\Models\Defender;
 use App\Models\Principle;

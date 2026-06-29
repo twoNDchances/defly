@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Resources\Defenders\Widgets;
+namespace App\Filament\Clusters\Infrastructure\Resources\Defenders\Widgets;
 
 use App\Filament\Widgets\Concerns\InteractsWithSecurityWidgetData;
 use Filament\Widgets\ChartWidget;

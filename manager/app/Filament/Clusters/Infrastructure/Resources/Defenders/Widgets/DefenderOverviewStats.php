@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Resources\Defenders\Widgets;
+namespace App\Filament\Clusters\Infrastructure\Resources\Defenders\Widgets;
 
 use App\Enums\Defender\Status;
 use App\Filament\Widgets\Concerns\InteractsWithSecurityWidgetData;

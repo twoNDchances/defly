@@ -1,15 +1,15 @@
 <?php
 
-namespace App\Filament\Resources\Defenders\Pages;
+namespace App\Filament\Clusters\Infrastructure\Resources\Defenders\Pages;
 
-use App\Filament\Resources\Defenders\DefenderResource;
-use App\Filament\Resources\Defenders\Widgets\DefenderHttpStatusChart;
-use App\Filament\Resources\Defenders\Widgets\DefenderOverviewStats;
-use App\Filament\Resources\Defenders\Widgets\DefenderPolicyCoverageChart;
-use App\Filament\Resources\Defenders\Widgets\DefenderReportTrendChart;
-use App\Filament\Resources\Defenders\Widgets\DefenderTopRulesChart;
-use App\Filament\Resources\Defenders\Widgets\DefenderTopSourcesChart;
-use App\Filament\Resources\Defenders\Widgets\DefenderTrafficMethodChart;
+use App\Filament\Clusters\Infrastructure\Resources\Defenders\DefenderResource;
+use App\Filament\Clusters\Infrastructure\Resources\Defenders\Widgets\DefenderHttpStatusChart;
+use App\Filament\Clusters\Infrastructure\Resources\Defenders\Widgets\DefenderOverviewStats;
+use App\Filament\Clusters\Infrastructure\Resources\Defenders\Widgets\DefenderPolicyCoverageChart;
+use App\Filament\Clusters\Infrastructure\Resources\Defenders\Widgets\DefenderReportTrendChart;
+use App\Filament\Clusters\Infrastructure\Resources\Defenders\Widgets\DefenderTopRulesChart;
+use App\Filament\Clusters\Infrastructure\Resources\Defenders\Widgets\DefenderTopSourcesChart;
+use App\Filament\Clusters\Infrastructure\Resources\Defenders\Widgets\DefenderTrafficMethodChart;
 use App\Traits\Filament\Generals\Pages\EditPage;
 use App\Traits\Filament\Specifics\Defender\DefenderData;
 use Filament\Resources\Pages\EditRecord;

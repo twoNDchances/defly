@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Resources\Defenders\Tables;
+namespace App\Filament\Clusters\Infrastructure\Resources\Defenders\Tables;
 
 use App\Filament\Components\Defender\DefenderTable;
 use Filament\Tables\Table;
