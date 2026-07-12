@@ -3,11 +3,9 @@
 namespace Tests\Support;
 
 use App\Enums\Action\Type as ActionType;
-use App\Enums\Datatype;
 use App\Enums\Decision\Action as DecisionAction;
 use App\Enums\Decision\Condition;
 use App\Enums\Decision\Direction;
-use App\Enums\Defender\DeploymentStatus;
 use App\Enums\Engine\Type as EngineType;
 use App\Enums\Phase;
 use App\Enums\Rule\Comparator;
@@ -90,7 +88,7 @@ trait DomainTestHelpers
 
     protected function rawEngine(?string $input, ?string $output, mixed $order = null): Engine
     {
-        $engine = new Engine();
+        $engine = new Engine;
         $engine->setRawAttributes([
             'id' => (string) Str::uuid(),
             'name' => 'raw-engine-'.Str::lower(Str::random(6)),
@@ -99,7 +97,7 @@ trait DomainTestHelpers
             'output_datatype' => $output,
         ], true);
 
-        $pivot = new Pivot();
+        $pivot = new Pivot;
         $pivot->setRawAttributes(['order' => $order], true);
         $engine->setRelation('pivot', $pivot);
 

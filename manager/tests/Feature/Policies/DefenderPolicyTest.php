@@ -18,11 +18,13 @@ class DefenderPolicyTest extends TestCase
 
     public function test_defender_policy_blocks_protected_deployment_states_and_honors_permissions(): void
     {
+        /** @var User $root */
         $root = User::factory()->create(['is_root' => true, 'is_verified' => true, 'is_activated' => true]);
+        /** @var User $regular */
         $regular = User::factory()->create(['is_root' => false, 'is_verified' => true, 'is_activated' => true]);
         $this->actingAs($root);
 
-        $defenderPolicy = new DefenderPolicy();
+        $defenderPolicy = new DefenderPolicy;
         $pendingDefender = $this->modelDefender(DeploymentStatus::Pending->value);
         $successfulDefender = $this->modelDefender(DeploymentStatus::Successful->value);
         $failedDefender = $this->modelDefender(DeploymentStatus::Failed->value);

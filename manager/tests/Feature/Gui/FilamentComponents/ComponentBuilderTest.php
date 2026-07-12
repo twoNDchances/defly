@@ -18,11 +18,13 @@ class ComponentBuilderTest extends TestCase
 
     public function test_component_builders_and_schema_table_configurators_are_resolvable(): void
     {
-        $this->actingAs(User::factory()->create([
+        /** @var User $user */
+        $user = User::factory()->create([
             'is_root' => true,
             'is_verified' => true,
             'is_activated' => true,
-        ]));
+        ]);
+        $this->actingAs($user);
 
         foreach ($this->classesUnder(app_path('Filament/Components'), fn (string $file) => str_ends_with($file, 'Form.php') || str_ends_with($file, 'Table.php')) as $class) {
             $this->assertTrue(method_exists($class, 'build'), "{$class} must expose build().");
@@ -44,7 +46,9 @@ class ComponentBuilderTest extends TestCase
                 continue;
             }
 
-            $table = Table::make(Mockery::mock(HasTable::class));
+            $livewire = Mockery::mock(HasTable::class);
+            $this->assertInstanceOf(HasTable::class, $livewire);
+            $table = Table::make($livewire);
 
             $this->assertInstanceOf(Table::class, $class::configure($table), "{$class}::configure should return a table.");
         }

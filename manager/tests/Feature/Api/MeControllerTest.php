@@ -30,7 +30,7 @@ class MeControllerTest extends ApiTestCase
             'email' => 'changed@example.com',
             'current_password' => $this->password,
         ])->assertOk()->assertJsonPath('email', 'changed@example.com');
-        $this->user = $this->user->fresh();
+        $this->user->refresh();
 
         $this->apiJson('PATCH', $this->apiRoute('me', 'update'), [], [
             'current_password' => $this->password,
@@ -38,7 +38,7 @@ class MeControllerTest extends ApiTestCase
             'password_confirmation' => 'new-secret-pass',
         ])->assertOk();
 
-        $this->assertTrue(Hash::check('new-secret-pass', $this->user->fresh()->password));
+        $this->assertTrue(Hash::check('new-secret-pass', $this->user->refresh()->password));
     }
 
     public function test_me_put_requires_full_profile_payload(): void

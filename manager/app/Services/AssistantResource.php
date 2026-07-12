@@ -7,6 +7,7 @@ use App\Models\Decision;
 use App\Models\Defender;
 use App\Models\Engine;
 use App\Models\Group;
+use App\Models\Guard;
 use App\Models\Key;
 use App\Models\Label;
 use App\Models\Pattern;
@@ -30,6 +31,7 @@ class AssistantResource
         return [
             'user' => ['model' => User::class, 'title' => 'name', 'search' => ['name', 'email']],
             'group' => ['model' => Group::class, 'title' => 'name', 'search' => ['name']],
+            'guard' => ['model' => Guard::class, 'title' => 'name', 'search' => ['name']],
             'permission' => ['model' => Permission::class, 'title' => 'name', 'search' => ['name']],
             'key' => ['model' => Key::class, 'title' => 'name', 'search' => ['name']],
             'label' => ['model' => Label::class, 'title' => 'name', 'search' => ['name']],

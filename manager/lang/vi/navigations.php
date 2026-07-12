@@ -10,6 +10,7 @@ return [
         'authentication' => 'Xác thực',
         'access_control' => 'Kiểm soát truy cập',
         'context' => 'Ngữ cảnh',
+        'infrastructure' => 'Hạ tầng',
         'initialization' => 'Khởi tạo',
     ],
 ];

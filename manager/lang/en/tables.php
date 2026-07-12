@@ -20,6 +20,10 @@ return [
         'users' => 'Users in group',
         'permissions' => 'Permission in use',
     ],
+    'guard' => [
+        'defenders' => 'Defenders in guard',
+        'users' => 'Users in guard',
+    ],
     'label' => [
         'preview' => 'Preview',
     ],

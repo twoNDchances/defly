@@ -4,9 +4,6 @@ namespace Tests\Support;
 
 use App\Enums\Action\Type as ActionType;
 use App\Enums\Datatype;
-use App\Enums\Decision\Action as DecisionAction;
-use App\Enums\Decision\Condition;
-use App\Enums\Decision\Direction;
 use App\Enums\Defender\DeploymentStatus;
 use App\Enums\Defender\Status;
 use App\Enums\Engine\Hash;
@@ -31,10 +28,8 @@ use App\Models\Defender;
 use App\Models\Label;
 use App\Models\Permission;
 use App\Models\Principle;
-use App\Models\Report;
 use App\Models\Rule;
 use App\Models\Target;
-use App\Models\Timeline;
 use App\Models\User;
 use App\Models\Wordlist;
 use Closure;
@@ -42,13 +37,11 @@ use Filament\Actions\Action as FilamentAction;
 use Filament\Actions\BulkAction;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Mockery;
 use PHPUnit\Framework\AssertionFailedError;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
-use ReflectionClass;
 use ReflectionFunction;
 use ReflectionMethod;
 use ReflectionProperty;
@@ -142,7 +135,7 @@ trait FilamentTestHelpers
             'configurations' => ['string' => 'needle'],
         ]);
 
-        $defenderTable = $this->mockRelationTable($defender, new Principle());
+        $defenderTable = $this->mockRelationTable($defender, new Principle);
         $this->callFilamentAfter(PrincipleTable::attachPrinciplesAndLockButton(), ['recordId' => null], $defenderTable);
         $this->callFilamentAfter(PrincipleTable::attachPrinciplesAndLockButton(), ['recordId' => [$principle->id]], $defenderTable);
         $this->callFilamentAfter(PrincipleTable::detachPrinciplesAndUnlockButton(), null, $defenderTable);
@@ -150,7 +143,7 @@ trait FilamentTestHelpers
         $this->callFilamentAfter(PrincipleTable::detachPrinciplesAndUnlockBulkButton(), collect(), $defenderTable);
         $this->callFilamentAfter(PrincipleTable::detachPrinciplesAndUnlockBulkButton(), collect([$principle]), $defenderTable);
 
-        $decisionTable = $this->mockRelationTable($defender, new Decision());
+        $decisionTable = $this->mockRelationTable($defender, new Decision);
         $this->callFilamentAfter(DecisionTable::attachDecisionsAndLockButton(), ['recordId' => null], $decisionTable);
         $this->callFilamentAfter(DecisionTable::attachDecisionsAndLockButton(), ['recordId' => [$decision->id]], $decisionTable);
         $this->callFilamentAfter(DecisionTable::detachDecisionsAndUnlockButton(), null, $decisionTable);
@@ -158,7 +151,7 @@ trait FilamentTestHelpers
         $this->callFilamentAfter(DecisionTable::detachDecisionsAndUnlockBulkButton(), collect(), $decisionTable);
         $this->callFilamentAfter(DecisionTable::detachDecisionsAndUnlockBulkButton(), collect([$decision]), $decisionTable);
 
-        $principleTable = $this->mockRelationTable($principle, new Rule());
+        $principleTable = $this->mockRelationTable($principle, new Rule);
         $this->callFilamentAfter(RuleTable::attachRulesAndLockButton(), ['recordId' => null], $principleTable);
         $this->callFilamentAfter(RuleTable::attachRulesAndLockButton(), ['recordId' => [$rule->id]], $principleTable);
         $this->callFilamentAfter(RuleTable::detachRulesAndUnlockButton(), null, $principleTable);
@@ -199,23 +192,23 @@ trait FilamentTestHelpers
         $failed = $this->filamentDefender(DeploymentStatus::Failed->value);
         $this->callFilamentAction(DefenderTable::deployDefenderButton(), $pending);
         $this->callFilamentAction(DefenderTable::cancelDefenderButton(), $failed);
-        $this->callFilamentAction(DefenderForm::followDefenderButton(), null, fn (string $key, mixed $value) => $this->assertSame('log', $key));
+        $this->callFilamentAction(DefenderForm::followDefenderButton(), null, fn (string $key) => $this->assertSame('log', $key));
         Http::fake(fn () => throw new RuntimeException('follow failed'));
-        $this->callFilamentAction(DefenderForm::followDefenderButton(), $defender, fn (string $key, mixed $value) => $this->assertSame('log', $key));
+        $this->callFilamentAction(DefenderForm::followDefenderButton(), $defender, fn (string $key) => $this->assertSame('log', $key));
 
         $defender->forceFill(['last_response_details' => ['ok' => true]])->save();
-        $this->callFilamentAction(DefenderForm::refreshDefenderButton(), $defender, fn (string $key, mixed $value) => $this->assertSame('last_response_details', $key));
+        $this->callFilamentAction(DefenderForm::refreshDefenderButton(), $defender, fn (string $key) => $this->assertSame('last_response_details', $key));
         $defender->forceFill(['last_response_details' => 42])->save();
-        $this->callFilamentAction(DefenderForm::refreshDefenderButton(), $defender, fn (string $key, mixed $value) => $this->assertSame('last_response_details', $key));
+        $this->callFilamentAction(DefenderForm::refreshDefenderButton(), $defender, fn (string $key) => $this->assertSame('last_response_details', $key));
 
         $timelineAction = TimelineTable::openResourceButton();
-        $this->assertFalse($this->callClosureProperty($timelineAction, 'isVisible', fn (string $key) => null));
+        $this->assertFalse($this->callClosureProperty($timelineAction, 'isVisible', fn () => null));
         $this->assertTrue($this->callClosureProperty($timelineAction, 'isVisible', fn (string $key) => match ($key) {
             'resource_type' => Action::class,
             'resource_id' => $decision->id,
             default => null,
         }));
-        $this->assertNull($this->callClosureProperty($timelineAction, 'url', fn (string $key) => null));
+        $this->assertNull($this->callClosureProperty($timelineAction, 'url', fn () => null));
         $this->assertIsString($this->callClosureProperty($timelineAction, 'url', fn (string $key) => match ($key) {
             'resource_type' => Action::class,
             'resource_id' => $decision->id,
@@ -257,7 +250,7 @@ trait FilamentTestHelpers
             ['name' => 'edited', 'type' => ActionType::Allow->value],
         ));
 
-        $table = $this->mockRelationTable($label, new Action());
+        $table = $this->mockRelationTable($label, new Action);
         $this->callFilamentAfter(ActionTable::attachAndLockButton(), ['recordId' => null], $table);
         $this->callFilamentAfter(ActionTable::attachAndLockButton(), ['recordId' => [$action->id]], $table);
         $this->callFilamentAfter(ActionTable::detachAndUnlockButton(), null);
@@ -277,7 +270,7 @@ trait FilamentTestHelpers
         $relationship = Mockery::mock();
         $relationship->shouldReceive('getPivotAccessor')->andReturn('pivot');
         $relationship->shouldReceive('detach')->with($cloneSource)->once();
-        $relationship->shouldReceive('getRelated')->andReturn(new Action());
+        $relationship->shouldReceive('getRelated')->andReturn(new Action);
         $bulkTable = Mockery::mock();
         $bulkTable->shouldReceive('getRelationship')->andReturn($relationship);
         $bulkTable->shouldReceive('allowsDuplicates')->andReturn(false);
@@ -352,7 +345,7 @@ trait FilamentTestHelpers
 
     protected function invokePageMethod(string $class, string $method, array $data): mixed
     {
-        $page = new $class();
+        $page = new $class;
         $reflection = new ReflectionMethod($page, $method);
 
         return $reflection->invoke($page, $data);
@@ -378,7 +371,7 @@ trait FilamentTestHelpers
 
     protected function assertWidgetPayloads(string $class, Defender $defender)
     {
-        $widget = new $class();
+        $widget = new $class;
 
         if (property_exists($widget, 'record')) {
             $widget->record = $defender;

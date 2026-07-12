@@ -38,6 +38,7 @@ class AssistantResourceServiceTest extends TestCase
             'applied_for' => 'Label',
             'action' => 'view',
         ]);
+        /** @var User $user */
         $user = User::factory()->create([
             'is_verified' => true,
             'is_activated' => true,

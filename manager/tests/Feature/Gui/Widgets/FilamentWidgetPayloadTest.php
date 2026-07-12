@@ -21,8 +21,8 @@ use Tests\TestCase;
 class FilamentWidgetPayloadTest extends TestCase
 {
     use FilamentTestHelpers;
-    use RegistersSqliteFunctions;
     use RefreshDatabase;
+    use RegistersSqliteFunctions;
 
     public function test_filament_widget_classes_return_stats_and_chart_payloads(): void
     {
@@ -63,7 +63,7 @@ class FilamentWidgetPayloadTest extends TestCase
             $this->assertWidgetPayloads($class, $defender);
         }
 
-        foreach ($this->classesUnder(app_path('Filament/Resources/Defenders/Widgets'), fn (string $file) => str_ends_with($file, '.php')) as $class) {
+        foreach ($this->classesUnder(app_path('Filament/Clusters/Infrastructure/Resources/Defenders/Widgets'), fn (string $file) => str_ends_with($file, '.php')) as $class) {
             $this->assertWidgetPayloads($class, $defender);
         }
     }

@@ -9,6 +9,7 @@ use App\Models\Label;
 use App\Models\Permission;
 use App\Models\Timeline;
 use App\Models\User;
+use Filament\Actions\Testing\TestAction;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Support\FilamentLivewireTestHelpers;
 use Tests\TestCase;
@@ -45,9 +46,12 @@ class TimelinePageTest extends TestCase
         $secondTimeline = $this->createTimelineFor($this->root);
         $otherUserTimeline = $this->createTimelineFor(User::factory()->create());
 
+        $deleteAction = TestAction::make('delete')->table()->bulk();
+
         $this->livewirePage(ListTimelines::class)
-            ->assertTableBulkActionExists('delete')
-            ->callTableBulkAction('delete', [$firstTimeline, $secondTimeline]);
+            ->assertActionExists($deleteAction)
+            ->selectTableRecords([$firstTimeline, $secondTimeline])
+            ->callAction($deleteAction);
 
         $this->assertDatabaseMissing('timelines', ['id' => $firstTimeline->id]);
         $this->assertDatabaseMissing('timelines', ['id' => $secondTimeline->id]);
@@ -72,7 +76,7 @@ class TimelinePageTest extends TestCase
         $this->assertFalse($recordIds->contains($otherUserTimeline->id));
 
         $component->set('activeTab', 'all')
-            ->assertTableBulkActionVisible('delete')
+            ->assertActionVisible(TestAction::make('delete')->table()->bulk())
             ->assertCountTableRecords(2);
 
         $recordIds = collect($component->instance()->getTableRecords()->items())
@@ -84,6 +88,7 @@ class TimelinePageTest extends TestCase
 
     public function test_all_timelines_tab_is_hidden_and_inaccessible_to_non_root_users(): void
     {
+        /** @var User $user */
         $user = User::factory()->create([
             'is_root' => false,
             'is_verified' => true,
@@ -110,11 +115,11 @@ class TimelinePageTest extends TestCase
             ->assertSet('activeTab', null)
             ->assertDontSee(__('tables.timeline.tabs.mine'))
             ->assertDontSee(__('tables.timeline.tabs.all'))
-            ->assertTableBulkActionVisible('delete')
+            ->assertActionVisible(TestAction::make('delete')->table()->bulk())
             ->assertCountTableRecords(1);
 
         $component->set('activeTab', 'all')
-            ->assertTableBulkActionHidden('delete')
+            ->assertActionHidden(TestAction::make('delete')->table()->bulk())
             ->assertCountTableRecords(1);
 
         $recordIds = collect($component->instance()->getTableRecords()->items())

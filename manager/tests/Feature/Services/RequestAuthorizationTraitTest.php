@@ -34,15 +34,15 @@ class RequestAuthorizationTraitTest extends TestCase
         $request->setTestUser($authorizedUser);
         $lockedTarget = $this->target(Datatype::String->value);
         $lockedTarget->forceFill(['is_locked' => true])->save();
-        $this->assertFalse($request->canAccessRecordPublic($lockedTarget->fresh(), 'update'));
+        $this->assertFalse($request->canAccessRecordPublic($lockedTarget->refresh(), 'update'));
 
-        $rawDefender = new RawDefenderForAuthorization();
+        $rawDefender = new RawDefenderForAuthorization;
         $rawDefender->setRawAttributes(['deployment_status' => DeploymentStatus::Pending->value], true);
         $this->assertFalse($request->canAccessRecordPublic($rawDefender, 'deploy'));
         $rawDefender->setRawAttributes(['deployment_status' => DeploymentStatus::Successful->value], true);
         $this->assertFalse($request->canAccessRecordPublic($rawDefender, 'delete'));
 
-        $rawPrinciple = new RawPrincipleForAuthorization();
+        $rawPrinciple = new RawPrincipleForAuthorization;
         $rawPrinciple->setRawAttributes(['validation_status' => ValidationStatus::Pending->value], true);
         $this->assertFalse($request->canAccessRecordPublic($rawPrinciple, 'validate'));
 

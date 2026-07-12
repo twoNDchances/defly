@@ -198,9 +198,11 @@ class UserControllerTest extends ApiTestCase
             'token' => 'verify-token',
         ]))->assertRedirect(route('filament.defly-manager.pages.dashboard'));
 
-        $this->assertTrue($user->fresh()->is_verified);
-        $this->assertNull($user->fresh()->verification_token);
-        $this->assertAuthenticatedAs($user->fresh());
+        $user->refresh();
+
+        $this->assertTrue($user->is_verified);
+        $this->assertNull($user->verification_token);
+        $this->assertAuthenticatedAs($user);
     }
 
     public function test_non_root_user_cannot_set_root_flag_when_creating_users(): void
@@ -243,15 +245,14 @@ class UserControllerTest extends ApiTestCase
         };
 
         $reflection = new \ReflectionMethod(UserController::class, 'userData');
-        $reflection->setAccessible(true);
-        $data = $reflection->invoke(new UserController(), $request);
+        $data = $reflection->invoke(new UserController, $request);
 
         $this->assertSame([
-                'name' => 'Non Root Created',
-                'email' => 'non-root-created@example.com',
-                'password' => 'secret-pass',
-                'is_activated' => true,
-                'is_verified' => true,
-            ], $data);
+            'name' => 'Non Root Created',
+            'email' => 'non-root-created@example.com',
+            'password' => 'secret-pass',
+            'is_activated' => true,
+            'is_verified' => true,
+        ], $data);
     }
 }

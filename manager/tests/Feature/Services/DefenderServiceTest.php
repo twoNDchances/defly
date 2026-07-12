@@ -92,6 +92,7 @@ class DefenderServiceTest extends TestCase
                 ['key' => 'SERVER_SECURITY_PASSWORD', 'value' => ''],
             ],
         ]);
+        /** @var User $requestUser */
         $requestUser = User::factory()->create(['is_root' => true, 'is_verified' => true, 'is_activated' => true]);
         $this->actingAs($requestUser);
         DefenderService::apply($invalidPortDefender, ['p3']);
@@ -110,7 +111,7 @@ class DefenderServiceTest extends TestCase
         ]);
         DefenderService::suspend($arrayValueDefender, ['d1']);
 
-        $noEnvironmentDefender = new RawDefenderForAuthorization();
+        $noEnvironmentDefender = new RawDefenderForAuthorization;
         $noEnvironmentDefender->setRawAttributes([
             'name' => 'no-env',
             'environment_variables' => 'not-an-array',

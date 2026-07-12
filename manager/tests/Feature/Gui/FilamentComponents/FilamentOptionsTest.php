@@ -20,11 +20,13 @@ class FilamentOptionsTest extends TestCase
 
     public function test_filament_option_description_and_color_helpers_are_resolvable(): void
     {
-        $this->actingAs(User::factory()->create([
+        /** @var User $user */
+        $user = User::factory()->create([
             'is_root' => true,
             'is_verified' => true,
             'is_activated' => true,
-        ]));
+        ]);
+        $this->actingAs($user);
 
         foreach ([
             FilamentActionDataHarness::class,

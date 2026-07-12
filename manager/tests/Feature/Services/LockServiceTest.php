@@ -22,8 +22,8 @@ class LockServiceTest extends TestCase
 
     public function test_lock_service_covers_reference_edge_branches(): void
     {
-        Lock::syncByForeignKey(new User());
-        Lock::syncByDeleting(new User());
+        Lock::syncByForeignKey(new User);
+        Lock::syncByDeleting(new User);
 
         $this->invokeStatic(Lock::class, 'syncById', Target::class, '');
         $this->invokeStatic(Lock::class, 'syncById', Target::class, (string) Str::uuid());
@@ -46,7 +46,7 @@ class LockServiceTest extends TestCase
 
         Lock::syncByRelationship(Action::class, $action);
         Lock::syncByRelationship(Action::class, collect([$action->id]));
-        $this->assertTrue($action->fresh()->is_locked);
+        $this->assertTrue($action->refresh()->is_locked);
     }
 
     public function test_lock_service_updates_foreign_key_and_pivot_dependents(): void
@@ -59,22 +59,22 @@ class LockServiceTest extends TestCase
             'datatype' => Datatype::Array->value,
             'wordlist_id' => $wordlist->id,
         ]);
-        $this->assertTrue($wordlist->fresh()->is_locked);
+        $this->assertTrue($wordlist->refresh()->is_locked);
 
         $arrayTarget->delete();
-        $this->assertFalse($wordlist->fresh()->is_locked);
+        $this->assertFalse($wordlist->refresh()->is_locked);
 
         $target = $this->target(Datatype::String->value);
         $rule = $this->rule($target);
-        $this->assertTrue($target->fresh()->is_locked);
+        $this->assertTrue($target->refresh()->is_locked);
 
         $action = $this->action(ActionType::Allow->value);
         $rule->actions()->attach($action->id, ['order' => 1]);
         Lock::syncByRelationship(Action::class, $action->id);
-        $this->assertTrue($action->fresh()->is_locked);
+        $this->assertTrue($action->refresh()->is_locked);
 
         $rule->actions()->detach($action->id);
         Lock::syncByRelationship(Action::class, $action->id);
-        $this->assertFalse($action->fresh()->is_locked);
+        $this->assertFalse($action->refresh()->is_locked);
     }
 }

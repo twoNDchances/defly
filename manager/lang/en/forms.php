@@ -99,6 +99,20 @@ return [
             ],
         ],
     ],
+    'guard' => [
+        'text_examples' => [
+            'name' => 'guard-protect-defender',
+        ],
+        'descriptions' => [
+            'name' => 'A unique kebab-case name for this guard',
+            'expired_at' => 'Optional time when this guard expires',
+        ],
+        'sections' => [
+            'a' => [
+                'title' => 'Guard definition',
+            ],
+        ],
+    ],
     'label' => [
         'text_examples' => [
             'name' => 'resource-label',

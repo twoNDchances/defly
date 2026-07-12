@@ -9,7 +9,18 @@ use App\Enums\Decision\Condition;
 use App\Enums\Decision\Direction;
 use App\Enums\Engine\Type as EngineType;
 use App\Enums\Rule\Comparator;
+use App\Enums\Wordlist\Type;
+use App\Filament\Clusters\Authentication\Resources\Keys\Pages\EditKey;
+use App\Filament\Clusters\Authentication\Resources\Users\Pages\EditUser;
+use App\Filament\Clusters\Context\Resources\Engines\Pages\CreateEngine;
+use App\Filament\Clusters\Infrastructure\Resources\Defenders\Pages\CreateDefender;
+use App\Filament\Clusters\Initialization\Resources\Actions\Pages\CreateAction;
+use App\Filament\Clusters\Initialization\Resources\Actions\Pages\EditAction;
+use App\Filament\Clusters\Initialization\Resources\Decisions\Pages\CreateDecision;
+use App\Filament\Clusters\Initialization\Resources\Rules\Pages\CreateRule;
+use App\Filament\Components\Wordlist\WordlistTable;
 use App\Models\Action;
+use App\Models\Wordlist;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -60,20 +71,20 @@ class GeneralFieldButtonColumnPageHelpersTest extends TestCase
         $this->assertSame('info', $this->callClosureProperty($expiredAtColumn, 'color', (object) ['expired_at' => now()->addHours(2)]));
         $this->assertSame('info', $this->callClosureProperty($expiredAtColumn, 'color', (object) ['expired_at' => now()->addDays(10)]));
 
-        $fileWordlist = \App\Models\Wordlist::query()->create([
+        $fileWordlist = Wordlist::query()->create([
             'name' => 'file-clone-'.Str::lower(Str::random(6)),
-            'type' => \App\Enums\Wordlist\Type::File->value,
+            'type' => Type::File->value,
             'word_file' => 'wordlists/source.txt',
         ]);
         Storage::put('wordlists/source.txt', "alpha\n");
-        $this->callFilamentAction(\App\Filament\Components\Wordlist\WordlistTable::cloneWordlistButton(), $fileWordlist);
+        $this->callFilamentAction(WordlistTable::cloneWordlistButton(), $fileWordlist);
 
-        $missingFileWordlist = \App\Models\Wordlist::query()->create([
+        $missingFileWordlist = Wordlist::query()->create([
             'name' => 'file-missing-'.Str::lower(Str::random(6)),
-            'type' => \App\Enums\Wordlist\Type::File->value,
+            'type' => Type::File->value,
             'word_file' => 'wordlists/missing.txt',
         ]);
-        $this->callFilamentAction(\App\Filament\Components\Wordlist\WordlistTable::cloneWordlistButton(), $missingFileWordlist);
+        $this->callFilamentAction(WordlistTable::cloneWordlistButton(), $missingFileWordlist);
 
         $this->assertSame(['created' => true, 'saved' => true], $this->callClosureProperty(
             ButtonHarness::createButton(),
@@ -95,7 +106,7 @@ class GeneralFieldButtonColumnPageHelpersTest extends TestCase
         $record->setRelation('pivot', $pivot);
         $relationship = Mockery::mock();
         $relationship->shouldReceive('getPivotAccessor')->andReturn('pivot');
-        $relationship->shouldReceive('getRelated')->andReturn(new Action());
+        $relationship->shouldReceive('getRelated')->andReturn(new Action);
         $duplicateTable = Mockery::mock();
         $duplicateTable->shouldReceive('getRelationship')->andReturn($relationship);
         $duplicateTable->shouldReceive('allowsDuplicates')->andReturn(true);
@@ -107,7 +118,7 @@ class GeneralFieldButtonColumnPageHelpersTest extends TestCase
         $emptyTable->shouldReceive('getRelationship')->andReturn($emptyRelationship);
         $this->callFilamentAction(ButtonHarness::detachAndUnlockBulkButton(), collect(), $emptyTable);
 
-        $editPage = new EditPageHarness();
+        $editPage = new EditPageHarness;
         $editPage->refreshFormDataFromRelationManager();
         $editPage->refreshFormDataFromRelationManager(['deployment_status']);
         $this->assertSame(['deployment_status'], $editPage->refreshed);
@@ -115,37 +126,37 @@ class GeneralFieldButtonColumnPageHelpersTest extends TestCase
         $this->assertSame(['x' => 1], $editPage->beforeFillPublic(['x' => 1]));
         $this->assertSame(['x' => 2], $editPage->beforeSavePublic(['x' => 2]));
 
-        $createPage = new CreatePageHarness();
+        $createPage = new CreatePageHarness;
         $this->assertSame(['created' => true], $createPage->beforeCreatePublic(['created' => true]));
-        $this->assertIsString((new RedirectListPageHarness())->redirectUrlPublic());
+        $this->assertIsString((new RedirectListPageHarness)->redirectUrlPublic());
 
         $this->assertIsArray($this->invokePageMethod(
-            \App\Filament\Clusters\Initialization\Resources\Actions\Pages\CreateAction::class,
+            CreateAction::class,
             'mutateFormDataBeforeCreate',
             ['type' => ActionType::Allow->value],
         ));
         $this->assertIsArray($this->invokePageMethod(
-            \App\Filament\Clusters\Initialization\Resources\Actions\Pages\EditAction::class,
+            EditAction::class,
             'mutateFormDataBeforeSave',
             ['type' => ActionType::Allow->value],
         ));
         $this->assertIsArray($this->invokePageMethod(
-            \App\Filament\Clusters\Initialization\Resources\Decisions\Pages\CreateDecision::class,
+            CreateDecision::class,
             'mutateFormDataBeforeCreate',
             ['direction' => Direction::Request->value, 'condition' => Condition::GreaterThanOrEqual->value, 'score' => 5, 'action' => DecisionAction::Allow->value],
         ));
         $this->assertIsArray($this->invokePageMethod(
-            \App\Filament\Clusters\Initialization\Resources\Rules\Pages\CreateRule::class,
+            CreateRule::class,
             'mutateFormDataBeforeCreate',
             ['comparator' => Comparator::Mirror->value, 'string_value' => 'needle'],
         ));
         $this->assertIsArray($this->invokePageMethod(
-            \App\Filament\Clusters\Context\Resources\Engines\Pages\CreateEngine::class,
+            CreateEngine::class,
             'mutateFormDataBeforeCreate',
             ['type' => EngineType::Lower->value],
         ));
         $this->assertIsArray($this->invokePageMethod(
-            \App\Filament\Resources\Defenders\Pages\CreateDefender::class,
+            CreateDefender::class,
             'mutateFormDataBeforeCreate',
             [
                 'common_environment_variables' => [],
@@ -154,12 +165,12 @@ class GeneralFieldButtonColumnPageHelpersTest extends TestCase
             ],
         ));
         $this->assertIsArray($this->invokePageMethod(
-            \App\Filament\Clusters\Authentication\Resources\Keys\Pages\EditKey::class,
+            EditKey::class,
             'mutateFormDataBeforeSave',
             ['token' => ''],
         ));
         $this->assertIsArray($this->invokePageMethod(
-            \App\Filament\Clusters\Authentication\Resources\Users\Pages\EditUser::class,
+            EditUser::class,
             'mutateFormDataBeforeSave',
             ['password' => ''],
         ));

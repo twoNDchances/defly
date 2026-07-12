@@ -25,7 +25,7 @@ class DefenderControllerTest extends ApiTestCase
         $this->assertSame('<database-user>', $variables['DATABASE_USER'] ?? null);
         $this->assertSame('<database-password>', $variables['DATABASE_PASS'] ?? null);
         $this->assertSame('<defender-password>', $variables['SERVER_SECURITY_PASSWORD'] ?? null);
-        $this->assertStringNotContainsString('secret-db-pass', json_encode($response->json()));
+        $this->assertStringNotContainsString('secret-db-pass', json_encode($response->json(), JSON_THROW_ON_ERROR));
 
         $regularPassword = 'regular-pass';
         $regularToken = 'regular-defender-payload-token';

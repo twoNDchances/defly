@@ -8,6 +8,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use Mockery\VerificationDirector;
 use Tests\Support\DomainTestHelpers;
 use Tests\TestCase;
 
@@ -18,7 +19,7 @@ class DefenderCommunicationJobTest extends TestCase
 
     public function test_communication_job_updates_pivots_and_response_details(): void
     {
-        Log::spy();
+        $log = Log::spy();
 
         $defender = $this->defender('communicator', DeploymentStatus::Successful->value, [
             'SERVER_HTTPS_ENABLE' => 'false',
@@ -38,19 +39,21 @@ class DefenderCommunicationJobTest extends TestCase
 
         (new DefenderCommunication($defender->id, [$principle->id], DefenderCommunication::ACTION_APPLY))->handle();
         $this->assertTrue((bool) $defender->principles()->whereKey($principle->id)->first()->pivot->is_applied);
-        $this->assertSame('successful', $defender->fresh()->last_response_details['principle']['status']);
+        $this->assertSame('successful', $defender->refresh()->last_response_details['principle']['status']);
 
         (new DefenderCommunication($defender->id, [$decision->id], DefenderCommunication::ACTION_IMPLEMENT))->handle();
         $this->assertTrue((bool) $defender->decisions()->whereKey($decision->id)->first()->pivot->is_implemented);
-        $this->assertSame('successful', $defender->fresh()->last_response_details['decision']['status']);
+        $this->assertSame('successful', $defender->refresh()->last_response_details['decision']['status']);
 
         (new DefenderCommunication($defender->id, [$principle->id], DefenderCommunication::ACTION_REVOKE))->handle();
-        $this->assertSame('failed', $defender->fresh()->last_response_details['principle']['status']);
+        $this->assertSame('failed', $defender->refresh()->last_response_details['principle']['status']);
 
         (new DefenderCommunication($defender->id, [$decision->id], DefenderCommunication::ACTION_IMPLEMENT))->handle();
-        $this->assertSame('decision failed', $defender->fresh()->last_response_details['decision']['response']['body']);
+        $this->assertSame('decision failed', $defender->refresh()->last_response_details['decision']['response']['body']);
 
-        Log::shouldHaveReceived('warning')
+        $warningExpectation = $log->shouldHaveReceived('warning');
+        $this->assertInstanceOf(VerificationDirector::class, $warningExpectation);
+        $warningExpectation
             ->with('Defender communication request failed.', \Mockery::type('array'))
             ->twice();
     }
@@ -61,18 +64,18 @@ class DefenderCommunicationJobTest extends TestCase
 
         $notDeployed = $this->defender('not-deployed', DeploymentStatus::Failed->value);
         (new DefenderCommunication($notDeployed->id, ['anything'], DefenderCommunication::ACTION_APPLY))->handle();
-        $this->assertNull($notDeployed->fresh()->last_response_details);
+        $this->assertNull($notDeployed->refresh()->last_response_details);
 
         $deployed = $this->defender('deployed-empty', DeploymentStatus::Successful->value);
         (new DefenderCommunication($deployed->id, ['', '  '], 'unknown-action'))->handle();
         (new DefenderCommunication($deployed->id, [(string) Str::uuid()], DefenderCommunication::ACTION_APPLY))->handle();
         (new DefenderCommunication($deployed->id, [(string) Str::uuid()], DefenderCommunication::ACTION_IMPLEMENT))->handle();
-        $this->assertNull($deployed->fresh()->last_response_details);
+        $this->assertNull($deployed->refresh()->last_response_details);
     }
 
     public function test_communication_job_handles_revoke_suspend_failures_and_exceptions(): void
     {
-        Log::spy();
+        $log = Log::spy();
 
         $communicator = $this->defender('communicator-extra', DeploymentStatus::Successful->value, [
             'SERVER_HTTPS_ENABLE' => 'false',
@@ -89,21 +92,25 @@ class DefenderCommunicationJobTest extends TestCase
             ->push(['ok' => true], 200)
             ->push(['ok' => false], 500);
         (new DefenderCommunication($communicator->id, [$principle->id], DefenderCommunication::ACTION_REVOKE))->handle();
-        $this->assertNotNull($communicator->fresh()->last_response_details);
+        $this->assertNotNull($communicator->refresh()->last_response_details);
         (new DefenderCommunication($communicator->id, [$decision->id], DefenderCommunication::ACTION_SUSPEND))->handle();
-        $this->assertNotNull($communicator->fresh()->last_response_details);
+        $this->assertNotNull($communicator->refresh()->last_response_details);
 
         (new DefenderCommunication($communicator->id, [$decision->id], DefenderCommunication::ACTION_IMPLEMENT))->handle();
-        $this->assertSame('failed', $communicator->fresh()->last_response_details['decision']['status']);
+        $this->assertSame('failed', $communicator->refresh()->last_response_details['decision']['status']);
 
         Http::fake(fn () => throw new \RuntimeException('defender offline'));
         (new DefenderCommunication($communicator->id, [$principle->id], DefenderCommunication::ACTION_APPLY))->handle();
-        $this->assertSame('failed', $communicator->fresh()->last_response_details['principle']['status']);
-        $this->assertArrayHasKey('message', $communicator->fresh()->last_response_details['principle']);
+        $this->assertSame('failed', $communicator->refresh()->last_response_details['principle']['status']);
+        $this->assertArrayHasKey('message', $communicator->refresh()->last_response_details['principle']);
 
-        Log::shouldHaveReceived('warning')
+        $warningExpectation = $log->shouldHaveReceived('warning');
+        $this->assertInstanceOf(VerificationDirector::class, $warningExpectation);
+        $warningExpectation
             ->with('Defender communication request failed.', \Mockery::type('array'))
             ->once();
-        Log::shouldHaveReceived('error')->once();
+        $errorExpectation = $log->shouldHaveReceived('error');
+        $this->assertInstanceOf(VerificationDirector::class, $errorExpectation);
+        $errorExpectation->once();
     }
 }

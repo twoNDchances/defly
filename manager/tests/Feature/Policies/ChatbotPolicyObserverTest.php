@@ -21,11 +21,13 @@ class ChatbotPolicyObserverTest extends TestCase
 
     public function test_chatbot_uses_only_the_conservation_policy(): void
     {
+        /** @var User $owner */
         $owner = User::factory()->create([
             'is_root' => true,
             'is_verified' => true,
             'is_activated' => true,
         ]);
+        /** @var User $other */
         $other = User::factory()->create([
             'is_root' => true,
             'is_verified' => true,
@@ -61,6 +63,7 @@ class ChatbotPolicyObserverTest extends TestCase
 
     public function test_view_any_controls_page_access_and_chat_uses_its_own_permission(): void
     {
+        /** @var User $user */
         $user = User::factory()->create([
             'is_root' => false,
             'is_verified' => true,
@@ -91,6 +94,7 @@ class ChatbotPolicyObserverTest extends TestCase
 
     public function test_conservation_observer_assigns_ownership_and_message_touches_its_conservation(): void
     {
+        /** @var User $owner */
         $owner = User::factory()->create([
             'is_root' => true,
             'is_verified' => true,
@@ -108,18 +112,19 @@ class ChatbotPolicyObserverTest extends TestCase
             'role' => 'user',
             'content' => 'Touch after create',
         ]);
-        $this->assertTrue($conservation->fresh()->updated_at->isAfter($oldTimestamp));
+        $conservation->refresh();
+        $this->assertTrue($conservation->updated_at->isAfter($oldTimestamp));
         $this->assertTrue($message->exists);
     }
 
     public function test_message_events_do_not_write_timelines(): void
     {
         $consoleFlag = new ReflectionProperty($this->app, 'isRunningInConsole');
-        $consoleFlag->setAccessible(true);
         $previous = $consoleFlag->getValue($this->app);
         $consoleFlag->setValue($this->app, false);
 
         try {
+            /** @var User $user */
             $user = User::factory()->create([
                 'is_root' => true,
                 'is_verified' => true,

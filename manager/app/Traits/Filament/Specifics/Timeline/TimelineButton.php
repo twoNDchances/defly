@@ -9,18 +9,20 @@ use App\Filament\Clusters\Authentication\Resources\Users\UserResource;
 use App\Filament\Clusters\Context\Resources\Engines\EngineResource;
 use App\Filament\Clusters\Context\Resources\Patterns\PatternResource;
 use App\Filament\Clusters\Context\Resources\Targets\TargetResource;
+use App\Filament\Clusters\Context\Resources\Wordlists\WordlistResource;
+use App\Filament\Clusters\Infrastructure\Resources\Defenders\DefenderResource;
+use App\Filament\Clusters\Infrastructure\Resources\Guards\GuardResource;
 use App\Filament\Clusters\Initialization\Resources\Actions\ActionResource;
 use App\Filament\Clusters\Initialization\Resources\Decisions\DecisionResource;
 use App\Filament\Clusters\Initialization\Resources\Principles\PrincipleResource;
 use App\Filament\Clusters\Initialization\Resources\Rules\RuleResource;
-use App\Filament\Resources\Defenders\DefenderResource;
 use App\Filament\Resources\Labels\LabelResource;
-use App\Filament\Resources\Wordlists\WordlistResource;
 use App\Models\Action;
 use App\Models\Decision;
 use App\Models\Defender;
 use App\Models\Engine;
 use App\Models\Group;
+use App\Models\Guard;
 use App\Models\Key;
 use App\Models\Label;
 use App\Models\Pattern;
@@ -53,6 +55,7 @@ trait TimelineButton
             Defender::class => DefenderResource::class,
             Engine::class => EngineResource::class,
             Group::class => GroupResource::class,
+            Guard::class => GuardResource::class,
             Key::class => KeyResource::class,
             Label::class => LabelResource::class,
             Pattern::class => PatternResource::class,

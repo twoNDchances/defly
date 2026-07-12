@@ -43,6 +43,20 @@ use App\Filament\Clusters\Context\Resources\Targets\Pages\CreateTarget;
 use App\Filament\Clusters\Context\Resources\Targets\Pages\EditTarget;
 use App\Filament\Clusters\Context\Resources\Targets\Pages\ListTargets;
 use App\Filament\Clusters\Context\Resources\Targets\RelationManagers\EnginesRelationManager as TargetEnginesRelationManager;
+use App\Filament\Clusters\Context\Resources\Wordlists\Pages\CreateWordlist;
+use App\Filament\Clusters\Context\Resources\Wordlists\Pages\EditWordlist;
+use App\Filament\Clusters\Context\Resources\Wordlists\Pages\ListWordlists;
+use App\Filament\Clusters\Infrastructure\Resources\Defenders\Pages\CreateDefender;
+use App\Filament\Clusters\Infrastructure\Resources\Defenders\Pages\EditDefender;
+use App\Filament\Clusters\Infrastructure\Resources\Defenders\Pages\ListDefenders;
+use App\Filament\Clusters\Infrastructure\Resources\Defenders\RelationManagers\DecisionsRelationManager as DefenderDecisionsRelationManager;
+use App\Filament\Clusters\Infrastructure\Resources\Defenders\RelationManagers\PrinciplesRelationManager as DefenderPrinciplesRelationManager;
+use App\Filament\Clusters\Infrastructure\Resources\Defenders\RelationManagers\ReportsRelationManager as DefenderReportsRelationManager;
+use App\Filament\Clusters\Infrastructure\Resources\Guards\Pages\CreateGuard;
+use App\Filament\Clusters\Infrastructure\Resources\Guards\Pages\EditGuard;
+use App\Filament\Clusters\Infrastructure\Resources\Guards\Pages\ListGuards;
+use App\Filament\Clusters\Infrastructure\Resources\Guards\RelationManagers\DefendersRelationManager as GuardDefendersRelationManager;
+use App\Filament\Clusters\Infrastructure\Resources\Guards\RelationManagers\UsersRelationManager as GuardUsersRelationManager;
 use App\Filament\Clusters\Initialization\Resources\Actions\Pages\CreateAction;
 use App\Filament\Clusters\Initialization\Resources\Actions\Pages\EditAction;
 use App\Filament\Clusters\Initialization\Resources\Actions\Pages\ListActions;
@@ -57,12 +71,6 @@ use App\Filament\Clusters\Initialization\Resources\Rules\Pages\CreateRule;
 use App\Filament\Clusters\Initialization\Resources\Rules\Pages\EditRule;
 use App\Filament\Clusters\Initialization\Resources\Rules\Pages\ListRules;
 use App\Filament\Clusters\Initialization\Resources\Rules\RelationManagers\ActionsRelationManager as RuleActionsRelationManager;
-use App\Filament\Resources\Defenders\Pages\CreateDefender;
-use App\Filament\Resources\Defenders\Pages\EditDefender;
-use App\Filament\Resources\Defenders\Pages\ListDefenders;
-use App\Filament\Resources\Defenders\RelationManagers\DecisionsRelationManager as DefenderDecisionsRelationManager;
-use App\Filament\Resources\Defenders\RelationManagers\PrinciplesRelationManager as DefenderPrinciplesRelationManager;
-use App\Filament\Resources\Defenders\RelationManagers\ReportsRelationManager as DefenderReportsRelationManager;
 use App\Filament\Resources\Labels\Pages\CreateLabel;
 use App\Filament\Resources\Labels\Pages\EditLabel;
 use App\Filament\Resources\Labels\Pages\ListLabels;
@@ -71,6 +79,7 @@ use App\Filament\Resources\Labels\RelationManagers\DecisionsRelationManager as L
 use App\Filament\Resources\Labels\RelationManagers\DefendersRelationManager as LabelDefendersRelationManager;
 use App\Filament\Resources\Labels\RelationManagers\EnginesRelationManager as LabelEnginesRelationManager;
 use App\Filament\Resources\Labels\RelationManagers\GroupsRelationManager as LabelGroupsRelationManager;
+use App\Filament\Resources\Labels\RelationManagers\GuardsRelationManager as LabelGuardsRelationManager;
 use App\Filament\Resources\Labels\RelationManagers\PermissionsRelationManager as LabelPermissionsRelationManager;
 use App\Filament\Resources\Labels\RelationManagers\PrinciplesRelationManager as LabelPrinciplesRelationManager;
 use App\Filament\Resources\Labels\RelationManagers\RulesRelationManager as LabelRulesRelationManager;
@@ -78,14 +87,12 @@ use App\Filament\Resources\Labels\RelationManagers\TargetsRelationManager as Lab
 use App\Filament\Resources\Labels\RelationManagers\UsersRelationManager as LabelUsersRelationManager;
 use App\Filament\Resources\Labels\RelationManagers\WordlistsRelationManager as LabelWordlistsRelationManager;
 use App\Filament\Resources\Timelines\Pages\ListTimelines;
-use App\Filament\Resources\Wordlists\Pages\CreateWordlist;
-use App\Filament\Resources\Wordlists\Pages\EditWordlist;
-use App\Filament\Resources\Wordlists\Pages\ListWordlists;
 use App\Models\Action;
 use App\Models\Decision;
 use App\Models\Defender;
 use App\Models\Engine;
 use App\Models\Group;
+use App\Models\Guard;
 use App\Models\Key;
 use App\Models\Label;
 use App\Models\Pattern;
@@ -98,7 +105,6 @@ use App\Models\Timeline;
 use App\Models\User;
 use App\Models\Wordlist;
 use Filament\Facades\Filament;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Livewire\Features\SupportTesting\Testable;
@@ -243,6 +249,13 @@ trait FilamentLivewireTestHelpers
         ]);
         $defender->principles()->sync([$principle->id => ['order' => 1, 'is_applied' => true]]);
         $defender->decisions()->sync([$decision->id => ['order' => 1, 'is_implemented' => true]]);
+        $guard = Guard::query()->create([
+            'name' => 'guard-'.Str::lower(Str::random(6)),
+            'expired_at' => now()->addDay(),
+        ]);
+        $guard->users()->attach($user->id);
+        $guard->defenders()->attach($defender->id);
+        $guard->labels()->attach($label->id);
         $report = Report::withoutEvents(fn () => Report::query()->create([
             'is_reviewed' => false,
             'metas' => ['ip' => '127.0.0.1', 'method' => 'get', 'status' => 200],
@@ -278,6 +291,7 @@ trait FilamentLivewireTestHelpers
             'defender',
             'engine',
             'group',
+            'guard',
             'key',
             'label',
             'pattern',
@@ -307,6 +321,7 @@ trait FilamentLivewireTestHelpers
             [ListPrinciples::class, $records['principle']],
             [ListRules::class, $records['rule']],
             [ListDefenders::class, $records['defender']],
+            [ListGuards::class, $records['guard']],
             [ListLabels::class, $records['label']],
             [ListTimelines::class, $records['timeline']],
             [ListWordlists::class, $records['wordlist']],
@@ -327,6 +342,7 @@ trait FilamentLivewireTestHelpers
             CreatePrinciple::class,
             CreateRule::class,
             CreateDefender::class,
+            CreateGuard::class,
             CreateLabel::class,
             CreateWordlist::class,
         ];
@@ -346,6 +362,7 @@ trait FilamentLivewireTestHelpers
             [EditPrinciple::class, $records['principle']],
             [EditRule::class, $records['rule']],
             [EditDefender::class, $records['defender']],
+            [EditGuard::class, $records['guard']],
             [EditLabel::class, $records['label']],
             [EditWordlist::class, $records['wordlist']],
         ];
@@ -368,11 +385,14 @@ trait FilamentLivewireTestHelpers
             [DefenderDecisionsRelationManager::class, $records['defender'], EditDefender::class],
             [DefenderPrinciplesRelationManager::class, $records['defender'], EditDefender::class],
             [DefenderReportsRelationManager::class, $records['defender'], EditDefender::class],
+            [GuardUsersRelationManager::class, $records['guard'], EditGuard::class],
+            [GuardDefendersRelationManager::class, $records['guard'], EditGuard::class],
             [LabelActionsRelationManager::class, $records['label'], EditLabel::class],
             [LabelDecisionsRelationManager::class, $records['label'], EditLabel::class],
             [LabelDefendersRelationManager::class, $records['label'], EditLabel::class],
             [LabelEnginesRelationManager::class, $records['label'], EditLabel::class],
             [LabelGroupsRelationManager::class, $records['label'], EditLabel::class],
+            [LabelGuardsRelationManager::class, $records['label'], EditLabel::class],
             [LabelPermissionsRelationManager::class, $records['label'], EditLabel::class],
             [LabelPrinciplesRelationManager::class, $records['label'], EditLabel::class],
             [LabelRulesRelationManager::class, $records['label'], EditLabel::class],

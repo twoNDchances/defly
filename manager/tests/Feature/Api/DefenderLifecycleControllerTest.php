@@ -46,15 +46,15 @@ class DefenderLifecycleControllerTest extends ApiTestCase
     {
         Bus::fake();
 
-        $controller = new DefenderController();
+        $controller = new DefenderController;
         $request = DefenderActionRequest::create('/defenders/action', 'POST');
         $pendingDefender = $this->apiDefender('already-pending', DeploymentStatus::Pending->value);
         $this->assertSame(200, $controller->deploy($request, $pendingDefender)->getStatusCode());
-        $this->assertSame(DeploymentStatus::Pending, $pendingDefender->fresh()->deployment_status);
+        $this->assertSame(DeploymentStatus::Pending, $pendingDefender->refresh()->deployment_status);
 
         $failedDefender = $this->apiDefender('not-cancellable', DeploymentStatus::Failed->value);
         $this->assertSame(200, $controller->cancel($request, $failedDefender)->getStatusCode());
-        $this->assertSame(DeploymentStatus::Failed, $failedDefender->fresh()->deployment_status);
+        $this->assertSame(DeploymentStatus::Failed, $failedDefender->refresh()->deployment_status);
 
         Http::fake(['*' => Http::response('plain-log', 200)]);
         $followResponse = $controller->follow($request, $failedDefender);

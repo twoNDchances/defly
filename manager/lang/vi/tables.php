@@ -20,6 +20,10 @@ return [
         'users' => 'Người dùng trong nhóm',
         'permissions' => 'Quyền đang sử dụng',
     ],
+    'guard' => [
+        'defenders' => 'Defender đang được bảo vệ',
+        'users' => 'Người dùng được truy cập',
+    ],
     'label' => [
         'preview' => 'Xem trước',
     ],

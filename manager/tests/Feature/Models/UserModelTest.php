@@ -13,7 +13,9 @@ class UserModelTest extends TestCase
 
     public function test_user_scope_and_created_record_relationships_are_available(): void
     {
+        /** @var User $root */
         $root = User::factory()->create(['is_root' => true, 'is_verified' => true, 'is_activated' => true]);
+        /** @var User $regular */
         $regular = User::factory()->create(['is_root' => false, 'is_verified' => true, 'is_activated' => true]);
         $this->actingAs($root);
 

@@ -10,6 +10,7 @@ return [
         'authentication' => 'Authentication',
         'access_control' => 'Access control',
         'context' => 'Context',
+        'infrastructure' => 'Infrastructure',
         'initialization' => 'Initialization',
     ],
 ];

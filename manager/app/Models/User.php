@@ -145,6 +145,11 @@ class User extends Authenticatable implements FilamentUser
         return $this->hasMany(Conservation::class, $this->getCreatedByField());
     }
 
+    public function getGuards()
+    {
+        return $this->hasMany(Guard::class, $this->getCreatedByField());
+    }
+
     public function groups()
     {
         return $this->belongsToMany(Group::class, 'users_groups', 'user', 'group');
@@ -153,5 +158,10 @@ class User extends Authenticatable implements FilamentUser
     public function permissions()
     {
         return $this->belongsToMany(Permission::class, 'users_permissions', 'user', 'permission');
+    }
+
+    public function guards()
+    {
+        return $this->belongsToMany(Guard::class, 'guards_users', 'user', 'guard');
     }
 }

@@ -27,11 +27,13 @@ class SecurityWidgetDataTest extends TestCase
 
     public function test_security_widget_data_helpers_calculate_dashboard_series(): void
     {
-        $this->actingAs(User::factory()->create([
+        /** @var User $user */
+        $user = User::factory()->create([
             'is_root' => true,
             'is_verified' => true,
             'is_activated' => true,
-        ]));
+        ]);
+        $this->actingAs($user);
 
         $harness = new WidgetDataHarness;
         $defender = Defender::query()->create([
@@ -102,11 +104,13 @@ class SecurityWidgetDataTest extends TestCase
 
     public function test_security_widget_date_filters_limit_report_and_timeline_queries(): void
     {
-        $this->actingAs(User::factory()->create([
+        /** @var User $user */
+        $user = User::factory()->create([
             'is_root' => true,
             'is_verified' => true,
             'is_activated' => true,
-        ]));
+        ]);
+        $this->actingAs($user);
 
         $harness = new WidgetDataHarness;
         $defender = Defender::query()->create([
@@ -161,11 +165,13 @@ class SecurityWidgetDataTest extends TestCase
 
     public function test_security_widget_queries_return_empty_without_permissions(): void
     {
-        $this->actingAs(User::factory()->create([
+        /** @var User $user */
+        $user = User::factory()->create([
             'is_root' => false,
             'is_verified' => true,
             'is_activated' => true,
-        ]));
+        ]);
+        $this->actingAs($user);
 
         Defender::query()->create([
             'name' => 'hidden-widget-defender',

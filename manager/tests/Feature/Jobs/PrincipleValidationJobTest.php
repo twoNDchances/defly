@@ -21,6 +21,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Mockery\VerificationDirector;
 use Tests\Support\DomainTestHelpers;
 use Tests\Support\ThrowingPrincipleValidation;
 use Tests\Support\ThrowingTargetForTrace;
@@ -49,13 +50,13 @@ class PrincipleValidationJobTest extends TestCase
         $validPrinciple->rules()->attach($rule->id, ['order' => 1]);
 
         (new PrincipleValidation($validPrinciple->id))->handle();
-        $this->assertSame(ValidationStatus::Passed, $validPrinciple->fresh()->validation_status);
-        $this->assertSame(0, $validPrinciple->fresh()->validation_details['summary']['errors_total']);
+        $this->assertSame(ValidationStatus::Passed, $validPrinciple->refresh()->validation_status);
+        $this->assertSame(0, $validPrinciple->refresh()->validation_details['summary']['errors_total']);
 
         $invalidPrinciple = $this->principle();
         (new PrincipleValidation($invalidPrinciple->id))->handle();
-        $this->assertSame(ValidationStatus::Failed, $invalidPrinciple->fresh()->validation_status);
-        $this->assertSame('principle.rules.empty', $invalidPrinciple->fresh()->validation_details['errors'][0]['code']);
+        $this->assertSame(ValidationStatus::Failed, $invalidPrinciple->refresh()->validation_status);
+        $this->assertSame('principle.rules.empty', $invalidPrinciple->refresh()->validation_details['errors'][0]['code']);
     }
 
     public function test_validation_job_reports_invalid_dependency_shapes(): void
@@ -66,8 +67,8 @@ class PrincipleValidationJobTest extends TestCase
         DB::table('principles')->where('id', $invalidPhasePrinciple->id)->update(['phase' => 999]);
 
         (new PrincipleValidation($invalidPhasePrinciple->id))->handle();
-        $this->assertSame(ValidationStatus::Failed, $invalidPhasePrinciple->fresh()->validation_status);
-        $this->assertSame('principle.phase.invalid', $invalidPhasePrinciple->fresh()->validation_details['errors'][0]['code']);
+        $this->assertSame(ValidationStatus::Failed, $invalidPhasePrinciple->refresh()->validation_status);
+        $this->assertSame('principle.phase.invalid', $invalidPhasePrinciple->refresh()->validation_details['errors'][0]['code']);
 
         $job = new PrincipleValidation($invalidPhasePrinciple->id);
         $jsonWordlist = Wordlist::withoutEvents(fn () => Wordlist::query()->create([
@@ -90,9 +91,9 @@ class PrincipleValidationJobTest extends TestCase
             'word_file' => 'wordlists/two-lines.txt',
         ]));
 
-        $this->assertSame('failed', $this->invokeJob($job, 'validateWordlist', $jsonWordlist->fresh(), 'rule')['status']);
-        $this->assertSame('failed', $this->invokeJob($job, 'validateWordlist', $fileWordlist->fresh(), 'target')['status']);
-        $this->assertSame('failed', $this->invokeJob($job, 'validateWordlist', $mismatchedFileWordlist->fresh(), 'target')['status']);
+        $this->assertSame('failed', $this->invokeJob($job, 'validateWordlist', $jsonWordlist->refresh(), 'rule')['status']);
+        $this->assertSame('failed', $this->invokeJob($job, 'validateWordlist', $fileWordlist->refresh(), 'target')['status']);
+        $this->assertSame('failed', $this->invokeJob($job, 'validateWordlist', $mismatchedFileWordlist->refresh(), 'target')['status']);
 
         $pattern = Pattern::withoutEvents(fn () => Pattern::query()->create([
             'name' => 'mismatch-pattern-'.Str::lower(Str::random(6)),
@@ -108,10 +109,10 @@ class PrincipleValidationJobTest extends TestCase
             'pattern_id' => $pattern->id,
             'wordlist_id' => $jsonWordlist->id,
         ]));
-        $targetResult = $this->invokeJob($job, 'validateTarget', $invalidTarget->fresh(['pattern', 'wordlist', 'engines']));
+        $targetResult = $this->invokeJob($job, 'validateTarget', $invalidTarget->refresh()->load(['pattern', 'wordlist', 'engines']));
         $this->assertSame('failed', $targetResult['status']);
 
-        $invalidAction = new Action();
+        $invalidAction = new Action;
         $invalidAction->setRawAttributes([
             'id' => (string) Str::uuid(),
             'name' => 'invalid-action',
@@ -132,8 +133,8 @@ class PrincipleValidationJobTest extends TestCase
         ]);
         $targetCache = [];
         $missingRuleResult = $this->invokeJobWithReferences($job, 'validateRule', [
-            $invalidPhasePrinciple->fresh(),
-            $missingTargetRule->fresh(['target', 'wordlist', 'actions']),
+            $invalidPhasePrinciple->refresh(),
+            $missingTargetRule->refresh()->load(['target', 'wordlist', 'actions']),
             Phase::One->value,
             &$targetCache,
         ]);
@@ -150,19 +151,19 @@ class PrincipleValidationJobTest extends TestCase
         $wordlistRule->actions()->attach($validAction->id, ['order' => 1]);
         $targetCache = [];
         $wordlistRuleResult = $this->invokeJobWithReferences($job, 'validateRule', [
-            $invalidPhasePrinciple->fresh(),
-            $wordlistRule->fresh(['target.pattern', 'target.wordlist', 'target.engines', 'wordlist', 'actions']),
+            $invalidPhasePrinciple->refresh(),
+            $wordlistRule->refresh()->load(['target.pattern', 'target.wordlist', 'target.engines', 'wordlist', 'actions']),
             Phase::One->value,
             &$targetCache,
         ]);
         $this->assertSame('failed', $wordlistRuleResult['status']);
 
         $throwingPrinciple = $this->principle();
-        Log::spy();
+        $log = Log::spy();
         (new ThrowingPrincipleValidation($throwingPrinciple->id))->handle();
-        $this->assertSame('principle.validation.exception', $throwingPrinciple->fresh()->validation_details['errors'][0]['code']);
+        $this->assertSame('principle.validation.exception', $throwingPrinciple->refresh()->validation_details['errors'][0]['code']);
 
-        $rawWordlist = new Wordlist();
+        $rawWordlist = new Wordlist;
         $rawWordlist->setRawAttributes([
             'id' => (string) Str::uuid(),
             'name' => 'raw-wordlist',
@@ -171,7 +172,7 @@ class PrincipleValidationJobTest extends TestCase
         ], true);
         $this->assertSame('failed', $this->invokeJob($job, 'validateWordlist', $rawWordlist, 'raw')['status']);
 
-        $requiredJsonWordlist = new Wordlist();
+        $requiredJsonWordlist = new Wordlist;
         $requiredJsonWordlist->setRawAttributes([
             'id' => (string) Str::uuid(),
             'name' => 'required-json-wordlist',
@@ -181,7 +182,7 @@ class PrincipleValidationJobTest extends TestCase
         ], true);
         $this->assertSame('failed', $this->invokeJob($job, 'validateWordlist', $requiredJsonWordlist, 'raw')['status']);
 
-        $wordInvalidWordlist = new Wordlist();
+        $wordInvalidWordlist = new Wordlist;
         $wordInvalidWordlist->setRawAttributes([
             'id' => (string) Str::uuid(),
             'name' => 'word-invalid-wordlist',
@@ -191,7 +192,7 @@ class PrincipleValidationJobTest extends TestCase
         ], true);
         $this->assertSame('failed', $this->invokeJob($job, 'validateWordlist', $wordInvalidWordlist, 'raw')['status']);
 
-        $requiredFileWordlist = new Wordlist();
+        $requiredFileWordlist = new Wordlist;
         $requiredFileWordlist->setRawAttributes([
             'id' => (string) Str::uuid(),
             'name' => 'required-file-wordlist',
@@ -201,7 +202,7 @@ class PrincipleValidationJobTest extends TestCase
         ], true);
         $this->assertSame('failed', $this->invokeJob($job, 'validateWordlist', $requiredFileWordlist, 'raw')['status']);
 
-        $rawInvalidTarget = new Target();
+        $rawInvalidTarget = new Target;
         $rawInvalidTarget->setRawAttributes([
             'id' => (string) Str::uuid(),
             'name' => 'raw-invalid-target',
@@ -216,7 +217,7 @@ class PrincipleValidationJobTest extends TestCase
         $rawInvalidTarget->setRelation('engines', collect());
         $this->assertSame('failed', $this->invokeJob($job, 'validateTarget', $rawInvalidTarget)['status']);
 
-        $missingPatternTarget = new Target();
+        $missingPatternTarget = new Target;
         $missingPatternTarget->setRawAttributes([
             'id' => (string) Str::uuid(),
             'name' => 'missing-pattern-target',
@@ -231,7 +232,7 @@ class PrincipleValidationJobTest extends TestCase
         $missingPatternTarget->setRelation('engines', collect());
         $this->assertSame('failed', $this->invokeJob($job, 'validateTarget', $missingPatternTarget)['status']);
 
-        $arrayTarget = new Target();
+        $arrayTarget = new Target;
         $arrayTarget->setRawAttributes([
             'id' => (string) Str::uuid(),
             'name' => 'array-target',
@@ -248,10 +249,10 @@ class PrincipleValidationJobTest extends TestCase
 
         $engineTarget = $this->target(Datatype::String->value);
         $engineTarget->engines()->attach($this->engine(Datatype::Number->value, EngineType::Addition->value, Datatype::Number->value)->id, ['order' => 1]);
-        $this->assertSame('failed', $this->invokeJob($job, 'validateTarget', $engineTarget->fresh(['pattern', 'wordlist', 'engines']))['status']);
+        $this->assertSame('failed', $this->invokeJob($job, 'validateTarget', $engineTarget->refresh()->load(['pattern', 'wordlist', 'engines']))['status']);
 
         $rawRuleTarget = $this->target(Datatype::String->value);
-        $rawRule = new Rule();
+        $rawRule = new Rule;
         $rawRule->setRawAttributes([
             'id' => (string) Str::uuid(),
             'name' => 'raw-rule',
@@ -261,18 +262,18 @@ class PrincipleValidationJobTest extends TestCase
             'is_inversed' => false,
             'wordlist_id' => (string) Str::uuid(),
         ], true);
-        $rawInvalidAction = new Action();
+        $rawInvalidAction = new Action;
         $rawInvalidAction->setRawAttributes([
             'id' => (string) Str::uuid(),
             'name' => 'raw-invalid-action',
             'type' => 'bad-action',
         ], true);
-        $rawRule->setRelation('target', $rawRuleTarget->fresh(['pattern', 'wordlist', 'engines']));
+        $rawRule->setRelation('target', $rawRuleTarget->refresh()->load(['pattern', 'wordlist', 'engines']));
         $rawRule->setRelation('wordlist', null);
         $rawRule->setRelation('actions', collect([$rawInvalidAction]));
         $targetCache = [];
         $rawRuleResult = $this->invokeJobWithReferences($job, 'validateRule', [
-            $invalidPhasePrinciple->fresh(),
+            $invalidPhasePrinciple->refresh(),
             $rawRule,
             Phase::One->value,
             &$targetCache,
@@ -301,7 +302,7 @@ class PrincipleValidationJobTest extends TestCase
             'wordlist_id' => $failedWordlist->id,
             'is_inversed' => false,
         ]));
-        $nestedRule = $nestedRule->fresh(['target.pattern', 'target.wordlist', 'target.engines', 'wordlist']);
+        $nestedRule = $nestedRule->refresh()->load(['target.pattern', 'target.wordlist', 'target.engines', 'wordlist']);
         $nestedRule->setRelation('actions', collect([$rawInvalidAction]));
         $nestedPrinciple->setRelation('rules', collect([$nestedRule]));
 
@@ -311,7 +312,7 @@ class PrincipleValidationJobTest extends TestCase
         $this->assertGreaterThan(0, $nestedResult['details']['summary']['targets_failed']);
         $this->assertGreaterThan(0, $nestedResult['details']['summary']['actions_failed']);
 
-        $missingReferencedTargetRule = new Rule();
+        $missingReferencedTargetRule = new Rule;
         $missingReferencedTargetRule->setRawAttributes([
             'id' => (string) Str::uuid(),
             'name' => 'missing-referenced-target-rule',
@@ -326,13 +327,13 @@ class PrincipleValidationJobTest extends TestCase
         $missingReferencedTargetRule->setRelation('actions', collect());
         $targetCache = [];
         $this->assertSame('failed', $this->invokeJobWithReferences($job, 'validateRule', [
-            $invalidPhasePrinciple->fresh(),
+            $invalidPhasePrinciple->refresh(),
             $missingReferencedTargetRule,
             Phase::One->value,
             &$targetCache,
         ])['status']);
 
-        $requiredWordlistRule = new Rule();
+        $requiredWordlistRule = new Rule;
         $requiredWordlistRule->setRawAttributes([
             'id' => (string) Str::uuid(),
             'name' => 'required-wordlist-rule',
@@ -342,18 +343,18 @@ class PrincipleValidationJobTest extends TestCase
             'is_inversed' => false,
             'wordlist_id' => null,
         ], true);
-        $requiredWordlistRule->setRelation('target', $rawRuleTarget->fresh(['pattern', 'wordlist', 'engines']));
+        $requiredWordlistRule->setRelation('target', $rawRuleTarget->refresh()->load(['pattern', 'wordlist', 'engines']));
         $requiredWordlistRule->setRelation('wordlist', null);
         $requiredWordlistRule->setRelation('actions', collect());
         $targetCache = [];
         $this->assertSame('failed', $this->invokeJobWithReferences($job, 'validateRule', [
-            $invalidPhasePrinciple->fresh(),
+            $invalidPhasePrinciple->refresh(),
             $requiredWordlistRule,
             Phase::One->value,
             &$targetCache,
         ])['status']);
 
-        $requiredPatternTarget = new Target();
+        $requiredPatternTarget = new Target;
         $requiredPatternTarget->setRawAttributes([
             'id' => (string) Str::uuid(),
             'name' => 'required-pattern-target',
@@ -368,7 +369,7 @@ class PrincipleValidationJobTest extends TestCase
         $requiredPatternTarget->setRelation('engines', collect());
         $this->assertSame('failed', $this->invokeJob($job, 'validateTarget', $requiredPatternTarget)['status']);
 
-        $missingWordlistTarget = new Target();
+        $missingWordlistTarget = new Target;
         $missingWordlistTarget->setRawAttributes([
             'id' => (string) Str::uuid(),
             'name' => 'missing-wordlist-target',
@@ -383,7 +384,7 @@ class PrincipleValidationJobTest extends TestCase
         $missingWordlistTarget->setRelation('engines', collect());
         $this->assertSame('failed', $this->invokeJob($job, 'validateTarget', $missingWordlistTarget)['status']);
 
-        $throwingTarget = new ThrowingTargetForTrace();
+        $throwingTarget = new ThrowingTargetForTrace;
         $throwingTarget->setRawAttributes([
             'id' => (string) Str::uuid(),
             'name' => 'throwing-target',
@@ -396,7 +397,7 @@ class PrincipleValidationJobTest extends TestCase
         $throwingTarget->setRelation('engines', collect([$this->rawEngine(Datatype::String->value, Datatype::String->value)]));
         $this->assertSame('failed', $this->invokeJob($job, 'validateTarget', $throwingTarget)['status']);
 
-        $throwingWordlist = new ThrowingWordlist();
+        $throwingWordlist = new ThrowingWordlist;
         $throwingWordlist->setRawAttributes([
             'id' => (string) Str::uuid(),
             'name' => 'throwing-wordlist',
@@ -405,6 +406,8 @@ class PrincipleValidationJobTest extends TestCase
         ], true);
         $this->assertSame('failed', $this->invokeJob($job, 'validateWordlist', $throwingWordlist, 'throwing')['status']);
 
-        Log::shouldHaveReceived('error')->once();
+        $errorExpectation = $log->shouldHaveReceived('error');
+        $this->assertInstanceOf(VerificationDirector::class, $errorExpectation);
+        $errorExpectation->once();
     }
 }

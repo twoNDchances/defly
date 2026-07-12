@@ -10,6 +10,7 @@ use App\Filament\Resources\Labels\RelationManagers\DecisionsRelationManager;
 use App\Filament\Resources\Labels\RelationManagers\DefendersRelationManager;
 use App\Filament\Resources\Labels\RelationManagers\EnginesRelationManager;
 use App\Filament\Resources\Labels\RelationManagers\GroupsRelationManager;
+use App\Filament\Resources\Labels\RelationManagers\GuardsRelationManager;
 use App\Filament\Resources\Labels\RelationManagers\PermissionsRelationManager;
 use App\Filament\Resources\Labels\RelationManagers\PrinciplesRelationManager;
 use App\Filament\Resources\Labels\RelationManagers\RulesRelationManager;
@@ -51,6 +52,7 @@ class LabelResource extends Resource
         return [
             UsersRelationManager::class,
             GroupsRelationManager::class,
+            GuardsRelationManager::class,
             PermissionsRelationManager::class,
             WordlistsRelationManager::class,
             EnginesRelationManager::class,

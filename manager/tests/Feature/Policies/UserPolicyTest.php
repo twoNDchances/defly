@@ -14,15 +14,18 @@ class UserPolicyTest extends TestCase
 
     public function test_user_panel_access_and_policy_protect_root_and_self_records(): void
     {
+        /** @var User $root */
         $root = User::factory()->create(['is_root' => true, 'is_verified' => true, 'is_activated' => true]);
+        /** @var User $regular */
         $regular = User::factory()->create(['is_root' => false, 'is_verified' => true, 'is_activated' => true]);
+        /** @var User $inactive */
         $inactive = User::factory()->create(['is_verified' => true, 'is_activated' => false]);
         $this->actingAs($root);
 
         $this->assertTrue($root->canAccessPanel(Panel::make()->id('defly-manager')));
         $this->assertFalse($inactive->canAccessPanel(Panel::make()->id('defly-manager')));
 
-        $userPolicy = new UserPolicy();
+        $userPolicy = new UserPolicy;
         $this->assertSame(User::class, $userPolicy->getModel());
         $this->assertFalse($userPolicy->view($regular, $root));
         $this->assertFalse($userPolicy->update($regular, $regular));

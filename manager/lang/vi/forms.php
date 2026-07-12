@@ -99,6 +99,20 @@ return [
             ],
         ],
     ],
+    'guard' => [
+        'text_examples' => [
+            'name' => 'khien-bao-vien-defender',
+        ],
+        'descriptions' => [
+            'name' => 'Tên duy nhất theo kiểu kebab đại diện cho khiên này',
+            'expired_at' => 'Thời điểm tùy chọn mà khiên này hết hạn',
+        ],
+        'sections' => [
+            'a' => [
+                'title' => 'Định nghĩa khiên',
+            ],
+        ],
+    ],
     'label' => [
         'text_examples' => [
             'name' => 'nhan-tai-nguyen',

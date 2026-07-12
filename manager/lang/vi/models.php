@@ -48,6 +48,13 @@ return [
             'name' => 'Tên',
         ],
     ],
+    'guard' => [
+        'name' => 'Khiên',
+        'fields' => [
+            'name' => 'Tên',
+            'expired_at' => 'Hết hạn lúc',
+        ],
+    ],
     'user' => [
         'name' => 'Người dùng',
         'fields' => [

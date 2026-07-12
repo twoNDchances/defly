@@ -50,7 +50,7 @@ class SecurityServiceTest extends TestCase
         $this->assertTrue(Security::can(Decision::class, 'viewAny', $user));
 
         $key->forceFill(['is_reused' => true])->save();
-        $this->app['request']->attributes->set('authenticated_key', $key->fresh());
+        $this->app['request']->attributes->set('authenticated_key', $key->refresh());
         $this->assertFalse(Security::can(Decision::class, 'viewAny', $user));
     }
 

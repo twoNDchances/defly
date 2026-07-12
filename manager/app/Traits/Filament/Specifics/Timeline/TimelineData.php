@@ -8,6 +8,7 @@ use App\Models\Decision;
 use App\Models\Defender;
 use App\Models\Engine;
 use App\Models\Group;
+use App\Models\Guard;
 use App\Models\Key;
 use App\Models\Label;
 use App\Models\Pattern;
@@ -72,6 +73,7 @@ trait TimelineData
                 Defender::class => __('models.defender.name'),
                 Engine::class => __('models.engine.name'),
                 Group::class => __('models.group.name'),
+                Guard::class => __('models.guard.name'),
                 Key::class => __('models.key.name'),
                 Label::class => __('models.label.name'),
                 Pattern::class => __('models.pattern.name'),
@@ -90,6 +92,7 @@ trait TimelineData
                 Defender::class => 'rose',
                 Engine::class => 'sky',
                 Group::class => 'info',
+                Guard::class => 'slate',
                 Key::class => 'purple',
                 Label::class => 'teal',
                 Pattern::class => 'gray',

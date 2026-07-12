@@ -43,6 +43,11 @@ class Label extends Model
         return $this->morphedByMany(Group::class, 'resource', 'labels_resources', 'label', 'resource_id');
     }
 
+    public function guards()
+    {
+        return $this->morphedByMany(Guard::class, 'resource', 'labels_resources', 'label', 'resource_id');
+    }
+
     public function wordlists()
     {
         return $this->morphedByMany(Wordlist::class, 'resource', 'labels_resources', 'label', 'resource_id');

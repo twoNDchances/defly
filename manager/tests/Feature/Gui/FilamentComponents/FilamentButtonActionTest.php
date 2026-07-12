@@ -2,12 +2,20 @@
 
 namespace Tests\Feature\Gui\FilamentComponents;
 
-use App\Enums\Action\Type as ActionType;
 use App\Enums\Decision\Action as DecisionAction;
 use App\Enums\Decision\Condition;
 use App\Enums\Decision\Direction;
 use App\Enums\Defender\DeploymentStatus;
 use App\Enums\Principle\ValidationStatus;
+use App\Filament\Components\Decision\DecisionForm;
+use App\Filament\Components\Decision\DecisionTable;
+use App\Filament\Components\Defender\DefenderForm;
+use App\Filament\Components\Defender\DefenderTable;
+use App\Filament\Components\Key\KeyForm;
+use App\Filament\Components\Principle\PrincipleTable;
+use App\Filament\Components\Report\ReportTable;
+use App\Filament\Components\User\UserForm;
+use App\Filament\Components\Wordlist\WordlistTable;
 use App\Models\Decision;
 use App\Models\Report;
 use App\Models\User;
@@ -32,11 +40,13 @@ class FilamentButtonActionTest extends TestCase
         Http::fake(['*' => Http::response(['ok' => true])]);
         Storage::fake('local');
 
-        $this->actingAs(User::factory()->create([
+        /** @var User $user */
+        $user = User::factory()->create([
             'is_root' => true,
             'is_verified' => true,
             'is_activated' => true,
-        ]));
+        ]);
+        $this->actingAs($user);
 
         $defender = $this->filamentDefender();
         $pendingDefender = $this->filamentDefender(DeploymentStatus::Pending->value);
@@ -67,15 +77,15 @@ class FilamentButtonActionTest extends TestCase
             }
         }
 
-        $this->callFilamentAction(\App\Filament\Components\Defender\DefenderTable::deployDefenderButton(), $failedDefender);
-        $this->assertSame(DeploymentStatus::Pending, $failedDefender->fresh()->deployment_status);
+        $this->callFilamentAction(DefenderTable::deployDefenderButton(), $failedDefender);
+        $this->assertSame(DeploymentStatus::Pending, $failedDefender->refresh()->deployment_status);
 
-        $this->callFilamentAction(\App\Filament\Components\Defender\DefenderTable::deployDefenderBulkButton(), collect([$this->filamentDefender(DeploymentStatus::Failed->value), $pendingDefender]));
-        $this->callFilamentAction(\App\Filament\Components\Defender\DefenderTable::cancelDefenderButton(), $defender);
-        $this->callFilamentAction(\App\Filament\Components\Defender\DefenderTable::cancelDefenderBulkButton(), collect([$this->filamentDefender(), $pendingDefender]));
-        $this->callFilamentAction(\App\Filament\Components\Defender\DefenderTable::deleteDoneBulkButton(), collect([$this->filamentDefender(DeploymentStatus::Failed->value), $pendingDefender]));
-        $this->callFilamentAction(\App\Filament\Components\Defender\DefenderForm::followDefenderButton(), $defender, fn (string $key, mixed $value) => $this->assertSame('log', $key));
-        $this->callFilamentAction(\App\Filament\Components\Defender\DefenderForm::refreshDefenderButton(), $defender, fn (string $key, mixed $value) => $this->assertSame('last_response_details', $key));
+        $this->callFilamentAction(DefenderTable::deployDefenderBulkButton(), collect([$this->filamentDefender(DeploymentStatus::Failed->value), $pendingDefender]));
+        $this->callFilamentAction(DefenderTable::cancelDefenderButton(), $defender);
+        $this->callFilamentAction(DefenderTable::cancelDefenderBulkButton(), collect([$this->filamentDefender(), $pendingDefender]));
+        $this->callFilamentAction(DefenderTable::deleteDoneBulkButton(), collect([$this->filamentDefender(DeploymentStatus::Failed->value), $pendingDefender]));
+        $this->callFilamentAction(DefenderForm::followDefenderButton(), $defender, fn (string $key) => $this->assertSame('log', $key));
+        $this->callFilamentAction(DefenderForm::refreshDefenderButton(), $defender, fn (string $key) => $this->assertSame('last_response_details', $key));
 
         $communicationDefender = $this->filamentDefender();
         $communicationPrinciple = $this->filamentPrinciple();
@@ -89,18 +99,18 @@ class FilamentButtonActionTest extends TestCase
         $communicationDefender->principles()->attach($communicationPrinciple->id, ['order' => 1, 'is_applied' => true]);
         $communicationDefender->decisions()->attach($communicationDecision->id, ['order' => 1, 'is_implemented' => true]);
 
-        $this->callFilamentAction(\App\Filament\Components\Principle\PrincipleTable::validatePrincipleButton(), $principle);
-        $this->assertSame(ValidationStatus::Pending, $principle->fresh()->validation_status);
-        $this->callFilamentAction(\App\Filament\Components\Principle\PrincipleTable::validatePrincipleBulkButton(), collect([$this->filamentPrinciple(), $this->filamentPrinciple(ValidationStatus::Validating->value)]));
-        $this->callFilamentAction(\App\Filament\Components\Principle\PrincipleTable::clonePrincipleButton(), $principle->fresh());
-        $this->callFilamentAction(\App\Filament\Components\Principle\PrincipleTable::deleteUnlockedBulkButton(), collect([$this->filamentPrinciple(), $this->filamentPrinciple(ValidationStatus::Validating->value)]));
-        $this->callFilamentAction(\App\Filament\Components\Principle\PrincipleTable::applyPrincipleButton($communicationDefender), $communicationPrinciple->fresh());
-        $this->callFilamentAction(\App\Filament\Components\Principle\PrincipleTable::applyPrincipleBulkButton($communicationDefender), collect([$communicationPrinciple->fresh()]));
+        $this->callFilamentAction(PrincipleTable::validatePrincipleButton(), $principle);
+        $this->assertSame(ValidationStatus::Pending, $principle->refresh()->validation_status);
+        $this->callFilamentAction(PrincipleTable::validatePrincipleBulkButton(), collect([$this->filamentPrinciple(), $this->filamentPrinciple(ValidationStatus::Validating->value)]));
+        $this->callFilamentAction(PrincipleTable::clonePrincipleButton(), $principle->refresh());
+        $this->callFilamentAction(PrincipleTable::deleteUnlockedBulkButton(), collect([$this->filamentPrinciple(), $this->filamentPrinciple(ValidationStatus::Validating->value)]));
+        $this->callFilamentAction(PrincipleTable::applyPrincipleButton($communicationDefender), $communicationPrinciple->refresh());
+        $this->callFilamentAction(PrincipleTable::applyPrincipleBulkButton($communicationDefender), collect([$communicationPrinciple->refresh()]));
         $pivotPrinciple = $communicationDefender->principles()->first();
-        $this->callFilamentAction(\App\Filament\Components\Principle\PrincipleTable::revokePrincipleButton($communicationDefender), $pivotPrinciple);
-        $this->callFilamentAction(\App\Filament\Components\Principle\PrincipleTable::revokePrincipleBulkButton($communicationDefender), collect([$pivotPrinciple]));
+        $this->callFilamentAction(PrincipleTable::revokePrincipleButton($communicationDefender), $pivotPrinciple);
+        $this->callFilamentAction(PrincipleTable::revokePrincipleBulkButton($communicationDefender), collect([$pivotPrinciple]));
 
-        $this->callFilamentAction(\App\Filament\Components\Decision\DecisionForm::testRequestButton(), 'https://example.test', new class
+        $this->callFilamentAction(DecisionForm::testRequestButton(), 'https://example.test', new class
         {
             public bool $failed = false;
 
@@ -109,22 +119,22 @@ class FilamentButtonActionTest extends TestCase
                 $this->failed = true;
             }
         });
-        $this->callFilamentAction(\App\Filament\Components\Decision\DecisionTable::implementDecisionButton($communicationDefender), $communicationDecision->fresh());
-        $this->callFilamentAction(\App\Filament\Components\Decision\DecisionTable::implementDecisionBulkButton($communicationDefender), collect([$communicationDecision->fresh()]));
+        $this->callFilamentAction(DecisionTable::implementDecisionButton($communicationDefender), $communicationDecision->refresh());
+        $this->callFilamentAction(DecisionTable::implementDecisionBulkButton($communicationDefender), collect([$communicationDecision->refresh()]));
         $pivotDecision = $communicationDefender->decisions()->first();
-        $this->callFilamentAction(\App\Filament\Components\Decision\DecisionTable::suspendDecisionButton($communicationDefender), $pivotDecision);
-        $this->callFilamentAction(\App\Filament\Components\Decision\DecisionTable::suspendDecisionBulkButton($communicationDefender), collect([$pivotDecision]));
+        $this->callFilamentAction(DecisionTable::suspendDecisionButton($communicationDefender), $pivotDecision);
+        $this->callFilamentAction(DecisionTable::suspendDecisionBulkButton($communicationDefender), collect([$pivotDecision]));
 
         $report = Report::withoutEvents(fn () => Report::query()->create(['is_reviewed' => false]));
-        $this->callFilamentAction(\App\Filament\Components\Report\ReportTable::reviewReportButton(), $report);
-        $this->assertTrue($report->fresh()->is_reviewed);
-        $this->callFilamentAction(\App\Filament\Components\Report\ReportTable::reviewReportBulkButton(), collect([Report::withoutEvents(fn () => Report::query()->create(['is_reviewed' => false]))]));
+        $this->callFilamentAction(ReportTable::reviewReportButton(), $report);
+        $this->assertTrue($report->refresh()->is_reviewed);
+        $this->callFilamentAction(ReportTable::reviewReportBulkButton(), collect([Report::withoutEvents(fn () => Report::query()->create(['is_reviewed' => false]))]));
 
         $wordlist = $this->filamentWordlist();
-        $this->callFilamentAction(\App\Filament\Components\Wordlist\WordlistTable::cloneWordlistButton(), $wordlist);
+        $this->callFilamentAction(WordlistTable::cloneWordlistButton(), $wordlist);
 
-        $this->callFilamentAction(\App\Filament\Components\User\UserForm::generatePasswordButton(), fn (string $key, string $value) => $this->assertSame('password', $key));
-        $this->callFilamentAction(\App\Filament\Components\Key\KeyForm::generateTokenButton(), fn (string $key, string $value) => $this->assertSame('token', $key));
+        $this->callFilamentAction(UserForm::generatePasswordButton(), fn (string $key) => $this->assertSame('password', $key));
+        $this->callFilamentAction(KeyForm::generateTokenButton(), fn (string $key) => $this->assertSame('token', $key));
 
         $this->callAdditionalSpecificButtonBranches($communicationDefender, $communicationPrinciple, $communicationDecision);
         $this->callAttachDetachLifecycleHooks($communicationDefender, $communicationPrinciple, $communicationDecision);

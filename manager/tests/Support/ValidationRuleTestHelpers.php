@@ -2,7 +2,6 @@
 
 namespace Tests\Support;
 
-use App\Enums\Phase;
 use App\Enums\Type as TargetType;
 use App\Models\Target;
 use Illuminate\Support\Facades\Validator;

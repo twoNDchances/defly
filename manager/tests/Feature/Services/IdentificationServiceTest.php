@@ -13,6 +13,7 @@ class IdentificationServiceTest extends TestCase
 
     public function test_identification_service_reads_current_authenticated_user_state(): void
     {
+        /** @var User $root */
         $root = User::factory()->create(['is_root' => true, 'is_verified' => true, 'is_activated' => true]);
         $this->actingAs($root);
 

@@ -24,7 +24,7 @@ class DatatypeServiceTest extends TestCase
         $target->engines()->attach($lower->id, ['order' => 1]);
         $target->engines()->attach($length->id, ['order' => 2]);
 
-        $this->assertSame(Datatype::Number->value, DatatypeService::getFinal($target->fresh()));
+        $this->assertSame(Datatype::Number->value, DatatypeService::getFinal($target->refresh()));
         $validTrace = DatatypeService::traceBack(Target::query()->whereKey($target->id)->get());
         $this->assertTrue($validTrace['status']);
         $this->assertCount(2, $validTrace['details'][$target->id]['engines']['valid']);
@@ -33,14 +33,14 @@ class DatatypeServiceTest extends TestCase
         $addition = $this->engine(Datatype::Number->value, EngineType::Addition->value, Datatype::Number->value);
         $brokenTarget->engines()->attach($addition->id, ['order' => 1]);
 
-        $invalidTrace = DatatypeService::traceBack([$brokenTarget->fresh()]);
+        $invalidTrace = DatatypeService::traceBack([$brokenTarget->refresh()]);
         $this->assertFalse($invalidTrace['status']);
         $this->assertSame('input_mismatch', $invalidTrace['details'][$brokenTarget->id]['engines']['invalid'][$addition->id]['reason']);
     }
 
     public function test_tracing_reports_missing_datatypes_previous_mismatches_and_unsorted_pivots(): void
     {
-        $invalidTarget = new Target();
+        $invalidTarget = new Target;
         $invalidTarget->setRawAttributes([
             'id' => (string) Str::uuid(),
             'name' => 'invalid-datatype-target',
@@ -49,7 +49,7 @@ class DatatypeServiceTest extends TestCase
         $invalidTarget->setRelation('engines', collect());
         $this->assertNull(DatatypeService::getFinal($invalidTarget));
 
-        $brokenTarget = new Target();
+        $brokenTarget = new Target;
         $brokenTarget->setRawAttributes([
             'id' => (string) Str::uuid(),
             'name' => 'broken-engine-target',
@@ -64,7 +64,7 @@ class DatatypeServiceTest extends TestCase
         $this->assertSame('missing_datatype', $brokenTrace['details'][$brokenTarget->id]['engines']['invalid'][$missingDatatypeEngine->id]['reason']);
         $this->assertSame('previous_mismatch', $brokenTrace['details'][$brokenTarget->id]['engines']['invalid'][$afterBrokenEngine->id]['reason']);
 
-        $sortedTarget = new Target();
+        $sortedTarget = new Target;
         $sortedTarget->setRawAttributes([
             'id' => (string) Str::uuid(),
             'name' => 'sorted-engine-target',

@@ -55,4 +55,9 @@ class Defender extends Model
     {
         return $this->hasMany(Report::class, 'created_by');
     }
+
+    public function guards()
+    {
+        return $this->belongsToMany(Guard::class, 'guards_defenders', 'defender', 'guard');
+    }
 }

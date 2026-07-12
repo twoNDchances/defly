@@ -27,6 +27,7 @@ class OwnershipAndWordlistObserverTest extends TestCase
     public function test_observers_set_ownership_verification_word_counts_and_cleanup(): void
     {
         Mail::fake();
+        /** @var User $owner */
         $owner = User::factory()->create([
             'is_root' => true,
             'is_verified' => true,
@@ -40,11 +41,13 @@ class OwnershipAndWordlistObserverTest extends TestCase
         ]);
         $this->assertSame($owner->id, $label->created_by);
 
+        /** @var User $verifiedUser */
         $verifiedUser = User::factory()->create([
             'is_verified' => true,
             'is_activated' => true,
         ]);
-        $this->assertNotNull($verifiedUser->fresh()->email_verified_at);
+        $verifiedUser->refresh();
+        $this->assertNotNull($verifiedUser->email_verified_at);
 
         User::factory()->create([
             'email' => 'verify-me@example.com',
@@ -60,8 +63,9 @@ class OwnershipAndWordlistObserverTest extends TestCase
             'word_file' => 'wordlists/source.txt',
             'word_json' => [['word' => 'ignored']],
         ]);
-        $this->assertSame(2, $fileWordlist->fresh()->word_count);
-        $this->assertNull($fileWordlist->fresh()->word_json);
+        $fileWordlist->refresh();
+        $this->assertSame(2, $fileWordlist->word_count);
+        $this->assertNull($fileWordlist->word_json);
 
         $fileWordlist->delete();
         Storage::assertMissing('wordlists/source.txt');

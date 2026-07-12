@@ -17,20 +17,22 @@ class RootFieldTest extends TestCase
     {
         $this->assertValidatorFails([
             'is_root' => true,
-        ], ['is_root' => [new RootField()]], 'is_root');
+        ], ['is_root' => [new RootField]], 'is_root');
 
         $this->assertValidatorPasses([
             'is_root' => false,
-        ], ['is_root' => [new RootField()]]);
+        ], ['is_root' => [new RootField]]);
 
-        $this->actingAs(User::factory()->create([
+        /** @var User $user */
+        $user = User::factory()->create([
             'is_root' => true,
             'is_verified' => true,
             'is_activated' => true,
-        ]));
+        ]);
+        $this->actingAs($user);
 
         $this->assertValidatorPasses([
             'is_root' => true,
-        ], ['is_root' => [new RootField()]]);
+        ], ['is_root' => [new RootField]]);
     }
 }

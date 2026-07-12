@@ -25,17 +25,18 @@ class PrincipleReportPatternTimelinePolicyTest extends TestCase
 
     public function test_remaining_resource_policies_block_or_allow_expected_actions(): void
     {
+        /** @var User $root */
         $root = User::factory()->create(['is_root' => true, 'is_verified' => true, 'is_activated' => true]);
         $this->actingAs($root);
 
-        $principlePolicy = new PrinciplePolicy();
+        $principlePolicy = new PrinciplePolicy;
         $validatingPrinciple = $this->modelPrinciple(ValidationStatus::Validating->value);
         $passedPrinciple = $this->modelPrinciple(ValidationStatus::Passed->value);
         $this->assertFalse($principlePolicy->validate($root, $validatingPrinciple));
         $this->assertTrue($principlePolicy->apply($root, $passedPrinciple));
         $this->assertTrue($principlePolicy->clone($root, $passedPrinciple));
 
-        $reportPolicy = new ReportPolicy();
+        $reportPolicy = new ReportPolicy;
         $report = Report::withoutEvents(fn () => Report::query()->create(['is_reviewed' => false]));
         $reviewedReport = Report::withoutEvents(fn () => Report::query()->create(['is_reviewed' => true]));
         $this->assertTrue($reportPolicy->review($root, $report));
@@ -48,10 +49,10 @@ class PrincipleReportPatternTimelinePolicyTest extends TestCase
             'type' => TargetType::Full->value,
             'datatype' => Datatype::String->value,
         ]);
-        $this->assertFalse((new PatternPolicy())->create($root));
-        $this->assertFalse((new PatternPolicy())->update($root, $pattern));
-        $this->assertFalse((new PatternPolicy())->deleteAny($root));
-        $this->assertFalse((new PatternPolicy())->delete($root, $pattern));
-        $this->assertFalse((new TimelinePolicy())->create($root));
+        $this->assertFalse((new PatternPolicy)->create($root));
+        $this->assertFalse((new PatternPolicy)->update($root, $pattern));
+        $this->assertFalse((new PatternPolicy)->deleteAny($root));
+        $this->assertFalse((new PatternPolicy)->delete($root, $pattern));
+        $this->assertFalse((new TimelinePolicy)->create($root));
     }
 }

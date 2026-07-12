@@ -19,11 +19,11 @@ class LoggerServiceTest extends TestCase
     public function test_logger_writes_timeline_entries_when_not_running_in_console(): void
     {
         $consoleFlag = new ReflectionProperty($this->app, 'isRunningInConsole');
-        $consoleFlag->setAccessible(true);
         $previous = $consoleFlag->getValue($this->app);
         $consoleFlag->setValue($this->app, false);
 
         try {
+            /** @var User $user */
             $user = User::factory()->create([
                 'is_root' => true,
                 'is_verified' => true,
@@ -50,7 +50,7 @@ class LoggerServiceTest extends TestCase
             $this->assertInstanceOf(Timeline::class, Logger::updated($label));
             $this->assertInstanceOf(Timeline::class, Logger::deleted($label));
             $this->assertNull(Logger::log($label, ''));
-            $this->assertNull(Logger::log(new Timeline(), 'view'));
+            $this->assertNull(Logger::log(new Timeline, 'view'));
 
             Logger::logMany([$label, 'not-a-model'], 'bulk');
 

@@ -14,6 +14,7 @@ class ConservationMessageModelTest extends TestCase
 
     public function test_conservation_and_message_relationships_are_available(): void
     {
+        /** @var User $user */
         $user = User::factory()->create();
         $this->actingAs($user);
 

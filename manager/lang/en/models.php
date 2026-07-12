@@ -48,6 +48,13 @@ return [
             'name' => 'Name',
         ],
     ],
+    'guard' => [
+        'name' => 'Guard',
+        'fields' => [
+            'name' => 'Name',
+            'expired_at' => 'Expires at',
+        ],
+    ],
     'user' => [
         'name' => 'User',
         'fields' => [

@@ -36,7 +36,8 @@ class TargetAndRuleObserverTest extends TestCase
             'datatype' => Datatype::Number->value,
             'pattern_id' => $pattern->id,
             'wordlist_id' => $wordlist->id,
-        ])->fresh();
+        ]);
+        $target->refresh();
 
         $this->assertSame(Datatype::String, $target->datatype);
         $this->assertNull($target->wordlist_id);
@@ -47,7 +48,8 @@ class TargetAndRuleObserverTest extends TestCase
             'type' => TargetType::Getter->value,
             'datatype' => Datatype::String->value,
             'pattern_id' => $pattern->id,
-        ])->fresh();
+        ]);
+        $getter->refresh();
         $this->assertNull($getter->pattern_id);
 
         $rule = Rule::query()->create([
@@ -58,7 +60,8 @@ class TargetAndRuleObserverTest extends TestCase
             'is_inversed' => false,
             'wordlist_id' => $wordlist->id,
             'configurations' => ['string' => 'needle'],
-        ])->fresh();
+        ]);
+        $rule->refresh();
         $this->assertNull($rule->wordlist_id);
     }
 }
