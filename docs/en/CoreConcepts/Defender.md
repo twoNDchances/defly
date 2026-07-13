@@ -72,6 +72,18 @@ a successful response. Revoke/suspend before detaching an active item.
 `last_response_details` keeps the latest control response separately for Principle and
 Decision operations so a deployment result is not confused with a policy result.
 
+## Guarded Access
+
+A Defender can be protected by one or more [Guards](Guard.md). If no Guard is attached,
+normal Permission and workflow checks decide whether an operation can continue. If any
+Guard is attached, the current/requester User must own the Defender through
+`created_by` or belong to at least one unexpired Guard attached to that Defender.
+
+Guard affects administrative and control-plane operations, not runtime traffic
+matching. Guarded Defenders are also hidden from list/search scopes unless the User is
+the owner or belongs to a matching active Guard. Root Users and `Defender:all`
+Permissions still need ownership or matching Guard membership for guarded Defenders.
+
 ## Reports
 
 A Defender owns many [Reports](Report.md). In this relationship,

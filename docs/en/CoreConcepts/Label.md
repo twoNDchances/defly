@@ -19,6 +19,7 @@ Labels use the polymorphic `labels_resources` relationship and currently support
 - [User](User.md)
 - [Group](Group.md)
 - [Permission](Permission.md)
+- [Guard](Guard.md)
 - [Wordlist](Wordlist.md)
 - [Engine](Engine.md)
 - [Target](Target.md)

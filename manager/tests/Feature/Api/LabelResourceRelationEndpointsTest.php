@@ -16,6 +16,7 @@ class LabelResourceRelationEndpointsTest extends ApiTestCase
             'decisions' => ['params' => ['decision' => $this->decision()->id], 'labelRoute' => 'labels.decisions'],
             'defenders' => ['params' => ['defender' => $this->apiDefender()->id], 'labelRoute' => 'labels.defenders'],
             'engines' => ['params' => ['engine' => $this->engine()->id], 'labelRoute' => 'labels.engines'],
+            'guards' => ['params' => ['guard' => $this->guard('resource-guard')->id], 'labelRoute' => 'labels.guards'],
             'principles' => ['params' => ['principle' => $this->principle()->id], 'labelRoute' => 'labels.principles'],
             'rules' => ['params' => ['rule' => $this->rule()->id], 'labelRoute' => 'labels.rules'],
             'targets' => ['params' => ['target' => $this->target()->id], 'labelRoute' => 'labels.targets'],

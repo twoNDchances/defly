@@ -56,6 +56,10 @@ trait Authorization
         }
 
         if ($model instanceof Defender) {
+            if (! Security::canViewDefender($model, $user)) {
+                return false;
+            }
+
             if (in_array($ability, ['update', 'delete', 'deploy', 'cancel', 'follow', 'refresh'], true)
                 && ! Security::canOperateDefender($model, $user)) {
                 return false;

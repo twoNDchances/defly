@@ -15,7 +15,7 @@ temporary bootstrap password before creating additional users.
 Create one least-privilege operator role before onboarding more users, and use an API
 Key rather than a shared password for automation. Follow the concrete Manager steps
 in [Access Administration](Manager-Guide.md#access-administration); authorization
-precedence belongs in the linked User, Group, Permission, and Key concept pages.
+precedence belongs in the linked User, Group, Permission, Guard, and Key concept pages.
 
 ## 3. Build a Safe First Policy
 

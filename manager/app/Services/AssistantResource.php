@@ -72,7 +72,7 @@ class AssistantResource
             return [];
         }
 
-        $query = $definition['model']::query();
+        $query = static::query($definition);
         $search = trim($search);
 
         if ($search !== '') {
@@ -165,12 +165,26 @@ class AssistantResource
             return null;
         }
 
-        $record = $definition['model']::query()->find($id);
+        $record = static::query($definition)->find($id);
         if ($record === null || ! Security::can($record::class, 'view')) {
             return null;
         }
 
         return $record;
+    }
+
+    /**
+     * @param  array{model: class-string<Model>, title: string, search: array<int, string>}  $definition
+     */
+    protected static function query(array $definition): Builder
+    {
+        $query = $definition['model']::query();
+
+        if ($definition['model'] === Defender::class) {
+            $query->visibleTo(Identification::getCurrent());
+        }
+
+        return $query;
     }
 
     protected static function recordLabel(string $type, Model $record): string

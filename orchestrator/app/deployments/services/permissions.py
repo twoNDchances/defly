@@ -5,7 +5,7 @@ from django.utils import timezone
 
 from app.bases.models import User
 from app.bases.services.permissions import PermissionService
-from app.deployments.models import Guard
+from app.deployments.models import Defenders, Guard
 
 
 class DefenderPermissionService:
@@ -53,6 +53,15 @@ class DefenderPermissionService:
 
     @classmethod
     async def user_can_operate_defender(cls, *, user: User | None, defender_id) -> bool:
+        if (
+            user is not None
+            and await Defenders.objects.filter(
+                id=defender_id,
+                created_by=user.id,
+            ).aexists()
+        ):
+            return True
+
         guarded = await Guard.objects.filter(defenders__id=defender_id).aexists()
         if not guarded:
             return True

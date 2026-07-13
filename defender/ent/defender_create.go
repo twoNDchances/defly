@@ -50,6 +50,20 @@ func (dc *DefenderCreate) SetDetails(m map[string]interface{}) *DefenderCreate {
 	return dc
 }
 
+// SetCreatedBy sets the "created_by" field.
+func (dc *DefenderCreate) SetCreatedBy(u uuid.UUID) *DefenderCreate {
+	dc.mutation.SetCreatedBy(u)
+	return dc
+}
+
+// SetNillableCreatedBy sets the "created_by" field if the given value is not nil.
+func (dc *DefenderCreate) SetNillableCreatedBy(u *uuid.UUID) *DefenderCreate {
+	if u != nil {
+		dc.SetCreatedBy(*u)
+	}
+	return dc
+}
+
 // SetID sets the "id" field.
 func (dc *DefenderCreate) SetID(u uuid.UUID) *DefenderCreate {
 	dc.mutation.SetID(u)
@@ -226,6 +240,10 @@ func (dc *DefenderCreate) createSpec() (*Defender, *sqlgraph.CreateSpec) {
 	if value, ok := dc.mutation.Details(); ok {
 		_spec.SetField(defender.FieldDetails, field.TypeJSON, value)
 		_node.Details = value
+	}
+	if value, ok := dc.mutation.CreatedBy(); ok {
+		_spec.SetField(defender.FieldCreatedBy, field.TypeUUID, value)
+		_node.CreatedBy = &value
 	}
 	if nodes := dc.mutation.PrinciplesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

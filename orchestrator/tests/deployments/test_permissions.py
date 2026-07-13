@@ -109,3 +109,26 @@ class DefenderPermissionServiceTests(SimpleTestCase):
             model="Defender",
             action="cancel",
         )
+
+    async def test_allows_defender_owner_before_guard_checks(self):
+        user = SimpleNamespace(id="user-id")
+        owner_query = SimpleNamespace(aexists=AsyncMock(return_value=True))
+
+        with (
+            patch(
+                "app.deployments.services.permissions.Defenders.objects.filter",
+                return_value=owner_query,
+            ) as defender_filter,
+            patch(
+                "app.deployments.services.permissions.Guard.objects.filter",
+            ) as guard_filter,
+        ):
+            allowed = await DefenderPermissionService.user_can_operate_defender(
+                user=user,
+                defender_id="defender-id",
+            )
+
+        self.assertTrue(allowed)
+        defender_filter.assert_called_once_with(id="defender-id", created_by="user-id")
+        owner_query.aexists.assert_awaited_once()
+        guard_filter.assert_not_called()

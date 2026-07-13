@@ -113,8 +113,22 @@ func (a Authorization) can(ctx context.Context, email, action, appliedFor string
 }
 
 func (a Authorization) guardAllows(ctx context.Context, client *ent.Client, user *ent.User) (bool, error) {
+	defender, err := client.Defender.Query().
+		Where(entdefender.NameEQ(a.Database.Defender.Name)).
+		Only(ctx)
+	if ent.IsNotFound(err) {
+		return true, nil
+	}
+	if err != nil {
+		return false, err
+	}
+
+	if defender.CreatedBy != nil && *defender.CreatedBy == user.ID {
+		return true, nil
+	}
+
 	guardedDefender, err := client.Guard.Query().
-		Where(entguard.HasDefendersWith(entdefender.NameEQ(a.Database.Defender.Name))).
+		Where(entguard.HasDefendersWith(entdefender.IDEQ(defender.ID))).
 		Exist(ctx)
 	if err != nil {
 		return false, err
@@ -125,7 +139,7 @@ func (a Authorization) guardAllows(ctx context.Context, client *ent.Client, user
 
 	return client.Guard.Query().
 		Where(
-			entguard.HasDefendersWith(entdefender.NameEQ(a.Database.Defender.Name)),
+			entguard.HasDefendersWith(entdefender.IDEQ(defender.ID)),
 			entguard.HasUsersWith(entuser.IDEQ(user.ID)),
 			entguard.Or(
 				entguard.ExpiredAtIsNil(),

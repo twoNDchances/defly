@@ -3,6 +3,7 @@
 namespace App\Traits\Filament\Specifics\Guard;
 
 use App\Traits\Filament\Generals\Components\Column;
+use Illuminate\Support\Carbon;
 
 trait GuardColumn
 {
@@ -15,7 +16,23 @@ trait GuardColumn
 
     public static function getExpiredAt()
     {
-        return self::datetimeColumn('expired_at', __('models.guard.fields.expired_at'));
+        return self::datetimeColumn('expired_at', __('models.guard.fields.expired_at'))
+            ->color(function ($record) {
+                $expiredAt = data_get($record, 'expired_at');
+
+                if (blank($expiredAt)) {
+                    return 'success';
+                }
+
+                $time = Carbon::parse($expiredAt);
+
+                return match (true) {
+                    $time->isPast() => 'danger',
+                    $time->lessThanOrEqualTo(now()->addDay()) => 'warning',
+                    default => 'success',
+                };
+            })
+            ->badge();
     }
 
     public static function getDefenders()

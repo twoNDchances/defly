@@ -6,6 +6,7 @@ use App\Models\Defender;
 use App\Models\Principle;
 use App\Models\Report;
 use App\Models\Timeline;
+use App\Services\Identification;
 use App\Services\Security;
 use BackedEnum;
 use Carbon\CarbonImmutable;
@@ -36,7 +37,7 @@ trait InteractsWithSecurityWidgetData
     protected function defendersQuery(): Builder
     {
         return Security::can(Defender::class, 'viewAny')
-            ? Defender::query()
+            ? Defender::query()->visibleTo(Identification::getCurrent())
             : $this->emptyQuery(Defender::class);
     }
 

@@ -7,8 +7,8 @@ use App\Enums\Principle\ValidationStatus;
 use App\Http\Requests\DefenderActionRequest;
 use App\Http\Requests\DefenderDecisionActionRequest;
 use App\Http\Requests\DefenderPrincipleActionRequest;
-use App\Http\Requests\DefenderRequest;
 use App\Http\Requests\DefenderRelationRequest;
+use App\Http\Requests\DefenderRequest;
 use App\Jobs\DefenderCommunication;
 use App\Jobs\DefenderDeployment;
 use App\Models\Decision;
@@ -31,6 +31,7 @@ class DefenderController extends Controller
     public function index(DefenderRequest $request): JsonResponse
     {
         $defenders = Defender::query()
+            ->visibleTo($request->user())
             ->latest()
             ->paginate($this->perPage($request));
 

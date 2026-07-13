@@ -57,7 +57,7 @@ See the complete algorithm in [Permission](Permission.md#how-security-evaluates-
 
 ## Ownership
 
-Administrative models store `created_by` pointing to the User that created them. User owns Group, Permission, Label, Wordlist, Engine, Target, Action, Rule, Principle, Decision, Defender, Key, and Timeline records.
+Administrative models store `created_by` pointing to the User that created them. User owns Group, Permission, Guard, Label, Wordlist, Engine, Target, Action, Rule, Principle, Decision, Defender, Key, and Timeline records.
 
 Ownership and authorization are different:
 

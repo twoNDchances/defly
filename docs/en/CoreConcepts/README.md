@@ -7,8 +7,9 @@ This section explains the objects used in Manager and Defender. If Defly is new 
 1. [User](User.md): sign-in account and configuration owner.
 2. [Group](Group.md): collection of Users or API Keys for centralized permissions.
 3. [Permission](Permission.md): authorization to act on Manager resources.
-4. [Key](Key.md): credentials for API integrations.
-5. [Label](Label.md): metadata for resource classification.
+4. [Guard](Guard.md): per-Defender operator boundary for protected actions.
+5. [Key](Key.md): credentials for API integrations.
+6. [Label](Label.md): metadata for resource classification.
 
 ## WAF Policy
 

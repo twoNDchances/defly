@@ -18,6 +18,7 @@ use App\Filament\Clusters\Initialization\Resources\Actions\Pages\CreateAction;
 use App\Filament\Clusters\Initialization\Resources\Actions\Pages\EditAction;
 use App\Filament\Clusters\Initialization\Resources\Decisions\Pages\CreateDecision;
 use App\Filament\Clusters\Initialization\Resources\Rules\Pages\CreateRule;
+use App\Filament\Components\Guard\GuardTable;
 use App\Filament\Components\Wordlist\WordlistTable;
 use App\Models\Action;
 use App\Models\Wordlist;
@@ -70,6 +71,13 @@ class GeneralFieldButtonColumnPageHelpersTest extends TestCase
         $this->assertSame('danger', $this->callClosureProperty($expiredAtColumn, 'color', (object) ['expired_at' => now()->subMinute()]));
         $this->assertSame('info', $this->callClosureProperty($expiredAtColumn, 'color', (object) ['expired_at' => now()->addHours(2)]));
         $this->assertSame('info', $this->callClosureProperty($expiredAtColumn, 'color', (object) ['expired_at' => now()->addDays(10)]));
+
+        $guardExpiredAtColumn = GuardTable::getExpiredAt();
+        $this->assertTrue($guardExpiredAtColumn->isBadge());
+        $this->assertSame('danger', $this->callClosureProperty($guardExpiredAtColumn, 'color', (object) ['expired_at' => now()->subMinute()]));
+        $this->assertSame('warning', $this->callClosureProperty($guardExpiredAtColumn, 'color', (object) ['expired_at' => now()->addHours(2)]));
+        $this->assertSame('success', $this->callClosureProperty($guardExpiredAtColumn, 'color', (object) ['expired_at' => now()->addDays(10)]));
+        $this->assertSame('success', $this->callClosureProperty($guardExpiredAtColumn, 'color', (object) ['expired_at' => null]));
 
         $fileWordlist = Wordlist::query()->create([
             'name' => 'file-clone-'.Str::lower(Str::random(6)),

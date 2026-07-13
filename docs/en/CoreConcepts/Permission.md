@@ -65,6 +65,8 @@ else:
 
 Direct and Group Permissions combine with OR. There is no deny rule or priority order.
 
+For guarded Defender operations, this Permission result is only the first gate. [Guard](Guard.md) then checks whether the current/requester User may operate that specific Defender.
+
 ## Permission Is Not the Only Condition
 
 Having a Permission does not guarantee the operation will run. Authorization also checks record state:
@@ -72,6 +74,7 @@ Having a Permission does not guarantee the operation will run. Authorization als
 - `is_locked = true` blocks `update`, `delete`, and `validate`.
 - A `pending`/`processing` Defender blocks update/delete/deploy.
 - A successfully deployed Defender cannot be deleted before cancellation.
+- A Defender attached to one or more [Guards](Guard.md) requires the current/requester User to own the Defender or belong to an unexpired matching Guard.
 - A `pending`/`validating` Principle blocks update/delete/validation.
 - Report API verifies that the Report belongs to the Defender in the URL.
 
@@ -91,7 +94,7 @@ action: deploy
 
 This allows deployment on an eligible Defender but does not grant `view`, `cancel`, or `deployAny`.
 
-`Defender:all` covers Defender actions but still does not bypass deployment-state constraints.
+`Defender:all` covers Defender actions but still does not bypass deployment-state constraints or Guard membership unless the User also owns that Defender.
 
 ## Checklist
 
@@ -99,4 +102,4 @@ This allows deployment on an eligible Defender but does not grant `view`, `cance
 - Use `all` only when the subject needs complete model access.
 - Inspect direct Permissions and Groups during an authorization investigation.
 - For APIs, identify Key or User subject through `is_reused`.
-- Do not confuse Permission with ownership, lock state, or workflow state.
+- Do not confuse Permission with ownership, Guard membership, lock state, or workflow state.

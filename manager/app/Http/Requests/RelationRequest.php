@@ -7,6 +7,7 @@ use App\Models\Decision;
 use App\Models\Defender;
 use App\Models\Engine;
 use App\Models\Group;
+use App\Models\Guard;
 use App\Models\Label;
 use App\Models\Permission;
 use App\Models\Principle;
@@ -153,6 +154,7 @@ abstract class RelationRequest extends FormRequest
             'defenders' => Defender::class,
             'engines' => Engine::class,
             'groups' => Group::class,
+            'guards' => Guard::class,
             'labels' => Label::class,
             'permissions' => Permission::class,
             'principles' => Principle::class,

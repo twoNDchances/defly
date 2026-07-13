@@ -21,6 +21,8 @@ const (
 	FieldStatus = "status"
 	// FieldDetails holds the string denoting the details field in the database.
 	FieldDetails = "details"
+	// FieldCreatedBy holds the string denoting the created_by field in the database.
+	FieldCreatedBy = "created_by"
 	// EdgePrinciples holds the string denoting the principles edge name in mutations.
 	EdgePrinciples = "principles"
 	// EdgeDecisions holds the string denoting the decisions edge name in mutations.
@@ -61,6 +63,7 @@ var Columns = []string{
 	FieldName,
 	FieldStatus,
 	FieldDetails,
+	FieldCreatedBy,
 }
 
 var (
@@ -131,6 +134,11 @@ func ByName(opts ...sql.OrderTermOption) OrderOption {
 // ByStatus orders the results by the status field.
 func ByStatus(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldStatus, opts...).ToFunc()
+}
+
+// ByCreatedBy orders the results by the created_by field.
+func ByCreatedBy(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldCreatedBy, opts...).ToFunc()
 }
 
 // ByPrinciplesCount orders the results by principles count.

@@ -24,6 +24,11 @@ Apply least privilege through [Groups](CoreConcepts/Group.md). Separate at least
 
 Regularly review inactive Users and Group membership.
 
+Use [Guards](CoreConcepts/Guard.md) when only specific operators should control a
+specific Defender. Guard is intentionally narrower than Permission: the Defender owner
+can still operate their own Defender, but other root Users or Users with `Defender:all`
+must belong to an active matching Guard when the Defender is guarded.
+
 ## Credentials and Secrets
 
 Never commit:
@@ -90,5 +95,6 @@ Recommended workflow:
 - Database and volumes backed up.
 - Reports/raw requests have retention limits.
 - Users, Groups, and Permissions reviewed.
+- Guard membership and expiration reviewed for production Defenders.
 - Principles are `passed` and Decisions tested in both directions.
 - A bypass or rollback path exists for false blocking.

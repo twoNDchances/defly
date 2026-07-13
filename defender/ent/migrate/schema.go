@@ -44,6 +44,7 @@ var (
 		{Name: "name", Type: field.TypeString, Unique: true},
 		{Name: "status", Type: field.TypeEnum, Nullable: true, Enums: []string{"normal", "abnormal"}},
 		{Name: "details", Type: field.TypeJSON, Nullable: true},
+		{Name: "created_by", Type: field.TypeUUID, Nullable: true},
 	}
 	// DefendersTable holds the schema information for the "defenders" table.
 	DefendersTable = &schema.Table{

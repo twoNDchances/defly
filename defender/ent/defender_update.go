@@ -78,6 +78,26 @@ func (du *DefenderUpdate) ClearDetails() *DefenderUpdate {
 	return du
 }
 
+// SetCreatedBy sets the "created_by" field.
+func (du *DefenderUpdate) SetCreatedBy(u uuid.UUID) *DefenderUpdate {
+	du.mutation.SetCreatedBy(u)
+	return du
+}
+
+// SetNillableCreatedBy sets the "created_by" field if the given value is not nil.
+func (du *DefenderUpdate) SetNillableCreatedBy(u *uuid.UUID) *DefenderUpdate {
+	if u != nil {
+		du.SetCreatedBy(*u)
+	}
+	return du
+}
+
+// ClearCreatedBy clears the value of the "created_by" field.
+func (du *DefenderUpdate) ClearCreatedBy() *DefenderUpdate {
+	du.mutation.ClearCreatedBy()
+	return du
+}
+
 // AddPrincipleIDs adds the "principles" edge to the Principle entity by IDs.
 func (du *DefenderUpdate) AddPrincipleIDs(ids ...uuid.UUID) *DefenderUpdate {
 	du.mutation.AddPrincipleIDs(ids...)
@@ -295,6 +315,12 @@ func (du *DefenderUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if du.mutation.DetailsCleared() {
 		_spec.ClearField(defender.FieldDetails, field.TypeJSON)
+	}
+	if value, ok := du.mutation.CreatedBy(); ok {
+		_spec.SetField(defender.FieldCreatedBy, field.TypeUUID, value)
+	}
+	if du.mutation.CreatedByCleared() {
+		_spec.ClearField(defender.FieldCreatedBy, field.TypeUUID)
 	}
 	if du.mutation.PrinciplesCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -539,6 +565,26 @@ func (duo *DefenderUpdateOne) SetDetails(m map[string]interface{}) *DefenderUpda
 // ClearDetails clears the value of the "details" field.
 func (duo *DefenderUpdateOne) ClearDetails() *DefenderUpdateOne {
 	duo.mutation.ClearDetails()
+	return duo
+}
+
+// SetCreatedBy sets the "created_by" field.
+func (duo *DefenderUpdateOne) SetCreatedBy(u uuid.UUID) *DefenderUpdateOne {
+	duo.mutation.SetCreatedBy(u)
+	return duo
+}
+
+// SetNillableCreatedBy sets the "created_by" field if the given value is not nil.
+func (duo *DefenderUpdateOne) SetNillableCreatedBy(u *uuid.UUID) *DefenderUpdateOne {
+	if u != nil {
+		duo.SetCreatedBy(*u)
+	}
+	return duo
+}
+
+// ClearCreatedBy clears the value of the "created_by" field.
+func (duo *DefenderUpdateOne) ClearCreatedBy() *DefenderUpdateOne {
+	duo.mutation.ClearCreatedBy()
 	return duo
 }
 
@@ -789,6 +835,12 @@ func (duo *DefenderUpdateOne) sqlSave(ctx context.Context) (_node *Defender, err
 	}
 	if duo.mutation.DetailsCleared() {
 		_spec.ClearField(defender.FieldDetails, field.TypeJSON)
+	}
+	if value, ok := duo.mutation.CreatedBy(); ok {
+		_spec.SetField(defender.FieldCreatedBy, field.TypeUUID, value)
+	}
+	if duo.mutation.CreatedByCleared() {
+		_spec.ClearField(defender.FieldCreatedBy, field.TypeUUID)
 	}
 	if duo.mutation.PrinciplesCleared() {
 		edge := &sqlgraph.EdgeSpec{

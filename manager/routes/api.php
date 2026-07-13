@@ -5,6 +5,7 @@ use App\Http\Controllers\DecisionController;
 use App\Http\Controllers\DefenderController;
 use App\Http\Controllers\EngineController;
 use App\Http\Controllers\GroupController;
+use App\Http\Controllers\GuardController;
 use App\Http\Controllers\LabelController;
 use App\Http\Controllers\MeController;
 use App\Http\Controllers\PatternController;
@@ -95,6 +96,18 @@ Route::name('defly_manager.api.')
         Route::delete('groups/{group}/labels', [GroupController::class, 'detachLabels'])->name('groups.labels.detach');
         Route::apiResource('groups', GroupController::class);
 
+        Route::get('guards/payload', [GuardController::class, 'payload'])->name('guards.payload');
+        Route::get('guards/{guard}/users', [GuardController::class, 'users'])->name('guards.users.index');
+        Route::post('guards/{guard}/users', [GuardController::class, 'attachUsers'])->name('guards.users.attach');
+        Route::delete('guards/{guard}/users', [GuardController::class, 'detachUsers'])->name('guards.users.detach');
+        Route::get('guards/{guard}/defenders', [GuardController::class, 'defenders'])->name('guards.defenders.index');
+        Route::post('guards/{guard}/defenders', [GuardController::class, 'attachDefenders'])->name('guards.defenders.attach');
+        Route::delete('guards/{guard}/defenders', [GuardController::class, 'detachDefenders'])->name('guards.defenders.detach');
+        Route::get('guards/{guard}/labels', [GuardController::class, 'labels'])->name('guards.labels.index');
+        Route::post('guards/{guard}/labels', [GuardController::class, 'attachLabels'])->name('guards.labels.attach');
+        Route::delete('guards/{guard}/labels', [GuardController::class, 'detachLabels'])->name('guards.labels.detach');
+        Route::apiResource('guards', GuardController::class);
+
         Route::get('labels/payload', [LabelController::class, 'payload'])->name('labels.payload');
         Route::get('labels/{label}/users', [LabelController::class, 'users'])->name('labels.users.index');
         Route::post('labels/{label}/users', [LabelController::class, 'attachUsers'])->name('labels.users.attach');
@@ -105,6 +118,9 @@ Route::name('defly_manager.api.')
         Route::get('labels/{label}/groups', [LabelController::class, 'groups'])->name('labels.groups.index');
         Route::post('labels/{label}/groups', [LabelController::class, 'attachGroups'])->name('labels.groups.attach');
         Route::delete('labels/{label}/groups', [LabelController::class, 'detachGroups'])->name('labels.groups.detach');
+        Route::get('labels/{label}/guards', [LabelController::class, 'guards'])->name('labels.guards.index');
+        Route::post('labels/{label}/guards', [LabelController::class, 'attachGuards'])->name('labels.guards.attach');
+        Route::delete('labels/{label}/guards', [LabelController::class, 'detachGuards'])->name('labels.guards.detach');
         Route::get('labels/{label}/wordlists', [LabelController::class, 'wordlists'])->name('labels.wordlists.index');
         Route::post('labels/{label}/wordlists', [LabelController::class, 'attachWordlists'])->name('labels.wordlists.attach');
         Route::delete('labels/{label}/wordlists', [LabelController::class, 'detachWordlists'])->name('labels.wordlists.detach');

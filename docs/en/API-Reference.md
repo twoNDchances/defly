@@ -41,6 +41,7 @@ Primary resources:
 ```text
 users
 groups
+guards
 permissions
 labels
 wordlists
@@ -88,7 +89,7 @@ Attach/detach requests commonly contain:
 }
 ```
 
-Examples include User-Permission, Group-User, Target-Engine, Rule-Action, Principle-Rule, resource-Label, and Defender-Principle/Decision relationships.
+Examples include User-Permission, Group-User, Guard-User/Defender, Target-Engine, Rule-Action, Principle-Rule, resource-Label, and Defender-Principle/Decision relationships.
 
 ### Policy and Defender Endpoints
 
@@ -103,6 +104,11 @@ Examples include User-Permission, Group-User, Target-Engine, Rule-Action, Princi
 | `POST` | `/defenders/{d}/decisions/{x}/implement` | Implement a [Decision](CoreConcepts/Decision.md). |
 | `POST` | `/defenders/{d}/decisions/{x}/suspend` | Suspend a Decision. |
 | `GET` | `/defenders/{d}/reports` | List [Reports](CoreConcepts/Report.md). |
+
+If the Defender is protected by a [Guard](CoreConcepts/Guard.md), lifecycle and
+policy-control endpoints require the authenticated User to own the Defender or belong
+to an unexpired matching Guard. Otherwise Manager returns `403` or a queued job stops before calling
+Orchestrator/Defender.
 
 ## Orchestrator API
 
@@ -120,7 +126,7 @@ The API uses Basic Auth. Manager's `ORCHESTRATOR_USERNAME`/`ORCHESTRATOR_PASSWOR
 | `GET` | Follow logs | `200`, latest log output. |
 | `DELETE` | Cancel Defender | `200`, cancellation details. |
 
-Methods can be changed by matching environment variables on both sides. Orchestrator also checks `SERVER_MANAGER` and reads the executor email from the configured header.
+Methods can be changed by matching environment variables on both sides. Orchestrator also checks `SERVER_MANAGER`, reads the executor email from the configured header, and enforces Guard membership for guarded Defenders.
 
 Common errors:
 
@@ -147,7 +153,7 @@ This API synchronizes policy on a running Defender:
 | `PUT` | `/decisions` | Implement a Decision. |
 | `DELETE` | `/decisions` | Suspend a Decision. |
 
-Defender server variables can change methods and paths. Authorization and executor information protect requests. This API is internal and should not be exposed to the Internet.
+Defender server variables can change methods and paths. Authorization, Guard membership, and executor information protect requests. This API is internal and should not be exposed to the Internet.
 
 ## Common Headers and Body
 

@@ -1455,6 +1455,7 @@ type DefenderMutation struct {
 	name              *string
 	status            *defender.Status
 	details           *map[string]interface{}
+	created_by        *uuid.UUID
 	clearedFields     map[string]struct{}
 	principles        map[uuid.UUID]struct{}
 	removedprinciples map[uuid.UUID]struct{}
@@ -1711,6 +1712,55 @@ func (m *DefenderMutation) ResetDetails() {
 	delete(m.clearedFields, defender.FieldDetails)
 }
 
+// SetCreatedBy sets the "created_by" field.
+func (m *DefenderMutation) SetCreatedBy(u uuid.UUID) {
+	m.created_by = &u
+}
+
+// CreatedBy returns the value of the "created_by" field in the mutation.
+func (m *DefenderMutation) CreatedBy() (r uuid.UUID, exists bool) {
+	v := m.created_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedBy returns the old "created_by" field's value of the Defender entity.
+// If the Defender object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DefenderMutation) OldCreatedBy(ctx context.Context) (v *uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedBy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedBy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedBy: %w", err)
+	}
+	return oldValue.CreatedBy, nil
+}
+
+// ClearCreatedBy clears the value of the "created_by" field.
+func (m *DefenderMutation) ClearCreatedBy() {
+	m.created_by = nil
+	m.clearedFields[defender.FieldCreatedBy] = struct{}{}
+}
+
+// CreatedByCleared returns if the "created_by" field was cleared in this mutation.
+func (m *DefenderMutation) CreatedByCleared() bool {
+	_, ok := m.clearedFields[defender.FieldCreatedBy]
+	return ok
+}
+
+// ResetCreatedBy resets all changes to the "created_by" field.
+func (m *DefenderMutation) ResetCreatedBy() {
+	m.created_by = nil
+	delete(m.clearedFields, defender.FieldCreatedBy)
+}
+
 // AddPrincipleIDs adds the "principles" edge to the Principle entity by ids.
 func (m *DefenderMutation) AddPrincipleIDs(ids ...uuid.UUID) {
 	if m.principles == nil {
@@ -1961,7 +2011,7 @@ func (m *DefenderMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *DefenderMutation) Fields() []string {
-	fields := make([]string, 0, 3)
+	fields := make([]string, 0, 4)
 	if m.name != nil {
 		fields = append(fields, defender.FieldName)
 	}
@@ -1970,6 +2020,9 @@ func (m *DefenderMutation) Fields() []string {
 	}
 	if m.details != nil {
 		fields = append(fields, defender.FieldDetails)
+	}
+	if m.created_by != nil {
+		fields = append(fields, defender.FieldCreatedBy)
 	}
 	return fields
 }
@@ -1985,6 +2038,8 @@ func (m *DefenderMutation) Field(name string) (ent.Value, bool) {
 		return m.Status()
 	case defender.FieldDetails:
 		return m.Details()
+	case defender.FieldCreatedBy:
+		return m.CreatedBy()
 	}
 	return nil, false
 }
@@ -2000,6 +2055,8 @@ func (m *DefenderMutation) OldField(ctx context.Context, name string) (ent.Value
 		return m.OldStatus(ctx)
 	case defender.FieldDetails:
 		return m.OldDetails(ctx)
+	case defender.FieldCreatedBy:
+		return m.OldCreatedBy(ctx)
 	}
 	return nil, fmt.Errorf("unknown Defender field %s", name)
 }
@@ -2029,6 +2086,13 @@ func (m *DefenderMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetDetails(v)
+		return nil
+	case defender.FieldCreatedBy:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedBy(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Defender field %s", name)
@@ -2066,6 +2130,9 @@ func (m *DefenderMutation) ClearedFields() []string {
 	if m.FieldCleared(defender.FieldDetails) {
 		fields = append(fields, defender.FieldDetails)
 	}
+	if m.FieldCleared(defender.FieldCreatedBy) {
+		fields = append(fields, defender.FieldCreatedBy)
+	}
 	return fields
 }
 
@@ -2086,6 +2153,9 @@ func (m *DefenderMutation) ClearField(name string) error {
 	case defender.FieldDetails:
 		m.ClearDetails()
 		return nil
+	case defender.FieldCreatedBy:
+		m.ClearCreatedBy()
+		return nil
 	}
 	return fmt.Errorf("unknown Defender nullable field %s", name)
 }
@@ -2102,6 +2172,9 @@ func (m *DefenderMutation) ResetField(name string) error {
 		return nil
 	case defender.FieldDetails:
 		m.ResetDetails()
+		return nil
+	case defender.FieldCreatedBy:
+		m.ResetCreatedBy()
 		return nil
 	}
 	return fmt.Errorf("unknown Defender field %s", name)

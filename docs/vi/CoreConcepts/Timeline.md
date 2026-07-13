@@ -43,7 +43,7 @@ Giao diện còn có các hành động hàng loạt tương ứng, nhưng Timel
 
 Timeline có thể trỏ đến:
 
-- User, Group, Permission, Key, Label
+- User, Group, Permission, Guard, Key, Label
 - Wordlist, Pattern, Engine, Target
 - Action, Rule, Principle, Decision
 - Defender, Report

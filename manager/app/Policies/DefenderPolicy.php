@@ -27,6 +27,15 @@ class DefenderPolicy
         return in_array($defender->deployment_status, self::PROTECTED_STATUSES, true);
     }
 
+    public function view(User $user, Defender $defender): bool
+    {
+        if (! Security::canViewDefender($defender, $user)) {
+            return false;
+        }
+
+        return $this->checkAccess($user, $defender, 'view');
+    }
+
     public function update(User $user, Defender $defender): bool
     {
         if ($this->isProtectedStatus($defender) || ! Security::canOperateDefender($defender, $user)) {

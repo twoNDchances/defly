@@ -18,6 +18,7 @@ use App\Models\Decision;
 use App\Models\Defender;
 use App\Models\Engine;
 use App\Models\Group;
+use App\Models\Guard;
 use App\Models\Label;
 use App\Models\Permission;
 use App\Models\Principle;
@@ -55,6 +56,14 @@ trait ApiRelationTestHelpers
         return Group::query()->create([
             'name' => $name.'-'.Str::lower(Str::random(6)),
             'description' => 'Test group',
+        ]);
+    }
+
+    protected function guard(string $name): Guard
+    {
+        return Guard::query()->create([
+            'name' => $name.'-'.Str::lower(Str::random(6)),
+            'description' => 'Test guard',
         ]);
     }
 

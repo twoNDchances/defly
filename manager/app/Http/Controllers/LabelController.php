@@ -143,6 +143,31 @@ class LabelController extends Controller
             ->get());
     }
 
+    public function guards(LabelRelationRequest $request, Label $label): JsonResponse
+    {
+        return response()->json($label->guards()
+            ->latest()
+            ->get());
+    }
+
+    public function attachGuards(LabelRelationRequest $request, Label $label): JsonResponse
+    {
+        $label->guards()->syncWithoutDetaching($request->validated('ids', []));
+
+        return response()->json($label->guards()
+            ->latest()
+            ->get());
+    }
+
+    public function detachGuards(LabelRelationRequest $request, Label $label): JsonResponse
+    {
+        $label->guards()->detach($request->validated('ids', []));
+
+        return response()->json($label->guards()
+            ->latest()
+            ->get());
+    }
+
     public function wordlists(LabelRelationRequest $request, Label $label): JsonResponse
     {
         return response()->json($label->wordlists()
@@ -321,6 +346,7 @@ class LabelController extends Controller
     public function defenders(LabelRelationRequest $request, Label $label): JsonResponse
     {
         return response()->json($label->defenders()
+            ->visibleTo($request->user())
             ->latest()
             ->get());
     }
@@ -330,6 +356,7 @@ class LabelController extends Controller
         $label->defenders()->syncWithoutDetaching($request->validated('ids', []));
 
         return response()->json($label->defenders()
+            ->visibleTo($request->user())
             ->latest()
             ->get());
     }
@@ -339,6 +366,7 @@ class LabelController extends Controller
         $label->defenders()->detach($request->validated('ids', []));
 
         return response()->json($label->defenders()
+            ->visibleTo($request->user())
             ->latest()
             ->get());
     }

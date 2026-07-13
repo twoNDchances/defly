@@ -7,6 +7,8 @@ use App\Traits\Models\Labellable;
 use App\Traits\Models\Owner;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 
@@ -37,5 +39,14 @@ class Guard extends Model
     public function users()
     {
         return $this->belongsToMany(User::class, 'guards_users', 'guard', 'user');
+    }
+
+    #[Scope]
+    protected function active(Builder $query): void
+    {
+        $query->where(function (Builder $query): void {
+            $query->whereNull('expired_at')
+                ->orWhere('expired_at', '>', now());
+        });
     }
 }

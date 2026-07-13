@@ -4,6 +4,7 @@ namespace Tests\Feature\Services;
 
 use App\Models\Action;
 use App\Models\Decision;
+use App\Models\Defender;
 use App\Models\Group;
 use App\Models\Guard;
 use App\Models\Key;
@@ -105,5 +106,57 @@ class SecurityServiceTest extends TestCase
 
         $this->assertFalse(Security::canOperateDefender($defender, $user));
         $this->assertFalse(Security::requesterCanOperateDefender($defender, $user->email));
+
+        $owner = User::factory()->create([
+            'email' => 'guard-owner@example.com',
+            'is_root' => false,
+            'is_verified' => true,
+            'is_activated' => true,
+        ]);
+        $ownedDefender = $this->defender('guard-owner-access', null);
+        $ownedDefender->forceFill(['created_by' => $owner->id])->saveQuietly();
+        $activeGuard->defenders()->attach($ownedDefender->id);
+
+        $this->assertTrue(Security::canOperateDefender($ownedDefender, $owner));
+        $this->assertTrue(Security::requesterCanOperateDefender($ownedDefender, 'Guard-Owner@Example.com'));
+    }
+
+    public function test_defender_visibility_scope_limits_guarded_defenders_to_owner_or_active_guard_users(): void
+    {
+        $viewer = User::factory()->create([
+            'is_root' => false,
+            'is_verified' => true,
+            'is_activated' => true,
+        ]);
+        $publicDefender = $this->defender('public-defender', null);
+        $guardedDefender = $this->defender('guarded-defender', null);
+        $ownedDefender = $this->defender('owned-defender', null);
+        $expiredGuardDefender = $this->defender('expired-guard-defender', null);
+        $ownedDefender->forceFill(['created_by' => $viewer->id])->saveQuietly();
+
+        $activeGuard = Guard::query()->create([
+            'name' => 'visibility-active-guard',
+            'expired_at' => now()->addHour(),
+        ]);
+        $activeGuard->defenders()->attach([$guardedDefender->id, $ownedDefender->id]);
+
+        $expiredGuard = Guard::query()->create([
+            'name' => 'visibility-expired-guard',
+            'expired_at' => now()->subMinute(),
+        ]);
+        $expiredGuard->defenders()->attach($expiredGuardDefender->id);
+
+        $visibleIds = Defender::query()->visibleTo($viewer)->pluck('id')->all();
+
+        $this->assertContains($publicDefender->id, $visibleIds);
+        $this->assertContains($ownedDefender->id, $visibleIds);
+        $this->assertNotContains($guardedDefender->id, $visibleIds);
+        $this->assertNotContains($expiredGuardDefender->id, $visibleIds);
+
+        $activeGuard->users()->attach($viewer->id);
+        $visibleIds = Defender::query()->visibleTo($viewer)->pluck('id')->all();
+
+        $this->assertContains($guardedDefender->id, $visibleIds);
+        $this->assertNotContains($expiredGuardDefender->id, $visibleIds);
     }
 }

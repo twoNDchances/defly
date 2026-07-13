@@ -12,11 +12,13 @@ use App\Filament\Clusters\Infrastructure\Resources\Defenders\RelationManagers\Re
 use App\Filament\Clusters\Infrastructure\Resources\Defenders\Schemas\DefenderForm;
 use App\Filament\Clusters\Infrastructure\Resources\Defenders\Tables\DefendersTable;
 use App\Models\Defender;
+use App\Services\Identification;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class DefenderResource extends Resource
 {
@@ -38,6 +40,12 @@ class DefenderResource extends Resource
     public static function table(Table $table): Table
     {
         return DefendersTable::configure($table);
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->visibleTo(Identification::getCurrent());
     }
 
     public static function getRelations(): array

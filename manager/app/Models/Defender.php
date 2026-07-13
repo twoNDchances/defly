@@ -9,6 +9,8 @@ use App\Traits\Models\Labellable;
 use App\Traits\Models\Owner;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 
@@ -59,5 +61,22 @@ class Defender extends Model
     public function guards()
     {
         return $this->belongsToMany(Guard::class, 'guards_defenders', 'defender', 'guard');
+    }
+
+    #[Scope]
+    protected function visibleTo(Builder $query, ?User $user): void
+    {
+        $query->where(function (Builder $query) use ($user): void {
+            $query->whereDoesntHave('guards');
+
+            if (! $user) {
+                return;
+            }
+
+            $query->orWhere($query->qualifyColumn('created_by'), $user->getKey())
+                ->orWhereHas('guards', fn (Builder $query): Builder => $query
+                    ->active()
+                    ->whereHas('users', fn (Builder $query): Builder => $query->whereKey($user->getKey())));
+        });
     }
 }

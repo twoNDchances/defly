@@ -21,9 +21,13 @@ Read these concepts in order:
 1. [User](CoreConcepts/User.md)
 2. [Group](CoreConcepts/Group.md)
 3. [Permission](CoreConcepts/Permission.md)
-4. [Key](CoreConcepts/Key.md)
+4. [Guard](CoreConcepts/Guard.md)
+5. [Key](CoreConcepts/Key.md)
 
 Prefer permissions through Groups. Assign them directly to a User or Key only for a clear exception. Every API Key should have an expiry, purpose, and explicit owner.
+
+Use Guards when a Defender needs a smaller operator set than the general Defender
+Permission holders.
 
 ## Resource Classification
 
@@ -75,9 +79,10 @@ In the Defender form:
 1. Choose a stable name.
 2. Select an unused proxy port.
 3. Configure the backend URL and required environment variables.
-4. Apply Principles in `passed` state.
-5. Implement Decisions in the correct direction.
-6. Save and run deployment.
+4. Attach a Guard if only specific Users may operate this Defender.
+5. Apply Principles in `passed` state.
+6. Implement Decisions in the correct direction.
+7. Save and run deployment.
 
 Manager creates a job and Worker calls [Orchestrator](Orchestrator-Guide.md). Monitor `deployment_status`, `deployment_details`, and logs. `successful` describes the deployment result, while `status` describes runtime health.
 

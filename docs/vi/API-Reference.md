@@ -41,6 +41,7 @@ Các tài nguyên chính:
 ```text
 users
 groups
+guards
 permissions
 labels
 wordlists
@@ -88,7 +89,7 @@ Dữ liệu gửi khi gắn/gỡ thường chứa:
 }
 ```
 
-Ví dụ quan hệ: người dùng-quyền, nhóm-người dùng, Target-Engine, Rule-Action, Principle-Rule, tài nguyên-Label và Defender-Principle/Decision.
+Ví dụ quan hệ: người dùng-quyền, nhóm-người dùng, Guard-User/Defender, Target-Engine, Rule-Action, Principle-Rule, tài nguyên-Label và Defender-Principle/Decision.
 
 ### Điểm cuối chính sách và Defender
 
@@ -103,6 +104,11 @@ Ví dụ quan hệ: người dùng-quyền, nhóm-người dùng, Target-Engine,
 | `POST` | `/defenders/{d}/decisions/{x}/implement` | Cài [Decision](CoreConcepts/Decision.md). |
 | `POST` | `/defenders/{d}/decisions/{x}/suspend` | Tạm ngưng Decision. |
 | `GET` | `/defenders/{d}/reports` | Danh sách [Report](CoreConcepts/Report.md). |
+
+Nếu Defender được bảo vệ bằng [Guard](CoreConcepts/Guard.md), các điểm cuối vòng đời
+và điều khiển chính sách yêu cầu User đã xác thực là chủ sở hữu Defender hoặc thuộc
+một Guard khớp và chưa hết hạn. Nếu không, Manager trả `403` hoặc tác vụ đã vào hàng
+đợi sẽ dừng trước khi gọi Orchestrator/Defender.
 
 ## Orchestrator API
 
@@ -120,7 +126,7 @@ API dùng Basic Auth. Thông tin xác thực `ORCHESTRATOR_USERNAME`/`ORCHESTRAT
 | `GET` | Theo dõi nhật ký | `200`, phần nhật ký gần nhất. |
 | `DELETE` | Hủy Defender | `200`, chi tiết hủy. |
 
-Phương thức có thể đổi bằng biến môi trường ở cả hai phía. Orchestrator còn kiểm tra bên gọi qua `SERVER_MANAGER` và nhận email người thực hiện qua tiêu đề HTTP được cấu hình.
+Phương thức có thể đổi bằng biến môi trường ở cả hai phía. Orchestrator còn kiểm tra bên gọi qua `SERVER_MANAGER`, nhận email người thực hiện qua tiêu đề HTTP được cấu hình và kiểm tra tư cách thành viên Guard với Defender được bảo vệ.
 
 Mã lỗi thường gặp:
 
@@ -147,7 +153,7 @@ API này dùng để đồng bộ chính sách trên một Defender đang chạy
 | `PUT` | `/decisions` | Cài Decision. |
 | `DELETE` | `/decisions` | Tạm ngưng Decision. |
 
-Phương thức và đường dẫn có thể đổi bằng biến môi trường máy chủ của Defender. Yêu cầu được bảo vệ bởi lớp xác thực quyền và thông tin người thực thi; API này là nội bộ, không nên công bố ra Internet.
+Phương thức và đường dẫn có thể đổi bằng biến môi trường máy chủ của Defender. Yêu cầu được bảo vệ bởi lớp xác thực quyền, tư cách thành viên Guard và thông tin người thực thi; API này là nội bộ, không nên công bố ra Internet.
 
 ## Tiêu đề HTTP và nội dung dùng chung
 

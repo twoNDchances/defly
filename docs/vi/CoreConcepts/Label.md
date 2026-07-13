@@ -19,6 +19,7 @@ Label dùng quan hệ đa hình `labels_resources` và hiện hỗ trợ:
 - [User](User.md)
 - [Group](Group.md)
 - [Permission](Permission.md)
+- [Guard](Guard.md)
 - [Wordlist](Wordlist.md)
 - [Engine](Engine.md)
 - [Target](Target.md)

@@ -56,18 +56,30 @@ class DefenderPolicyTest extends TestCase
 
         $defenderPolicy = new DefenderPolicy;
         $defender = $this->modelDefender(DeploymentStatus::Failed->value);
+        $owner = User::factory()->create(['is_root' => false, 'is_verified' => true, 'is_activated' => true]);
+        $defender->forceFill(['created_by' => $owner->id])->saveQuietly();
         $guard = Guard::query()->create([
             'name' => 'policy-guard',
             'expired_at' => now()->addHour(),
         ]);
         $guard->defenders()->attach($defender->id);
 
+        $this->assertFalse($defenderPolicy->view($root, $defender));
         $this->assertFalse($defenderPolicy->delete($root, $defender));
 
         $guard->users()->attach($root->id);
+        $this->assertTrue($defenderPolicy->view($root, $defender));
         $this->assertTrue($defenderPolicy->delete($root, $defender));
 
         $guard->forceFill(['expired_at' => now()->subMinute()])->save();
         $this->assertFalse($defenderPolicy->delete($root, $defender));
+
+        $owner->permissions()->attach(Permission::query()->create([
+            'name' => 'defender-owner-delete-'.Str::lower(Str::random(6)),
+            'applied_for' => 'Defender',
+            'action' => 'delete',
+        ])->id);
+        $this->actingAs($owner);
+        $this->assertTrue($defenderPolicy->delete($owner, $defender));
     }
 }

@@ -24,6 +24,8 @@ type Defender struct {
 	Status *defender.Status `json:"status,omitempty"`
 	// Details holds the value of the "details" field.
 	Details map[string]interface{} `json:"details,omitempty"`
+	// CreatedBy holds the value of the "created_by" field.
+	CreatedBy *uuid.UUID `json:"created_by,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the DefenderQuery when eager-loading is set.
 	Edges        DefenderEdges `json:"edges"`
@@ -86,6 +88,8 @@ func (*Defender) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case defender.FieldCreatedBy:
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case defender.FieldDetails:
 			values[i] = new([]byte)
 		case defender.FieldName, defender.FieldStatus:
@@ -133,6 +137,13 @@ func (d *Defender) assignValues(columns []string, values []any) error {
 				if err := json.Unmarshal(*value, &d.Details); err != nil {
 					return fmt.Errorf("unmarshal field details: %w", err)
 				}
+			}
+		case defender.FieldCreatedBy:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field created_by", values[i])
+			} else if value.Valid {
+				d.CreatedBy = new(uuid.UUID)
+				*d.CreatedBy = *value.S.(*uuid.UUID)
 			}
 		default:
 			d.selectValues.Set(columns[i], values[i])
@@ -200,6 +211,11 @@ func (d *Defender) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("details=")
 	builder.WriteString(fmt.Sprintf("%v", d.Details))
+	builder.WriteString(", ")
+	if v := d.CreatedBy; v != nil {
+		builder.WriteString("created_by=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
 	builder.WriteByte(')')
 	return builder.String()
 }

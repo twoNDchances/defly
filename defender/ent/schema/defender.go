@@ -17,6 +17,7 @@ func (Defender) Fields() []ent.Field {
 		field.String("name").Unique().NotEmpty(),
 		field.Enum("status").Values("normal", "abnormal").Optional().Nillable(),
 		field.JSON("details", map[string]any{}).Optional(),
+		field.UUID("created_by", uuid.UUID{}).Optional().Nillable(),
 	}
 }
 

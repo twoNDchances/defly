@@ -24,6 +24,8 @@ Defly vừa quản lý chính sách bảo mật vừa có quyền điều khiể
 
 Rà soát định kỳ người dùng không còn hoạt động và thành viên trong nhóm.
 
+Dùng [Guard](CoreConcepts/Guard.md) khi chỉ một nhóm người vận hành cụ thể được phép điều khiển một Defender cụ thể. Guard cố ý hẹp hơn Permission: chủ sở hữu Defender vẫn được thao tác trên Defender của mình, nhưng User root khác hoặc User có `Defender:all` vẫn phải thuộc Guard khớp và còn hiệu lực khi Defender đã được bảo vệ bằng Guard.
+
 ## Thông tin xác thực và bí mật
 
 Không đưa các dữ liệu sau vào kho mã nguồn:
@@ -90,5 +92,6 @@ Quy trình khuyến nghị:
 - Cơ sở dữ liệu và ổ dữ liệu được sao lưu.
 - Báo cáo/yêu cầu nguyên bản có thời hạn lưu giữ.
 - Người dùng/nhóm/quyền được rà soát.
+- Thành viên Guard và thời hạn Guard của Defender ở môi trường thật được rà soát.
 - Principle đã có trạng thái `passed` và Decision được kiểm thử ở cả hai hướng.
 - Có cách bỏ qua hoặc khôi phục chính sách khi chặn nhầm.

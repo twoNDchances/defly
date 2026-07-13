@@ -57,7 +57,7 @@ Xem thuật toán đầy đủ tại [Permission](Permission.md#cách-lớp-secu
 
 ## Quyền sở hữu
 
-Các mô hình dữ liệu quản trị lưu `created_by` trỏ về User tạo chúng. User có quan hệ sở hữu với Group, Permission, Label, Wordlist, Engine, Target, Action, Rule, Principle, Decision, Defender, Key và Timeline.
+Các mô hình dữ liệu quản trị lưu `created_by` trỏ về User tạo chúng. User có quan hệ sở hữu với Group, Permission, Guard, Label, Wordlist, Engine, Target, Action, Rule, Principle, Decision, Defender, Key và Timeline.
 
 Quyền sở hữu và quyền thao tác là hai khái niệm khác nhau:
 

@@ -7,8 +7,9 @@ Phần này giải thích các đối tượng mà bạn gặp trong Manager và
 1. [User](User.md): tài khoản đăng nhập và chủ sở hữu cấu hình.
 2. [Group](Group.md): nhóm người dùng hoặc khóa API để cấp quyền tập trung.
 3. [Permission](Permission.md): quyền thao tác trên tài nguyên Manager.
-4. [Key](Key.md): thông tin xác thực cho tích hợp API.
-5. [Label](Label.md): siêu dữ liệu dùng để phân loại tài nguyên.
+4. [Guard](Guard.md): ranh giới người vận hành theo từng Defender cho các hành động được bảo vệ.
+5. [Key](Key.md): thông tin xác thực cho tích hợp API.
+6. [Label](Label.md): siêu dữ liệu dùng để phân loại tài nguyên.
 
 ## Chính sách WAF
 

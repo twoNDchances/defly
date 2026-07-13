@@ -137,5 +137,40 @@ class DefenderControllerTest extends ApiTestCase
         $this->apiJson('POST', $this->apiRoute('defenders', 'deploy'), ['defender' => $defender->id])
             ->assertForbidden();
         Bus::assertNotDispatched(DefenderDeployment::class);
+
+        Bus::fake();
+        $ownedDefender = $this->apiDefender('owned-guarded-deploy', DeploymentStatus::Failed->value);
+        $ownedDefender->forceFill(['created_by' => $this->user->id])->saveQuietly();
+        $guard->defenders()->attach($ownedDefender->id);
+
+        $this->apiJson('POST', $this->apiRoute('defenders', 'deploy'), ['defender' => $ownedDefender->id])
+            ->assertOk();
+        Bus::assertDispatched(DefenderDeployment::class);
+    }
+
+    public function test_defenders_index_scopes_guarded_records_to_owner_or_active_guard_users(): void
+    {
+        $publicDefender = $this->apiDefender('public-index', DeploymentStatus::Failed->value);
+        $guardedDefender = $this->apiDefender('guarded-index', DeploymentStatus::Failed->value);
+        $ownedDefender = $this->apiDefender('owned-index', DeploymentStatus::Failed->value);
+        $ownedDefender->forceFill(['created_by' => $this->user->id])->saveQuietly();
+
+        $guard = Guard::query()->create([
+            'name' => 'api-index-guard',
+            'expired_at' => now()->addHour(),
+        ]);
+        $guard->defenders()->attach([$guardedDefender->id, $ownedDefender->id]);
+
+        $this->apiJson('GET', $this->apiRoute('defenders', 'index'))
+            ->assertOk()
+            ->assertJsonFragment(['id' => $publicDefender->id])
+            ->assertJsonFragment(['id' => $ownedDefender->id])
+            ->assertJsonMissing(['id' => $guardedDefender->id]);
+
+        $guard->users()->attach($this->user->id);
+
+        $this->apiJson('GET', $this->apiRoute('defenders', 'index'))
+            ->assertOk()
+            ->assertJsonFragment(['id' => $guardedDefender->id]);
     }
 }

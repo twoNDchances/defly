@@ -153,6 +153,11 @@ class Security
 
     public static function canOperateDefender(Defender $defender, ?User $user = null): bool
     {
+        return self::canViewDefender($defender, $user);
+    }
+
+    public static function canViewDefender(Defender $defender, ?User $user = null): bool
+    {
         if (! $defender->guards()->exists()) {
             return true;
         }
@@ -162,12 +167,13 @@ class Security
             return false;
         }
 
+        if ((string) $defender->created_by === (string) $user->id) {
+            return true;
+        }
+
         return $defender->guards()
             ->whereHas('users', fn ($query) => $query->whereKey($user->id))
-            ->where(function ($query): void {
-                $query->whereNull('expired_at')
-                    ->orWhere('expired_at', '>', now());
-            })
+            ->active()
             ->exists();
     }
 
