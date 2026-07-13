@@ -211,6 +211,29 @@ func HasDecisionsWith(preds ...predicate.Decision) predicate.Defender {
 	})
 }
 
+// HasGuards applies the HasEdge predicate on the "guards" edge.
+func HasGuards() predicate.Defender {
+	return predicate.Defender(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, GuardsTable, GuardsPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasGuardsWith applies the HasEdge predicate on the "guards" edge with a given conditions (other predicates).
+func HasGuardsWith(preds ...predicate.Guard) predicate.Defender {
+	return predicate.Defender(func(s *sql.Selector) {
+		step := newGuardsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // HasReports applies the HasEdge predicate on the "reports" edge.
 func HasReports() predicate.Defender {
 	return predicate.Defender(func(s *sql.Selector) {

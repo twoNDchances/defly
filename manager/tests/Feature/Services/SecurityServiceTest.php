@@ -5,6 +5,7 @@ namespace Tests\Feature\Services;
 use App\Models\Action;
 use App\Models\Decision;
 use App\Models\Group;
+use App\Models\Guard;
 use App\Models\Key;
 use App\Models\Rule;
 use App\Models\User;
@@ -71,5 +72,38 @@ class SecurityServiceTest extends TestCase
         $group = Group::query()->create(['name' => 'empty-group-'.Str::lower(Str::random(6))]);
         $authorizedUser->groups()->attach($group->id);
         $this->assertFalse(Security::checkPermission($authorizedUser, Rule::class, 'delete'));
+    }
+
+    public function test_defender_guard_access_requires_active_matching_guard_only_when_guarded(): void
+    {
+        $user = User::factory()->create([
+            'email' => 'guarded-operator@example.com',
+            'is_root' => false,
+            'is_verified' => true,
+            'is_activated' => true,
+        ]);
+        $defender = $this->defender('guard-access', null);
+
+        $this->assertTrue(Security::canOperateDefender($defender, null));
+        $this->assertTrue(Security::requesterCanOperateDefender($defender, null));
+
+        $activeGuard = Guard::query()->create([
+            'name' => 'active-guard',
+            'expired_at' => now()->addHour(),
+        ]);
+        $activeGuard->defenders()->attach($defender->id);
+
+        $this->assertFalse(Security::canOperateDefender($defender, $user));
+        $this->assertFalse(Security::requesterCanOperateDefender($defender, $user->email));
+
+        $activeGuard->users()->attach($user->id);
+
+        $this->assertTrue(Security::canOperateDefender($defender, $user));
+        $this->assertTrue(Security::requesterCanOperateDefender($defender, 'Guarded-Operator@Example.com'));
+
+        $activeGuard->forceFill(['expired_at' => now()->subMinute()])->save();
+
+        $this->assertFalse(Security::canOperateDefender($defender, $user));
+        $this->assertFalse(Security::requesterCanOperateDefender($defender, $user->email));
     }
 }

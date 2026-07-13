@@ -8,8 +8,9 @@ use App\Jobs\DefenderCommunication;
 use App\Jobs\PrincipleValidation;
 use App\Models\Defender;
 use App\Services\Identification;
-use App\Services\Logger;
 use App\Services\Lock;
+use App\Services\Logger;
+use App\Services\Security;
 use App\Traits\Filament\Generals\Components\Button;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Str;
@@ -21,7 +22,8 @@ trait PrincipleButton
     protected static function ownerDefenderIsDeployed(?Defender $defender): bool
     {
         return $defender instanceof Defender
-            && $defender->deployment_status === DeploymentStatus::Successful;
+            && $defender->deployment_status === DeploymentStatus::Successful
+            && Security::canOperateDefender($defender);
     }
 
     public static function attachPrinciplesAndLockButton()

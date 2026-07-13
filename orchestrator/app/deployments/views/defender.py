@@ -31,6 +31,7 @@ class DefenderView(ConfiguredMethodView):
                 await DefenderPermissionService.validate_action(
                     user=getattr(request, "executor_user", None),
                     action=action,
+                    defender_id=kwargs.get("defender_id"),
                 )
             except PermissionDenied:
                 return JsonResponse(

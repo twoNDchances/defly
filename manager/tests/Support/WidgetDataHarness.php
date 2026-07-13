@@ -136,9 +136,4 @@ class WidgetDataHarness
     {
         return $this->chartPalette();
     }
-
-    protected function jsonValueExpression(string $column, string $path): string
-    {
-        return "json_extract({$column}, '{$path}')";
-    }
 }

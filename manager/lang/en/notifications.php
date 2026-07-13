@@ -37,12 +37,16 @@ return [
             'default_detail' => 'See deployment details for more information.',
             'http_status' => 'HTTP status: :status.',
         ],
+        'guard' => [
+            'denied' => 'The requester is not assigned to an active guard for this defender.',
+        ],
         'action' => [
             'skipped' => [
                 'title' => 'Defender action skipped',
                 'missing' => 'The selected defender no longer exists.',
                 'not_deployed' => '":name" must be deployed successfully before this action can run.',
                 'empty' => 'No resources were selected for this action.',
+                'guard_denied' => 'The requester is not assigned to an active guard for ":name".',
             ],
         ],
     ],

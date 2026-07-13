@@ -32,6 +32,11 @@ func (Defender) Edges() []ent.Edge {
 				edge.Table("defenders_decisions"),
 				edge.Columns("defender", "decision"),
 			),
+		edge.To("guards", Guard.Type).
+			StorageKey(
+				edge.Table("guards_defenders"),
+				edge.Columns("defender", "guard"),
+			),
 		edge.To("reports", Report.Type),
 	}
 }

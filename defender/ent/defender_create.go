@@ -6,6 +6,7 @@ import (
 	"context"
 	"defly-defender/ent/decision"
 	"defly-defender/ent/defender"
+	"defly-defender/ent/guard"
 	"defly-defender/ent/principle"
 	"defly-defender/ent/report"
 	"errors"
@@ -91,6 +92,21 @@ func (dc *DefenderCreate) AddDecisions(d ...*Decision) *DefenderCreate {
 		ids[i] = d[i].ID
 	}
 	return dc.AddDecisionIDs(ids...)
+}
+
+// AddGuardIDs adds the "guards" edge to the Guard entity by IDs.
+func (dc *DefenderCreate) AddGuardIDs(ids ...uuid.UUID) *DefenderCreate {
+	dc.mutation.AddGuardIDs(ids...)
+	return dc
+}
+
+// AddGuards adds the "guards" edges to the Guard entity.
+func (dc *DefenderCreate) AddGuards(g ...*Guard) *DefenderCreate {
+	ids := make([]uuid.UUID, len(g))
+	for i := range g {
+		ids[i] = g[i].ID
+	}
+	return dc.AddGuardIDs(ids...)
 }
 
 // AddReportIDs adds the "reports" edge to the Report entity by IDs.
@@ -236,6 +252,22 @@ func (dc *DefenderCreate) createSpec() (*Defender, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(decision.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := dc.mutation.GuardsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   defender.GuardsTable,
+			Columns: defender.GuardsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(guard.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

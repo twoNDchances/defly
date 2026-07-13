@@ -77,6 +77,18 @@ var (
 		Columns:    GroupsColumns,
 		PrimaryKey: []*schema.Column{GroupsColumns[0]},
 	}
+	// GuardsColumns holds the columns for the "guards" table.
+	GuardsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "name", Type: field.TypeString, Unique: true},
+		{Name: "expired_at", Type: field.TypeTime, Nullable: true},
+	}
+	// GuardsTable holds the schema information for the "guards" table.
+	GuardsTable = &schema.Table{
+		Name:       "guards",
+		Columns:    GuardsColumns,
+		PrimaryKey: []*schema.Column{GuardsColumns[0]},
+	}
 	// PatternsColumns holds the columns for the "patterns" table.
 	PatternsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -315,6 +327,31 @@ var (
 			},
 		},
 	}
+	// GuardsDefendersColumns holds the columns for the "guards_defenders" table.
+	GuardsDefendersColumns = []*schema.Column{
+		{Name: "defender", Type: field.TypeUUID},
+		{Name: "guard", Type: field.TypeUUID},
+	}
+	// GuardsDefendersTable holds the schema information for the "guards_defenders" table.
+	GuardsDefendersTable = &schema.Table{
+		Name:       "guards_defenders",
+		Columns:    GuardsDefendersColumns,
+		PrimaryKey: []*schema.Column{GuardsDefendersColumns[0], GuardsDefendersColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "guards_defenders_defender",
+				Columns:    []*schema.Column{GuardsDefendersColumns[0]},
+				RefColumns: []*schema.Column{DefendersColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "guards_defenders_guard",
+				Columns:    []*schema.Column{GuardsDefendersColumns[1]},
+				RefColumns: []*schema.Column{GuardsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
 	// TargetsEnginesColumns holds the columns for the "targets_engines" table.
 	TargetsEnginesColumns = []*schema.Column{
 		{Name: "engine", Type: field.TypeUUID},
@@ -440,6 +477,31 @@ var (
 			},
 		},
 	}
+	// GuardsUsersColumns holds the columns for the "guards_users" table.
+	GuardsUsersColumns = []*schema.Column{
+		{Name: "user", Type: field.TypeUUID},
+		{Name: "guard", Type: field.TypeUUID},
+	}
+	// GuardsUsersTable holds the schema information for the "guards_users" table.
+	GuardsUsersTable = &schema.Table{
+		Name:       "guards_users",
+		Columns:    GuardsUsersColumns,
+		PrimaryKey: []*schema.Column{GuardsUsersColumns[0], GuardsUsersColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "guards_users_user",
+				Columns:    []*schema.Column{GuardsUsersColumns[0]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "guards_users_guard",
+				Columns:    []*schema.Column{GuardsUsersColumns[1]},
+				RefColumns: []*schema.Column{GuardsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		ActionsTable,
@@ -447,6 +509,7 @@ var (
 		DefendersTable,
 		EnginesTable,
 		GroupsTable,
+		GuardsTable,
 		PatternsTable,
 		PermissionsTable,
 		PrinciplesTable,
@@ -458,11 +521,13 @@ var (
 		RulesActionsTable,
 		DefendersPrinciplesTable,
 		DefendersDecisionsTable,
+		GuardsDefendersTable,
 		TargetsEnginesTable,
 		GroupsPermissionsTable,
 		PrinciplesRulesTable,
 		UsersGroupsTable,
 		UsersPermissionsTable,
+		GuardsUsersTable,
 	}
 )
 
@@ -482,6 +547,8 @@ func init() {
 	DefendersPrinciplesTable.ForeignKeys[1].RefTable = PrinciplesTable
 	DefendersDecisionsTable.ForeignKeys[0].RefTable = DefendersTable
 	DefendersDecisionsTable.ForeignKeys[1].RefTable = DecisionsTable
+	GuardsDefendersTable.ForeignKeys[0].RefTable = DefendersTable
+	GuardsDefendersTable.ForeignKeys[1].RefTable = GuardsTable
 	TargetsEnginesTable.ForeignKeys[0].RefTable = EnginesTable
 	TargetsEnginesTable.ForeignKeys[1].RefTable = TargetsTable
 	GroupsPermissionsTable.ForeignKeys[0].RefTable = GroupsTable
@@ -492,4 +559,6 @@ func init() {
 	UsersGroupsTable.ForeignKeys[1].RefTable = GroupsTable
 	UsersPermissionsTable.ForeignKeys[0].RefTable = UsersTable
 	UsersPermissionsTable.ForeignKeys[1].RefTable = PermissionsTable
+	GuardsUsersTable.ForeignKeys[0].RefTable = UsersTable
+	GuardsUsersTable.ForeignKeys[1].RefTable = GuardsTable
 }

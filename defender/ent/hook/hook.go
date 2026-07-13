@@ -68,6 +68,18 @@ func (f GroupFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.GroupMutation", m)
 }
 
+// The GuardFunc type is an adapter to allow the use of ordinary
+// function as Guard mutator.
+type GuardFunc func(context.Context, *ent.GuardMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f GuardFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.GuardMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.GuardMutation", m)
+}
+
 // The PatternFunc type is an adapter to allow the use of ordinary
 // function as Pattern mutator.
 type PatternFunc func(context.Context, *ent.PatternMutation) (ent.Value, error)

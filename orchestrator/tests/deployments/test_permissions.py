@@ -34,14 +34,22 @@ class DefenderPermissionServiceTests(SimpleTestCase):
     async def test_allows_authorized_defender_action(self):
         user = SimpleNamespace()
 
-        with patch.object(
-            PermissionService,
-            "acan",
-            new=AsyncMock(return_value=True),
-        ) as can:
+        with (
+            patch.object(
+                PermissionService,
+                "acan",
+                new=AsyncMock(return_value=True),
+            ) as can,
+            patch.object(
+                DefenderPermissionService,
+                "user_can_operate_defender",
+                new=AsyncMock(return_value=True),
+            ) as can_operate,
+        ):
             await DefenderPermissionService.validate_action(
                 user=user,
                 action="deploy",
+                defender_id="defender-id",
             )
 
         can.assert_awaited_once_with(
@@ -49,6 +57,29 @@ class DefenderPermissionServiceTests(SimpleTestCase):
             model="Defender",
             action="deploy",
         )
+        can_operate.assert_awaited_once_with(user=user, defender_id="defender-id")
+
+    async def test_rejects_guarded_defender_when_user_cannot_operate_it(self):
+        with (
+            patch.object(
+                PermissionService,
+                "acan",
+                new=AsyncMock(return_value=True),
+            ),
+            patch.object(
+                DefenderPermissionService,
+                "user_can_operate_defender",
+                new=AsyncMock(return_value=False),
+            ) as can_operate,
+            self.assertRaises(PermissionDenied),
+        ):
+            await DefenderPermissionService.validate_action(
+                user=SimpleNamespace(),
+                action="deploy",
+                defender_id="guarded-defender-id",
+            )
+
+        can_operate.assert_awaited_once()
 
     async def test_rejects_unsupported_or_unauthorized_action(self):
         with (

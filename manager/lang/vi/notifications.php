@@ -37,12 +37,16 @@ return [
             'default_detail' => 'Xem chi tiết triển khai để biết thêm thông tin.',
             'http_status' => 'Mã HTTP: :status.',
         ],
+        'guard' => [
+            'denied' => 'Người yêu cầu không thuộc khiên còn hiệu lực của defender này.',
+        ],
         'action' => [
             'skipped' => [
                 'title' => 'Bỏ qua hành động defender',
                 'missing' => 'Defender đã chọn không còn tồn tại.',
                 'not_deployed' => '":name" phải được triển khai thành công trước khi chạy hành động này.',
                 'empty' => 'Không có tài nguyên nào được chọn cho hành động này.',
+                'guard_denied' => 'Người yêu cầu không thuộc khiên còn hiệu lực của ":name".',
             ],
         ],
     ],

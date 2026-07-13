@@ -216,6 +216,29 @@ func HasPermissionsWith(preds ...predicate.Permission) predicate.User {
 	})
 }
 
+// HasGuards applies the HasEdge predicate on the "guards" edge.
+func HasGuards() predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, GuardsTable, GuardsPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasGuardsWith applies the HasEdge predicate on the "guards" edge with a given conditions (other predicates).
+func HasGuardsWith(preds ...predicate.Guard) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := newGuardsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.User) predicate.User {
 	return predicate.User(sql.AndPredicates(predicates...))

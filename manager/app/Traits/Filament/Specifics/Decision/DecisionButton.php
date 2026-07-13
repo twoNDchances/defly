@@ -6,8 +6,9 @@ use App\Enums\Defender\DeploymentStatus;
 use App\Jobs\DefenderCommunication;
 use App\Models\Defender;
 use App\Services\Identification;
-use App\Services\Logger;
 use App\Services\Lock;
+use App\Services\Logger;
+use App\Services\Security;
 use App\Traits\Filament\Generals\Components\Button;
 use Filament\Notifications\Notification;
 use Filament\Support\Icons\Heroicon;
@@ -21,7 +22,8 @@ trait DecisionButton
     protected static function ownerDefenderIsDeployed(?Defender $defender): bool
     {
         return $defender instanceof Defender
-            && $defender->deployment_status === DeploymentStatus::Successful;
+            && $defender->deployment_status === DeploymentStatus::Successful
+            && Security::canOperateDefender($defender);
     }
 
     public static function testRequestButton()

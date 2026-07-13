@@ -33,5 +33,10 @@ func (User) Edges() []ent.Edge {
 				edge.Table("users_permissions"),
 				edge.Columns("user", "permission"),
 			),
+		edge.To("guards", Guard.Type).
+			StorageKey(
+				edge.Table("guards_users"),
+				edge.Columns("user", "guard"),
+			),
 	}
 }

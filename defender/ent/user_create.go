@@ -5,6 +5,7 @@ package ent
 import (
 	"context"
 	"defly-defender/ent/group"
+	"defly-defender/ent/guard"
 	"defly-defender/ent/permission"
 	"defly-defender/ent/user"
 	"errors"
@@ -112,6 +113,21 @@ func (uc *UserCreate) AddPermissions(p ...*Permission) *UserCreate {
 		ids[i] = p[i].ID
 	}
 	return uc.AddPermissionIDs(ids...)
+}
+
+// AddGuardIDs adds the "guards" edge to the Guard entity by IDs.
+func (uc *UserCreate) AddGuardIDs(ids ...uuid.UUID) *UserCreate {
+	uc.mutation.AddGuardIDs(ids...)
+	return uc
+}
+
+// AddGuards adds the "guards" edges to the Guard entity.
+func (uc *UserCreate) AddGuards(g ...*Guard) *UserCreate {
+	ids := make([]uuid.UUID, len(g))
+	for i := range g {
+		ids[i] = g[i].ID
+	}
+	return uc.AddGuardIDs(ids...)
 }
 
 // Mutation returns the UserMutation object of the builder.
@@ -262,6 +278,22 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(permission.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := uc.mutation.GuardsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   user.GuardsTable,
+			Columns: user.GuardsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(guard.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

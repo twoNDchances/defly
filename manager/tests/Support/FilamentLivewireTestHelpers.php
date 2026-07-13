@@ -253,7 +253,7 @@ trait FilamentLivewireTestHelpers
             'name' => 'guard-'.Str::lower(Str::random(6)),
             'expired_at' => now()->addDay(),
         ]);
-        $guard->users()->attach($user->id);
+        $guard->users()->attach([$user->id, $this->root->id]);
         $guard->defenders()->attach($defender->id);
         $guard->labels()->attach($label->id);
         $report = Report::withoutEvents(fn () => Report::query()->create([

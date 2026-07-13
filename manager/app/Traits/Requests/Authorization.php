@@ -40,7 +40,7 @@ trait Authorization
             return false;
         }
 
-        if ($target instanceof Model && ! $this->canAccessRecord($target, $ability)) {
+        if ($target instanceof Model && ! $this->canAccessRecord($target, $ability, $user)) {
             return false;
         }
 
@@ -49,13 +49,18 @@ trait Authorization
         return Security::can($modelClass, $ability, $user);
     }
 
-    protected function canAccessRecord(Model $model, string $ability): bool
+    protected function canAccessRecord(Model $model, string $ability, ?User $user = null): bool
     {
         if (in_array($ability, ['update', 'delete', 'validate'], true) && data_get($model, 'is_locked') === true) {
             return false;
         }
 
         if ($model instanceof Defender) {
+            if (in_array($ability, ['update', 'delete', 'deploy', 'cancel', 'follow', 'refresh'], true)
+                && ! Security::canOperateDefender($model, $user)) {
+                return false;
+            }
+
             $status = $model->deployment_status;
 
             if (is_string($status)) {

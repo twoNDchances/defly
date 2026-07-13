@@ -7,6 +7,7 @@ use App\Filament\Clusters\Infrastructure\Resources\Defenders\DefenderResource;
 use App\Models\Defender;
 use App\Services\Notification;
 use App\Services\Orchestrator;
+use App\Services\Security;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Http\Client\Response;
@@ -50,6 +51,14 @@ class DefenderDeployment implements ShouldQueue
     protected function handleDeploy(Defender $defender): void
     {
         if (! in_array($defender->deployment_status, [DeploymentStatus::Pending, DeploymentStatus::Processing], true)) {
+            return;
+        }
+
+        if (! Security::requesterCanOperateDefender($defender, $this->requesterEmail)) {
+            $this->markFailed($defender, [
+                'detail' => __('notifications.defender.guard.denied'),
+            ]);
+
             return;
         }
 
@@ -104,6 +113,14 @@ class DefenderDeployment implements ShouldQueue
     protected function handleCancel(Defender $defender): void
     {
         if (! in_array($defender->deployment_status, [DeploymentStatus::Successful, DeploymentStatus::Pending, DeploymentStatus::Processing], true)) {
+            return;
+        }
+
+        if (! Security::requesterCanOperateDefender($defender, $this->requesterEmail)) {
+            $this->markFailed($defender, [
+                'detail' => __('notifications.defender.guard.denied'),
+            ]);
+
             return;
         }
 

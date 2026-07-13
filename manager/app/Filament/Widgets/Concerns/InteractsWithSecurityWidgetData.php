@@ -7,11 +7,14 @@ use App\Models\Principle;
 use App\Models\Report;
 use App\Models\Timeline;
 use App\Services\Security;
+use BackedEnum;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
+use Stringable;
+use UnitEnum;
 
 trait InteractsWithSecurityWidgetData
 {
@@ -27,7 +30,7 @@ trait InteractsWithSecurityWidgetData
      */
     protected function emptyQuery(string $modelClass): Builder
     {
-        return $modelClass::query()->whereRaw('1 = 0');
+        return $modelClass::query()->whereKey([]);
     }
 
     protected function defendersQuery(): Builder
@@ -162,10 +165,9 @@ trait InteractsWithSecurityWidgetData
 
         $rows = (clone $query)
             ->where('created_at', '>=', $start)
-            ->selectRaw('DATE(created_at) as date_key, COUNT(*) as aggregate')
-            ->groupByRaw('DATE(created_at)')
-            ->pluck('aggregate', 'date_key')
-            ->map(fn (mixed $count): int => (int) $count);
+            ->get([$query->qualifyColumn('created_at')])
+            ->countBy(fn (Model $model): string => $model->created_at->toDateString())
+            ->map(fn (int $count): int => $count);
 
         $labels = [];
         $data = [];
@@ -191,85 +193,91 @@ trait InteractsWithSecurityWidgetData
         int $limit = 8,
         ?Builder $query = null,
     ): Collection {
-        $expression = $this->jsonValueExpression($column, $path);
-
         return (clone ($query ?? $this->reportsQuery($defender)))
-            ->selectRaw("{$expression} as label, COUNT(*) as aggregate")
-            ->whereRaw("{$expression} IS NOT NULL")
-            ->whereRaw("{$expression} <> ''")
-            ->groupByRaw($expression)
-            ->orderByDesc('aggregate')
-            ->limit($limit)
-            ->get()
-            ->mapWithKeys(fn (Report $row): array => [(string) $row->label => (int) $row->aggregate]);
+            ->get([$column])
+            ->map(fn (Report $report): ?string => $this->normalizeSeriesLabel(
+                $this->reportJsonValue($report, $column, $path),
+            ))
+            ->filter(fn (?string $label): bool => filled($label))
+            ->countBy()
+            ->sortDesc()
+            ->take($limit)
+            ->map(fn (int $count): int => $count);
     }
 
     protected function uniqueReportJsonCount(string $column, string $path, ?Defender $defender = null): int
     {
-        $expression = $this->jsonValueExpression($column, $path);
-
-        return (int) (clone $this->reportsQuery($defender))
-            ->whereRaw("{$expression} IS NOT NULL")
-            ->whereRaw("{$expression} <> ''")
-            ->selectRaw("COUNT(DISTINCT {$expression}) as aggregate")
-            ->value('aggregate');
+        return (clone $this->reportsQuery($defender))
+            ->get([$column])
+            ->map(fn (Report $report): ?string => $this->normalizeSeriesLabel(
+                $this->reportJsonValue($report, $column, $path),
+            ))
+            ->filter(fn (?string $label): bool => filled($label))
+            ->unique()
+            ->count();
     }
 
     protected function topTriggeredActions(?Defender $defender = null, int $limit = 8): Collection
     {
         return $this->reportsQuery($defender)
-            ->leftJoin('actions', 'actions.id', '=', 'reports.triggered_by')
-            ->selectRaw('actions.name as label, COUNT(*) as aggregate')
-            ->groupBy('actions.name')
-            ->orderByDesc('aggregate')
-            ->limit($limit)
-            ->get()
-            ->mapWithKeys(fn (Report $row): array => [
-                filled($row->label) ? (string) $row->label : __('pages.customizations.dashboard.widgets.empty.unknown') => (int) $row->aggregate,
-            ]);
+            ->with('triggeredBy:id,name')
+            ->get(['id', 'triggered_by'])
+            ->countBy(fn (Report $report): string => $this->normalizeSeriesLabel(
+                $report->triggeredBy?->name,
+                __('pages.customizations.dashboard.widgets.empty.unknown'),
+            ))
+            ->sortDesc()
+            ->take($limit)
+            ->map(fn (int $count): int => $count);
     }
 
     protected function topReportingDefenders(int $limit = 8, ?Builder $query = null): Collection
     {
         return (clone ($query ?? $this->reportsQuery()))
-            ->leftJoin('defenders', 'defenders.id', '=', 'reports.created_by')
-            ->selectRaw('defenders.name as label, COUNT(*) as aggregate')
-            ->groupBy('defenders.id', 'defenders.name')
-            ->orderByDesc('aggregate')
-            ->limit($limit)
-            ->get()
-            ->mapWithKeys(fn (Report $row): array => [
-                filled($row->label) ? (string) $row->label : __('pages.customizations.dashboard.widgets.empty.unknown') => (int) $row->aggregate,
-            ]);
+            ->with('createdBy:id,name')
+            ->get(['id', 'created_by'])
+            ->countBy(fn (Report $report): string => $this->normalizeSeriesLabel(
+                $report->createdBy?->name,
+                __('pages.customizations.dashboard.widgets.empty.unknown'),
+            ))
+            ->sortDesc()
+            ->take($limit)
+            ->map(fn (int $count): int => $count);
     }
 
     protected function groupedDefenderCounts(string $column, string $fallback = 'unknown'): Collection
     {
         return $this->defendersQuery()
-            ->selectRaw("COALESCE({$column}, ?) as label, COUNT(*) as aggregate", [$fallback])
-            ->groupBy($column)
-            ->pluck('aggregate', 'label')
-            ->map(fn (mixed $count): int => (int) $count);
+            ->get([$column])
+            ->countBy(fn (Defender $defender): string => $this->normalizeSeriesLabel(
+                $defender->getAttribute($column),
+                $fallback,
+            ))
+            ->map(fn (int $count): int => $count);
     }
 
     protected function groupedPrincipleValidationCounts(): Collection
     {
         return $this->principlesQuery()
-            ->selectRaw('COALESCE(validation_status, ?) as label, COUNT(*) as aggregate', ['unknown'])
-            ->groupBy('validation_status')
-            ->pluck('aggregate', 'label')
-            ->map(fn (mixed $count): int => (int) $count);
+            ->get(['validation_status'])
+            ->countBy(fn (Principle $principle): string => $this->normalizeSeriesLabel(
+                $principle->validation_status,
+                'unknown',
+            ))
+            ->map(fn (int $count): int => $count);
     }
 
     protected function groupedTimelineActions(?Defender $defender = null, int $limit = 8, ?Builder $query = null): Collection
     {
         return (clone ($query ?? $this->timelinesQuery($defender)))
-            ->selectRaw("COALESCE(action, 'unknown') as label, COUNT(*) as aggregate")
-            ->groupByRaw("COALESCE(action, 'unknown')")
-            ->orderByDesc('aggregate')
-            ->limit($limit)
-            ->pluck('aggregate', 'label')
-            ->map(fn (mixed $count): int => (int) $count);
+            ->get(['action'])
+            ->countBy(fn (Timeline $timeline): string => $this->normalizeSeriesLabel(
+                $timeline->action,
+                'unknown',
+            ))
+            ->sortDesc()
+            ->take($limit)
+            ->map(fn (int $count): int => $count);
     }
 
     protected function policyCoverage(?Defender $defender): array
@@ -370,8 +378,58 @@ trait InteractsWithSecurityWidgetData
         ];
     }
 
-    protected function jsonValueExpression(string $column, string $path): string
+    protected function reportJsonValue(Report $report, string $column, string $path): mixed
     {
-        return "JSON_UNQUOTE(JSON_EXTRACT({$column}, '{$path}'))";
+        $path = $this->normalizeJsonPath($path);
+
+        if ($path === null) {
+            return $report->getAttribute($column);
+        }
+
+        return data_get($report->getAttribute($column), $path);
+    }
+
+    protected function normalizeJsonPath(string $path): ?string
+    {
+        $path = trim($path);
+
+        if ($path === '$' || $path === '') {
+            return null;
+        }
+
+        if (str_starts_with($path, '$.')) {
+            return substr($path, 2);
+        }
+
+        if (str_starts_with($path, '$')) {
+            return ltrim(substr($path, 1), '.');
+        }
+
+        return $path;
+    }
+
+    protected function normalizeSeriesLabel(mixed $value, ?string $fallback = null): ?string
+    {
+        if ($value instanceof BackedEnum) {
+            $value = $value->value;
+        } elseif ($value instanceof UnitEnum) {
+            $value = $value->name;
+        } elseif (is_bool($value)) {
+            $value = $value ? '1' : '0';
+        } elseif (is_array($value)) {
+            $value = json_encode($value, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        } elseif ($value instanceof Stringable || is_scalar($value)) {
+            $value = (string) $value;
+        }
+
+        if (is_string($value)) {
+            $value = trim($value);
+        }
+
+        if (blank($value)) {
+            return $fallback;
+        }
+
+        return (string) $value;
     }
 }

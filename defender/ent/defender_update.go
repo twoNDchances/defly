@@ -6,6 +6,7 @@ import (
 	"context"
 	"defly-defender/ent/decision"
 	"defly-defender/ent/defender"
+	"defly-defender/ent/guard"
 	"defly-defender/ent/predicate"
 	"defly-defender/ent/principle"
 	"defly-defender/ent/report"
@@ -107,6 +108,21 @@ func (du *DefenderUpdate) AddDecisions(d ...*Decision) *DefenderUpdate {
 	return du.AddDecisionIDs(ids...)
 }
 
+// AddGuardIDs adds the "guards" edge to the Guard entity by IDs.
+func (du *DefenderUpdate) AddGuardIDs(ids ...uuid.UUID) *DefenderUpdate {
+	du.mutation.AddGuardIDs(ids...)
+	return du
+}
+
+// AddGuards adds the "guards" edges to the Guard entity.
+func (du *DefenderUpdate) AddGuards(g ...*Guard) *DefenderUpdate {
+	ids := make([]uuid.UUID, len(g))
+	for i := range g {
+		ids[i] = g[i].ID
+	}
+	return du.AddGuardIDs(ids...)
+}
+
 // AddReportIDs adds the "reports" edge to the Report entity by IDs.
 func (du *DefenderUpdate) AddReportIDs(ids ...uuid.UUID) *DefenderUpdate {
 	du.mutation.AddReportIDs(ids...)
@@ -167,6 +183,27 @@ func (du *DefenderUpdate) RemoveDecisions(d ...*Decision) *DefenderUpdate {
 		ids[i] = d[i].ID
 	}
 	return du.RemoveDecisionIDs(ids...)
+}
+
+// ClearGuards clears all "guards" edges to the Guard entity.
+func (du *DefenderUpdate) ClearGuards() *DefenderUpdate {
+	du.mutation.ClearGuards()
+	return du
+}
+
+// RemoveGuardIDs removes the "guards" edge to Guard entities by IDs.
+func (du *DefenderUpdate) RemoveGuardIDs(ids ...uuid.UUID) *DefenderUpdate {
+	du.mutation.RemoveGuardIDs(ids...)
+	return du
+}
+
+// RemoveGuards removes "guards" edges to Guard entities.
+func (du *DefenderUpdate) RemoveGuards(g ...*Guard) *DefenderUpdate {
+	ids := make([]uuid.UUID, len(g))
+	for i := range g {
+		ids[i] = g[i].ID
+	}
+	return du.RemoveGuardIDs(ids...)
 }
 
 // ClearReports clears all "reports" edges to the Report entity.
@@ -349,6 +386,51 @@ func (du *DefenderUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if du.mutation.GuardsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   defender.GuardsTable,
+			Columns: defender.GuardsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(guard.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := du.mutation.RemovedGuardsIDs(); len(nodes) > 0 && !du.mutation.GuardsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   defender.GuardsTable,
+			Columns: defender.GuardsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(guard.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := du.mutation.GuardsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   defender.GuardsTable,
+			Columns: defender.GuardsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(guard.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if du.mutation.ReportsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -490,6 +572,21 @@ func (duo *DefenderUpdateOne) AddDecisions(d ...*Decision) *DefenderUpdateOne {
 	return duo.AddDecisionIDs(ids...)
 }
 
+// AddGuardIDs adds the "guards" edge to the Guard entity by IDs.
+func (duo *DefenderUpdateOne) AddGuardIDs(ids ...uuid.UUID) *DefenderUpdateOne {
+	duo.mutation.AddGuardIDs(ids...)
+	return duo
+}
+
+// AddGuards adds the "guards" edges to the Guard entity.
+func (duo *DefenderUpdateOne) AddGuards(g ...*Guard) *DefenderUpdateOne {
+	ids := make([]uuid.UUID, len(g))
+	for i := range g {
+		ids[i] = g[i].ID
+	}
+	return duo.AddGuardIDs(ids...)
+}
+
 // AddReportIDs adds the "reports" edge to the Report entity by IDs.
 func (duo *DefenderUpdateOne) AddReportIDs(ids ...uuid.UUID) *DefenderUpdateOne {
 	duo.mutation.AddReportIDs(ids...)
@@ -550,6 +647,27 @@ func (duo *DefenderUpdateOne) RemoveDecisions(d ...*Decision) *DefenderUpdateOne
 		ids[i] = d[i].ID
 	}
 	return duo.RemoveDecisionIDs(ids...)
+}
+
+// ClearGuards clears all "guards" edges to the Guard entity.
+func (duo *DefenderUpdateOne) ClearGuards() *DefenderUpdateOne {
+	duo.mutation.ClearGuards()
+	return duo
+}
+
+// RemoveGuardIDs removes the "guards" edge to Guard entities by IDs.
+func (duo *DefenderUpdateOne) RemoveGuardIDs(ids ...uuid.UUID) *DefenderUpdateOne {
+	duo.mutation.RemoveGuardIDs(ids...)
+	return duo
+}
+
+// RemoveGuards removes "guards" edges to Guard entities.
+func (duo *DefenderUpdateOne) RemoveGuards(g ...*Guard) *DefenderUpdateOne {
+	ids := make([]uuid.UUID, len(g))
+	for i := range g {
+		ids[i] = g[i].ID
+	}
+	return duo.RemoveGuardIDs(ids...)
 }
 
 // ClearReports clears all "reports" edges to the Report entity.
@@ -755,6 +873,51 @@ func (duo *DefenderUpdateOne) sqlSave(ctx context.Context) (_node *Defender, err
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(decision.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if duo.mutation.GuardsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   defender.GuardsTable,
+			Columns: defender.GuardsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(guard.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := duo.mutation.RemovedGuardsIDs(); len(nodes) > 0 && !duo.mutation.GuardsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   defender.GuardsTable,
+			Columns: defender.GuardsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(guard.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := duo.mutation.GuardsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   defender.GuardsTable,
+			Columns: defender.GuardsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(guard.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

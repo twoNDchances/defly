@@ -7,6 +7,7 @@ import (
 	"database/sql/driver"
 	"defly-defender/ent/decision"
 	"defly-defender/ent/defender"
+	"defly-defender/ent/guard"
 	"defly-defender/ent/predicate"
 	"defly-defender/ent/principle"
 	"defly-defender/ent/report"
@@ -29,6 +30,7 @@ type DefenderQuery struct {
 	predicates     []predicate.Defender
 	withPrinciples *PrincipleQuery
 	withDecisions  *DecisionQuery
+	withGuards     *GuardQuery
 	withReports    *ReportQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -103,6 +105,28 @@ func (dq *DefenderQuery) QueryDecisions() *DecisionQuery {
 			sqlgraph.From(defender.Table, defender.FieldID, selector),
 			sqlgraph.To(decision.Table, decision.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, false, defender.DecisionsTable, defender.DecisionsPrimaryKey...),
+		)
+		fromU = sqlgraph.SetNeighbors(dq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryGuards chains the current query on the "guards" edge.
+func (dq *DefenderQuery) QueryGuards() *GuardQuery {
+	query := (&GuardClient{config: dq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := dq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := dq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(defender.Table, defender.FieldID, selector),
+			sqlgraph.To(guard.Table, guard.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, defender.GuardsTable, defender.GuardsPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(dq.driver.Dialect(), step)
 		return fromU, nil
@@ -326,6 +350,7 @@ func (dq *DefenderQuery) Clone() *DefenderQuery {
 		predicates:     append([]predicate.Defender{}, dq.predicates...),
 		withPrinciples: dq.withPrinciples.Clone(),
 		withDecisions:  dq.withDecisions.Clone(),
+		withGuards:     dq.withGuards.Clone(),
 		withReports:    dq.withReports.Clone(),
 		// clone intermediate query.
 		sql:  dq.sql.Clone(),
@@ -352,6 +377,17 @@ func (dq *DefenderQuery) WithDecisions(opts ...func(*DecisionQuery)) *DefenderQu
 		opt(query)
 	}
 	dq.withDecisions = query
+	return dq
+}
+
+// WithGuards tells the query-builder to eager-load the nodes that are connected to
+// the "guards" edge. The optional arguments are used to configure the query builder of the edge.
+func (dq *DefenderQuery) WithGuards(opts ...func(*GuardQuery)) *DefenderQuery {
+	query := (&GuardClient{config: dq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	dq.withGuards = query
 	return dq
 }
 
@@ -444,9 +480,10 @@ func (dq *DefenderQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Def
 	var (
 		nodes       = []*Defender{}
 		_spec       = dq.querySpec()
-		loadedTypes = [3]bool{
+		loadedTypes = [4]bool{
 			dq.withPrinciples != nil,
 			dq.withDecisions != nil,
+			dq.withGuards != nil,
 			dq.withReports != nil,
 		}
 	)
@@ -479,6 +516,13 @@ func (dq *DefenderQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Def
 		if err := dq.loadDecisions(ctx, query, nodes,
 			func(n *Defender) { n.Edges.Decisions = []*Decision{} },
 			func(n *Defender, e *Decision) { n.Edges.Decisions = append(n.Edges.Decisions, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := dq.withGuards; query != nil {
+		if err := dq.loadGuards(ctx, query, nodes,
+			func(n *Defender) { n.Edges.Guards = []*Guard{} },
+			func(n *Defender, e *Guard) { n.Edges.Guards = append(n.Edges.Guards, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -607,6 +651,67 @@ func (dq *DefenderQuery) loadDecisions(ctx context.Context, query *DecisionQuery
 		nodes, ok := nids[n.ID]
 		if !ok {
 			return fmt.Errorf(`unexpected "decisions" node returned %v`, n.ID)
+		}
+		for kn := range nodes {
+			assign(kn, n)
+		}
+	}
+	return nil
+}
+func (dq *DefenderQuery) loadGuards(ctx context.Context, query *GuardQuery, nodes []*Defender, init func(*Defender), assign func(*Defender, *Guard)) error {
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[uuid.UUID]*Defender)
+	nids := make(map[uuid.UUID]map[*Defender]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
+		if init != nil {
+			init(node)
+		}
+	}
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(defender.GuardsTable)
+		s.Join(joinT).On(s.C(guard.FieldID), joinT.C(defender.GuardsPrimaryKey[1]))
+		s.Where(sql.InValues(joinT.C(defender.GuardsPrimaryKey[0]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(defender.GuardsPrimaryKey[0]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
+		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]any, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]any{new(uuid.UUID)}, values...), nil
+			}
+			spec.Assign = func(columns []string, values []any) error {
+				outValue := *values[0].(*uuid.UUID)
+				inValue := *values[1].(*uuid.UUID)
+				if nids[inValue] == nil {
+					nids[inValue] = map[*Defender]struct{}{byID[outValue]: {}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byID[outValue]] = struct{}{}
+				return nil
+			}
+		})
+	})
+	neighbors, err := withInterceptors[[]*Guard](ctx, query, qr, query.inters)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected "guards" node returned %v`, n.ID)
 		}
 		for kn := range nodes {
 			assign(kn, n)

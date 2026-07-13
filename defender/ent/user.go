@@ -37,9 +37,11 @@ type UserEdges struct {
 	Groups []*Group `json:"groups,omitempty"`
 	// Permissions holds the value of the permissions edge.
 	Permissions []*Permission `json:"permissions,omitempty"`
+	// Guards holds the value of the guards edge.
+	Guards []*Guard `json:"guards,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [3]bool
 }
 
 // GroupsOrErr returns the Groups value or an error if the edge
@@ -58,6 +60,15 @@ func (e UserEdges) PermissionsOrErr() ([]*Permission, error) {
 		return e.Permissions, nil
 	}
 	return nil, &NotLoadedError{edge: "permissions"}
+}
+
+// GuardsOrErr returns the Guards value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) GuardsOrErr() ([]*Guard, error) {
+	if e.loadedTypes[2] {
+		return e.Guards, nil
+	}
+	return nil, &NotLoadedError{edge: "guards"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -137,6 +148,11 @@ func (u *User) QueryGroups() *GroupQuery {
 // QueryPermissions queries the "permissions" edge of the User entity.
 func (u *User) QueryPermissions() *PermissionQuery {
 	return NewUserClient(u.config).QueryPermissions(u)
+}
+
+// QueryGuards queries the "guards" edge of the User entity.
+func (u *User) QueryGuards() *GuardQuery {
+	return NewUserClient(u.config).QueryGuards(u)
 }
 
 // Update returns a builder for updating this User.

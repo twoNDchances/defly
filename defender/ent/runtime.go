@@ -8,6 +8,7 @@ import (
 	"defly-defender/ent/defender"
 	"defly-defender/ent/engine"
 	"defly-defender/ent/group"
+	"defly-defender/ent/guard"
 	"defly-defender/ent/pattern"
 	"defly-defender/ent/permission"
 	"defly-defender/ent/principle"
@@ -80,6 +81,16 @@ func init() {
 	groupDescID := groupFields[0].Descriptor()
 	// group.DefaultID holds the default value on creation for the id field.
 	group.DefaultID = groupDescID.Default.(func() uuid.UUID)
+	guardFields := schema.Guard{}.Fields()
+	_ = guardFields
+	// guardDescName is the schema descriptor for name field.
+	guardDescName := guardFields[1].Descriptor()
+	// guard.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	guard.NameValidator = guardDescName.Validators[0].(func(string) error)
+	// guardDescID is the schema descriptor for id field.
+	guardDescID := guardFields[0].Descriptor()
+	// guard.DefaultID holds the default value on creation for the id field.
+	guard.DefaultID = guardDescID.Default.(func() uuid.UUID)
 	patternFields := schema.Pattern{}.Fields()
 	_ = patternFields
 	// patternDescName is the schema descriptor for name field.

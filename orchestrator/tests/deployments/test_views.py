@@ -51,7 +51,11 @@ class DefenderViewDispatchTests(SimpleTestCase):
                     )
 
                 self.assertEqual({"action": action}, loads(response.content))
-                validate_action.assert_awaited_once_with(user=user, action=action)
+                validate_action.assert_awaited_once_with(
+                    user=user,
+                    action=action,
+                    defender_id=defender_id,
+                )
                 handler.assert_awaited_once_with(request, defender_id=defender_id)
 
     @override_settings(SERVER_METHOD_DEPLOY="put")

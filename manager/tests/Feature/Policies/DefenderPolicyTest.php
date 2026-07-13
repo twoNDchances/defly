@@ -3,6 +3,7 @@
 namespace Tests\Feature\Policies;
 
 use App\Enums\Defender\DeploymentStatus;
+use App\Models\Guard;
 use App\Models\Permission;
 use App\Models\User;
 use App\Policies\DefenderPolicy;
@@ -45,5 +46,28 @@ class DefenderPolicyTest extends TestCase
         ])->id);
         $this->actingAs($regular);
         $this->assertTrue($defenderPolicy->delete($regular, $failedDefender));
+    }
+
+    public function test_defender_policy_requires_active_guard_for_guarded_defenders(): void
+    {
+        /** @var User $root */
+        $root = User::factory()->create(['is_root' => true, 'is_verified' => true, 'is_activated' => true]);
+        $this->actingAs($root);
+
+        $defenderPolicy = new DefenderPolicy;
+        $defender = $this->modelDefender(DeploymentStatus::Failed->value);
+        $guard = Guard::query()->create([
+            'name' => 'policy-guard',
+            'expired_at' => now()->addHour(),
+        ]);
+        $guard->defenders()->attach($defender->id);
+
+        $this->assertFalse($defenderPolicy->delete($root, $defender));
+
+        $guard->users()->attach($root->id);
+        $this->assertTrue($defenderPolicy->delete($root, $defender));
+
+        $guard->forceFill(['expired_at' => now()->subMinute()])->save();
+        $this->assertFalse($defenderPolicy->delete($root, $defender));
     }
 }

@@ -21,6 +21,9 @@ type Engine func(*sql.Selector)
 // Group is the predicate function for group builders.
 type Group func(*sql.Selector)
 
+// Guard is the predicate function for guard builders.
+type Guard func(*sql.Selector)
+
 // Pattern is the predicate function for pattern builders.
 type Pattern func(*sql.Selector)
 

@@ -16,6 +16,7 @@ import (
 	"defly-defender/ent/defender"
 	"defly-defender/ent/engine"
 	"defly-defender/ent/group"
+	"defly-defender/ent/guard"
 	"defly-defender/ent/pattern"
 	"defly-defender/ent/permission"
 	"defly-defender/ent/principle"
@@ -47,6 +48,8 @@ type Client struct {
 	Engine *EngineClient
 	// Group is the client for interacting with the Group builders.
 	Group *GroupClient
+	// Guard is the client for interacting with the Guard builders.
+	Guard *GuardClient
 	// Pattern is the client for interacting with the Pattern builders.
 	Pattern *PatternClient
 	// Permission is the client for interacting with the Permission builders.
@@ -79,6 +82,7 @@ func (c *Client) init() {
 	c.Defender = NewDefenderClient(c.config)
 	c.Engine = NewEngineClient(c.config)
 	c.Group = NewGroupClient(c.config)
+	c.Guard = NewGuardClient(c.config)
 	c.Pattern = NewPatternClient(c.config)
 	c.Permission = NewPermissionClient(c.config)
 	c.Principle = NewPrincipleClient(c.config)
@@ -184,6 +188,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		Defender:   NewDefenderClient(cfg),
 		Engine:     NewEngineClient(cfg),
 		Group:      NewGroupClient(cfg),
+		Guard:      NewGuardClient(cfg),
 		Pattern:    NewPatternClient(cfg),
 		Permission: NewPermissionClient(cfg),
 		Principle:  NewPrincipleClient(cfg),
@@ -216,6 +221,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		Defender:   NewDefenderClient(cfg),
 		Engine:     NewEngineClient(cfg),
 		Group:      NewGroupClient(cfg),
+		Guard:      NewGuardClient(cfg),
 		Pattern:    NewPatternClient(cfg),
 		Permission: NewPermissionClient(cfg),
 		Principle:  NewPrincipleClient(cfg),
@@ -253,8 +259,8 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
-		c.Action, c.Decision, c.Defender, c.Engine, c.Group, c.Pattern, c.Permission,
-		c.Principle, c.Report, c.Rule, c.Target, c.User, c.Wordlist,
+		c.Action, c.Decision, c.Defender, c.Engine, c.Group, c.Guard, c.Pattern,
+		c.Permission, c.Principle, c.Report, c.Rule, c.Target, c.User, c.Wordlist,
 	} {
 		n.Use(hooks...)
 	}
@@ -264,8 +270,8 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
-		c.Action, c.Decision, c.Defender, c.Engine, c.Group, c.Pattern, c.Permission,
-		c.Principle, c.Report, c.Rule, c.Target, c.User, c.Wordlist,
+		c.Action, c.Decision, c.Defender, c.Engine, c.Group, c.Guard, c.Pattern,
+		c.Permission, c.Principle, c.Report, c.Rule, c.Target, c.User, c.Wordlist,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -284,6 +290,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Engine.mutate(ctx, m)
 	case *GroupMutation:
 		return c.Group.mutate(ctx, m)
+	case *GuardMutation:
+		return c.Guard.mutate(ctx, m)
 	case *PatternMutation:
 		return c.Pattern.mutate(ctx, m)
 	case *PermissionMutation:
@@ -759,6 +767,22 @@ func (c *DefenderClient) QueryDecisions(d *Defender) *DecisionQuery {
 	return query
 }
 
+// QueryGuards queries the guards edge of a Defender.
+func (c *DefenderClient) QueryGuards(d *Defender) *GuardQuery {
+	query := (&GuardClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := d.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(defender.Table, defender.FieldID, id),
+			sqlgraph.To(guard.Table, guard.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, defender.GuardsTable, defender.GuardsPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(d.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QueryReports queries the reports edge of a Defender.
 func (c *DefenderClient) QueryReports(d *Defender) *ReportQuery {
 	query := (&ReportClient{config: c.config}).Query()
@@ -1111,6 +1135,171 @@ func (c *GroupClient) mutate(ctx context.Context, m *GroupMutation) (Value, erro
 		return (&GroupDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown Group mutation op: %q", m.Op())
+	}
+}
+
+// GuardClient is a client for the Guard schema.
+type GuardClient struct {
+	config
+}
+
+// NewGuardClient returns a client for the Guard from the given config.
+func NewGuardClient(c config) *GuardClient {
+	return &GuardClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `guard.Hooks(f(g(h())))`.
+func (c *GuardClient) Use(hooks ...Hook) {
+	c.hooks.Guard = append(c.hooks.Guard, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `guard.Intercept(f(g(h())))`.
+func (c *GuardClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Guard = append(c.inters.Guard, interceptors...)
+}
+
+// Create returns a builder for creating a Guard entity.
+func (c *GuardClient) Create() *GuardCreate {
+	mutation := newGuardMutation(c.config, OpCreate)
+	return &GuardCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Guard entities.
+func (c *GuardClient) CreateBulk(builders ...*GuardCreate) *GuardCreateBulk {
+	return &GuardCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *GuardClient) MapCreateBulk(slice any, setFunc func(*GuardCreate, int)) *GuardCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &GuardCreateBulk{err: fmt.Errorf("calling to GuardClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*GuardCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &GuardCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Guard.
+func (c *GuardClient) Update() *GuardUpdate {
+	mutation := newGuardMutation(c.config, OpUpdate)
+	return &GuardUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *GuardClient) UpdateOne(gu *Guard) *GuardUpdateOne {
+	mutation := newGuardMutation(c.config, OpUpdateOne, withGuard(gu))
+	return &GuardUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *GuardClient) UpdateOneID(id uuid.UUID) *GuardUpdateOne {
+	mutation := newGuardMutation(c.config, OpUpdateOne, withGuardID(id))
+	return &GuardUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Guard.
+func (c *GuardClient) Delete() *GuardDelete {
+	mutation := newGuardMutation(c.config, OpDelete)
+	return &GuardDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *GuardClient) DeleteOne(gu *Guard) *GuardDeleteOne {
+	return c.DeleteOneID(gu.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *GuardClient) DeleteOneID(id uuid.UUID) *GuardDeleteOne {
+	builder := c.Delete().Where(guard.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &GuardDeleteOne{builder}
+}
+
+// Query returns a query builder for Guard.
+func (c *GuardClient) Query() *GuardQuery {
+	return &GuardQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeGuard},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a Guard entity by its id.
+func (c *GuardClient) Get(ctx context.Context, id uuid.UUID) (*Guard, error) {
+	return c.Query().Where(guard.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *GuardClient) GetX(ctx context.Context, id uuid.UUID) *Guard {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryUsers queries the users edge of a Guard.
+func (c *GuardClient) QueryUsers(gu *Guard) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := gu.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(guard.Table, guard.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, guard.UsersTable, guard.UsersPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(gu.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryDefenders queries the defenders edge of a Guard.
+func (c *GuardClient) QueryDefenders(gu *Guard) *DefenderQuery {
+	query := (&DefenderClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := gu.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(guard.Table, guard.FieldID, id),
+			sqlgraph.To(defender.Table, defender.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, guard.DefendersTable, guard.DefendersPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(gu.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *GuardClient) Hooks() []Hook {
+	return c.hooks.Guard
+}
+
+// Interceptors returns the client interceptors.
+func (c *GuardClient) Interceptors() []Interceptor {
+	return c.inters.Guard
+}
+
+func (c *GuardClient) mutate(ctx context.Context, m *GuardMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&GuardCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&GuardUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&GuardUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&GuardDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown Guard mutation op: %q", m.Op())
 	}
 }
 
@@ -2292,6 +2481,22 @@ func (c *UserClient) QueryPermissions(u *User) *PermissionQuery {
 	return query
 }
 
+// QueryGuards queries the guards edge of a User.
+func (c *UserClient) QueryGuards(u *User) *GuardQuery {
+	query := (&GuardClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := u.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(guard.Table, guard.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, user.GuardsTable, user.GuardsPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *UserClient) Hooks() []Hook {
 	return c.hooks.User
@@ -2485,11 +2690,11 @@ func (c *WordlistClient) mutate(ctx context.Context, m *WordlistMutation) (Value
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Action, Decision, Defender, Engine, Group, Pattern, Permission, Principle,
-		Report, Rule, Target, User, Wordlist []ent.Hook
+		Action, Decision, Defender, Engine, Group, Guard, Pattern, Permission,
+		Principle, Report, Rule, Target, User, Wordlist []ent.Hook
 	}
 	inters struct {
-		Action, Decision, Defender, Engine, Group, Pattern, Permission, Principle,
-		Report, Rule, Target, User, Wordlist []ent.Interceptor
+		Action, Decision, Defender, Engine, Group, Guard, Pattern, Permission,
+		Principle, Report, Rule, Target, User, Wordlist []ent.Interceptor
 	}
 )

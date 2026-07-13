@@ -29,7 +29,7 @@ class DefenderPolicy
 
     public function update(User $user, Defender $defender): bool
     {
-        if ($this->isProtectedStatus($defender)) {
+        if ($this->isProtectedStatus($defender) || ! Security::canOperateDefender($defender, $user)) {
             return false;
         }
 
@@ -38,7 +38,7 @@ class DefenderPolicy
 
     public function delete(User $user, Defender $defender): bool
     {
-        if ($this->isProtectedStatus($defender)) {
+        if ($this->isProtectedStatus($defender) || ! Security::canOperateDefender($defender, $user)) {
             return false;
         }
 
@@ -51,7 +51,7 @@ class DefenderPolicy
 
     public function deploy(User $user, Defender $defender): bool
     {
-        if ($this->isProtectedStatus($defender)) {
+        if ($this->isProtectedStatus($defender) || ! Security::canOperateDefender($defender, $user)) {
             return false;
         }
 
@@ -65,7 +65,7 @@ class DefenderPolicy
 
     public function cancel(User $user, Defender $defender): bool
     {
-        if ($defender->deployment_status == DeploymentStatus::Successful) {
+        if ($defender->deployment_status == DeploymentStatus::Successful && Security::canOperateDefender($defender, $user)) {
             return $this->checkAccess($user, $defender, 'cancel');
         }
 
@@ -79,7 +79,7 @@ class DefenderPolicy
 
     public function follow(User $user, Defender $defender): bool
     {
-        if ($defender->deployment_status == DeploymentStatus::Successful) {
+        if ($defender->deployment_status == DeploymentStatus::Successful && Security::canOperateDefender($defender, $user)) {
             return $this->checkAccess($user, $defender, 'follow');
         }
 
@@ -88,7 +88,7 @@ class DefenderPolicy
 
     public function refresh(User $user, Defender $defender): bool
     {
-        if ($defender->deployment_status == DeploymentStatus::Successful) {
+        if ($defender->deployment_status == DeploymentStatus::Successful && Security::canOperateDefender($defender, $user)) {
             return $this->checkAccess($user, $defender, 'refresh');
         }
 

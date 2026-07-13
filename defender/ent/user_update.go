@@ -5,6 +5,7 @@ package ent
 import (
 	"context"
 	"defly-defender/ent/group"
+	"defly-defender/ent/guard"
 	"defly-defender/ent/permission"
 	"defly-defender/ent/predicate"
 	"defly-defender/ent/user"
@@ -116,6 +117,21 @@ func (uu *UserUpdate) AddPermissions(p ...*Permission) *UserUpdate {
 	return uu.AddPermissionIDs(ids...)
 }
 
+// AddGuardIDs adds the "guards" edge to the Guard entity by IDs.
+func (uu *UserUpdate) AddGuardIDs(ids ...uuid.UUID) *UserUpdate {
+	uu.mutation.AddGuardIDs(ids...)
+	return uu
+}
+
+// AddGuards adds the "guards" edges to the Guard entity.
+func (uu *UserUpdate) AddGuards(g ...*Guard) *UserUpdate {
+	ids := make([]uuid.UUID, len(g))
+	for i := range g {
+		ids[i] = g[i].ID
+	}
+	return uu.AddGuardIDs(ids...)
+}
+
 // Mutation returns the UserMutation object of the builder.
 func (uu *UserUpdate) Mutation() *UserMutation {
 	return uu.mutation
@@ -161,6 +177,27 @@ func (uu *UserUpdate) RemovePermissions(p ...*Permission) *UserUpdate {
 		ids[i] = p[i].ID
 	}
 	return uu.RemovePermissionIDs(ids...)
+}
+
+// ClearGuards clears all "guards" edges to the Guard entity.
+func (uu *UserUpdate) ClearGuards() *UserUpdate {
+	uu.mutation.ClearGuards()
+	return uu
+}
+
+// RemoveGuardIDs removes the "guards" edge to Guard entities by IDs.
+func (uu *UserUpdate) RemoveGuardIDs(ids ...uuid.UUID) *UserUpdate {
+	uu.mutation.RemoveGuardIDs(ids...)
+	return uu
+}
+
+// RemoveGuards removes "guards" edges to Guard entities.
+func (uu *UserUpdate) RemoveGuards(g ...*Guard) *UserUpdate {
+	ids := make([]uuid.UUID, len(g))
+	for i := range g {
+		ids[i] = g[i].ID
+	}
+	return uu.RemoveGuardIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -314,6 +351,51 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if uu.mutation.GuardsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   user.GuardsTable,
+			Columns: user.GuardsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(guard.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uu.mutation.RemovedGuardsIDs(); len(nodes) > 0 && !uu.mutation.GuardsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   user.GuardsTable,
+			Columns: user.GuardsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(guard.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uu.mutation.GuardsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   user.GuardsTable,
+			Columns: user.GuardsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(guard.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, uu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{user.Label}
@@ -420,6 +502,21 @@ func (uuo *UserUpdateOne) AddPermissions(p ...*Permission) *UserUpdateOne {
 	return uuo.AddPermissionIDs(ids...)
 }
 
+// AddGuardIDs adds the "guards" edge to the Guard entity by IDs.
+func (uuo *UserUpdateOne) AddGuardIDs(ids ...uuid.UUID) *UserUpdateOne {
+	uuo.mutation.AddGuardIDs(ids...)
+	return uuo
+}
+
+// AddGuards adds the "guards" edges to the Guard entity.
+func (uuo *UserUpdateOne) AddGuards(g ...*Guard) *UserUpdateOne {
+	ids := make([]uuid.UUID, len(g))
+	for i := range g {
+		ids[i] = g[i].ID
+	}
+	return uuo.AddGuardIDs(ids...)
+}
+
 // Mutation returns the UserMutation object of the builder.
 func (uuo *UserUpdateOne) Mutation() *UserMutation {
 	return uuo.mutation
@@ -465,6 +562,27 @@ func (uuo *UserUpdateOne) RemovePermissions(p ...*Permission) *UserUpdateOne {
 		ids[i] = p[i].ID
 	}
 	return uuo.RemovePermissionIDs(ids...)
+}
+
+// ClearGuards clears all "guards" edges to the Guard entity.
+func (uuo *UserUpdateOne) ClearGuards() *UserUpdateOne {
+	uuo.mutation.ClearGuards()
+	return uuo
+}
+
+// RemoveGuardIDs removes the "guards" edge to Guard entities by IDs.
+func (uuo *UserUpdateOne) RemoveGuardIDs(ids ...uuid.UUID) *UserUpdateOne {
+	uuo.mutation.RemoveGuardIDs(ids...)
+	return uuo
+}
+
+// RemoveGuards removes "guards" edges to Guard entities.
+func (uuo *UserUpdateOne) RemoveGuards(g ...*Guard) *UserUpdateOne {
+	ids := make([]uuid.UUID, len(g))
+	for i := range g {
+		ids[i] = g[i].ID
+	}
+	return uuo.RemoveGuardIDs(ids...)
 }
 
 // Where appends a list predicates to the UserUpdate builder.
@@ -641,6 +759,51 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(permission.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if uuo.mutation.GuardsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   user.GuardsTable,
+			Columns: user.GuardsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(guard.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uuo.mutation.RemovedGuardsIDs(); len(nodes) > 0 && !uuo.mutation.GuardsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   user.GuardsTable,
+			Columns: user.GuardsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(guard.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uuo.mutation.GuardsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   user.GuardsTable,
+			Columns: user.GuardsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(guard.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

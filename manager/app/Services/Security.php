@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Defender;
 use App\Models\Key;
 use App\Models\User;
 
@@ -148,6 +149,45 @@ class Security
                     ->where('applied_for', $appliedFor);
             })
             ->exists();
+    }
+
+    public static function canOperateDefender(Defender $defender, ?User $user = null): bool
+    {
+        if (! $defender->guards()->exists()) {
+            return true;
+        }
+
+        $user ??= Identification::getCurrent();
+        if (! $user || ! $user->is_verified || ! $user->is_activated) {
+            return false;
+        }
+
+        return $defender->guards()
+            ->whereHas('users', fn ($query) => $query->whereKey($user->id))
+            ->where(function ($query): void {
+                $query->whereNull('expired_at')
+                    ->orWhere('expired_at', '>', now());
+            })
+            ->exists();
+    }
+
+    public static function requesterCanOperateDefender(Defender $defender, ?string $requesterEmail): bool
+    {
+        if (! $defender->guards()->exists()) {
+            return true;
+        }
+
+        $email = strtolower(trim((string) $requesterEmail));
+        if ($email === '') {
+            return false;
+        }
+
+        $user = User::query()
+            ->whereLike('email', $email)
+            ->get()
+            ->first(fn (User $user): bool => strtolower($user->email) === $email);
+
+        return $user instanceof User && self::canOperateDefender($defender, $user);
     }
 
     private static function getPermissionSubject(User $user): User|Key

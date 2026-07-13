@@ -9,6 +9,7 @@ import (
 	"defly-defender/ent/defender"
 	"defly-defender/ent/engine"
 	"defly-defender/ent/group"
+	"defly-defender/ent/guard"
 	"defly-defender/ent/pattern"
 	"defly-defender/ent/permission"
 	"defly-defender/ent/principle"
@@ -90,6 +91,7 @@ func checkColumn(table, column string) error {
 			defender.Table:   defender.ValidColumn,
 			engine.Table:     engine.ValidColumn,
 			group.Table:      group.ValidColumn,
+			guard.Table:      guard.ValidColumn,
 			pattern.Table:    pattern.ValidColumn,
 			permission.Table: permission.ValidColumn,
 			principle.Table:  principle.ValidColumn,

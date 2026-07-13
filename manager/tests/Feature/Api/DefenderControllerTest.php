@@ -2,12 +2,19 @@
 
 namespace Tests\Feature\Api;
 
+use App\Enums\Defender\DeploymentStatus;
+use App\Jobs\DefenderDeployment;
+use App\Models\Guard;
 use App\Models\Key;
 use App\Models\User;
 use App\Services\ApiAuthentication;
+use Illuminate\Support\Facades\Bus;
+use Tests\Support\ApiRelationTestHelpers;
 
 class DefenderControllerTest extends ApiTestCase
 {
+    use ApiRelationTestHelpers;
+
     public function test_defenders_payload_endpoint_requires_permission_and_masks_sensitive_defaults(): void
     {
         config()->set('database.connections.mysql.host', 'secret-db-host');
@@ -100,5 +107,35 @@ class DefenderControllerTest extends ApiTestCase
 
         $this->apiJson('DELETE', $this->apiRoute('defenders', 'destroy'), ['defender' => $defenderId])->assertNoContent();
         $this->assertDatabaseMissing('defenders', ['id' => $defenderId]);
+    }
+
+    public function test_guarded_defender_action_requests_require_active_matching_guard(): void
+    {
+        Bus::fake();
+
+        $defender = $this->apiDefender('guarded-deploy', DeploymentStatus::Failed->value);
+        $guard = Guard::query()->create([
+            'name' => 'api-guard',
+            'expired_at' => now()->addHour(),
+        ]);
+        $guard->defenders()->attach($defender->id);
+
+        $this->apiJson('POST', $this->apiRoute('defenders', 'deploy'), ['defender' => $defender->id])
+            ->assertForbidden();
+        Bus::assertNotDispatched(DefenderDeployment::class);
+
+        $guard->users()->attach($this->user->id);
+
+        $this->apiJson('POST', $this->apiRoute('defenders', 'deploy'), ['defender' => $defender->id])
+            ->assertOk();
+        Bus::assertDispatched(DefenderDeployment::class);
+
+        Bus::fake();
+        $defender->forceFill(['deployment_status' => DeploymentStatus::Failed])->save();
+        $guard->forceFill(['expired_at' => now()->subMinute()])->save();
+
+        $this->apiJson('POST', $this->apiRoute('defenders', 'deploy'), ['defender' => $defender->id])
+            ->assertForbidden();
+        Bus::assertNotDispatched(DefenderDeployment::class);
     }
 }

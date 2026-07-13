@@ -9,6 +9,7 @@ import (
 	"defly-defender/ent/defender"
 	"defly-defender/ent/engine"
 	"defly-defender/ent/group"
+	"defly-defender/ent/guard"
 	"defly-defender/ent/pattern"
 	"defly-defender/ent/permission"
 	"defly-defender/ent/predicate"
@@ -43,6 +44,7 @@ const (
 	TypeDefender   = "Defender"
 	TypeEngine     = "Engine"
 	TypeGroup      = "Group"
+	TypeGuard      = "Guard"
 	TypePattern    = "Pattern"
 	TypePermission = "Permission"
 	TypePrinciple  = "Principle"
@@ -1460,6 +1462,9 @@ type DefenderMutation struct {
 	decisions         map[uuid.UUID]struct{}
 	removeddecisions  map[uuid.UUID]struct{}
 	cleareddecisions  bool
+	guards            map[uuid.UUID]struct{}
+	removedguards     map[uuid.UUID]struct{}
+	clearedguards     bool
 	reports           map[uuid.UUID]struct{}
 	removedreports    map[uuid.UUID]struct{}
 	clearedreports    bool
@@ -1814,6 +1819,60 @@ func (m *DefenderMutation) ResetDecisions() {
 	m.removeddecisions = nil
 }
 
+// AddGuardIDs adds the "guards" edge to the Guard entity by ids.
+func (m *DefenderMutation) AddGuardIDs(ids ...uuid.UUID) {
+	if m.guards == nil {
+		m.guards = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.guards[ids[i]] = struct{}{}
+	}
+}
+
+// ClearGuards clears the "guards" edge to the Guard entity.
+func (m *DefenderMutation) ClearGuards() {
+	m.clearedguards = true
+}
+
+// GuardsCleared reports if the "guards" edge to the Guard entity was cleared.
+func (m *DefenderMutation) GuardsCleared() bool {
+	return m.clearedguards
+}
+
+// RemoveGuardIDs removes the "guards" edge to the Guard entity by IDs.
+func (m *DefenderMutation) RemoveGuardIDs(ids ...uuid.UUID) {
+	if m.removedguards == nil {
+		m.removedguards = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.guards, ids[i])
+		m.removedguards[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedGuards returns the removed IDs of the "guards" edge to the Guard entity.
+func (m *DefenderMutation) RemovedGuardsIDs() (ids []uuid.UUID) {
+	for id := range m.removedguards {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// GuardsIDs returns the "guards" edge IDs in the mutation.
+func (m *DefenderMutation) GuardsIDs() (ids []uuid.UUID) {
+	for id := range m.guards {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetGuards resets all changes to the "guards" edge.
+func (m *DefenderMutation) ResetGuards() {
+	m.guards = nil
+	m.clearedguards = false
+	m.removedguards = nil
+}
+
 // AddReportIDs adds the "reports" edge to the Report entity by ids.
 func (m *DefenderMutation) AddReportIDs(ids ...uuid.UUID) {
 	if m.reports == nil {
@@ -2050,12 +2109,15 @@ func (m *DefenderMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *DefenderMutation) AddedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.principles != nil {
 		edges = append(edges, defender.EdgePrinciples)
 	}
 	if m.decisions != nil {
 		edges = append(edges, defender.EdgeDecisions)
+	}
+	if m.guards != nil {
+		edges = append(edges, defender.EdgeGuards)
 	}
 	if m.reports != nil {
 		edges = append(edges, defender.EdgeReports)
@@ -2079,6 +2141,12 @@ func (m *DefenderMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case defender.EdgeGuards:
+		ids := make([]ent.Value, 0, len(m.guards))
+		for id := range m.guards {
+			ids = append(ids, id)
+		}
+		return ids
 	case defender.EdgeReports:
 		ids := make([]ent.Value, 0, len(m.reports))
 		for id := range m.reports {
@@ -2091,12 +2159,15 @@ func (m *DefenderMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *DefenderMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.removedprinciples != nil {
 		edges = append(edges, defender.EdgePrinciples)
 	}
 	if m.removeddecisions != nil {
 		edges = append(edges, defender.EdgeDecisions)
+	}
+	if m.removedguards != nil {
+		edges = append(edges, defender.EdgeGuards)
 	}
 	if m.removedreports != nil {
 		edges = append(edges, defender.EdgeReports)
@@ -2120,6 +2191,12 @@ func (m *DefenderMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case defender.EdgeGuards:
+		ids := make([]ent.Value, 0, len(m.removedguards))
+		for id := range m.removedguards {
+			ids = append(ids, id)
+		}
+		return ids
 	case defender.EdgeReports:
 		ids := make([]ent.Value, 0, len(m.removedreports))
 		for id := range m.removedreports {
@@ -2132,12 +2209,15 @@ func (m *DefenderMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *DefenderMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.clearedprinciples {
 		edges = append(edges, defender.EdgePrinciples)
 	}
 	if m.cleareddecisions {
 		edges = append(edges, defender.EdgeDecisions)
+	}
+	if m.clearedguards {
+		edges = append(edges, defender.EdgeGuards)
 	}
 	if m.clearedreports {
 		edges = append(edges, defender.EdgeReports)
@@ -2153,6 +2233,8 @@ func (m *DefenderMutation) EdgeCleared(name string) bool {
 		return m.clearedprinciples
 	case defender.EdgeDecisions:
 		return m.cleareddecisions
+	case defender.EdgeGuards:
+		return m.clearedguards
 	case defender.EdgeReports:
 		return m.clearedreports
 	}
@@ -2176,6 +2258,9 @@ func (m *DefenderMutation) ResetEdge(name string) error {
 		return nil
 	case defender.EdgeDecisions:
 		m.ResetDecisions()
+		return nil
+	case defender.EdgeGuards:
+		m.ResetGuards()
 		return nil
 	case defender.EdgeReports:
 		m.ResetReports()
@@ -3353,6 +3438,590 @@ func (m *GroupMutation) ResetEdge(name string) error {
 		return nil
 	}
 	return fmt.Errorf("unknown Group edge %s", name)
+}
+
+// GuardMutation represents an operation that mutates the Guard nodes in the graph.
+type GuardMutation struct {
+	config
+	op               Op
+	typ              string
+	id               *uuid.UUID
+	name             *string
+	expired_at       *time.Time
+	clearedFields    map[string]struct{}
+	users            map[uuid.UUID]struct{}
+	removedusers     map[uuid.UUID]struct{}
+	clearedusers     bool
+	defenders        map[uuid.UUID]struct{}
+	removeddefenders map[uuid.UUID]struct{}
+	cleareddefenders bool
+	done             bool
+	oldValue         func(context.Context) (*Guard, error)
+	predicates       []predicate.Guard
+}
+
+var _ ent.Mutation = (*GuardMutation)(nil)
+
+// guardOption allows management of the mutation configuration using functional options.
+type guardOption func(*GuardMutation)
+
+// newGuardMutation creates new mutation for the Guard entity.
+func newGuardMutation(c config, op Op, opts ...guardOption) *GuardMutation {
+	m := &GuardMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeGuard,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withGuardID sets the ID field of the mutation.
+func withGuardID(id uuid.UUID) guardOption {
+	return func(m *GuardMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *Guard
+		)
+		m.oldValue = func(ctx context.Context) (*Guard, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().Guard.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withGuard sets the old Guard of the mutation.
+func withGuard(node *Guard) guardOption {
+	return func(m *GuardMutation) {
+		m.oldValue = func(context.Context) (*Guard, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m GuardMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m GuardMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of Guard entities.
+func (m *GuardMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *GuardMutation) ID() (id uuid.UUID, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *GuardMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uuid.UUID{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().Guard.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetName sets the "name" field.
+func (m *GuardMutation) SetName(s string) {
+	m.name = &s
+}
+
+// Name returns the value of the "name" field in the mutation.
+func (m *GuardMutation) Name() (r string, exists bool) {
+	v := m.name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldName returns the old "name" field's value of the Guard entity.
+// If the Guard object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GuardMutation) OldName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldName: %w", err)
+	}
+	return oldValue.Name, nil
+}
+
+// ResetName resets all changes to the "name" field.
+func (m *GuardMutation) ResetName() {
+	m.name = nil
+}
+
+// SetExpiredAt sets the "expired_at" field.
+func (m *GuardMutation) SetExpiredAt(t time.Time) {
+	m.expired_at = &t
+}
+
+// ExpiredAt returns the value of the "expired_at" field in the mutation.
+func (m *GuardMutation) ExpiredAt() (r time.Time, exists bool) {
+	v := m.expired_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldExpiredAt returns the old "expired_at" field's value of the Guard entity.
+// If the Guard object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GuardMutation) OldExpiredAt(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldExpiredAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldExpiredAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldExpiredAt: %w", err)
+	}
+	return oldValue.ExpiredAt, nil
+}
+
+// ClearExpiredAt clears the value of the "expired_at" field.
+func (m *GuardMutation) ClearExpiredAt() {
+	m.expired_at = nil
+	m.clearedFields[guard.FieldExpiredAt] = struct{}{}
+}
+
+// ExpiredAtCleared returns if the "expired_at" field was cleared in this mutation.
+func (m *GuardMutation) ExpiredAtCleared() bool {
+	_, ok := m.clearedFields[guard.FieldExpiredAt]
+	return ok
+}
+
+// ResetExpiredAt resets all changes to the "expired_at" field.
+func (m *GuardMutation) ResetExpiredAt() {
+	m.expired_at = nil
+	delete(m.clearedFields, guard.FieldExpiredAt)
+}
+
+// AddUserIDs adds the "users" edge to the User entity by ids.
+func (m *GuardMutation) AddUserIDs(ids ...uuid.UUID) {
+	if m.users == nil {
+		m.users = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.users[ids[i]] = struct{}{}
+	}
+}
+
+// ClearUsers clears the "users" edge to the User entity.
+func (m *GuardMutation) ClearUsers() {
+	m.clearedusers = true
+}
+
+// UsersCleared reports if the "users" edge to the User entity was cleared.
+func (m *GuardMutation) UsersCleared() bool {
+	return m.clearedusers
+}
+
+// RemoveUserIDs removes the "users" edge to the User entity by IDs.
+func (m *GuardMutation) RemoveUserIDs(ids ...uuid.UUID) {
+	if m.removedusers == nil {
+		m.removedusers = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.users, ids[i])
+		m.removedusers[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedUsers returns the removed IDs of the "users" edge to the User entity.
+func (m *GuardMutation) RemovedUsersIDs() (ids []uuid.UUID) {
+	for id := range m.removedusers {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// UsersIDs returns the "users" edge IDs in the mutation.
+func (m *GuardMutation) UsersIDs() (ids []uuid.UUID) {
+	for id := range m.users {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetUsers resets all changes to the "users" edge.
+func (m *GuardMutation) ResetUsers() {
+	m.users = nil
+	m.clearedusers = false
+	m.removedusers = nil
+}
+
+// AddDefenderIDs adds the "defenders" edge to the Defender entity by ids.
+func (m *GuardMutation) AddDefenderIDs(ids ...uuid.UUID) {
+	if m.defenders == nil {
+		m.defenders = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.defenders[ids[i]] = struct{}{}
+	}
+}
+
+// ClearDefenders clears the "defenders" edge to the Defender entity.
+func (m *GuardMutation) ClearDefenders() {
+	m.cleareddefenders = true
+}
+
+// DefendersCleared reports if the "defenders" edge to the Defender entity was cleared.
+func (m *GuardMutation) DefendersCleared() bool {
+	return m.cleareddefenders
+}
+
+// RemoveDefenderIDs removes the "defenders" edge to the Defender entity by IDs.
+func (m *GuardMutation) RemoveDefenderIDs(ids ...uuid.UUID) {
+	if m.removeddefenders == nil {
+		m.removeddefenders = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.defenders, ids[i])
+		m.removeddefenders[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedDefenders returns the removed IDs of the "defenders" edge to the Defender entity.
+func (m *GuardMutation) RemovedDefendersIDs() (ids []uuid.UUID) {
+	for id := range m.removeddefenders {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// DefendersIDs returns the "defenders" edge IDs in the mutation.
+func (m *GuardMutation) DefendersIDs() (ids []uuid.UUID) {
+	for id := range m.defenders {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetDefenders resets all changes to the "defenders" edge.
+func (m *GuardMutation) ResetDefenders() {
+	m.defenders = nil
+	m.cleareddefenders = false
+	m.removeddefenders = nil
+}
+
+// Where appends a list predicates to the GuardMutation builder.
+func (m *GuardMutation) Where(ps ...predicate.Guard) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the GuardMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *GuardMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.Guard, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *GuardMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *GuardMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (Guard).
+func (m *GuardMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *GuardMutation) Fields() []string {
+	fields := make([]string, 0, 2)
+	if m.name != nil {
+		fields = append(fields, guard.FieldName)
+	}
+	if m.expired_at != nil {
+		fields = append(fields, guard.FieldExpiredAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *GuardMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case guard.FieldName:
+		return m.Name()
+	case guard.FieldExpiredAt:
+		return m.ExpiredAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *GuardMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case guard.FieldName:
+		return m.OldName(ctx)
+	case guard.FieldExpiredAt:
+		return m.OldExpiredAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown Guard field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *GuardMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case guard.FieldName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetName(v)
+		return nil
+	case guard.FieldExpiredAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetExpiredAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown Guard field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *GuardMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *GuardMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *GuardMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown Guard numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *GuardMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(guard.FieldExpiredAt) {
+		fields = append(fields, guard.FieldExpiredAt)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *GuardMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *GuardMutation) ClearField(name string) error {
+	switch name {
+	case guard.FieldExpiredAt:
+		m.ClearExpiredAt()
+		return nil
+	}
+	return fmt.Errorf("unknown Guard nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *GuardMutation) ResetField(name string) error {
+	switch name {
+	case guard.FieldName:
+		m.ResetName()
+		return nil
+	case guard.FieldExpiredAt:
+		m.ResetExpiredAt()
+		return nil
+	}
+	return fmt.Errorf("unknown Guard field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *GuardMutation) AddedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.users != nil {
+		edges = append(edges, guard.EdgeUsers)
+	}
+	if m.defenders != nil {
+		edges = append(edges, guard.EdgeDefenders)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *GuardMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case guard.EdgeUsers:
+		ids := make([]ent.Value, 0, len(m.users))
+		for id := range m.users {
+			ids = append(ids, id)
+		}
+		return ids
+	case guard.EdgeDefenders:
+		ids := make([]ent.Value, 0, len(m.defenders))
+		for id := range m.defenders {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *GuardMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.removedusers != nil {
+		edges = append(edges, guard.EdgeUsers)
+	}
+	if m.removeddefenders != nil {
+		edges = append(edges, guard.EdgeDefenders)
+	}
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *GuardMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case guard.EdgeUsers:
+		ids := make([]ent.Value, 0, len(m.removedusers))
+		for id := range m.removedusers {
+			ids = append(ids, id)
+		}
+		return ids
+	case guard.EdgeDefenders:
+		ids := make([]ent.Value, 0, len(m.removeddefenders))
+		for id := range m.removeddefenders {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *GuardMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.clearedusers {
+		edges = append(edges, guard.EdgeUsers)
+	}
+	if m.cleareddefenders {
+		edges = append(edges, guard.EdgeDefenders)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *GuardMutation) EdgeCleared(name string) bool {
+	switch name {
+	case guard.EdgeUsers:
+		return m.clearedusers
+	case guard.EdgeDefenders:
+		return m.cleareddefenders
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *GuardMutation) ClearEdge(name string) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown Guard unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *GuardMutation) ResetEdge(name string) error {
+	switch name {
+	case guard.EdgeUsers:
+		m.ResetUsers()
+		return nil
+	case guard.EdgeDefenders:
+		m.ResetDefenders()
+		return nil
+	}
+	return fmt.Errorf("unknown Guard edge %s", name)
 }
 
 // PatternMutation represents an operation that mutates the Pattern nodes in the graph.
@@ -8342,6 +9011,9 @@ type UserMutation struct {
 	permissions        map[uuid.UUID]struct{}
 	removedpermissions map[uuid.UUID]struct{}
 	clearedpermissions bool
+	guards             map[uuid.UUID]struct{}
+	removedguards      map[uuid.UUID]struct{}
+	clearedguards      bool
 	done               bool
 	oldValue           func(context.Context) (*User, error)
 	predicates         []predicate.User
@@ -8703,6 +9375,60 @@ func (m *UserMutation) ResetPermissions() {
 	m.removedpermissions = nil
 }
 
+// AddGuardIDs adds the "guards" edge to the Guard entity by ids.
+func (m *UserMutation) AddGuardIDs(ids ...uuid.UUID) {
+	if m.guards == nil {
+		m.guards = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.guards[ids[i]] = struct{}{}
+	}
+}
+
+// ClearGuards clears the "guards" edge to the Guard entity.
+func (m *UserMutation) ClearGuards() {
+	m.clearedguards = true
+}
+
+// GuardsCleared reports if the "guards" edge to the Guard entity was cleared.
+func (m *UserMutation) GuardsCleared() bool {
+	return m.clearedguards
+}
+
+// RemoveGuardIDs removes the "guards" edge to the Guard entity by IDs.
+func (m *UserMutation) RemoveGuardIDs(ids ...uuid.UUID) {
+	if m.removedguards == nil {
+		m.removedguards = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.guards, ids[i])
+		m.removedguards[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedGuards returns the removed IDs of the "guards" edge to the Guard entity.
+func (m *UserMutation) RemovedGuardsIDs() (ids []uuid.UUID) {
+	for id := range m.removedguards {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// GuardsIDs returns the "guards" edge IDs in the mutation.
+func (m *UserMutation) GuardsIDs() (ids []uuid.UUID) {
+	for id := range m.guards {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetGuards resets all changes to the "guards" edge.
+func (m *UserMutation) ResetGuards() {
+	m.guards = nil
+	m.clearedguards = false
+	m.removedguards = nil
+}
+
 // Where appends a list predicates to the UserMutation builder.
 func (m *UserMutation) Where(ps ...predicate.User) {
 	m.predicates = append(m.predicates, ps...)
@@ -8887,12 +9613,15 @@ func (m *UserMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *UserMutation) AddedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.groups != nil {
 		edges = append(edges, user.EdgeGroups)
 	}
 	if m.permissions != nil {
 		edges = append(edges, user.EdgePermissions)
+	}
+	if m.guards != nil {
+		edges = append(edges, user.EdgeGuards)
 	}
 	return edges
 }
@@ -8913,18 +9642,27 @@ func (m *UserMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case user.EdgeGuards:
+		ids := make([]ent.Value, 0, len(m.guards))
+		for id := range m.guards {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *UserMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.removedgroups != nil {
 		edges = append(edges, user.EdgeGroups)
 	}
 	if m.removedpermissions != nil {
 		edges = append(edges, user.EdgePermissions)
+	}
+	if m.removedguards != nil {
+		edges = append(edges, user.EdgeGuards)
 	}
 	return edges
 }
@@ -8945,18 +9683,27 @@ func (m *UserMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case user.EdgeGuards:
+		ids := make([]ent.Value, 0, len(m.removedguards))
+		for id := range m.removedguards {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *UserMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.clearedgroups {
 		edges = append(edges, user.EdgeGroups)
 	}
 	if m.clearedpermissions {
 		edges = append(edges, user.EdgePermissions)
+	}
+	if m.clearedguards {
+		edges = append(edges, user.EdgeGuards)
 	}
 	return edges
 }
@@ -8969,6 +9716,8 @@ func (m *UserMutation) EdgeCleared(name string) bool {
 		return m.clearedgroups
 	case user.EdgePermissions:
 		return m.clearedpermissions
+	case user.EdgeGuards:
+		return m.clearedguards
 	}
 	return false
 }
@@ -8990,6 +9739,9 @@ func (m *UserMutation) ResetEdge(name string) error {
 		return nil
 	case user.EdgePermissions:
 		m.ResetPermissions()
+		return nil
+	case user.EdgeGuards:
+		m.ResetGuards()
 		return nil
 	}
 	return fmt.Errorf("unknown User edge %s", name)

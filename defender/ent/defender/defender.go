@@ -25,6 +25,8 @@ const (
 	EdgePrinciples = "principles"
 	// EdgeDecisions holds the string denoting the decisions edge name in mutations.
 	EdgeDecisions = "decisions"
+	// EdgeGuards holds the string denoting the guards edge name in mutations.
+	EdgeGuards = "guards"
 	// EdgeReports holds the string denoting the reports edge name in mutations.
 	EdgeReports = "reports"
 	// Table holds the table name of the defender in the database.
@@ -39,6 +41,11 @@ const (
 	// DecisionsInverseTable is the table name for the Decision entity.
 	// It exists in this package in order to avoid circular dependency with the "decision" package.
 	DecisionsInverseTable = "decisions"
+	// GuardsTable is the table that holds the guards relation/edge. The primary key declared below.
+	GuardsTable = "guards_defenders"
+	// GuardsInverseTable is the table name for the Guard entity.
+	// It exists in this package in order to avoid circular dependency with the "guard" package.
+	GuardsInverseTable = "guards"
 	// ReportsTable is the table that holds the reports relation/edge.
 	ReportsTable = "reports"
 	// ReportsInverseTable is the table name for the Report entity.
@@ -63,6 +70,9 @@ var (
 	// DecisionsPrimaryKey and DecisionsColumn2 are the table columns denoting the
 	// primary key for the decisions relation (M2M).
 	DecisionsPrimaryKey = []string{"defender", "decision"}
+	// GuardsPrimaryKey and GuardsColumn2 are the table columns denoting the
+	// primary key for the guards relation (M2M).
+	GuardsPrimaryKey = []string{"defender", "guard"}
 )
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -151,6 +161,20 @@ func ByDecisions(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
+// ByGuardsCount orders the results by guards count.
+func ByGuardsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newGuardsStep(), opts...)
+	}
+}
+
+// ByGuards orders the results by guards terms.
+func ByGuards(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newGuardsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
 // ByReportsCount orders the results by reports count.
 func ByReportsCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -176,6 +200,13 @@ func newDecisionsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(DecisionsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2M, false, DecisionsTable, DecisionsPrimaryKey...),
+	)
+}
+func newGuardsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(GuardsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2M, false, GuardsTable, GuardsPrimaryKey...),
 	)
 }
 func newReportsStep() *sqlgraph.Step {

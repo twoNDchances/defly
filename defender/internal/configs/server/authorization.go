@@ -4,8 +4,11 @@ import (
 	"context"
 	"net/http"
 	"strings"
+	"time"
 
 	"defly-defender/ent"
+	entdefender "defly-defender/ent/defender"
+	entguard "defly-defender/ent/guard"
 	entuser "defly-defender/ent/user"
 	"defly-defender/internal/configs"
 
@@ -94,19 +97,42 @@ func (a Authorization) can(ctx context.Context, email, action, appliedFor string
 		return false, nil
 	}
 	if user.IsRoot {
-		return true, nil
+		return a.guardAllows(ctx, client, user)
 	}
 	if a.hasPermission(user.Edges.Permissions, action, appliedFor) {
-		return true, nil
+		return a.guardAllows(ctx, client, user)
 	}
 
 	for _, group := range user.Edges.Groups {
 		if a.hasPermission(group.Edges.Permissions, action, appliedFor) {
-			return true, nil
+			return a.guardAllows(ctx, client, user)
 		}
 	}
 
 	return false, nil
+}
+
+func (a Authorization) guardAllows(ctx context.Context, client *ent.Client, user *ent.User) (bool, error) {
+	guardedDefender, err := client.Guard.Query().
+		Where(entguard.HasDefendersWith(entdefender.NameEQ(a.Database.Defender.Name))).
+		Exist(ctx)
+	if err != nil {
+		return false, err
+	}
+	if !guardedDefender {
+		return true, nil
+	}
+
+	return client.Guard.Query().
+		Where(
+			entguard.HasDefendersWith(entdefender.NameEQ(a.Database.Defender.Name)),
+			entguard.HasUsersWith(entuser.IDEQ(user.ID)),
+			entguard.Or(
+				entguard.ExpiredAtIsNil(),
+				entguard.ExpiredAtGT(time.Now()),
+			),
+		).
+		Exist(ctx)
 }
 
 func (a Authorization) hasPermission(permissions []*ent.Permission, action, appliedFor string) bool {

@@ -4,6 +4,8 @@ namespace Tests\Feature\Jobs;
 
 use App\Enums\Defender\DeploymentStatus;
 use App\Jobs\DefenderCommunication;
+use App\Models\Guard;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -112,5 +114,35 @@ class DefenderCommunicationJobTest extends TestCase
         $errorExpectation = $log->shouldHaveReceived('error');
         $this->assertInstanceOf(VerificationDirector::class, $errorExpectation);
         $errorExpectation->once();
+    }
+
+    public function test_communication_job_skips_guarded_defender_when_requester_guard_is_expired(): void
+    {
+        Http::fake(['*' => Http::response(['ok' => true], 200)]);
+
+        $user = User::factory()->create([
+            'email' => 'expired-communicator@example.com',
+            'is_verified' => true,
+            'is_activated' => true,
+        ]);
+        $defender = $this->defender('expired-communicator', DeploymentStatus::Successful->value);
+        $principle = $this->principle();
+        $defender->principles()->attach($principle->id, ['order' => 1, 'is_applied' => false]);
+        $guard = Guard::query()->create([
+            'name' => 'expired-communication-guard',
+            'expired_at' => now()->subMinute(),
+        ]);
+        $guard->users()->attach($user->id);
+        $guard->defenders()->attach($defender->id);
+
+        (new DefenderCommunication(
+            $defender->id,
+            [$principle->id],
+            DefenderCommunication::ACTION_APPLY,
+            $user->email,
+        ))->handle();
+
+        $this->assertFalse((bool) $defender->principles()->whereKey($principle->id)->first()->pivot->is_applied);
+        Http::assertNothingSent();
     }
 }

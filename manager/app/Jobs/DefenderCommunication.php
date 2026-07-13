@@ -9,6 +9,7 @@ use App\Models\Defender;
 use App\Models\Principle;
 use App\Services\Defender as DefenderService;
 use App\Services\Notification;
+use App\Services\Security;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Http\Client\Response;
@@ -58,6 +59,17 @@ class DefenderCommunication implements ShouldQueue
                 $defender,
                 __('notifications.defender.action.skipped.title'),
                 __('notifications.defender.action.skipped.not_deployed', ['name' => $defender->name]),
+                Notification::STATUS_WARNING,
+            );
+
+            return;
+        }
+
+        if (! Security::requesterCanOperateDefender($defender, $this->requesterEmail)) {
+            $this->notify(
+                $defender,
+                __('notifications.defender.action.skipped.title'),
+                __('notifications.defender.action.skipped.guard_denied', ['name' => $defender->name]),
                 Notification::STATUS_WARNING,
             );
 

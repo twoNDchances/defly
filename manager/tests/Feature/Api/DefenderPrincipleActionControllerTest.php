@@ -6,6 +6,7 @@ use App\Enums\Defender\DeploymentStatus;
 use App\Enums\Phase;
 use App\Enums\Principle\ValidationStatus;
 use App\Jobs\DefenderCommunication;
+use App\Models\Guard;
 use App\Models\Principle;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Str;
@@ -77,5 +78,39 @@ class DefenderPrincipleActionControllerTest extends ApiTestCase
         ])->assertOk()->assertJsonPath('id', $passedPrinciple->id);
 
         Bus::assertNotDispatched(DefenderCommunication::class);
+    }
+
+    public function test_defender_principle_actions_require_active_matching_guard(): void
+    {
+        Bus::fake();
+
+        $defender = $this->apiDefender('guarded-principle', DeploymentStatus::Successful->value);
+        $principle = Principle::query()->create([
+            'name' => 'guarded-principle-'.Str::lower(Str::random(6)),
+            'level' => 1,
+            'phase' => Phase::One->value,
+            'validation_status' => ValidationStatus::Passed->value,
+        ]);
+        $defender->principles()->attach($principle->id, ['order' => 1, 'is_applied' => false]);
+
+        $guard = Guard::query()->create([
+            'name' => 'principle-guard',
+            'expired_at' => now()->addHour(),
+        ]);
+        $guard->defenders()->attach($defender->id);
+
+        $this->apiJson('POST', $this->apiRoute('defenders.principles', 'apply'), [
+            'defender' => $defender->id,
+            'principle' => $principle->id,
+        ])->assertForbidden();
+
+        $guard->users()->attach($this->user->id);
+
+        $this->apiJson('POST', $this->apiRoute('defenders.principles', 'apply'), [
+            'defender' => $defender->id,
+            'principle' => $principle->id,
+        ])->assertOk();
+
+        Bus::assertDispatched(DefenderCommunication::class);
     }
 }

@@ -25,6 +25,8 @@ const (
 	EdgeGroups = "groups"
 	// EdgePermissions holds the string denoting the permissions edge name in mutations.
 	EdgePermissions = "permissions"
+	// EdgeGuards holds the string denoting the guards edge name in mutations.
+	EdgeGuards = "guards"
 	// Table holds the table name of the user in the database.
 	Table = "users"
 	// GroupsTable is the table that holds the groups relation/edge. The primary key declared below.
@@ -37,6 +39,11 @@ const (
 	// PermissionsInverseTable is the table name for the Permission entity.
 	// It exists in this package in order to avoid circular dependency with the "permission" package.
 	PermissionsInverseTable = "permissions"
+	// GuardsTable is the table that holds the guards relation/edge. The primary key declared below.
+	GuardsTable = "guards_users"
+	// GuardsInverseTable is the table name for the Guard entity.
+	// It exists in this package in order to avoid circular dependency with the "guard" package.
+	GuardsInverseTable = "guards"
 )
 
 // Columns holds all SQL columns for user fields.
@@ -55,6 +62,9 @@ var (
 	// PermissionsPrimaryKey and PermissionsColumn2 are the table columns denoting the
 	// primary key for the permissions relation (M2M).
 	PermissionsPrimaryKey = []string{"user", "permission"}
+	// GuardsPrimaryKey and GuardsColumn2 are the table columns denoting the
+	// primary key for the guards relation (M2M).
+	GuardsPrimaryKey = []string{"user", "guard"}
 )
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -135,6 +145,20 @@ func ByPermissions(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newPermissionsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByGuardsCount orders the results by guards count.
+func ByGuardsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newGuardsStep(), opts...)
+	}
+}
+
+// ByGuards orders the results by guards terms.
+func ByGuards(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newGuardsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newGroupsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -147,5 +171,12 @@ func newPermissionsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(PermissionsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2M, false, PermissionsTable, PermissionsPrimaryKey...),
+	)
+}
+func newGuardsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(GuardsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2M, false, GuardsTable, GuardsPrimaryKey...),
 	)
 }

@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Models\Decision;
 use App\Models\Defender;
+use App\Services\Security;
 use App\Traits\Requests\Authorization;
 use App\Traits\Requests\Error;
 use Illuminate\Contracts\Validation\ValidationRule;
@@ -26,6 +27,7 @@ class DefenderDecisionActionRequest extends FormRequest
             || ! $defender instanceof Defender
             || ! $decision instanceof Decision
             || ! in_array($ability, ['implement', 'suspend'], true)
+            || ! Security::canOperateDefender($defender, $this->user())
             || ! $this->allows($ability, $decision)) {
             return false;
         }

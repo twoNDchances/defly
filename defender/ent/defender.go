@@ -36,11 +36,13 @@ type DefenderEdges struct {
 	Principles []*Principle `json:"principles,omitempty"`
 	// Decisions holds the value of the decisions edge.
 	Decisions []*Decision `json:"decisions,omitempty"`
+	// Guards holds the value of the guards edge.
+	Guards []*Guard `json:"guards,omitempty"`
 	// Reports holds the value of the reports edge.
 	Reports []*Report `json:"reports,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [3]bool
+	loadedTypes [4]bool
 }
 
 // PrinciplesOrErr returns the Principles value or an error if the edge
@@ -61,10 +63,19 @@ func (e DefenderEdges) DecisionsOrErr() ([]*Decision, error) {
 	return nil, &NotLoadedError{edge: "decisions"}
 }
 
+// GuardsOrErr returns the Guards value or an error if the edge
+// was not loaded in eager-loading.
+func (e DefenderEdges) GuardsOrErr() ([]*Guard, error) {
+	if e.loadedTypes[2] {
+		return e.Guards, nil
+	}
+	return nil, &NotLoadedError{edge: "guards"}
+}
+
 // ReportsOrErr returns the Reports value or an error if the edge
 // was not loaded in eager-loading.
 func (e DefenderEdges) ReportsOrErr() ([]*Report, error) {
-	if e.loadedTypes[2] {
+	if e.loadedTypes[3] {
 		return e.Reports, nil
 	}
 	return nil, &NotLoadedError{edge: "reports"}
@@ -144,6 +155,11 @@ func (d *Defender) QueryPrinciples() *PrincipleQuery {
 // QueryDecisions queries the "decisions" edge of the Defender entity.
 func (d *Defender) QueryDecisions() *DecisionQuery {
 	return NewDefenderClient(d.config).QueryDecisions(d)
+}
+
+// QueryGuards queries the "guards" edge of the Defender entity.
+func (d *Defender) QueryGuards() *GuardQuery {
+	return NewDefenderClient(d.config).QueryGuards(d)
 }
 
 // QueryReports queries the "reports" edge of the Defender entity.

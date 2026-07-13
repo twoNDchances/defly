@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Models\Defender;
 use App\Models\Principle;
+use App\Services\Security;
 use App\Traits\Requests\Authorization;
 use App\Traits\Requests\Error;
 use Illuminate\Contracts\Validation\ValidationRule;
@@ -26,6 +27,7 @@ class DefenderPrincipleActionRequest extends FormRequest
             || ! $defender instanceof Defender
             || ! $principle instanceof Principle
             || ! in_array($ability, ['apply', 'revoke'], true)
+            || ! Security::canOperateDefender($defender, $this->user())
             || ! $this->allows($ability, $principle)) {
             return false;
         }

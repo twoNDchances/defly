@@ -4,6 +4,8 @@ namespace Tests\Feature\Jobs;
 
 use App\Enums\Defender\DeploymentStatus;
 use App\Jobs\DefenderDeployment;
+use App\Models\Guard;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -82,5 +84,33 @@ class DefenderDeploymentJobTest extends TestCase
         $this->assertNotSame(DeploymentStatus::Pending, $defaultAction->refresh()->deployment_status);
 
         $log->shouldHaveReceived('error');
+    }
+
+    public function test_deployment_job_marks_guarded_defender_failed_when_requester_guard_is_expired(): void
+    {
+        Http::fake(['*' => Http::response(['deployment' => 'ready'], 200)]);
+
+        $user = User::factory()->create([
+            'email' => 'expired-deployer@example.com',
+            'is_verified' => true,
+            'is_activated' => true,
+        ]);
+        $defender = $this->defender('expired-deploy', DeploymentStatus::Pending->value);
+        $guard = Guard::query()->create([
+            'name' => 'expired-deployment-guard',
+            'expired_at' => now()->subMinute(),
+        ]);
+        $guard->users()->attach($user->id);
+        $guard->defenders()->attach($defender->id);
+
+        (new DefenderDeployment(
+            $defender->id,
+            DefenderDeployment::ACTION_DEPLOY,
+            $user->email,
+        ))->handle();
+
+        $this->assertSame(DeploymentStatus::Failed, $defender->refresh()->deployment_status);
+        $this->assertSame(__('notifications.defender.guard.denied'), $defender->deployment_details['detail']);
+        Http::assertNothingSent();
     }
 }

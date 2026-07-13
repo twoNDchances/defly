@@ -22,6 +22,8 @@ type Tx struct {
 	Engine *EngineClient
 	// Group is the client for interacting with the Group builders.
 	Group *GroupClient
+	// Guard is the client for interacting with the Guard builders.
+	Guard *GuardClient
 	// Pattern is the client for interacting with the Pattern builders.
 	Pattern *PatternClient
 	// Permission is the client for interacting with the Permission builders.
@@ -174,6 +176,7 @@ func (tx *Tx) init() {
 	tx.Defender = NewDefenderClient(tx.config)
 	tx.Engine = NewEngineClient(tx.config)
 	tx.Group = NewGroupClient(tx.config)
+	tx.Guard = NewGuardClient(tx.config)
 	tx.Pattern = NewPatternClient(tx.config)
 	tx.Permission = NewPermissionClient(tx.config)
 	tx.Principle = NewPrincipleClient(tx.config)
