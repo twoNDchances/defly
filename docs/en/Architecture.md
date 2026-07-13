@@ -1,6 +1,6 @@
 # Architecture
 
-Defly separates administration, orchestration, and traffic processing into independent services. [Manager](Manager-Guide.md) does not control Docker directly, and [Defender](CoreConcepts/Defender.md) does not own the database schema.
+Defly separates administration, internal tasks, and traffic processing into independent services. [Manager](Manager-Guide.md) owns UI, policy data, and assistant conversations; [Orchestrator](Orchestrator-Guide.md) handles privileged internal work such as Docker and AI provider calls; [Defender](CoreConcepts/Defender.md) only handles traffic.
 
 ## System Diagram
 
@@ -17,6 +17,8 @@ Laravel Queue ----> Worker ----Basic Auth----> Orchestrator ----> Docker API
 Client -> Defender proxy ----> Backend server      Defender container
                   |
                   +---- read policies / write reports -> MariaDB
+
+Manager Assistant ----Basic Auth----> Orchestrator ----> AI provider
 ```
 
 ## Ownership
@@ -25,7 +27,7 @@ Client -> Defender proxy ----> Backend server      Defender container
 | --- | --- |
 | Manager | Schema, migrations, seed data, administration UI/API, and policies. |
 | Worker | Background jobs created by Manager. |
-| Orchestrator | Defender container lifecycle, networks, volumes, and port mappings. |
+| Orchestrator | Manager internal tasks: Defender container lifecycle and AI assistant responses. |
 | Defender | HTTP transactions, score/level state, logs, and WAF enforcement. |
 | MariaDB | Shared data storage, with its schema managed by Manager. |
 
@@ -37,25 +39,15 @@ At the architectural level, policy data moves in this order:
 Pattern/Wordlist -> Target -> Engine -> Rule -> Action -> Principle -> Decision
 ```
 
-This is an execution/readability sequence, not a claim that every neighboring model
-has a direct database relationship. Model meaning, compatibility, and persisted
-relationships belong in [Core Concepts](CoreConcepts/README.md).
+This is an execution/readability sequence, not a claim that every neighboring model has a direct database relationship. Model meaning and persisted relationships belong in [Core Concepts](CoreConcepts/README.md).
 
 ## HTTP Lifecycle
 
-Defender evaluates three request phases, applies request-direction Decisions, proxies
-allowed traffic to the backend, then evaluates three response phases and
-response-direction Decisions before returning data. Exact phase extraction belongs in
-[Target](CoreConcepts/Target.md#six-http-phases); runtime ordering belongs in the
-[Defender Guide](Defender-Guide.md).
+Defender evaluates three request phases, applies request-direction Decisions, proxies allowed traffic to the backend, then evaluates three response phases and response-direction Decisions before returning data. Exact phase extraction belongs in [Target](CoreConcepts/Target.md#six-http-phases); runtime ordering belongs in the [Defender Guide](Defender-Guide.md).
 
 ## Deployment Flow
 
-Manager creates a background job. Worker calls Orchestrator with the executor identity,
-Orchestrator authorizes the requested lifecycle action, and only then may it change
-Docker state. Orchestrator creates or removes the Defender container and reports the
-resulting status to Manager. Container labels, networks, volumes, ports, and cleanup
-behavior are owned by [Orchestrator](Orchestrator-Guide.md#deployment-lifecycle).
+Manager creates a background job. Worker calls Orchestrator with the executor identity, Orchestrator authorizes the requested lifecycle action, and only then may it change Docker state. Orchestrator creates or removes the Defender container and reports the resulting status to Manager. Container labels, networks, volumes, ports, and cleanup behavior are owned by [Orchestrator](Orchestrator-Guide.md#deploying-defenders).
 
 ## Database
 

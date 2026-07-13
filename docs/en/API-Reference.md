@@ -112,29 +112,31 @@ Orchestrator/Defender.
 
 ## Orchestrator API
 
-Default base path:
+Orchestrator exposes two internal endpoint groups: assistant for AI and deployments for Docker.
 
 ```text
+/api/v1/assistant/{conservation_id}
 /api/v1/deployments/{defender_id}
 ```
 
 The API uses Basic Auth. Manager's `ORCHESTRATOR_USERNAME`/`ORCHESTRATOR_PASSWORD` must match Orchestrator's `SERVER_USERNAME`/`SERVER_PASSWORD`.
 
-| Default Method | Action | Typical Response |
-| --- | --- | --- |
-| `POST` | Deploy Defender | `200`, deployment details. |
-| `GET` | Follow logs | `200`, latest log output. |
-| `DELETE` | Cancel Defender | `200`, cancellation details. |
+| Path | Default Method | Action | Typical Response |
+| --- | --- | --- | --- |
+| `/assistant/{conservation_id}` | `GET` | Answer a Manager AI conversation. | `200`, assistant content and model. |
+| `/deployments/{defender_id}` | `POST` | Deploy Defender. | `200`, deployment details. |
+| `/deployments/{defender_id}` | `GET` | Follow Defender logs. | `200`, latest log output. |
+| `/deployments/{defender_id}` | `DELETE` | Cancel Defender. | `200`, cancellation details. |
 
-Methods can be changed by matching environment variables on both sides. Orchestrator also checks `SERVER_MANAGER`, reads the executor email from the configured header, and enforces Guard membership for guarded Defenders.
+Methods and paths can be changed by matching environment variables on both sides. Orchestrator checks the caller, reads the executor email from the configured header, enforces Guard access for Defender operations, and checks `Conservation:chat` for AI calls.
 
 Common errors:
 
-- `400`: invalid Defender environment variables.
+- `400`: missing conversation ID or invalid Defender environment variables.
 - `401`/`403`: invalid authentication or caller.
-- `404`: Defender, container, or logs not found.
+- `404`: conversation, Defender, container, or logs not found.
 - `409`: log following before deployment is `successful`.
-- `500`: Docker or deployment failure.
+- `500`/`502`/`503`: Docker, deployment, or AI provider failure/misconfiguration.
 
 ## Defender Control API
 

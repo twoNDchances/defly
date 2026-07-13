@@ -1,6 +1,6 @@
 # Overview
 
-Defly is a multi-service web application firewall. It separates policy administration in [Manager](Manager-Guide.md), container coordination in [Orchestrator](Orchestrator-Guide.md), and traffic processing in [Defender](CoreConcepts/Defender.md), giving each responsibility a clear boundary.
+Defly is a multi-service web application firewall. [Manager](Manager-Guide.md) owns data and UI, [Orchestrator](Orchestrator-Guide.md) handles internal tasks that need separate privileges such as Docker and AI, and [Defender](CoreConcepts/Defender.md) enforces policy on real traffic.
 
 ## What Defly Solves
 
@@ -20,7 +20,7 @@ If the policy structure is unfamiliar, read [Core Concepts](CoreConcepts/README.
 | --- | --- |
 | [Manager](Manager-Guide.md) | Laravel/Filament UI and API for configuration, access control, policies, Defenders, and reports. |
 | Worker | Processes Laravel queue jobs such as deployment, cancellation, and log following. |
-| [Orchestrator](Orchestrator-Guide.md) | Receives internal requests, controls Docker, and updates deployment status. |
+| [Orchestrator](Orchestrator-Guide.md) | Internal Django service that deploys Defenders through Docker and calls the AI provider for the assistant. |
 | [Defender](CoreConcepts/Defender.md) | Reverse proxy and WAF that enforces policies on HTTP requests and responses. |
 | MariaDB | Shared database whose schema is owned by Manager; each service reads or writes according to its responsibility. |
 

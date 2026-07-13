@@ -1,6 +1,6 @@
 # Tổng quan
 
-Defly là một tường lửa ứng dụng web gồm nhiều dịch vụ. Hệ thống tách [Manager](Manager-Guide.md) quản trị chính sách, [Orchestrator](Orchestrator-Guide.md) điều phối container và [Defender](CoreConcepts/Defender.md) xử lý lưu lượng để mỗi trách nhiệm có ranh giới rõ ràng.
+Defly là tường lửa ứng dụng web gồm nhiều dịch vụ. [Manager](Manager-Guide.md) quản trị dữ liệu và giao diện, [Orchestrator](Orchestrator-Guide.md) xử lý tác vụ nội bộ cần quyền riêng như Docker và AI, còn [Defender](CoreConcepts/Defender.md) thực thi chính sách trên lưu lượng thật.
 
 ## Defly giải quyết vấn đề gì
 
@@ -20,7 +20,7 @@ Nếu chưa biết cấu trúc chính sách, xem [Các khái niệm cốt lõi](
 | --- | --- |
 | [Manager](Manager-Guide.md) | Giao diện Laravel/Filament và API quản trị cấu hình, quyền, chính sách, Defender và báo cáo. |
 | Worker | Xử lý hàng đợi Laravel cho các thao tác như triển khai, hủy và theo dõi nhật ký. |
-| [Orchestrator](Orchestrator-Guide.md) | Nhận yêu cầu nội bộ, điều khiển Docker và cập nhật trạng thái triển khai. |
+| [Orchestrator](Orchestrator-Guide.md) | Dịch vụ Django nội bộ nhận lệnh từ Manager/Worker để triển khai Defender bằng Docker và gọi nhà cung cấp AI cho trợ lý. |
 | [Defender](CoreConcepts/Defender.md) | Proxy ngược và WAF thực thi chính sách trên yêu cầu/phản hồi HTTP. |
 | MariaDB | Cơ sở dữ liệu chung có lược đồ do Manager sở hữu; các dịch vụ đọc hoặc ghi theo trách nhiệm. |
 

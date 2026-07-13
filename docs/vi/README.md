@@ -1,8 +1,6 @@
 # Tài liệu Defly
 
-Defly tách quản lý chính sách, điều phối triển khai và thực thi lưu lượng cho Manager,
-Orchestrator và Defender. Hãy bắt đầu từ đúng nhu cầu; mỗi chủ đề chỉ có một tài liệu
-chịu trách nhiệm chính.
+Defly tách quản lý chính sách, tác vụ nội bộ và thực thi lưu lượng cho Manager, Orchestrator và Defender. Hãy bắt đầu từ đúng nhu cầu; mỗi chủ đề chỉ có một tài liệu chịu trách nhiệm chính.
 
 ## Sử dụng lần đầu
 
@@ -19,7 +17,7 @@ chịu trách nhiệm chính.
 | Tên biến, mặc định và validation | [Biến môi trường](Environment-Variables.md) |
 | Ý nghĩa model và semantics chính sách | [Khái niệm cốt lõi](CoreConcepts/README.md) |
 | Workflow giao diện Manager | [Hướng dẫn Manager](Manager-Guide.md) |
-| Điều phối deployment Docker | [Hướng dẫn Orchestrator](Orchestrator-Guide.md) |
+| Tác vụ nội bộ Docker và AI | [Hướng dẫn Orchestrator](Orchestrator-Guide.md) |
 | Thực thi request/response WAF | [Hướng dẫn Defender](Defender-Guide.md) |
 | Endpoint HTTP và payload contract | [Tham chiếu API](API-Reference.md) |
 | Quy trình vận hành | [Vận hành](Operations.md) |
@@ -27,5 +25,4 @@ chịu trách nhiệm chính.
 | Chẩn đoán theo triệu chứng | [Khắc phục sự cố](Troubleshooting.md) |
 | Workflow đóng góp mã nguồn | [Phát triển](Development.md) |
 
-Tài liệu ngoài phạm vi chỉ cung cấp ngữ cảnh vừa đủ và dẫn về nơi chịu trách nhiệm,
-không chép lại bảng hay quy tắc chi tiết.
+Tài liệu ngoài phạm vi chỉ cung cấp ngữ cảnh vừa đủ và dẫn về nơi chịu trách nhiệm, không chép lại bảng hay quy tắc chi tiết.

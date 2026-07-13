@@ -184,14 +184,27 @@ Compose fixes `DB_HOST=mariadb` and `DB_PORT=3306` inside the relevant container
 | `ORCHESTRATOR_ALLOWED_CLIENTS` | `manager,worker` | Source names or addresses allowed to call Orchestrator. Worker performs deployment jobs in Compose. |
 | `ORCHESTRATOR_PATH_PREFIX` | `api/v1` | API prefix passed as `SERVER_PATH_PREFIX`. |
 | `ORCHESTRATOR_PATH_DEPLOYMENT` | `deployments` | Deployment resource path passed as `SERVER_PATH_DEPLOYMENT`. |
+| `ORCHESTRATOR_PATH_ASSISTANT` | `assistant` | AI assistant path passed as `SERVER_PATH_ASSISTANT`. |
 | `ORCHESTRATOR_METHOD_DEPLOY` | `post` | Defender deployment method. |
 | `ORCHESTRATOR_METHOD_FOLLOW` | `get` | Defender log-following method. |
 | `ORCHESTRATOR_METHOD_CANCEL` | `delete` | Defender cancellation method. All three methods on the same path must differ. |
+| `ORCHESTRATOR_METHOD_ASSISTANT` | `get` | AI assistant method. |
 | `ORCHESTRATOR_USERNAME` | `defly-orchestrator` | Basic Auth username shared by Manager/Worker and Orchestrator. |
 | `ORCHESTRATOR_PASSWORD` | `P@55w0rd` | Basic Auth password. Replace it in production. |
 | `ORCHESTRATOR_TLS_SKIP_VERIFY` | `false` | When `true`, Manager skips Orchestrator certificate verification. Use only temporarily in development. |
 | `ORCHESTRATOR_EMAIL_HEADER_KEY` | `X-Executor` | Header carrying the executor User email. Both sides must use the same name. |
 | `LANGUAGE_CODE` | `vi-vn` | Django language. Compose supports it even though the root example does not currently declare it. |
+
+### AI Provider in Compose
+
+| Variable | Default | Meaning |
+| --- | --- | --- |
+| `AI_BASE_URL` | `https://api.openai.com/v1` | OpenAI-compatible API URL called by Orchestrator. |
+| `AI_MODEL` | `gpt-4.1-mini` | Model used by the assistant. |
+| `AI_TIMEOUT` | `60` | AI response timeout in seconds. |
+| `AI_MAX_MESSAGES` | `40` | Recent messages sent to the model; `0` means unlimited. |
+| `AI_MAX_MESSAGE_CHARACTERS` | `4000` | Maximum characters per message; `0` means unlimited. |
+| `AI_API_KEY` | empty | AI provider API key; when empty, the assistant reports a configuration error. |
 
 ### Deployed Defenders
 
@@ -320,12 +333,25 @@ Orchestrator reads this file with `django-environ`. Defaults below come from sou
 | `SERVER_EMAIL_HEADER_KEY` | `X-Executor` | Header carrying the executor email. |
 | `SERVER_PATH_PREFIX` | `api/v1` | API prefix without leading/trailing `/` or empty segments. |
 | `SERVER_PATH_DEPLOYMENT` | `deployments` | Deployment path with the same validation. |
+| `SERVER_PATH_ASSISTANT` | `assistant` | AI assistant path with the same validation. |
 | `SERVER_METHOD_DEPLOY` | `post` | Deployment method. |
 | `SERVER_METHOD_FOLLOW` | `get` | Log-following method. |
 | `SERVER_METHOD_CANCEL` | `delete` | Cancellation method. All three must be different and one of `get`, `post`, `put`, `patch`, `delete`. |
+| `SERVER_METHOD_ASSISTANT` | `get` | AI assistant method. |
 | `SERVER_DEFENDER_IMAGE` | `defly-defender:latest` | Defender image present on the Docker host. |
 | `SERVER_DEFENDER_TLS_VOLUME` | `defender_tls` | TLS volume key used for Defender containers. |
 | `SERVER_DOCKER_BASE_URL` | `tcp://localhost:2375` | Development Docker endpoint. `configs.production` fixes it to `unix:///var/run/docker.sock`. |
+
+### AI Provider
+
+| Variable | Source Default | Meaning |
+| --- | --- | --- |
+| `AI_BASE_URL` | `https://api.openai.com/v1` | OpenAI-compatible API URL called by Orchestrator. |
+| `AI_MODEL` | `gpt-4.1-mini` | Model used by the assistant. |
+| `AI_TIMEOUT` | `90.0` | AI response timeout in seconds. |
+| `AI_MAX_MESSAGES` | `40` | Recent messages sent to the model; `0` means unlimited. |
+| `AI_MAX_MESSAGE_CHARACTERS` | `4000` | Maximum characters per message; `0` means unlimited. |
+| `AI_API_KEY` | empty | AI provider API key; when empty, the assistant returns `503`. |
 
 ### Orchestrator Entrypoint Variables
 
@@ -425,7 +451,8 @@ Control methods accept only `post`, `put`, `patch`, or `delete`. Manager must us
 | `ORCHESTRATOR_EMAIL_HEADER_KEY` | `SERVER_EMAIL_HEADER_KEY` | Executor header name. |
 | `ORCHESTRATOR_PATH_PREFIX` | `SERVER_PATH_PREFIX` | Orchestrator API prefix. |
 | `ORCHESTRATOR_PATH_DEPLOYMENT` | `SERVER_PATH_DEPLOYMENT` | Deployment path. |
-| `ORCHESTRATOR_METHOD_*` | `SERVER_METHOD_*` | Methods for deployment operations. |
+| `ORCHESTRATOR_PATH_ASSISTANT` | `SERVER_PATH_ASSISTANT` | AI assistant path. |
+| `ORCHESTRATOR_METHOD_*` | `SERVER_METHOD_*` | Methods for deployment and AI assistant operations. |
 | Manager Defender client settings | `SERVER_CONTROLLER_*`, `SERVER_SECURITY_*` | Defender control API paths, methods, and Basic Auth. |
 | `SERVER_DEFENDER_IMAGE` | Orchestrator `SERVER_DEFENDER_IMAGE` | Deployed Defender image. |
 | `SERVER_DEFENDER_TLS_VOLUME` | Compose `defender_tls` volume | Shared certificate storage. |

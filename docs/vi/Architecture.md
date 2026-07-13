@@ -1,6 +1,6 @@
 # Kiến trúc
 
-Defly tách quản trị, điều phối và xử lý lưu lượng thành các dịch vụ độc lập. [Manager](Manager-Guide.md) không điều khiển Docker trực tiếp; [Defender](CoreConcepts/Defender.md) không sở hữu lược đồ cơ sở dữ liệu.
+Defly tách quản trị, tác vụ nội bộ và xử lý lưu lượng thành các dịch vụ độc lập. [Manager](Manager-Guide.md) giữ giao diện, chính sách và hội thoại trợ lý; [Orchestrator](Orchestrator-Guide.md) nhận lệnh nội bộ để làm việc cần quyền riêng như Docker và nhà cung cấp AI; [Defender](CoreConcepts/Defender.md) chỉ xử lý lưu lượng.
 
 ## Sơ đồ hệ thống
 
@@ -17,6 +17,8 @@ Laravel Queue ----> Worker ----Basic Auth----> Orchestrator ----> Docker API
 Máy khách -> Defender proxy ----> Máy chủ đích     Container Defender
                   |
                   +---- đọc chính sách / ghi báo cáo -> MariaDB
+
+Trợ lý Manager ----Basic Auth----> Orchestrator ----> Nhà cung cấp AI
 ```
 
 ## Quyền sở hữu
@@ -25,7 +27,7 @@ Máy khách -> Defender proxy ----> Máy chủ đích     Container Defender
 | --- | --- |
 | Manager | Lược đồ, migration, dữ liệu khởi tạo, giao diện/API và chính sách. |
 | Worker | Thực thi tác vụ nền do Manager tạo. |
-| Orchestrator | Vòng đời container Defender, mạng, ổ dữ liệu và ánh xạ cổng. |
+| Orchestrator | Tác vụ nội bộ của Manager: vòng đời container Defender và phản hồi trợ lý AI. |
 | Defender | Giao dịch HTTP, trạng thái điểm/cấp độ, nhật ký và việc thực thi WAF. |
 | MariaDB | Lưu dữ liệu chung, nhưng lược đồ do Manager quản lý. |
 
@@ -37,7 +39,7 @@ Máy khách -> Defender proxy ----> Máy chủ đích     Container Defender
 Pattern/Wordlist -> Target -> Engine -> Rule -> Action -> Principle -> Decision
 ```
 
-Đây là thứ tự thực thi/đọc hiểu, không khẳng định mọi model đứng cạnh nhau đều có quan hệ database trực tiếp. Ý nghĩa, compatibility và persisted relation của model thuộc [Khái niệm cốt lõi](CoreConcepts/README.md).
+Đây là thứ tự thực thi/đọc hiểu, không khẳng định mọi mô hình đứng cạnh nhau đều có quan hệ cơ sở dữ liệu trực tiếp. Ý nghĩa và quan hệ được lưu của từng mô hình nằm trong [Khái niệm cốt lõi](CoreConcepts/README.md).
 
 ## Vòng đời HTTP
 
