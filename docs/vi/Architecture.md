@@ -37,25 +37,15 @@ Máy khách -> Defender proxy ----> Máy chủ đích     Container Defender
 Pattern/Wordlist -> Target -> Engine -> Rule -> Action -> Principle -> Decision
 ```
 
-Đây là thứ tự thực thi/đọc hiểu, không khẳng định mọi model đứng cạnh nhau đều có
-quan hệ database trực tiếp. Ý nghĩa, compatibility và persisted relation của model
-thuộc [Khái niệm cốt lõi](CoreConcepts/README.md).
+Đây là thứ tự thực thi/đọc hiểu, không khẳng định mọi model đứng cạnh nhau đều có quan hệ database trực tiếp. Ý nghĩa, compatibility và persisted relation của model thuộc [Khái niệm cốt lõi](CoreConcepts/README.md).
 
 ## Vòng đời HTTP
 
-Defender đánh giá ba phase request, áp dụng Decision hướng request, chuyển traffic
-được phép tới backend, rồi đánh giá ba phase response và Decision hướng response trước
-khi trả dữ liệu. Cách trích xuất từng phase thuộc
-[Target](CoreConcepts/Target.md#sáu-giai-đoạn-http); thứ tự runtime thuộc
-[Hướng dẫn Defender](Defender-Guide.md).
+Defender đánh giá ba phase request, áp dụng Decision hướng request, chuyển traffic được phép tới backend, rồi đánh giá ba phase response và Decision hướng response trước khi trả dữ liệu. Cách trích xuất từng phase thuộc [Target](CoreConcepts/Target.md#sáu-giai-đoạn-http); thứ tự runtime thuộc [Hướng dẫn Defender](Defender-Guide.md).
 
 ## Luồng triển khai
 
-Manager tạo tác vụ nền. Worker gọi Orchestrator kèm danh tính người thực hiện,
-Orchestrator cấp quyền cho lifecycle action được yêu cầu rồi mới được phép thay đổi
-trạng thái Docker. Orchestrator tạo hoặc xóa container Defender và trả trạng thái kết
-quả cho Manager. Nhãn container, mạng, ổ dữ liệu, cổng và cơ chế dọn dẹp thuộc trách
-nhiệm của [Orchestrator](Orchestrator-Guide.md#vòng-đời-deployment).
+Manager tạo tác vụ nền. Worker gọi Orchestrator kèm danh tính người thực hiện, Orchestrator cấp quyền cho lifecycle action được yêu cầu rồi mới được phép thay đổi trạng thái Docker. Orchestrator tạo hoặc xóa container Defender và trả trạng thái kết quả cho Manager. Nhãn container, mạng, ổ dữ liệu, cổng và cơ chế dọn dẹp thuộc trách nhiệm của [Orchestrator](Orchestrator-Guide.md#vòng-đời-deployment).
 
 ## Cơ sở dữ liệu
 

@@ -18,9 +18,9 @@ Nếu chưa biết cấu trúc chính sách, xem [Các khái niệm cốt lõi](
 
 | Dịch vụ | Trách nhiệm |
 | --- | --- |
-| [Manager](Manager-Guide.md) | Giao di?n Laravel/Filament v? API qu?n tr? c?u h?nh, quy?n, ch?nh s?ch, Defender v? b?o c?o. |
+| [Manager](Manager-Guide.md) | Giao diện Laravel/Filament và API quản trị cấu hình, quyền, chính sách, Defender và báo cáo. |
 | Worker | Xử lý hàng đợi Laravel cho các thao tác như triển khai, hủy và theo dõi nhật ký. |
-| [Orchestrator](Orchestrator-Guide.md) | Nh?n y?u c?u n?i b?, ?i?u khi?n Docker v? c?p nh?t tr?ng th?i tri?n khai. |
+| [Orchestrator](Orchestrator-Guide.md) | Nhận yêu cầu nội bộ, điều khiển Docker và cập nhật trạng thái triển khai. |
 | [Defender](CoreConcepts/Defender.md) | Proxy ngược và WAF thực thi chính sách trên yêu cầu/phản hồi HTTP. |
 | MariaDB | Cơ sở dữ liệu chung có lược đồ do Manager sở hữu; các dịch vụ đọc hoặc ghi theo trách nhiệm. |
 
