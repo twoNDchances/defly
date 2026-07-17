@@ -20,6 +20,12 @@ class DefenderDeploymentJobTest extends TestCase
 
     public function test_deployment_job_updates_status_for_success_failure_and_cancel(): void
     {
+        config()->set('database.connections.mysql.host', 'job-manager-db');
+        config()->set('database.connections.mysql.port', '3310');
+        config()->set('database.connections.mysql.database', 'job_defly_runtime');
+        config()->set('database.connections.mysql.username', 'job_defly_user');
+        config()->set('database.connections.mysql.password', 'job_defly_secret');
+
         Http::fakeSequence()
             ->push(['deployment' => 'ready'], 200)
             ->push('not available', 503)
@@ -29,6 +35,11 @@ class DefenderDeploymentJobTest extends TestCase
         (new DefenderDeployment($deploying->id, DefenderDeployment::ACTION_DEPLOY))->handle();
         $this->assertSame(DeploymentStatus::Successful, $deploying->refresh()->deployment_status);
         $this->assertSame('ready', $deploying->refresh()->deployment_details['deployment']);
+        $this->assertSame('job-manager-db', $deploying->refresh()->environment_variables['DATABASE_HOST'] ?? null);
+        $this->assertSame('3310', $deploying->refresh()->environment_variables['DATABASE_PORT'] ?? null);
+        $this->assertSame('job_defly_runtime', $deploying->refresh()->environment_variables['DATABASE_NAME'] ?? null);
+        $this->assertSame('job_defly_user', $deploying->refresh()->environment_variables['DATABASE_USER'] ?? null);
+        $this->assertSame('job_defly_secret', $deploying->refresh()->environment_variables['DATABASE_PASS'] ?? null);
 
         $failing = $this->defender('failing', DeploymentStatus::Pending->value);
         (new DefenderDeployment($failing->id, DefenderDeployment::ACTION_DEPLOY))->handle();

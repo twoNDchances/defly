@@ -15,6 +15,7 @@ use App\Models\Decision;
 use App\Models\Defender;
 use App\Models\Principle;
 use App\Services\ApiPayload;
+use App\Services\DefenderEnvironment;
 use App\Services\Identification;
 use App\Services\Logger;
 use App\Services\Orchestrator;
@@ -189,8 +190,12 @@ class DefenderController extends Controller
             return response()->json($defender);
         }
 
-        $defender->deployment_status = DeploymentStatus::Pending;
-        $defender->save();
+        $defender->forceFill([
+            'deployment_status' => DeploymentStatus::Pending,
+            'environment_variables' => DefenderEnvironment::mergeDatabaseConnection(
+                is_array($defender->environment_variables) ? $defender->environment_variables : [],
+            ),
+        ])->save();
 
         DefenderDeployment::dispatch(
             $defender->id,
@@ -465,11 +470,6 @@ class DefenderController extends Controller
     private function payloadEnvironmentVariables(): array
     {
         return array_replace($this->defaultEnvironmentVariables(), [
-            'DATABASE_HOST' => '<database-host>',
-            'DATABASE_PORT' => '<database-port>',
-            'DATABASE_NAME' => '<database-name>',
-            'DATABASE_USER' => '<database-user>',
-            'DATABASE_PASS' => '<database-password>',
             'SERVER_SECURITY_PASSWORD' => '<defender-password>',
         ]);
     }

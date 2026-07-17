@@ -17,6 +17,11 @@ class DefenderLifecycleControllerTest extends ApiTestCase
     public function test_defender_deploy_cancel_and_follow_endpoints(): void
     {
         Bus::fake();
+        config()->set('database.connections.mysql.host', 'manager-db');
+        config()->set('database.connections.mysql.port', '3307');
+        config()->set('database.connections.mysql.database', 'defly_runtime');
+        config()->set('database.connections.mysql.username', 'defly_user');
+        config()->set('database.connections.mysql.password', 'defly_secret');
         Http::fake([
             'orchestrator:8000/api/v1/deployments/*' => Http::response(['state' => 'running'], 200),
         ]);
@@ -28,6 +33,13 @@ class DefenderLifecycleControllerTest extends ApiTestCase
             ->assertJsonPath('deployment_status', DeploymentStatus::Pending->value);
 
         Bus::assertDispatched(DefenderDeployment::class, fn (DefenderDeployment $job) => $job->action === DefenderDeployment::ACTION_DEPLOY);
+        $pendingVariables = $pendingDefender->refresh()->environment_variables;
+        $this->assertSame('manager-db', $pendingVariables['DATABASE_HOST'] ?? null);
+        $this->assertSame('3307', $pendingVariables['DATABASE_PORT'] ?? null);
+        $this->assertSame('defly_runtime', $pendingVariables['DATABASE_NAME'] ?? null);
+        $this->assertSame('defly_user', $pendingVariables['DATABASE_USER'] ?? null);
+        $this->assertSame('defly_secret', $pendingVariables['DATABASE_PASS'] ?? null);
+        $this->assertSame('http://localhost', $pendingVariables['PROXY_BACKEND_URL'] ?? null);
 
         $successfulDefender = $this->apiDefender('successful', DeploymentStatus::Successful->value);
 

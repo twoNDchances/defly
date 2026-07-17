@@ -5,6 +5,7 @@ namespace App\Jobs;
 use App\Enums\Defender\DeploymentStatus;
 use App\Filament\Clusters\Infrastructure\Resources\Defenders\DefenderResource;
 use App\Models\Defender;
+use App\Services\DefenderEnvironment;
 use App\Services\Notification;
 use App\Services\Orchestrator;
 use App\Services\Security;
@@ -65,6 +66,9 @@ class DefenderDeployment implements ShouldQueue
         $defender->forceFill([
             'deployment_status' => DeploymentStatus::Processing,
             'deployment_details' => ['detail' => __('notifications.defender.deployment.processing')],
+            'environment_variables' => DefenderEnvironment::mergeDatabaseConnection(
+                is_array($defender->environment_variables) ? $defender->environment_variables : [],
+            ),
         ])->save();
 
         try {

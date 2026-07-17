@@ -4,6 +4,7 @@ namespace App\Traits\Filament\Specifics\Defender;
 
 use App\Enums\Defender\DeploymentStatus;
 use App\Jobs\DefenderDeployment;
+use App\Services\DefenderEnvironment;
 use App\Services\Identification;
 use App\Services\Logger;
 use App\Services\Orchestrator;
@@ -26,8 +27,12 @@ trait DefenderButton
                     return;
                 }
 
-                $record->deployment_status = DeploymentStatus::Pending;
-                $record->save();
+                $record->forceFill([
+                    'deployment_status' => DeploymentStatus::Pending,
+                    'environment_variables' => DefenderEnvironment::mergeDatabaseConnection(
+                        is_array($record->environment_variables) ? $record->environment_variables : [],
+                    ),
+                ])->save();
                 DefenderDeployment::dispatch(
                     $record->id,
                     DefenderDeployment::ACTION_DEPLOY,
@@ -54,8 +59,12 @@ trait DefenderButton
                     ], true)) {
                         continue;
                     }
-                    $record->deployment_status = DeploymentStatus::Pending;
-                    $record->save();
+                    $record->forceFill([
+                        'deployment_status' => DeploymentStatus::Pending,
+                        'environment_variables' => DefenderEnvironment::mergeDatabaseConnection(
+                            is_array($record->environment_variables) ? $record->environment_variables : [],
+                        ),
+                    ])->save();
                     DefenderDeployment::dispatch(
                         $record->id,
                         DefenderDeployment::ACTION_DEPLOY,

@@ -15,7 +15,7 @@ class DefenderDataTest extends TestCase
             'proxy_environment_variables' => [['key' => 'PROXY_BACKEND_URL', 'value' => 'http://backend']],
         ]);
 
-        $this->assertSame('db', $saved['environment_variables']['DATABASE_HOST']);
+        $this->assertArrayNotHasKey('DATABASE_HOST', $saved['environment_variables']);
         $this->assertSame('9443', $saved['environment_variables']['SERVER_PORT']);
         $this->assertSame('worker', $saved['environment_variables']['SERVER_SECURITY_MANAGER']);
         $this->assertArrayHasKey('common_environment_variables', FilamentDefenderDataHarness::loadForm($saved));

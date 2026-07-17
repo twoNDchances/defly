@@ -69,11 +69,6 @@ trait DefenderField
             'ABOUT_BANNER_ENABLE' => ['required', 'in:true,false'],
             'ERROR_FILE_ENABLE' => ['required', 'in:true,false'],
             'ERROR_DIRECTORY_PATH' => ['nullable', 'string', 'max:255', $directoryPathRule],
-            'DATABASE_HOST' => ['required', 'string', 'max:255', 'not_regex:/\s/'],
-            'DATABASE_PORT' => ['required', 'integer', 'min:1', 'max:65535'],
-            'DATABASE_NAME' => ['required', 'string', 'max:255', 'not_regex:/\s/'],
-            'DATABASE_USER' => ['required', 'string', 'max:255', 'not_regex:/\s/'],
-            'DATABASE_PASS' => ['nullable', 'string', 'max:255'],
             'DOCTOR_INTERVAL_UNIT' => ['required', 'in:second,minute,hour'],
             'DOCTOR_INTERVAL_COUNT' => ['required', 'integer', 'min:1', 'max:1000000'],
         ];

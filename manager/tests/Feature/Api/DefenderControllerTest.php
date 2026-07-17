@@ -27,10 +27,10 @@ class DefenderControllerTest extends ApiTestCase
 
         $variables = $response->json('store.body.environment_variables');
 
-        $this->assertSame('<database-host>', $variables['DATABASE_HOST'] ?? null);
-        $this->assertSame('<database-name>', $variables['DATABASE_NAME'] ?? null);
-        $this->assertSame('<database-user>', $variables['DATABASE_USER'] ?? null);
-        $this->assertSame('<database-password>', $variables['DATABASE_PASS'] ?? null);
+        $this->assertArrayNotHasKey('DATABASE_HOST', $variables);
+        $this->assertArrayNotHasKey('DATABASE_NAME', $variables);
+        $this->assertArrayNotHasKey('DATABASE_USER', $variables);
+        $this->assertArrayNotHasKey('DATABASE_PASS', $variables);
         $this->assertSame('<defender-password>', $variables['SERVER_SECURITY_PASSWORD'] ?? null);
         $this->assertStringNotContainsString('secret-db-pass', json_encode($response->json(), JSON_THROW_ON_ERROR));
 
